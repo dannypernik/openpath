@@ -5,6 +5,8 @@
   <meta property="og:title" content="Open Path Tutoring" />
   <meta property="og:description" content="Schedule your free SAT or ACT prep session" />
   <meta property="og:image" content="{{ url_for('static', filename='img/og-image.jpg') }}" />
+
+  <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 {% endblock head %}
 
 {% block navbar %}{% endblock navbar %}
@@ -51,15 +53,18 @@
     </div>
     <div class="row justify-content-center">
       <div class="col col-sm-11">
-        <a href="{{ url_for('test_strategies') }}" class="cta btn">
-            Download 10 Strategies<br class="d-md-none">
-            to Master the SAT & ACT
+        <a class="cta btn mx-2"
+          onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=1'});return false;">
+          Free SAT/ACT session
+        </a>
+        <a class="cta btn sec mx-2" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=2'});return false;">
+          Free Power session
         </a>
 
         <div class="home-next">
           <a href="#free-trial">
             <h2>
-              Request a free trial session
+              Learn more
             </h2>
             <svg width="3em" height="3em" viewBox="0 0 16 16" class="bi
                 bi-chevron-down" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -105,8 +110,8 @@
           and respected by your tutor, then you'll be more willing to put in the work.
         </h1>
         <h1 class="mb-4">
-          The only way to know is to try. That's why we offer a
-          <b>free tutoring session</b> with no purchase necessary.
+          The only way to know is to try. That's why we offer the
+          <b>first session free</b> with no purchase necessary.
         </h1>
         <div class="text-center">
           <a id="request-trial" class="cta btn mb-2" href="#contact">
@@ -167,7 +172,7 @@
             <h3 class="usp-text text-md-start">
               Open Path tutors are experts in both the subject matter
               being taught and the art of tutoring itself. They are two different skillsets!
-              We are always seeking to grow more effective in both aspects.
+              We are always seeking to become more effective in both aspects.
             </h3>
           </div>
         </div>
@@ -220,6 +225,8 @@
 {% endblock container %}
 
 {% block end_scripts %}
+
+
   <script src="{{ url_for('static', filename='js/zenscroll-min.js') }}"></script>
   <script>
     zenscroll.setup(null, 0);

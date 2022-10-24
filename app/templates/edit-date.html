@@ -23,12 +23,12 @@
             <input type="submit" name="save" value="Save">
           </div>
           <div class="col-4">
-            <a href="#" class="btn sec alert mt-3 w-100" data-bs-toggle="modal" data-bs-target="#delete-modal" data-text="delete">
+            <a href="#" class="btn clr alert mt-3 w-100" data-bs-toggle="modal" data-bs-target="#delete-modal" data-text="delete">
               Delete
             </a>
           </div>
           <div class="col-12 text-center">
-            <a href="{{ url_for('test_dates') }}" class="btn sec sm">
+            <a href="{{ url_for('test_dates') }}" class="btn clr sm">
               Test dates
             </a>
           </div>
@@ -44,7 +44,7 @@
                   </div>
                 </div>
                 <div class="modal-body">
-                  <button class="btn sec alert d-inline me-2" type="submit" name="delete">Delete {{ date.date }}</button>
+                  <button class="btn clr alert d-inline me-2" type="submit" name="delete">Delete {{ date.date }}</button>
                   <button class="btn d-inline" data-bs-dismiss="modal">Cancel</button>
                 </div>
               </div>

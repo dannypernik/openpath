@@ -5602,17 +5602,27 @@ a.btn {
   color: white;
 }
 
-.btn.clr {
-  background-color: transparent;
-  border-color: white;
+.btn.sec {
+  background-color: #4ad1cc;
+  border-color: #4ad1cc;
 }
 
-.btn.sec {
+.btn.sec:hover {
+  background-color: #2aa5a0;
+  border-color: #2aa5a0;
+}
+
+.btn.clr {
   color: #1C4D65;
   border-color: #1C4D65;
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
+}
+
+.inverse .btn.clr {
+  background-color: transparent;
+  border-color: white;
 }
 
 .btn.highlight {
@@ -5653,8 +5663,8 @@ a.btn {
 }
 
 button:hover, .btn:hover, input[type=submit]:hover, .menu-link:hover {
-  background-color: #4ad1cc;
-  border-color: #4ad1cc;
+  background-color: #2d7ba1;
+  border-color: #2d7ba1;
   color: white;
 }
 
@@ -5877,6 +5887,10 @@ div.alert {
 
 .home-section.end {
   min-height: calc(100vh - 30rem);
+}
+
+.calendly-overlay .calendly-popup {
+  max-height: 1000px;
 }
 
 .inverse {

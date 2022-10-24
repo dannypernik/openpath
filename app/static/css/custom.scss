@@ -279,17 +279,27 @@ a.btn {
   color: white;
 }
 
-.btn.clr {
-  background-color: transparent;
-  border-color: white;
+.btn.sec {
+  background-color: $secondary-color;
+  border-color: $secondary-color;
 }
 
-.btn.sec {
+.btn.sec:hover {
+  background-color: darken($secondary-color, 15%);
+  border-color: darken($secondary-color, 15%);
+}
+
+.btn.clr {
   color: $primary-color;
   border-color: $primary-color;
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
+}
+
+.inverse .btn.clr {
+  background-color: transparent;
+  border-color: white;
 }
 
 .btn.highlight {
@@ -330,8 +340,8 @@ a.btn {
 }
 
 button:hover, .btn:hover, input[type="submit"]:hover, .menu-link:hover {
-  background-color: $secondary-color;
-  border-color: $secondary-color;
+  background-color: lighten($primary-color, 15%);
+  border-color: lighten($primary-color, 15%);
   color: white;
 }
 
@@ -572,6 +582,10 @@ div.alert {
 
 .home-section.end {
   min-height: calc(100vh - 30rem);
+}
+
+.calendly-overlay .calendly-popup {
+  max-height: 1000px;
 }
 
 .inverse {
