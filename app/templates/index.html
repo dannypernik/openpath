@@ -11,6 +11,12 @@
 
 {% block navbar %}{% endblock navbar %}
 
+{% block styles_scripts %}
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
+  {{ super() }}
+{% endblock styles_scripts %}
+
 {% block container %}
   <div id="home" class="inverse text-center">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -225,8 +231,6 @@
 {% endblock container %}
 
 {% block end_scripts %}
-
-
   <script src="{{ url_for('static', filename='js/zenscroll-min.js') }}"></script>
   <script>
     zenscroll.setup(null, 0);

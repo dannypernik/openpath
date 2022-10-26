@@ -46,17 +46,12 @@
       <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
       <link rel="manifest" href="{{ url_for('static', filename='img/favicons/manifest.webmanifest') }}">
 
-      {% block styles %}
+      {% block styles_scripts %}
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Montserrat+Alternates&display=swap"
           rel="stylesheet">
-          <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-          <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css', u=last_updated) }}">
-      {% endblock styles %}
-
-      {% block scripts %}
-        <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
-      {% endblock scripts %}
-
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css', u=last_updated) }}">
+      {% endblock styles_scripts %}
+      
       <script async src="{{ url_for('static', filename='js/menu.js') }}"></script>
     {% endblock head %}
   </head>
