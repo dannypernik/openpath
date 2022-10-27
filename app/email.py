@@ -430,6 +430,43 @@ def send_test_strategies_email(student, parent, relation):
     return result.status_code
 
 
+def send_test_registration_email(student, parent, school, test, date, time, location):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": parent.email
+                    }
+                ],
+                "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
+                "Subject": student.first_name + " " + student.last_name + " is registered for the practice ACT on " + date,
+                "TextPart": render_template('email/test-registration-email.txt',
+                            student=student, parent=parent, school=school, test=test, \
+                            date=date, time=time, location=location),
+                "HTMLPart": render_template('email/test-registration-email.html',
+                            student=student, parent=parent, school=school, test=test, \
+                            date=date, time=time, location=location)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print(result.json())
+    else:
+        print("Test registration email failed to send with code", result.status_code, result.reason)
+    return result.status_code
+
+
 def send_score_analysis_email(student, parent, school):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']

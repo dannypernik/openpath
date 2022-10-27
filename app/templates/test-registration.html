@@ -1,0 +1,19 @@
+{% extends 'score-analysis-request.html' %}
+
+{% block intro %}
+  <h1>Register for the free practice {{ test }} with {{ school }}</h1>
+  <p>
+    Open Path Tutoring is offering a free practice {{ test }} to {{ school }}. If you
+    would like your student to participate, please complete the form below. The following
+    test details will be emailed to you when you register:
+  </p>
+  <p>
+    <strong>{{ school }} Practice {{ test }}</strong><br>
+    When: {{ date }} from {{ time }}<br>
+    Where: {{ location }}
+  </p>
+  <p>    
+    In addition to getting a score for the official ACT, families will receive a detailed
+    score analysis that will help students focus on their biggest opportunity areas.
+  </p>
+{% endblock intro %}

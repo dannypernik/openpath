@@ -190,4 +190,4 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     parent_email = StringField('Parent\'s email address', render_kw={'placeholder': 'Parent\'s email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    submit = SubmitField('Send me the score analysis')
+    submit = SubmitField()

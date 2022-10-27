@@ -10,7 +10,7 @@ from app.models import User, TestDate, UserTestDate
 from werkzeug.urls import url_parse
 from datetime import datetime
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
-    send_test_strategies_email, send_score_analysis_email
+    send_test_strategies_email, send_score_analysis_email, send_test_registration_email
 from functools import wraps
 
 @app.before_request
@@ -518,15 +518,17 @@ def griffin():
     form = ScoreAnalysisForm()
     school='Griffin School'
     test='ACT'
+    submit_text='Send me the score analysis'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
-            return render_template('score-analysis-requested.html', email=form.parent_email.data)
+            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('school.html', form=form, school=school, test=test)
+    return render_template('score-analysis-request.html', form=form, school=school, test=test, \
+        submit_text=submit_text)
 
 
 @app.route('/appamada', methods=['GET', 'POST'])
@@ -534,15 +536,17 @@ def appamada():
     form = ScoreAnalysisForm()
     school='Appamada School'
     test='mini SAT'
+    submit_text='Send me the score analysis'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
-            return render_template('score-analysis-requested.html', email=form.parent_email.data)
+            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('school.html', form=form, school=school, test=test)
+    return render_template('score-analysis-request.html', form=form, school=school, test=test, \
+        submit_text=submit_text)
 
 
 @app.route('/huntington-surrey', methods=['GET', 'POST'])
@@ -550,15 +554,39 @@ def huntington_surrey():
     form = ScoreAnalysisForm()
     school='Huntington-Surrey School'
     test='SAT'
+    submit_text='Send me the score analysis'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
-            return render_template('score-analysis-requested.html', email=form.parent_email.data)
+            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('school.html', form=form, school=school, test=test)
+    return render_template('score-analysis-request.html', form=form, school=school, test=test,
+        submit_text=submit_text)
+
+
+@app.route('/centerville', methods=['GET', 'POST'])
+def centerville():
+    form = ScoreAnalysisForm()
+    school = 'Centerville Elks Soccer'
+    test = 'ACT'
+    date = 'Saturday, December 3rd, 2022'
+    time = '9:30am to 1:00pm'
+    location = 'Centerville High School Room West 126'
+    submit_text = 'Register'
+    if form.validate_on_submit():
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = send_test_registration_email(student, parent, school, test, date, time, location)
+        if email_status == 200:
+            return render_template('test-registration-submitted.html', email=parent.email,
+            student=student, test=test)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('test-registration.html', form=form, school=school, test=test, \
+        date=date, time=time, location=location, submit_text=submit_text)
 
 
 @app.route('/sat-act-data')

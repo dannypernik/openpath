@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Score analysis requested</h1>
+  <h1>{% block score_analysis_title %}Score analysis requested{% endblock score_analysis_title %}</h1>
   <p>
     Thank you for taking this step towards greater education for your student.
-    An email confirmation has been sent to <strong>{{ email }}</strong>, and
-    you will receive the score analysis within 48 hours. If the
-    confirmation email does not arrive to your inbox, spam, or promotions folder
+    An email confirmation has been sent to
+    <strong>{{ email }}</strong>{% block score_analysis_content %}, and you will receive
+    the score analysis within 48 hours.{% endblock score_analysis_content %}
+    If the confirmation email does not arrive to your inbox, spam, or promotions folder
     within 5 minutes, please email
     <a href="mailto:hello@openpathtutoring.com?subject=Practice%20test%20score%20analysis">
       hello@openpathtutoring.com</a>.

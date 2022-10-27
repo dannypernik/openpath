@@ -1,0 +1,9 @@
+Hi {{ parent.first_name }}, thank you for registering {{ student.first_name }} for the practice {{ test }} with {{ school }}. Here are the details:
+
+{{ school }} Practice {{ test }}
+When: {{ date }} from {{ time }}
+Where: {{ location }}
+Student name: {{ student.first_name }} {{ student.last_name }}
+
+"We don't have to do all of it alone. We were never meant to."
+&ndash; Brene Brown
