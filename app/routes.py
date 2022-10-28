@@ -670,7 +670,7 @@ def sitemap():
     #         }
     #     dynamic_urls.append(url)
 
-    xml_sitemap = render_template('sitemap.xml', static_urls=static_urls, host_base=host_base) #dynamic_urls=dynamic_urls)
+    xml_sitemap = render_template('sitemap/sitemap.xml', static_urls=static_urls, host_base=host_base) #dynamic_urls=dynamic_urls)
     response = make_response(xml_sitemap)
     response.headers["Content-Type"] = "application/xml"
 
