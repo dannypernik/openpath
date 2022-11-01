@@ -338,7 +338,7 @@ def students():
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, u.first_name + " " + u.last_name) for u in tutors]
     form.tutor_id.choices = tutor_list
-    statuses = ['active', 'paused', 'inactive']
+    statuses = ['prospective', 'active', 'paused', 'inactive']
     other_students = User.query.filter((User.role=='student') & (User.status.notin_(statuses)))
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
