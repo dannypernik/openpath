@@ -430,7 +430,7 @@ def send_test_strategies_email(student, parent, relation):
     return result.status_code
 
 
-def send_test_registration_email(student, parent, school, test, date, time, location):
+def send_test_registration_email(student, parent, school, test, date, time, location, contact_info):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -451,10 +451,10 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
                 "Subject": student.first_name + " " + student.last_name + " is registered for the practice ACT on " + date,
                 "TextPart": render_template('email/test-registration-email.txt',
                             student=student, parent=parent, school=school, test=test, \
-                            date=date, time=time, location=location),
+                            date=date, time=time, location=location, contact_info=contact_info),
                 "HTMLPart": render_template('email/test-registration-email.html',
                             student=student, parent=parent, school=school, test=test, \
-                            date=date, time=time, location=location)
+                            date=date, time=time, location=location, contact_info=contact_info)
             }
         ]
     }

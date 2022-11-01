@@ -575,11 +575,12 @@ def centerville():
     date = 'Saturday, December 3rd, 2022'
     time = '9:30am to 1:00pm'
     location = 'Centerville High School Room West 126'
+    contact_info = 'Tom at 513-519-6784'
     submit_text = 'Register'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_test_registration_email(student, parent, school, test, date, time, location)
+        email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
         if email_status == 200:
             return render_template('test-registration-submitted.html', email=parent.email,
             student=student, test=test)
