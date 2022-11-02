@@ -85,8 +85,7 @@ def full_name(User):
 class UserForm(FlaskForm):
     first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
-        validators=[InputRequired()])
+    last_name = StringField('Last name')
     email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     phone = StringField('Phone', render_kw={"placeholder": "Phone"})
