@@ -98,15 +98,17 @@ def main():
     students = User.query.order_by(User.first_name).filter(User.role == 'student')
     active_students = students.filter(User.status == 'active')
     paused_students = students.filter(User.status == 'paused')
-    
+    status_fixes = []
 
     # Use fallback quote if request fails
     quote = None
     quote = requests.get("https://zenquotes.io/api/today")
 
-
     def full_name(user):
-        name = user.first_name + " " + user.last_name
+        if user.last_name == "" or user.last_name is None:
+            name = user.first_name
+        else:
+            name = user.first_name + " " + user.last_name
         return name
     
 ### Test date reminders
@@ -226,13 +228,16 @@ def main():
 
         # Get list of students with low hours
         for row in summary_data:
-            if row[14] == 'Active':
-                if float(row[1]) <= 1.5:
-                    low_active_students.append([row[0], row[1]])
+            for s in students:
+                if row[0] == full_name(s):
+                    if row[14] != s.status:
+                        status_fixes.append([full_name(s), s.status.title(), row[14]])
+            if row[14] == 'Active' and float(row[1]) <= 1.5:
+                low_active_students.append([row[0], row[1]])
         
         spreadsheet_data = {'low_active_students': low_active_students}
 
-        send_spreadsheet_report_email(now, spreadsheet_data)
+        send_spreadsheet_report_email(now, spreadsheet_data, status_fixes)
 
 if __name__ == '__main__':
     main()
