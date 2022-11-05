@@ -181,7 +181,7 @@ def main():
     for student in students:
         name = full_name(student)
 
-        if student.status != 'active' and any(name in nest[0] for nest in week_events_list):
+        if student.status not in ['active', 'prospective'] and any(name in nest[0] for nest in week_events_list):
             print(name + ' is listed as ' + student.status + ' and is on the schedule.')
 
     if len(reminder_list) == 0:
