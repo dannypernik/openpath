@@ -97,6 +97,7 @@ def main():
     reminder_list = []
     students = User.query.order_by(User.first_name).filter(User.role == 'student')
     active_students = students.filter(User.status == 'active')
+    upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
     paused_students = students.filter(User.status == 'paused')
     status_fixes = []
 
@@ -155,7 +156,7 @@ def main():
 
 ### Send reminder email to students ~2 days in advance
     for event in upcoming_events:
-        for student in active_students:
+        for student in upcoming_students:
             name = full_name(student)
             if name in event.get('summary'):
                 reminder_list.append(name)
