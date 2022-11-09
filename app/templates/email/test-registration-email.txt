@@ -4,6 +4,14 @@ Hi {{ parent.first_name }}, thank you for registering {{ student.first_name }} f
 When: {{ date }} from {{ time }}
 Where: {{ location }}
 
+Things to bring:
+- #2 pencils: 2 sharpened, 1 dull
+- Calculator with new batteries
+- Scratch paper
+- Watch with alarm setting turned off
+- Snacks and drink for break time
+- Extra layer of clothing
+
 You're welcome to reply to this email if you have any questions prior to the test date. For assistance on the day of the practice test, you can reach out to {{ contact_info }}.
 
 Thank you,
