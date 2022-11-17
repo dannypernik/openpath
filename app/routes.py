@@ -620,11 +620,6 @@ def download_file (filename):
     return send_from_directory(path, filename, as_attachment=False)
 
 
-@app.route('/practice-test-sent')
-def free_test_sent():
-    return render_template('practice-test-sent.html')
-
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'img/favicons/favicon.ico')
