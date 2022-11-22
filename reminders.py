@@ -185,8 +185,7 @@ def main():
             print(name + ' is listed as ' + student.status + ' and is on the schedule.')
 
     if len(reminder_list) == 0:
-        print("No reminders sent.")
-    print("\n\n" + quote.json()[0]['q'] + " - " + quote.json()[0]['a'] + "\n\n")
+        print("No reminders sent.\n")
 
 ### send weekly reports
     if day_of_week == "Friday":
@@ -242,6 +241,8 @@ def main():
         spreadsheet_data = {'low_active_students': low_active_students}
 
         send_spreadsheet_report_email(now, spreadsheet_data, status_fixes)
+    
+    print("\n\n" + quote.json()[0]['q'] + " - " + quote.json()[0]['a'])
 
 if __name__ == '__main__':
     main()
