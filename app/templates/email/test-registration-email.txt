@@ -7,7 +7,6 @@ Where: {{ location }}
 Things to bring:
 - #2 pencils: 2 sharpened, 1 dull
 - Calculator with new batteries
-- Scratch paper
 - Watch with alarm setting turned off
 - Snacks and drink for break time
 - Extra layer of clothing
