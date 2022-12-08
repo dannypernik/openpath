@@ -407,7 +407,7 @@ def test_dates():
         try:
             db.session.add(date)
             db.session.commit()
-            flash(date.date.strftime('%b %-d') + date.test.upper() + ' added')
+            flash(date.date.strftime('%b %-d') + " " + date.test.upper() + ' added')
         except:
             db.session.rollback()
             flash(date.date.strftime('%b %-d') + date.test.upper() + ' could not be added', 'error')
