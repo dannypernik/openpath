@@ -1,12 +1,17 @@
 @charset "UTF-8";
+@import "bootstrap/bootstrap-grid.min.css";
+@import "menu.css";
+:root {
+  --bs-btn-hover-bg: #2d7ba1;
+  --bs-btn-hover-color: white;
+}
+
 /*!
  * Bootstrap Reboot v5.2.1 (https://getbootstrap.com/)
  * Copyright 2011-2022 The Bootstrap Authors
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
-@import "bootstrap/bootstrap-grid.min.css";
-@import "menu.css";
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
