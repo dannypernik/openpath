@@ -1,17 +1,12 @@
 @charset "UTF-8";
-@import "bootstrap/bootstrap-grid.min.css";
-@import "menu.css";
-:root {
-  --bs-btn-hover-bg: #2d7ba1;
-  --bs-btn-hover-color: white;
-}
-
 /*!
  * Bootstrap Reboot v5.2.1 (https://getbootstrap.com/)
  * Copyright 2011-2022 The Bootstrap Authors
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+@import "bootstrap/bootstrap-grid.min.css";
+@import "menu.css";
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
@@ -61,7 +56,7 @@
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   --bs-root-font-size: 10px;
   --bs-body-font-family: var(--bs-font-sans-serif);
-  --bs-body-font-size: 1rem;
+  --bs-body-font-size: calc(1.305rem + 0.66vw);
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #212529;
@@ -80,6 +75,11 @@
   --bs-link-hover-color: #0a58ca;
   --bs-code-color: #d63384;
   --bs-highlight-bg: #fff3cd;
+}
+@media (min-width: 1200px) {
+  :root {
+    --bs-body-font-size: 1.8rem;
+  }
 }
 
 *,
@@ -121,47 +121,57 @@ h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
 }
 
 h1, .h1 {
-  font-size: calc(1.375rem + 1.5vw);
+  font-size: calc(1.575rem + 3.9vw);
 }
 @media (min-width: 1200px) {
   h1, .h1 {
-    font-size: 2.5rem;
+    font-size: 4.5rem;
   }
 }
 
 h2, .h2 {
-  font-size: calc(1.325rem + 0.9vw);
+  font-size: calc(1.485rem + 2.82vw);
 }
 @media (min-width: 1200px) {
   h2, .h2 {
-    font-size: 2rem;
+    font-size: 3.6rem;
   }
 }
 
 h3, .h3 {
-  font-size: calc(1.3rem + 0.6vw);
+  font-size: calc(1.44rem + 2.28vw);
 }
 @media (min-width: 1200px) {
   h3, .h3 {
-    font-size: 1.75rem;
+    font-size: 3.15rem;
   }
 }
 
 h4, .h4 {
-  font-size: calc(1.275rem + 0.3vw);
+  font-size: calc(1.395rem + 1.74vw);
 }
 @media (min-width: 1200px) {
   h4, .h4 {
-    font-size: 1.5rem;
+    font-size: 2.7rem;
   }
 }
 
 h5, .h5 {
-  font-size: 1.25rem;
+  font-size: calc(1.35rem + 1.2vw);
+}
+@media (min-width: 1200px) {
+  h5, .h5 {
+    font-size: 2.25rem;
+  }
 }
 
 h6, .h6 {
-  font-size: 1rem;
+  font-size: calc(1.305rem + 0.66vw);
+}
+@media (min-width: 1200px) {
+  h6, .h6 {
+    font-size: 1.8rem;
+  }
 }
 
 p {
@@ -1754,27 +1764,27 @@ progress {
 }
 
 .fs-1 {
-  font-size: calc(1.375rem + 1.5vw) !important;
+  font-size: calc(1.575rem + 3.9vw) !important;
 }
 
 .fs-2 {
-  font-size: calc(1.325rem + 0.9vw) !important;
+  font-size: calc(1.485rem + 2.82vw) !important;
 }
 
 .fs-3 {
-  font-size: calc(1.3rem + 0.6vw) !important;
+  font-size: calc(1.44rem + 2.28vw) !important;
 }
 
 .fs-4 {
-  font-size: calc(1.275rem + 0.3vw) !important;
+  font-size: calc(1.395rem + 1.74vw) !important;
 }
 
 .fs-5 {
-  font-size: 1.25rem !important;
+  font-size: calc(1.35rem + 1.2vw) !important;
 }
 
 .fs-6 {
-  font-size: 1rem !important;
+  font-size: calc(1.305rem + 0.66vw) !important;
 }
 
 .fst-italic {
@@ -4617,16 +4627,22 @@ progress {
 }
 @media (min-width: 1200px) {
   .fs-1 {
-    font-size: 2.5rem !important;
+    font-size: 4.5rem !important;
   }
   .fs-2 {
-    font-size: 2rem !important;
+    font-size: 3.6rem !important;
   }
   .fs-3 {
-    font-size: 1.75rem !important;
+    font-size: 3.15rem !important;
   }
   .fs-4 {
-    font-size: 1.5rem !important;
+    font-size: 2.7rem !important;
+  }
+  .fs-5 {
+    font-size: 2.25rem !important;
+  }
+  .fs-6 {
+    font-size: 1.8rem !important;
   }
 }
 @media print {
@@ -4662,8 +4678,13 @@ progress {
   }
 }
 .lead {
-  font-size: calc(2rem + 0.1vw);
+  font-size: calc(1.35rem + 1.2vw);
   font-weight: inherit;
+}
+@media (min-width: 1200px) {
+  .lead {
+    font-size: 2.25rem;
+  }
 }
 
 .display-1 {
@@ -4756,7 +4777,12 @@ progress {
 
 .blockquote {
   margin-bottom: 2rem;
-  font-size: 1.25rem;
+  font-size: calc(1.35rem + 1.2vw);
+}
+@media (min-width: 1200px) {
+  .blockquote {
+    font-size: 2.25rem;
+  }
 }
 .blockquote > :last-child {
   margin-bottom: 0;
@@ -4776,7 +4802,7 @@ progress {
   --bs-btn-padding-x: 0.75rem;
   --bs-btn-padding-y: 0.375rem;
   --bs-btn-font-family: ;
-  --bs-btn-font-size: 1rem;
+  --bs-btn-font-size: calc(1.305rem + 0.66vw);
   --bs-btn-font-weight: 400;
   --bs-btn-line-height: 1.5;
   --bs-btn-color: #212529;
@@ -4804,6 +4830,11 @@ progress {
   border-radius: var(--bs-btn-border-radius);
   background-color: var(--bs-btn-bg);
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+@media (min-width: 1200px) {
+  .btn {
+    --bs-btn-font-size: 1.8rem;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .btn {
@@ -5140,15 +5171,25 @@ progress {
 .btn-lg {
   --bs-btn-padding-y: 0.5rem;
   --bs-btn-padding-x: 1rem;
-  --bs-btn-font-size: 1.25rem;
+  --bs-btn-font-size: calc(1.35rem + 1.2vw);
   --bs-btn-border-radius: 0.5rem;
+}
+@media (min-width: 1200px) {
+  .btn-lg {
+    --bs-btn-font-size: 2.25rem;
+  }
 }
 
 .btn-sm {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
-  --bs-btn-font-size: 0.875rem;
+  --bs-btn-font-size: calc(1.285rem + 0.42vw);
   --bs-btn-border-radius: 0.25rem;
+}
+@media (min-width: 1200px) {
+  .btn-sm {
+    --bs-btn-font-size: 1.6rem;
+  }
 }
 
 .modal {
@@ -5697,6 +5738,12 @@ progress {
     -webkit-overflow-scrolling: touch;
   }
 }
+.btn, input[type=submit] {
+  --bs-btn-hover-bg: #2d7ba1;
+  --bs-btn-hover-color: white;
+  --bs-btn-font-size: 1.8rem;
+}
+
 html {
   height: 100%;
 }
@@ -5705,7 +5752,7 @@ body {
   height: 100%;
   font-family: "Montserrat", "Helvetica", sans-serif;
   color: #1C4D65;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   display: flex;
   flex-direction: column;
   -ms-overflow-style: none;
@@ -5726,48 +5773,38 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 }
 
 h1, .h1 {
-  font-size: 2.5rem;
+  font-family: "Montserrat Alternates", "Helvetica", sans-serif;
+  font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
 }
 
 h2, .h2 {
-  font-size: 2rem;
+  font-size: calc(2.2rem + 0.5vw);
 }
 
 h3, .h3 {
-  font-size: 1.75rem;
+  font-size: calc(2rem + 0.5vw);
 }
 
 h4, .h4 {
-  font-size: 1.5rem;
+  font-size: calc(1.8rem + 0.25vw);
 }
 
 h5, .h5 {
-  font-size: 1.25rem;
+  font-size: calc(1.6rem + 0.25vw);
 }
 
 h6, .h6 {
-  font-size: 1rem;
+  font-size: calc(1.4rem + 0.25vw);
 }
 
-@media screen and (max-width: 575px) {
-  h1, .h1 {
-    font-size: 2rem;
-  }
-  h2, .h2 {
-    font-size: 1.75rem;
-  }
-  h3, .h3 {
-    font-size: 1.5rem;
-  }
-}
 .row {
   margin-left: 0;
   margin-right: 0;
 }
 
 input, textarea {
-  font-size: 1.6rem;
+  font-size: var(--bs-btn-font-size);
   line-height: 2.5rem;
   padding: 1rem;
   border: none;
@@ -5894,7 +5931,7 @@ a:hover {
   color: #4ad1cc;
 }
 
-.inverse a:hover, .inverse a:hover h2, .inverse a:hover .h2 {
+.inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
   font-weight: 600;
   color: white;
 }
@@ -5920,8 +5957,15 @@ button, .btn, input[type=submit] {
   border: 2px solid #1C4D65;
   color: white;
   transition: 0.3s;
-  font-size: 1.7rem;
   font-weight: 600;
+}
+
+.lead {
+  font-size: calc(2rem + 0.1vw);
+}
+
+.sm {
+  font-size: 1.6rem;
 }
 
 input[type=submit] {
@@ -5934,6 +5978,10 @@ a.btn {
 
 .white {
   color: white;
+}
+
+.grey {
+  color: #888;
 }
 
 .btn.sec {
@@ -5969,6 +6017,7 @@ a.btn {
 }
 
 .btn.sm {
+  font-size: 1.6rem;
   font-weight: 400;
   border-width: 1px;
   margin: 0;
@@ -6034,11 +6083,6 @@ div.alert {
 
 .section-margin {
   padding-top: calc(2rem + 3vw);
-}
-
-.page-title {
-  font-family: "Montserrat Alternates", "Helvetica", sans-serif;
-  font-size: calc(2.25rem + 1vw);
 }
 
 .content {
@@ -6189,6 +6233,7 @@ div.alert {
 
 #home-tagline {
   margin-top: 2rem;
+  margin-bottom: 4rem;
   font-size: calc(1.75rem + 1vw);
   font-weight: 700;
 }
@@ -6219,8 +6264,7 @@ div.alert {
 .home-section {
   min-height: 100vh;
   overflow: auto;
-  margin-top: -60px;
-  padding-top: calc(7rem + 3vw);
+  padding-top: calc(8rem + 3vw);
 }
 
 .home-section.end {
@@ -6258,14 +6302,6 @@ div.alert {
   height: 7rem;
   fill: #4ad1cc;
   margin-bottom: 2rem;
-}
-
-.usp-title {
-  margin-bottom: 1.5rem;
-}
-
-.usp-text {
-  color: #888;
 }
 
 .profile-pic {

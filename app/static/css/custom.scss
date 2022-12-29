@@ -1,19 +1,17 @@
 $font-size-root: 10px;
-$lead-font-size: calc(2rem + 0.1vw);
+$font-size-base: 1.8rem;
+$font-size-lead: calc(2rem + 0.1vw);
+$font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
 $enable-smooth-scroll: false;
 $primary-color: #1C4D65;
 $secondary-color: #4ad1cc;//58bba4;
 $highlight-color: #d35137;//e97435;;
-$grey: #ddd;
+$grey: #888;
+$light-grey: #ddd;
 $body-font: 'Montserrat', 'Helvetica', sans-serif;
 $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
-
-:root {
-  --bs-btn-hover-bg: #{lighten($primary-color, 15%)};
-  --bs-btn-hover-color: white;
-}
 
 @import "../scss/bootstrap-reboot.scss";
 @import "bootstrap/bootstrap-grid.min.css";
@@ -23,10 +21,15 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 @import "../scss/_modal.scss";
 @import "../scss/_close.scss";
 @import "../scss/_tables.scss";
-
 @import "menu.css";
 
 // Sitewide stylings //
+.btn, input[type='submit'] {
+  --bs-btn-hover-bg: #{lighten($primary-color, 15%)};
+  --bs-btn-hover-color: white;
+  --bs-btn-font-size: #{$font-size-base};
+}
+
 html {
   height: 100%;
 }
@@ -35,7 +38,7 @@ body {
   height: 100%;
   font-family: $body-font;
   color: $primary-color;
-  font-size: 1.6rem;
+  font-size: $font-size-base;
   display: flex;
   flex-direction:  column;
   -ms-overflow-style: none;
@@ -49,47 +52,36 @@ p {
   margin-bottom: 2rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   margin-bottom: 1rem;
   font-weight: 400;
   line-height: 1.2;
 }
 
-h1 {
-  font-size: 2.5rem;
+h1, .h1 {
+  font-family: $title-font;
+  font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
 }
 
-h2 {
-  font-size: 2rem;
+h2, .h2 {
+  font-size: calc(2.2rem + 0.5vw);
 }
 
-h3 {
-  font-size: 1.75rem;
+h3, .h3 {
+  font-size: calc(2rem + 0.5vw);
 }
 
-h4 {
-  font-size: 1.5rem;
+h4, .h4 {
+  font-size: calc(1.8rem + 0.25vw);
 }
 
-h5 {
-  font-size: 1.25rem;
+h5, .h5 {
+  font-size: calc(1.6rem + 0.25vw);
 }
 
-h6 {
-  font-size: 1rem;
-}
-
-@media screen and (max-width: 575px) {
-  h1 {
-    font-size: 2rem;
-  }
-  h2 {
-    font-size: 1.75rem;
-  }
-  h3 {
-    font-size: 1.5rem;
-  }
+h6, .h6 {
+  font-size: calc(1.4rem + 0.25vw);
 }
 
 .row {
@@ -98,7 +90,7 @@ h6 {
 }
 
 input, textarea {
-  font-size: 1.6rem;
+  font-size: var(--bs-btn-font-size);
   line-height: 2.5rem;
   padding: 1rem;
   border: none;
@@ -242,7 +234,7 @@ a:hover {
   color: $secondary-color;
 }
 
-.inverse a:hover, .inverse a:hover h2 {
+.inverse a:hover, .inverse a:hover h4 {
   font-weight: 600;
   color: white;
 }
@@ -268,8 +260,15 @@ button, .btn, input[type="submit"] {
   border: 2px solid $primary-color;
   color: white;
   transition: 0.3s;
-  font-size: 1.7rem;
   font-weight: 600;
+}
+
+.lead {
+  font-size: $font-size-lead;
+}
+
+.sm {
+  font-size: $font-size-sm;
 }
 
 input[type="submit"] {
@@ -282,6 +281,10 @@ a.btn {
 
 .white {
   color: white;
+}
+
+.grey {
+  color: $grey;
 }
 
 .btn.sec {
@@ -317,6 +320,7 @@ a.btn {
 }
 
 .btn.sm {
+  font-size: $font-size-sm;
   font-weight: 400;
   border-width: 1px;
   margin: 0;
@@ -325,7 +329,7 @@ a.btn {
 
 .btn.cta {
   margin-top: calc(2rem + 1vw);
-  font-size: $lead-font-size;
+  font-size: $font-size-lead;
 }
 
 .row:hover > div > .btn.edit {
@@ -384,11 +388,6 @@ div.alert {
   padding-top: calc(2rem + 3vw);
 }
 
-.page-title {
-  font-family: $title-font;
-  font-size: calc(2.25rem + 1vw);
-}
-
 .content {
   flex: 1 0 auto;
 }
@@ -441,7 +440,7 @@ div.alert {
 }
 
 .drawer__back {
-  border: solid $grey;
+  border: solid $light-grey;
   border-width: 0 1px 1px 0;
   display: inline-block;
   padding: 5px;
@@ -453,7 +452,7 @@ div.alert {
 
 .menu-link {
   height: 60px;
-  border-bottom: 1px solid $grey;
+  border-bottom: 1px solid $light-grey;
   color: $primary-color;
   transition: 0.3s;
 }
@@ -555,6 +554,7 @@ div.alert {
 
 #home-tagline {
   margin-top: 2rem;
+  margin-bottom: 4rem;
   font-size: calc(1.75rem + 1vw);
   font-weight: 700;
 }
@@ -585,8 +585,7 @@ div.alert {
 .home-section {
   min-height: 100vh;
   overflow: auto;
-  margin-top: -60px;
-  padding-top: calc(7rem + 3vw);
+  padding-top: calc(8rem + 3vw);
 }
 
 .home-section.end {
@@ -624,14 +623,6 @@ div.alert {
   height: 7rem;
   fill: $secondary-color;
   margin-bottom: 2rem;
-}
-
-.usp-title {
-  margin-bottom: 1.5rem;
-}
-
-.usp-text {
-  color: #888;
 }
 
 // About page //

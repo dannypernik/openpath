@@ -38,8 +38,8 @@
         <h1 class="mb-2">Test dates and deadlines</h1>
         <p>
           In addition to the weekend dates listed below, schools and districts may offer the
-          SAT or ACT on a school day. Schools handle student registration for these dates, so
-          please contact your school to learn more. 
+          SAT<sup>&#174;</sup> or ACT<sup>&#174;</sup> on a school day. Schools handle student
+          registration for these dates, so please contact your school to learn more. 
         </p>
         <a href="{{ url_for('test_reminders') }}" class="btn highlight mt-1 d-block w-fit" onclick="dataLayer.push({'event': 'get-reminders'});">
           Get registration reminders for your test dates
@@ -47,7 +47,7 @@
       {% endif %}
 
       {% for t in tests %}
-        <h1>{{ t[0].upper() }} dates</h1>
+        <h1>{{ t[0].upper() }}<sup class="h4">&#174;</sup> dates</h1>
         
         <div class="table-container mb-4">
           <table class="table m-0">
@@ -123,6 +123,10 @@
     </div>
   </div>
 {% endblock container %}
+
+{% block footnote %}
+  {% include "_disclaimer.html" %}
+{% endblock footnote %}
 
 {% block end_scripts %}
   <script>
