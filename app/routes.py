@@ -204,6 +204,12 @@ def set_password(token):
     return render_template('set-password.html', form=form)
 
 
+@app.route('/study-club')
+def study_club():
+    
+    return render_template('study-club.html', title="Open Path Study Club")
+
+
 @app.route('/users', methods=['GET', 'POST'])
 @admin_required
 def users():

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block styles_scripts %}
+  {{ super() }}
+  <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
+{% endblock styles_scripts  %}
+
+{% block content %}
+  <h1 class="mb-2">Join the Open Path Study Club</h1>
+  <p class="lead grey">Tutor led. Student empowered. Time well spent.</p>
+  
+  <p>
+    The saying is true that if you can teach it, you know it. The Open Path Study Club is a
+    unique opportunity for students give and receive support on the SAT and ACT with peers
+    around the country and the world.
+  </p>
+  <p>
+    Each Study Club session is led by a tutor, and students
+    take turns bringing questions to the group. If another student knows how to arrive at the
+    answer, both students (and any others interested in understanding that question) will join
+    a Zoom breakout room to work that problem while the rest of the group moves onto another
+    student's question.
+  </p>
+  <p>
+    Once the initial student sufficiently understands the answer, they will  rejoin the main
+    Zoom room and be given the chance to explain the solution to the group. This will allow
+    the tutor to confirm that a valid approach has been taken and add any further suggestions.
+  </p>
+  <p>
+    This novel format allows session time to be used more efficiently while also making tutoring
+    more affordable.
+  </p>
+  <p>
+    <strong>Price: $79 a month</strong><br>
+    <i>$25 a month with a private tutoring package</i>
+  </p>
+  <a href="javascript: appendHelcimPayIframe('checkoutToken')" class="btn">Subscribe</a>
+
+{% endblock content %}
