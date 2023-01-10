@@ -7,7 +7,7 @@
 
 
   <form id="add-student-form" class="hidden-form" action="" method="post">
-    <h1 class="mb-3 me-2 d-inline-block">Add student</h1>
+    <h2 class="mb-3 me-2 d-inline-block">Add student</h2>
     <a id="hide-form" href="#">Hide</a>
 
     {{ form.hidden_tag() }}
@@ -26,7 +26,7 @@
 
     {% for t in tests %}
       <div class="row mt-3">
-        <h3 class="mb-1">{{ t.upper() }} dates:</h3>
+        <h4 class="mb-1">{{ t.upper() }} dates:</h4>
         <div class="d-flex flex-wrap">
           {% for d in upcoming_dates %}
             {% if d.test == t %}
@@ -44,30 +44,30 @@
 
     <div class="row mt-3 mb-1">
       <div class="col">
-        <h3>Tutor:</h3>
+        <h4>Tutor:</h4>
         {{ form.tutor_id }}
       </div>
 
       <div class="col">
-        <h3>Status:</h3>
+        <h4>Status:</h4>
         {{ form.status }}
       </div>
     </div>
     {{ form.submit(class="mb-3") }}
   </form>
   {% for status in statuses %}
-    <h1 class="slide-toggle mb-2 mt-3">{{ status.title() }} students</h1>
+    <h2 class="slide-toggle mb-2 mt-3">{{ status.title() }} students</h2>
 
     <div id="{{ status }}-students" class="student-list">
       {% for s in students %}
         {% if s.status == status %}
           <div class="row justify-content-centered">
             <div class="col">
-              <h3 class="my-1">
+              <h4 class="my-1">
                 <a class="semibold" href="{{ url_for('edit_user', id=s.id) }}">
                   {{ s.first_name }} {{ s.last_name }}
                 </a>
-              </h3>
+              </h4>
 
               {% if status == 'active' or status == 'prospective' %}
                 <a href="mailto:{{ s.email }}" target="_blank">
@@ -113,11 +113,11 @@
   {% for s in other_students %}
     <div class="row justify-content-centered">
       <div class="col">
-        <h2 class="my-1">
+        <h4 class="my-1">
           <a href="{{ url_for('edit_user', id=s.id) }}">
             {{ s.first_name }} {{ s.last_name }} ({{ s.status }})
           </a>
-        </h2>
+        </h4>
       </div>
     </div>
   {% endfor %}
