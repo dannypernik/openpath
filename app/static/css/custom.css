@@ -6113,10 +6113,6 @@ div.alert {
   max-width: 100%;
 }
 
-#menu-title {
-  padding-top: 2px;
-}
-
 #menu-btn {
   display: flex;
   justify-content: flex-end;
