@@ -14,14 +14,15 @@
     {{ form.student_name }}
     {{ form.student_last_name(onchange="update()") }}
     {{ form.student_email }}
-    {{ form.parent_name }}
-    <input type="checkbox" id="same-last-name" checked>
-    <label for="same-last-name" class="mt-2 ms-2">Same last name as student</label>
-    {{ form.parent_last_name(class="d-none") }}
-    {{ form.parent_email }}
     {{ form.secondary_email }}
     {{ form.timezone }}
     {{ form.location }}
+    {{ form.parent_id(class="mt-2") }}
+    <div id="new-parent-info">
+      {{ form.parent_name }}
+      {{ form.parent_last_name }}
+      {{ form.parent_email }}
+    </div>
 
     {% for t in tests %}
       <div class="row mt-3">
@@ -100,19 +101,6 @@
                       </a>{{ ";" if not loop.last else "" }}
                     {% endfor %}
                   </li>
-                  <!-- <li>Timezone:
-                    {% if s.timezone == -2 %}
-                        Pacific
-                      {% elif s.timezone == -1 %}
-                          Mountain
-                      {% elif s.timezone == 0 %}
-                          Central
-                      {% elif s.timezone == 1 %}
-                          Eastern
-                      {% else %}
-                          {{ s.timezone }}
-                    {% endif %}
-                  </li> -->
                 </ul>
               {% endif %}
             </div>
@@ -173,8 +161,17 @@
       document.getElementById("parent_last_name").value = updateValue;
     }
     
-    document.querySelector('#same-last-name').onclick = function() {
-      document.getElementById('parent_last_name').classList.toggle('d-none');
-    }
+   //document.querySelector('#same-last-name').onclick = function() {
+     // document.getElementById('parent_last_name').classList.toggle('d-none');
+    //}
+
+    document.getElementById('parent_id').addEventListener('change', function() {
+      if(this.value == 0) {
+        document.getElementById('new-parent-info').style.display = 'block';
+      }
+      else {
+        document.getElementById('new-parent-info').style.display = 'none';
+      }
+    });
   </script>
 {% endblock end_scripts %}

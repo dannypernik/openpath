@@ -341,6 +341,10 @@ def edit_user(id):
 def students():
     form = StudentForm()
     students = User.query.order_by(User.first_name).filter_by(role='student')
+    parents = User.query.order_by(User.first_name).filter_by(role='parent')
+    parent_list = [(0,'New parent')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
+    form.parent_id.choices = parent_list
+    print(parent_list)
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, u.first_name + " " + u.last_name) for u in tutors]
     form.tutor_id.choices = tutor_list
@@ -353,13 +357,16 @@ def students():
             email=form.student_email.data, phone=form.student_phone.data, timezone=form.timezone.data, \
             location=form.location.data, status=form.status.data, \
             tutor_id=form.tutor_id.data, role='student')
-        parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
-            email=form.parent_email.data, secondary_email=form.secondary_email.data, \
-            phone=form.parent_phone.data, timezone=form.timezone.data, role='parent')
-
+        if form.parent_id.data == 0:
+            parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
+                email=form.parent_email.data, secondary_email=form.secondary_email.data, \
+                phone=form.parent_phone.data, timezone=form.timezone.data, role='parent')
+        else:
+            parent = User.query.filter_by(id=form.parent_id.data).first()
         try:
             db.session.add(parent)
             db.session.flush()
+            print(form.parent_id.data)
             student.parent_id = parent.id
             db.session.add(student)
             db.session.commit()

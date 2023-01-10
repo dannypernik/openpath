@@ -104,7 +104,7 @@ class UserForm(FlaskForm):
     def __init__(self, original_email, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
         self.original_email = original_email
-    
+
     def validate_email(self, email):
         if email.data != self.original_email:
             user = User.query.filter_by(email=email.data).first()
@@ -120,12 +120,10 @@ class StudentForm(FlaskForm):
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     student_phone = StringField('Student phone', render_kw={"placeholder": "Student phone"})
-    parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"}, \
-        validators=[InputRequired()])
+    parent_id = SelectField('Parent', coerce=int)
+    parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
     parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
-    parent_email = StringField('Parent Email address', render_kw={"placeholder": "Parent Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
-            validate_email])
+    parent_email = StringField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
     secondary_email = secondary_email = StringField('Secondary email', render_kw={"placeholder": "Secondary email"})
     parent_phone = StringField('Parent phone', render_kw={"placeholder": "Parent phone"})
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
