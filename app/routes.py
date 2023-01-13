@@ -228,7 +228,7 @@ def users():
         user = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data, secondary_email=form.secondary_email.data, \
             phone=form.phone.data, timezone=form.timezone.data, location=form.location.data, \
-            role=form.role.data, status='active', is_admin=False)
+            role=form.role.data, status='active', is_admin=False, session_reminders=True)
         user.tutor_id=form.tutor_id.data
         user.status=form.status.data
         user.parent_id=form.parent_id.data
