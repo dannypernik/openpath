@@ -4,7 +4,6 @@ $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
-$enable-smooth-scroll: false;
 $primary-color: #1C4D65;
 $secondary-color: #4ad1cc;//58bba4;
 $highlight-color: #d35137;//e97435;;
@@ -32,6 +31,7 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 
 html {
   height: 100%;
+  scroll-padding-top: 60px;
 }
 
 body {
@@ -571,8 +571,7 @@ div.alert {
 .home-section {
   min-height: 100vh;
   overflow: auto;
-  padding-top: calc(8rem + 3vw);
-  scroll-margin-bottom: 60px;
+  padding-top: calc(3rem + 2vw);
 }
 
 .home-section.end {

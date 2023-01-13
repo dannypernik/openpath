@@ -91,6 +91,11 @@
 :root {
   font-size: var(--bs-root-font-size);
 }
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    scroll-behavior: smooth;
+  }
+}
 
 body {
   margin: 0;
@@ -5746,6 +5751,7 @@ progress {
 
 html {
   height: 100%;
+  scroll-padding-top: 60px;
 }
 
 body {
@@ -6250,8 +6256,7 @@ div.alert {
 .home-section {
   min-height: 100vh;
   overflow: auto;
-  padding-top: calc(8rem + 3vw);
-  scroll-margin-bottom: 60px;
+  padding-top: calc(3rem + 2vw);
 }
 
 .home-section.end {
