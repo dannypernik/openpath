@@ -63,7 +63,7 @@
           rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css', u=last_updated) }}">
       {% endblock styles_scripts %}
-      
+
       <script async src="{{ url_for('static', filename='js/menu.js') }}"></script>
     {% endblock head %}
   </head>
@@ -72,36 +72,14 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T7HJRW6"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    
+
     <div class="content">
       {% block navbar %}
-        <div class="site-nav">
-          <div class="row justify-content-center">
-            <div class="col-10">
-              <div class="row">
-                <div class="col-9">
-                  <a href="{{ url_for('index') }}">
-                    <img id="nav-img" src="{{ url_for('static', filename='img/logo-header.svg') }}" alt="Open Path Tutoring">
-                  </a>
-                </div>
-                <div class="col-3">
-                  <a id="menu-btn" href="#" data-drawer-trigger aria-controls="site-menu" aria-expanded="false">
-                    <div id="menu-title" class="d-none d-sm-block">
-                      {% if current_user.is_authenticated %}
-                        {{ current_user.first_name }} {{ current_user.last_name }}
-                      {% else %}
-                        Menu
-                      {% endif %}
-                    </div>
-                    <img id="menu-icon" src="{{ url_for('static', filename='img/menu.svg') }}" alt="">
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="nav-gap"></div>
-        
+
+        {% include "_header-base.html" %}
+
+        <!-- <div class="nav-gap"></div> -->
+
         {% block alerts %}
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -119,9 +97,6 @@
         {% endblock alerts %}
 
         <div class="section-margin"></div>
-
-        {% include '_menu-base.html' %}
-
       {% endblock navbar %}
 
       {% block container %}

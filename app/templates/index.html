@@ -81,25 +81,11 @@
     </div>
   </div>
 
-  <div class="row sticky-header justify-content-center">
-    <div class="col-10">
-      <div class="row">
-        <div class="col-9">
-          <a href="#contact">
-            <img id="nav-img" src="{{ url_for('static', filename='img/logo-header.svg') }}" alt="Open Path Tutoring">
-          </a>
-        </div>
-        <div class="col-3">
-          <a id="menu-btn" data-drawer-trigger aria-controls="site-menu" aria-expanded="false">
-            <div id="menu-title" class="d-none d-sm-block">Menu</div>
-            <img id="menu-icon" src="{{ url_for('static', filename='img/menu.svg') }}" alt="">
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% include "_header-index.html" %}
 
-  {% include "_menu-index.html" %}
+  <!-- <div class="nav-gap">
+    
+  </div> -->
 
   <div id="benefits" class="home-section">
     <div class="row text-center justify-content-center">
