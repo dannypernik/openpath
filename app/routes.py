@@ -356,11 +356,12 @@ def students():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
             email=form.student_email.data, phone=form.student_phone.data, timezone=form.timezone.data, \
             location=form.location.data, status=form.status.data, \
-            tutor_id=form.tutor_id.data, role='student')
+            tutor_id=form.tutor_id.data, role='student', session_reminders=True)
         if form.parent_id.data == 0:
             parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
                 email=form.parent_email.data, secondary_email=form.secondary_email.data, \
-                phone=form.parent_phone.data, timezone=form.timezone.data, role='parent')
+                phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
+                session_reminders=True)
         else:
             parent = User.query.filter_by(id=form.parent_id.data).first()
         try:
