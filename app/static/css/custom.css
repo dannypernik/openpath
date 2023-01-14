@@ -6067,6 +6067,8 @@ button:hover, .btn:hover, input[type=submit]:hover, .menu-link:hover {
 }
 
 div.alert {
+  position: absolute;
+  width: 100%;
   padding: 0.5rem 0;
   text-align: center;
   font-size: 1.5rem;
