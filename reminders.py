@@ -127,13 +127,10 @@ def main():
         for d in s.get_dates():
             if d.reg_date == today + datetime.timedelta(days=5):
                 send_registration_reminder_email(s, d)
-                print('Registration reminder for ' + d.date + ' sent to ' + full_name(s))
             elif d.late_date == today + datetime.timedelta(days=5):
                 send_late_registration_reminder_email(s, d)
-                print('Late registration reminder for ' + d.date + ' sent to ' + full_name(s))
             elif d.date == today + datetime.timedelta(days=6):
                 send_test_reminders_email(s, d)
-                print('Test day reminder for ' + d.date + ' sent to ' + full_name(s))
 
     for id in calendars:
         bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start,
