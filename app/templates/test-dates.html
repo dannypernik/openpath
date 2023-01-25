@@ -49,7 +49,7 @@
       {% for t in tests %}
         <h1>{{ t[0].upper() }}<sup class="h4">&#174;</sup> dates</h1>
         
-        <div class="table-container mb-3">
+        <div class="table-container mb-2">
           <table class="table m-0">
             <thead>
               <tr>
@@ -93,7 +93,9 @@
             </tbody>
           </table>
         </div>
-        <p class="ms-2">* Anticipated test date</p>
+        {% if 'unconfirmed' in upcoming_weekend_dates|map(attribute='status') %}
+          <p class="ms-2">* Anticipated test date</p>
+        {% endif %}
       {% endfor %}
                 
       {% if current_user.is_admin %}
