@@ -94,7 +94,9 @@
           </table>
         </div>
         {% if 'unconfirmed' in upcoming_weekend_dates|map(attribute='status') %}
-          <p class="ms-2">* Anticipated test date</p>
+          {% if t.test == 'sat' %}
+            <p class="ms-2">* Anticipated test date</p>
+          {% endif %}
         {% endif %}
       {% endfor %}
                 
@@ -117,7 +119,7 @@
         {% endfor %}
       {% else %}
         <div class="text-center">
-          <a href="{{ url_for('test_reminders') }}" class="btn mt-1 d-block w-fit" onclick="dataLayer.push({'event': 'get-reminders'});">
+          <a href="{{ url_for('test_reminders') }}" class="btn mt-4 d-block w-fit" onclick="dataLayer.push({'event': 'get-reminders'});">
             Get registration reminders for your test dates
           </a>
           <a href="{{ url_for('index') }}" class="btn clr sm">Learn more about Open Path test prep</a>
