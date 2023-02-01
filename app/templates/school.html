@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <div class="row g-0 justify-content-center">
+    <div class="col-11 col-sm-10 col-lg-9">
+      {% block school_img %}{% endblock school_img %}
+
+      {% block intro %}{% endblock intro %}
+
+      {% block form %}
+        <form method="post">
+          {{ form.hidden_tag() }}
+          <div class="row">
+            <div class="col-12 col-sm-6 col-xl-4">
+              {{ form.student_first_name }}
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+              {{ form.student_last_name }}
+            </div>
+ 
+            <div class="col-12 col-xl-4">
+              {{ form.grad_year.label(class="mx-2 mt-2") }}
+              {{ form.grad_year }}
+            </div>
+            <div class="col-12 col-sm-6">
+              {{ form.parent_first_name }}
+            </div>
+            <div class="col-12 col-sm-6">
+              {{ form.parent_email }}
+              {{ form.school(value=school, class="d-none") }}
+            </div>
+            <div class="col-12">
+              {{ form.submit(value=submit_text) }}
+            </div>
+          </div>
+        </form>
+      {% endblock form %}
+    </div>
+  </div>
+
+  {% block sample_img %}
+    <div class="row g-4 justify-content-center">
+      <div class="col-11 col-sm-10 col-lg-8">
+        <h4 class="ms-2 mt-3"><strong>Sample Score Analysis</strong></h4>
+        <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}">
+      </div>
+    </div>
+  {% endblock sample_img %}
+{% endblock container %}

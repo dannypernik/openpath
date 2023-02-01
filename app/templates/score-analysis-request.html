@@ -1,50 +1,12 @@
-{% extends "base.html" %}
+{% extends "school.html" %}
 
-{% block container %}
-  <div class="row justify-content-center">
-    <div class="col-11 col-sm-10 col-lg-8">
-      {% block school_img %}{% endblock school_img %}
+{% block school_img %}{% endblock school_img %}
 
-      {% block intro %}
-        <h1>Get your free practice {{ test }} score analysis</h1>
-        <p>
-          If your student took the practice {{ test }} offered by {{ school }}
-          in partnership with Open Path Tutoring, please submit the information
-          below to receive your free score analysis.
-        </p>
-      {% endblock intro %}
-
-      {% block form %}
-        <form method="post">
-          {{ form.hidden_tag() }}
-          <div class="row">
-            <div class="col-12 col-sm-6">
-              {{ form.student_first_name }}
-            </div>
-            <div class="col-12 col-sm-6">
-              {{ form.student_last_name }}
-            </div>
-          </div>
-
-          <div class="row mb-4">
-            <div class="col">
-              {{ form.parent_first_name }}
-              {{ form.parent_email }}
-              {{ form.school(value=school, class="d-none") }}
-              <p class="mt-2">
-                {{ form.submit(value=submit_text) }}
-              </p>
-            </div>
-          </div>
-        </form>
-      {% endblock form %}
-    </div>
-  </div>
-
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-11 col-lg-10">
-      <h3 class="ms-2"><strong>Sample Score Analysis</strong></h3>
-      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}">
-    </div>
-  </div>
-{% endblock container %}
+{% block intro %}
+  <h1>Get your free practice {{ test }} score analysis</h1>
+  <p>
+    If your student took the practice {{ test }} offered by {{ school }}
+    in partnership with Open Path Tutoring, please submit the information
+    below to receive your free score analysis.
+  </p>
+{% endblock intro %}

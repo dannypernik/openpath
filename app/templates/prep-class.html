@@ -1,0 +1,24 @@
+{% extends 'school.html' %}
+
+{% block intro %}
+  <h1>{{ test }} Study Club</h1>
+  <p>
+    {{ school }} is partnering with Open Path Tutoring to offer a weekly {{ test }} skills class.
+    Students will learn specific strategies tailored to the test while practicing the most
+    commonly tested concepts.
+  </p>
+  <p>
+    <strong>What:</strong> {{ test }} Study Club with {{ school }}<br>
+    <strong>When:</strong> {{ time }}<br>
+    <strong>Where:</strong> {{ location }}<br>
+    <strong>Cost:</strong> {{ cost }}
+  </p>
+  <p>
+    <strong>Who:</strong> The class will be led by Open Path Tutoring founder Danny Pernik, who
+    has assisted hundreds of students with the SAT and ACT over the past 8 years. You can read
+    more about him <a href="{{ url_for('about') }}" target="_blank">here</a> or
+    <a href="{{ url_for('index', _anchor='contact') }}" target="_blank">get in touch</a>. 
+  </p>
+{% endblock intro %}
+
+{% block sample_img %}{% endblock sample_img %}

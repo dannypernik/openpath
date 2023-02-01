@@ -1,0 +1,9 @@
+Hi {{ parent.first_name }}, this email confirms that {{ student.first_name }} {{ student.last_name }} is registered for the {{ test }} Study Club at {{ school }}. We'll be in touch regarding next steps. In the meantime, you're welcome to reply to this email with any questions.
+
+What: {{ test }} Study Club with {{ school }}
+When: {{ time }}
+Where: {{ location }}
+Cost: $150 for 10 weeks (due prior to first class)
+
+Student name: {{ student.first_name }} {{ student.last_name }}
+Graduation year: {{ student.grad_year }}

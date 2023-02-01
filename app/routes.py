@@ -10,7 +10,8 @@ from app.models import User, TestDate, UserTestDate
 from werkzeug.urls import url_parse
 from datetime import datetime
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
-    send_test_strategies_email, send_score_analysis_email, send_test_registration_email
+    send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
+    send_prep_class_email
 from functools import wraps
 
 @app.before_request
@@ -534,7 +535,8 @@ def griffin():
     test='ACT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
@@ -552,7 +554,8 @@ def appamada():
     test='mini SAT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
@@ -570,7 +573,8 @@ def huntington_surrey():
     test='SAT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
@@ -579,6 +583,28 @@ def huntington_surrey():
             flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('score-analysis-request.html', form=form, school=school, test=test,
         submit_text=submit_text)
+
+
+@app.route('/kaps', methods=['GET', 'POST'])
+def kaps():
+    form = ScoreAnalysisForm()
+    school='Katherine Anne Porter School'
+    test='SAT'
+    time='10 weekly sessions on (Mondays from xx:xx - xx:xx)'
+    location='KAPS via Zoom'
+    cost='$150 for 10 weeks (due prior to first class)'
+    submit_text='Sign up'
+    if form.validate_on_submit():
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = send_prep_class_email(student, parent, school, test, time, location, cost) 
+        if email_status == 200:
+            return render_template('registration-confirmed.html', email=form.parent_email.data)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('kaps.html', form=form, school=school, test=test, time=time,
+        location=location, cost=cost, submit_text=submit_text)
 
 
 @app.route('/centerville', methods=['GET', 'POST'])
@@ -592,7 +618,8 @@ def centerville():
     contact_info = 'Tom at 513-519-6784'
     submit_text = 'Register'
     if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data)
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
         if email_status == 200:
@@ -600,7 +627,7 @@ def centerville():
             student=student, test=test)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('test-registration.html', form=form, school=school, test=test, \
+    return render_template('centerville.html', form=form, school=school, test=test, \
         date=date, time=time, location=location, submit_text=submit_text)
 
 
