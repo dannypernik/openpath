@@ -585,6 +585,25 @@ def huntington_surrey():
         submit_text=submit_text)
 
 
+@app.route('/ati-austin', methods=['GET', 'POST'])
+def ati_austin():
+    form = ScoreAnalysisForm()
+    school='ATI Austin'
+    test='SAT'
+    submit_text='Submit'
+    if form.validate_on_submit():
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = send_score_analysis_email(student, parent, school)
+        if email_status == 200:
+            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('ati.html', form=form, school=school, test=test,
+        submit_text=submit_text)
+
+
 @app.route('/kaps', methods=['GET', 'POST'])
 def kaps():
     form = ScoreAnalysisForm()
@@ -628,6 +647,30 @@ def centerville():
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('centerville.html', form=form, school=school, test=test, \
+        date=date, time=time, location=location, submit_text=submit_text)
+
+
+@app.route('/spartans', methods=['GET', 'POST'])
+def spartans():
+    form = ScoreAnalysisForm()
+    school = 'Spartans Swimming'
+    test = 'ACT, SAT, or PSAT'
+    date = 'Saturday, December 3rd, 2022'
+    time = '9:30am to 1:00pm'
+    location = 'Zoom'
+    contact_info = ''
+    submit_text = 'Register'
+    if form.validate_on_submit():
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = tbd(student, parent, school, test, date, time, location, contact_info)
+        if email_status == 200:
+            return render_template('test-registration-submitted.html', email=parent.email,
+            student=student, test=test)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('spartans.html', form=form, school=school, test=test, \
         date=date, time=time, location=location, submit_text=submit_text)
 
 

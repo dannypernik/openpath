@@ -92,6 +92,7 @@ h6, .h6 {
 input, textarea {
   font-size: var(--bs-btn-font-size);
   line-height: 2.5rem;
+  margin-bottom: 2rem;
   padding: 1rem;
   border: none;
   border-bottom: 1px solid #999;
@@ -255,7 +256,7 @@ a:before {
 
 button, .btn, input[type="submit"] {
   display: block;
-  margin: 0 auto 2rem;
+  margin: 1rem auto 2rem;
   padding: 1rem 2rem;
   background-color: $primary-color;
   border: 2px solid $primary-color;
@@ -270,10 +271,6 @@ button, .btn, input[type="submit"] {
 
 .sm {
   font-size: $font-size-sm;
-}
-
-input[type="submit"] {
-  margin-top: 2rem;
 }
 
 a.btn {
@@ -616,11 +613,15 @@ div.alert {
 
 // About page //
 
-.profile-pic {
+.profile-pic, .school-logo {
   display: block;
-  border-radius: 100%;
-  margin: 0 auto 2rem;
+  margin: 0 auto 3rem;
   max-height: 155px;
+  max-width: 333px;
+}
+
+.profile-pic {
+  border-radius: 100%;
 }
 
 // Reviews page //

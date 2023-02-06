@@ -197,11 +197,11 @@
 
         <form id="inquiry-form" action="" method="post">
           {{ form.hidden_tag() }}
-          <p class="mb-3">{{ form.first_name }}</p>
-          <p class="mb-3">{{ form.email }}</p>
-          <p class="mb-3">{{ form.phone }}</p>
-          <p class="mb-3">{{ form.subject(class='d-none') }}</p>
-          <p class="mb-3">{{ form.message(rows='4') }}</p>
+          {{ form.first_name }}
+          {{ form.email }}
+          {{ form.phone }}
+          {{ form.subject(class='d-none') }}
+          {{ form.message(rows='4') }}
           {{ hcaptcha }}
           {{ form.submit }}
         </form>
