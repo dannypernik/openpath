@@ -43,7 +43,7 @@
                 <div class="d-flex flex-wrap">
                   {% for d in upcoming_dates %}
                     {% if d.test == t %}
-                      <div class="test-date mt-1">
+                      <div class="test-date my-1">
                         <label for="td-{{ d.id }}" class="text-nowrap">
                           {{ d.date.strftime('%B %-d') }}
                         </label>
