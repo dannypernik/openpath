@@ -401,7 +401,7 @@ def students():
 def tutors():
     form = TutorForm()
     tutors = User.query.order_by(User.first_name).filter_by(role='tutor')
-    statuses = User.query.with_entities(User.status).distinct()
+    statuses = User.query.filter_by(role='tutor').with_entities(User.status).distinct()
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data, phone=form.phone.data, timezone=form.timezone.data, \
