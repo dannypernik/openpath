@@ -622,9 +622,9 @@ def kaps():
     form = ScoreAnalysisForm()
     school='Katherine Anne Porter School'
     test='SAT'
-    time='10 weekly sessions on (Mondays from xx:xx - xx:xx)'
+    time='10 classes on Tuesdays & Thursdays starting Feb 21 from 1:00-2:00pm'
     location='KAPS via Zoom'
-    cost='$150 for 10 weeks (due prior to first class)'
+    cost='$150 for 10 classes (due prior to first class)'
     submit_text='Sign up'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
