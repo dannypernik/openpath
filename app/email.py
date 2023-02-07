@@ -184,9 +184,13 @@ def send_registration_reminder_email(student, test_date):
         api_secret = app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-        cc_email = [{ "Email": student.parent.email }]
-        if student.parent.secondary_email:
-            cc_email.append({ "Email": student.parent.secondary_email })
+        cc_email = []
+        if student.parent.test_reminders:
+            cc_email.append({ "Email": student.parent.email })
+            if student.parent.secondary_email:
+                cc_email.append({ "Email": student.parent.secondary_email })
+        if student.tutor.test_reminders:
+            cc_email.append({ "Email": student.tutor.email })
 
         td = test_date.date.strftime('%B %-d')
         reg_dl = test_date.reg_date.strftime('%A, %B %-d')
@@ -233,9 +237,13 @@ def send_late_registration_reminder_email(student, test_date):
         api_secret = app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-        cc_email = [{ "Email": student.parent.email }]
-        if student.parent.secondary_email:
-            cc_email.append({ "Email": student.parent.secondary_email })
+        cc_email = []
+        if student.parent.test_reminders:
+            cc_email.append({ "Email": student.parent.email })
+            if student.parent.secondary_email:
+                cc_email.append({ "Email": student.parent.secondary_email })
+        if student.tutor.test_reminders:
+            cc_email.append({ "Email": student.tutor.email })
 
         td = test_date.date.strftime('%B %-d')
         late_dl = test_date.late_date.strftime('%A, %B %-d')
@@ -277,9 +285,13 @@ def send_test_reminders_email(student, test_date):
         api_secret = app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-        cc_email = [{ "Email": student.parent.email }]
-        if student.parent.secondary_email:
-            cc_email.append({ "Email": student.parent.secondary_email })
+        cc_email = []
+        if student.parent.test_reminders:
+            cc_email.append({ "Email": student.parent.email })
+            if student.parent.secondary_email:
+                cc_email.append({ "Email": student.parent.secondary_email })
+        if student.tutor.test_reminders:
+            cc_email.append({ "Email": student.tutor.email })
 
         td = test_date.date.strftime('%B %-d')
         td_day = test_date.date.strftime('%A')

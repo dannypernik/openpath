@@ -99,6 +99,7 @@ class UserForm(FlaskForm):
     parent_id = SelectField('Parent', coerce=int)
     is_admin = BooleanField('Admin')
     session_reminders = BooleanField('Session reminders')
+    test_reminders = BooleanField('Test reminders')
     submit = SubmitField('Save')
 
     def __init__(self, original_email, *args, **kwargs):
@@ -146,6 +147,7 @@ class TutorForm(FlaskForm):
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     session_reminders = BooleanField('Session reminders')
+    test_reminders = BooleanField('Test reminders')
     submit = SubmitField('Save')
 
 

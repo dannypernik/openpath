@@ -16,8 +16,10 @@
     {{ form.phone }}
     {{ form.timezone }}
     {{ form.session_reminders }}
-    {{ form.session_reminders.label(class="mt-2 ms-2") }}
-    {{ form.submit(class="mb-3") }}
+    {{ form.session_reminders.label(class="ms-2") }}
+    {{ form.test_reminders }}
+    {{ form.test_reminders.label(class="mt-2 ms-2") }}
+    {{ form.submit(class="my-3") }}
   </form>
   {% for status in statuses %}
     <h1 class="mt-3">{{ status[0].title() }} tutors</h1>

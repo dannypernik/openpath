@@ -229,7 +229,8 @@ def users():
         user = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data, secondary_email=form.secondary_email.data, \
             phone=form.phone.data, timezone=form.timezone.data, location=form.location.data, \
-            role=form.role.data, status='active', is_admin=False, session_reminders=True)
+            role=form.role.data, status='active', is_admin=False, \
+            session_reminders=True, test_reminders=True)
         user.tutor_id=form.tutor_id.data
         user.status=form.status.data
         user.parent_id=form.parent_id.data
@@ -279,6 +280,7 @@ def edit_user(id):
             user.role=form.role.data
             user.is_admin=form.is_admin.data
             user.session_reminders=form.session_reminders.data
+            user.test_reminders=form.test_reminders.data
             if form.tutor_id.data == 0:
                 user.tutor_id=None
             else:
@@ -327,7 +329,7 @@ def edit_user(id):
         form.tutor_id.data=user.tutor_id
         form.parent_id.data=user.parent_id
         form.is_admin.data=user.is_admin
-        form.session_reminders.data=user.session_reminders
+        form.test_reminders.data=user.test_reminders
 
 ##  Determine which option to select in template for each test date
         test_selections = user.get_dates().all()
@@ -364,13 +366,13 @@ def students():
     if form.validate_on_submit():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
             email=form.student_email.data, phone=form.student_phone.data, timezone=form.timezone.data, \
-            location=form.location.data, status=form.status.data, \
-            tutor_id=form.tutor_id.data, role='student', session_reminders=True)
+            location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data, \
+            role='student', session_reminders=True, test_reminders=True)
         if form.parent_id.data == 0:
             parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
                 email=form.parent_email.data, secondary_email=form.secondary_email.data, \
                 phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
-                session_reminders=True)
+                session_reminders=True, test_reminders=True)
         else:
             parent = User.query.filter_by(id=form.parent_id.data).first()
         try:
@@ -403,7 +405,8 @@ def tutors():
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data, phone=form.phone.data, timezone=form.timezone.data, \
-            session_reminders=form.session_reminders.data, status='active', role='tutor')
+            session_reminders=form.session_reminders.data, test_reminders=form.test_reminders.data, \
+            status='active', role='tutor')
         try:
             db.session.add(tutor)
             db.session.commit()

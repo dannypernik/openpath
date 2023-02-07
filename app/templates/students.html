@@ -17,7 +17,7 @@
     {{ form.secondary_email }}
     {{ form.timezone }}
     {{ form.location }}
-    {{ form.parent_id(class="mt-2") }}
+    {{ form.parent_id(class="my-2") }}
     <div id="new-parent-info">
       {{ form.parent_name }}
       {{ form.parent_last_name }}
@@ -42,7 +42,7 @@
       </div>
     {% endfor %}
 
-    <div class="row mt-3 mb-1">
+    <div class="row my-4">
       <div class="col">
         <h4>Tutor:</h4>
         {{ form.tutor_id }}
@@ -53,7 +53,7 @@
         {{ form.status }}
       </div>
     </div>
-    {{ form.submit(class="mb-3") }}
+    {{ form.submit }}
   </form>
   {% for status in statuses %}
     <h2 class="slide-toggle mb-2 mt-3">{{ status.title() }} students</h2>

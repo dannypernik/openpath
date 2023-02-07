@@ -91,7 +91,7 @@ h6, .h6 {
 
 input, textarea {
   font-size: var(--bs-btn-font-size);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   padding: 1rem;
   border: none;
   border-bottom: 1px solid #999;
@@ -112,6 +112,7 @@ input[type='checkbox'] {
   + label {
     display: block;
     position: relative;
+    line-height: 2rem;
     padding-left: 3rem;
     cursor: pointer;
 
