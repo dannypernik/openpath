@@ -64,21 +64,38 @@ class User(UserMixin, db.Model):
             {'reset_password': self.id, 'exp': time() + expires_in},
             app.config['SECRET_KEY'], algorithm='HS256')
     
-    def add_test_date(self, test_date):
-        if not self.is_testing(test_date):
-            t = UserTestDate(user_id=self.id, test_date_id=test_date.id)
-            db.session.add(t)
-            db.session.commit()
+    def interested_test_date(self, test_date):
+        if self.is_testing(test_date):
+            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
+            t.is_registered = False
+        else:
+            t = UserTestDate(user_id=self.id, test_date_id=test_date.id, is_registered=False)
+        db.session.add(t)
+        db.session.commit()
 
     def remove_test_date(self, test_date):
         f = self.test_dates.filter_by(test_date_id=test_date.id).first()
         if f:
             db.session.delete(f)
-            
+    
+    def register_test_date(self, test_date):
+        if self.is_testing(test_date):
+            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
+        else:
+            t = UserTestDate(user_id=self.id, test_date_id=test_date.id)
+        if not t.is_registered:
+            t.is_registered = True
+            db.session.add(t)
+            db.session.commit()
 
     def is_testing(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).count() > 0
+    
+    def is_registered(self, test_date):
+        return self.test_dates.filter(
+            UserTestDate.test_date_id == test_date.id).filter(
+            UserTestDate.is_registered).count() > 0
     
     def get_dates(self):
         return TestDate.query.join(

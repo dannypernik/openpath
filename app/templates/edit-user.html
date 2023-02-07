@@ -44,11 +44,14 @@
                   {% for d in upcoming_dates %}
                     {% if d.test == t %}
                       <div class="test-date mt-1">
-                        <input type="checkbox" id="{{ d.id }}" value="{{ d.id }}" name="test_dates"
-                          {{ "checked" if d.id in selected_date_ids }}>
-                        <label for="{{ d.id }}" class="text-nowrap">
+                        <label for="td-{{ d.id }}" class="text-nowrap">
                           {{ d.date.strftime('%B %-d') }}
                         </label>
+                        <select type="checkbox" id="td-{{ d.id }}" name="test_dates">
+                          <option value="{{ d.id }}-none">--</option>
+                          <option value="{{ d.id }}-interested" {{ "selected" if d.id in interested_tests }}>Interested</option>
+                          <option value="{{ d.id }}-registered" {{ "selected" if d.id in registered_tests }}>Registered</option>
+                        </select>
                       </div>
                     {% endif %}
                   {% endfor %}

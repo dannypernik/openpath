@@ -1,18 +1,20 @@
 <div class="row sticky-header justify-content-center">
   <div class="col-10">
     <div class="row">
-      <div class="col-9">
+      <div class="col-10 col-sm-8">
         {% block logo_link %}
           <a href="{{ url_for('index') }}">
         {% endblock logo_link %}
           <img id="nav-img" src="{{ url_for('static', filename='img/logo-header.svg') }}" alt="Open Path Tutoring">
         </a>
       </div>
-      <div class="col-3">
+      <div class="col-2 col-sm-4">
         <a id="menu-btn" data-drawer-trigger aria-controls="site-menu" aria-expanded="false">
-          <div id="menu-title" class="d-none d-sm-block">
+          <div id="menu-title" class="d-none d-sm-block text-truncate">
             {% if current_user.is_authenticated %}
-              {{ current_user.first_name }} {{ current_user.last_name }}
+              <span class="">
+                {{ current_user.first_name }} {{ current_user.last_name }}
+              </span>
             {% else %}
               Menu
             {% endif %}

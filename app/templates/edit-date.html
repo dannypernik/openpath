@@ -2,8 +2,8 @@
 
 {% block container %}
   <form class="" action="" method="post">
-    <div class="row justify-content-center">
-      <div class="col-11 col-sm-9 col-lg-5 mb-4">
+    <div class="row justify-content-center justify-content-md-start">
+      <div class="col-11 offset-md-1 col-md-8 col-lg-6">
         <h1 class="d-inline-block me-4">Edit {{ date.date.strftime('%B %-d') }}</h1>
         {{ form.hidden_tag() }}
         <div class="mb-2">
@@ -23,7 +23,7 @@
             <input type="submit" name="save" value="Save">
           </div>
           <div class="col-4">
-            <a href="#" class="btn clr alert mt-3 w-100" data-bs-toggle="modal" data-bs-target="#delete-modal" data-text="delete">
+            <a href="#" class="btn clr alert w-100" data-bs-toggle="modal" data-bs-target="#delete-modal" data-text="delete">
               Delete
             </a>
           </div>
@@ -51,30 +51,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="col-11 col-sm-9 col-lg-4 offset-lg-1">
-        <div class="row mb-2">
-          <div class="col-7 col-md-8">
-            <h2>Students</h2>
-          </div>
-          <div class="col-5 col-md-4">
-            <h2>Registered?</h2>
-          </div>
-        </div>
-        
-        {% for s in students %}
-          <div class="row">
-            <div class="col-7 col-md-8">
-              <h4>{{ s.first_name }} {{ s.last_name }}</h4>
-            </div>
-            <div class="col-5 col-md-4 d-flex justify-content-center">
-              <input type="checkbox" id="{{ s.id }}" value="{{ s.id }}" name="registered_students"
-                {{ "checked" if s.is_registered }}>
-                <label for="{{ s.id }}" class="text-nowrap"></label>
-            </div>
-          </div>
-        {% endfor %}
       </div>
     </div>
   </form>

@@ -258,7 +258,6 @@ def edit_user(id):
     user = User.query.get_or_404(id)
     form = UserForm(user.email, obj=user)
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
-    selected_date_ids = []
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     parents = User.query.order_by(User.first_name).filter_by(role='parent')
     parent_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
@@ -266,6 +265,7 @@ def edit_user(id):
     tutor_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in tutors]
     form.parent_id.choices = parent_list
     form.tutor_id.choices = tutor_list
+    
     if form.validate_on_submit():
         if 'save' in request.form:
             user.first_name=form.first_name.data
@@ -288,10 +288,12 @@ def edit_user(id):
             else:
                 user.parent_id=form.parent_id.data
 
-            selected_date_ids = request.form.getlist('test_dates')
+            test_selections = request.form.getlist('test_dates')
             for d in upcoming_dates:
-                if str(d.id) in selected_date_ids:
-                    user.add_test_date(d)
+                if str(d.id) + '-interested' in test_selections:
+                    user.interested_test_date(d)
+                elif str(d.id) + '-registered' in test_selections:
+                    user.register_test_date(d)
                 else:
                     user.remove_test_date(d)
             try:
@@ -327,14 +329,20 @@ def edit_user(id):
         form.is_admin.data=user.is_admin
         form.session_reminders.data=user.session_reminders
 
-        selected_dates = user.get_dates().all()
+##  Determine which option to select in template for each test date
+        test_selections = user.get_dates().all()
+        registered_tests = []
+        interested_tests = []
         for d in upcoming_dates:
-            if d in selected_dates:
-                selected_date_ids.append(d.id)
+            if d in test_selections:
+                if user.is_registered(d):
+                    registered_tests.append(d.id)
+                else:
+                    interested_tests.append(d.id)
 
-    return render_template('edit-user.html', title='Edit User', form=form, \
-        user=user, upcoming_dates=upcoming_dates, selected_date_ids=selected_date_ids, \
-        tests=tests)
+    return render_template('edit-user.html', title='Edit User', form=form, user=user, \
+        tests=tests, upcoming_dates=upcoming_dates, registered_tests=registered_tests, \
+        interested_tests=interested_tests)
 
 
 @app.route('/students', methods=['GET', 'POST'])
@@ -375,7 +383,7 @@ def students():
             selected_dates = request.form.getlist('test_dates')
             for d in upcoming_dates:
                 if str(d.date) in selected_dates:
-                    student.add_test_date(d)
+                    student.interested_test_date(d)
         except:
             db.session.rollback()
             flash(student.first_name + ' could not be added', 'error')
@@ -509,7 +517,7 @@ def test_reminders():
             db.session.commit()
             for d in upcoming_dates:
                 if str(d.id) in selected_date_ids:
-                    user.add_test_date(d)
+                    user.interested_test_date(d)
                 else:
                     user.remove_test_date(d)
             if current_user.is_authenticated:

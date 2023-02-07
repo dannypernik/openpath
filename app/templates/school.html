@@ -10,7 +10,7 @@
       {% block form %}
         <form method="post">
           {{ form.hidden_tag() }}
-          <div class="row">
+          <div class="row g-2">
             <div class="col-12 col-sm-6 col-xl-4">
               {{ form.student_first_name }}
             </div>
@@ -19,7 +19,7 @@
             </div>
  
             <div class="col-12 col-xl-4">
-              {{ form.grad_year.label(class="mx-2 mb-2 mt-0 m-xl-2") }}
+              {{ form.grad_year.label(class="mx-2 mb-2 mt-0 my-xl-2") }}
               {{ form.grad_year }}
             </div>
             <div class="col-12 col-sm-6">
