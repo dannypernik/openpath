@@ -91,8 +91,12 @@ def signup():
     form = LoginForm()
     signup_form = SignupForm()
     if signup_form.validate_on_submit():
+        email_exists = User.query.filter_by(email=signup_form.email.data.lower()).first()
+        if email_exists:
+            flash('An account already exists for this email. Try logging in or resetting your password.', 'error')
+            return redirect(url_for('signup'))
         user = User(first_name=signup_form.first_name.data, last_name=signup_form.last_name.data, \
-        email=signup_form.email.data)
+        email=signup_form.email.data.lower())
         user.set_password(signup_form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -117,7 +121,7 @@ def login():
     form = LoginForm()
     signup_form = SignupForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter_by(email=form.email.data.lower()).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('signin'))
@@ -127,7 +131,7 @@ def login():
             if email_status == 200:
                 flash('Please check your inbox to verify your email.')
             else:
-                flash('Verification email did not send. Please contact ' + hello)
+                flash('Verification email did not send. Please contact ' + hello, 'error')
         next = request.args.get('next')
         if not next or url_parse(next).netloc != '':
             return redirect(url_for('start_page'))
@@ -175,7 +179,7 @@ def request_password_reset():
         else:
             flash('A computer has questioned your humanity. Please try again.', 'error')
             return redirect(url_for('request_password_reset'))
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
             email_status = send_password_reset_email(user)
             if email_status == 200:
@@ -227,7 +231,7 @@ def users():
     form.tutor_id.choices = tutor_list
     if form.validate_on_submit():
         user = User(first_name=form.first_name.data, last_name=form.last_name.data, \
-            email=form.email.data, secondary_email=form.secondary_email.data, \
+            email=form.email.data.lower(), secondary_email=form.secondary_email.data.lower(), \
             phone=form.phone.data, timezone=form.timezone.data, location=form.location.data, \
             role=form.role.data, status='active', is_admin=False, \
             session_reminders=True, test_reminders=True)
@@ -271,9 +275,9 @@ def edit_user(id):
         if 'save' in request.form:
             user.first_name=form.first_name.data
             user.last_name=form.last_name.data
-            user.email=form.email.data
+            user.email=form.email.data.lower()
             user.phone=form.phone.data
-            user.secondary_email=form.secondary_email.data
+            user.secondary_email=form.secondary_email.data.lower()
             user.timezone=form.timezone.data
             user.location=form.location.data
             user.status=form.status.data
@@ -365,12 +369,12 @@ def students():
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     if form.validate_on_submit():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
-            email=form.student_email.data, phone=form.student_phone.data, timezone=form.timezone.data, \
+            email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
             location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data, \
             role='student', session_reminders=True, test_reminders=True)
         if form.parent_id.data == 0:
             parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
-                email=form.parent_email.data, secondary_email=form.secondary_email.data, \
+                email=form.parent_email.data.lower(), secondary_email=form.secondary_email.data.lower(), \
                 phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
                 session_reminders=True, test_reminders=True)
         else:
@@ -404,7 +408,7 @@ def tutors():
     statuses = User.query.filter_by(role='tutor').with_entities(User.status).distinct()
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
-            email=form.email.data, phone=form.phone.data, timezone=form.timezone.data, \
+            email=form.email.data.lower(), phone=form.phone.data, timezone=form.timezone.data, \
             session_reminders=form.session_reminders.data, test_reminders=form.test_reminders.data, \
             status='active', role='tutor')
         try:
@@ -509,7 +513,7 @@ def test_reminders():
         if not current_user.is_authenticated:
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
-                user = User(first_name=form.first_name.data, last_name="", email=form.email.data)
+                user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower())
             elif user and not user.password_hash:   # User exists without password
                 email_status = send_password_reset_email(user)
             else:   # User has saved password
