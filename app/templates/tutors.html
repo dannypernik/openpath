@@ -22,7 +22,7 @@
     {{ form.submit(class="my-3") }}
   </form>
   {% for status in statuses %}
-    <h1 class="mt-3">{{ status[0].title() }} tutors</h1>
+    <h1 class="mt-3">{{ status[0] }} tutors</h1>
 
     {% for t in tutors %}
       {% if t.status == status[0] %}
