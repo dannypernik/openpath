@@ -2,8 +2,8 @@
 
 {% block container %}
   <form class="" action="" method="post">
-    <div class="row justify-content-center justify-content-md-start">
-      <div class="col-11 offset-md-1 col-md-8 col-lg-6">
+    <div class="row justify-content-center">
+      <div class="col-11 col-md-5 col-xl-6">
         <h1 class="d-inline-block me-4">Edit {{ date.date.strftime('%B %-d') }}</h1>
         {{ form.hidden_tag() }}
         <div class="mb-2">
@@ -33,21 +33,32 @@
             </a>
           </div>
         </div>
+      </div>
 
-        <div id="delete-modal" class="modal fade" tabindex="-1">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="container-fluid">
-                <div class="row">
-                  <div class="modal-header mt-2">
-                    <h1 class="modal-title">Are you sure?</h1>
-                  </div>
-                </div>
-                <div class="modal-body">
-                  <button class="btn clr alert d-inline me-2" type="submit" name="delete">Delete {{ date.date }}</button>
-                  <button class="btn d-inline" data-bs-dismiss="modal">Cancel</button>
-                </div>
+      <div class="col-11 col-md-5 col-xl-4 text-start text-md-end">
+        <h2 class="my-3">Students interested</h2>
+        {% for s in students %}
+          <h4>
+            <a href="{{ url_for('edit_user', id=s.id) }}">
+              {{ s.first_name }} {{ s.last_name }}
+            </a>
+          </h4>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div id="delete-modal" class="modal fade" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="modal-header mt-2">
+                <h1 class="modal-title">Are you sure?</h1>
               </div>
+            </div>
+            <div class="modal-body">
+              <button class="btn clr alert d-inline me-2" type="submit" name="delete">Delete {{ date.date }}</button>
+              <button class="btn d-inline" data-bs-dismiss="modal">Cancel</button>
             </div>
           </div>
         </div>
