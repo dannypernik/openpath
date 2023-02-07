@@ -514,6 +514,7 @@ def test_reminders():
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
                 user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower())
+                email_status = send_verification_email(user)   
             elif user and not user.password_hash:   # User exists without password
                 email_status = send_password_reset_email(user)
             else:   # User has saved password
@@ -530,9 +531,8 @@ def test_reminders():
             if current_user.is_authenticated:
                 flash('Test dates updated')
             else:
-                email_status = send_password_reset_email(user)
                 if email_status == 200:
-                    flash("Welcome! Please check your inbox to verify your email.")
+                    flash("Test dates updated. Please check your inbox to verify your email.")
                 else:
                     flash('Verification email did not send. Please contact ' + hello, 'error')
         except:
