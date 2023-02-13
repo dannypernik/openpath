@@ -624,10 +624,7 @@ def kaps():
     form = ScoreAnalysisForm()
     school='Katherine Anne Porter School'
     test='SAT'
-    time='10 classes on Tuesdays & Thursdays starting Feb 21 from 1:00-2:00pm'
-    location='KAPS via Zoom'
-    cost='$150 for 10 classes (due prior to first class)'
-    submit_text='Sign up'
+    submit_text='Request score analysis'
     if form.validate_on_submit():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -637,8 +634,7 @@ def kaps():
             return render_template('registration-confirmed.html', email=form.parent_email.data)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('kaps.html', form=form, school=school, test=test, time=time,
-        location=location, cost=cost, submit_text=submit_text)
+    return render_template('kaps.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
 @app.route('/centerville', methods=['GET', 'POST'])
