@@ -127,6 +127,8 @@ def send_reminder_email(event, student, quote):
     location = event.get('location')
     if location is None:
         location = student.location
+    if "http" in location:
+        location = "<a href=\"" + location + "\">" + location + "</a>"
 
     cc_email = []
     if parent.session_reminders:
@@ -157,9 +159,9 @@ def send_reminder_email(event, student, quote):
                 "Subject": "Reminder for " + event.get('summary') + " + a quote from " + author,
                 "HTMLPart": "Hi " + student.first_name + ", this is an automated reminder " + \
                     " that you are scheduled for a tutoring session with " + tutor.first_name + " " + \
-                    tutor.last_name + " on " + start_date + " from  " + start_display + " to " + \
-                    end_display + " " + timezone + " time. <br/><br/>" + "Location: " + location + \
-                    "<br/><br/>" + "You are welcome to reply to this email with any questions. " + \
+                    tutor.last_name + " on " + start_date + " from " + start_display + " to " + \
+                    end_display + " " + timezone + " time. <br/><br/>Location: " + location + \
+                    "<br/><br/>You are welcome to reply to this email with any questions. " + \
                     "Please provide at least 24 hours notice when cancelling or rescheduling " + \
                     "in order to avoid being charged for the session. Note that you will not receive " + \
                     "a reminder email for sessions scheduled less than 2 days in advance. Thank you!" + \
