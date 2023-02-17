@@ -93,6 +93,8 @@ class UserForm(FlaskForm):
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={"placeholder": "Location"})
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2023', '2023 (Senior)'), \
+        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')])
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'),('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
     role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'),('tutor','Tutor'),('admin','Admin')])
     tutor_id = SelectField('Tutor', coerce=int)
@@ -121,6 +123,8 @@ class StudentForm(FlaskForm):
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     student_phone = StringField('Student phone', render_kw={"placeholder": "Student phone"})
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2023', '2023 (Senior)'), \
+        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')])
     parent_id = SelectField('Parent', coerce=int)
     parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
     parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
@@ -183,9 +187,8 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student\'s last name', render_kw={'placeholder': 'Student\'s last name'}, \
         validators=[InputRequired()])
-    grad_year = SelectField('Grad year', choices=[(None, '--'), ('2023', '2023 (Senior)'), \
-        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')], \
-        render_kw={'placeholder': 'Graduation year'}, validators=[InputRequired()])
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2023', '2023 (Senior)'), \
+        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')])
     school = StringField('School', render_kw={'placeholder': 'Student\'s school'}, \
         validators=[InputRequired()])
     parent_first_name = StringField('Parent\'s first name', render_kw={'placeholder': 'Parent\'s first name'}, \

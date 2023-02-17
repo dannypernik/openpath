@@ -282,6 +282,7 @@ def edit_user(id):
             user.location=form.location.data
             user.status=form.status.data
             user.role=form.role.data
+            user.grad_year=form.grad_year.data
             user.is_admin=form.is_admin.data
             user.session_reminders=form.session_reminders.data
             user.test_reminders=form.test_reminders.data
@@ -293,6 +294,10 @@ def edit_user(id):
                 user.parent_id=None
             else:
                 user.parent_id=form.parent_id.data
+            if form.grad_year.data == 0:
+                user.grad_year=None
+            else:
+                user.grad_year=form.grad_year.data
 
             test_selections = request.form.getlist('test_dates')
             for d in upcoming_dates:
@@ -330,6 +335,7 @@ def edit_user(id):
         form.location.data=user.location
         form.status.data=user.status
         form.role.data=user.role
+        form.grad_year.data=user.grad_year
         form.tutor_id.data=user.tutor_id
         form.parent_id.data=user.parent_id
         form.is_admin.data=user.is_admin
@@ -371,7 +377,7 @@ def students():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
             email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
             location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data, \
-            role='student', session_reminders=True, test_reminders=True)
+            role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
         if form.parent_id.data == 0:
             parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
                 email=form.parent_email.data.lower(), secondary_email=form.secondary_email.data.lower(), \

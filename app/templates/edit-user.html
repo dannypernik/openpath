@@ -22,11 +22,15 @@
             {{ form.location }}
   
             <div class="d-sm-flex mt-3 justify-content-between">
-              <div>
+              <div class="mb-2">
                 <h3 class="mb-1">Role:</h3>
                 {{ form.role }}
               </div>
-  
+              
+              <div id="grad-year-div" class="mb-2">
+                <h3 class="mb-1">Grad year:</h3>
+                {{ form.grad_year }}
+              </div>
               <div id="parent-div" class="mb-2">
                 <h3 class="mb-1">Parent:</h3>
                 {{ form.parent_id }}
