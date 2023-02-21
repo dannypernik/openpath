@@ -6,9 +6,11 @@ const gradYearDiv = document.getElementById('grad-year-div');
 if (role.value == 'student') {
   parentDiv.style.display = 'block';
   tutorDiv.style.display = 'block';
+  gradYearDiv.style.display = 'block';
 } else {
   parentDiv.style.display = 'none';
   tutorDiv.style.display = 'none';
+  gradYearDiv.style.display = 'none';
 }
 
 role.addEventListener("change", function () {
