@@ -126,7 +126,7 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('signin'))
         login_user(user)
-        if user.is_verified != True:
+        if not user.is_verified:
             email_status = send_verification_email(user)
             if email_status == 200:
                 flash('Please check your inbox to verify your email.')
@@ -520,9 +520,9 @@ def test_reminders():
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
                 user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower())
-                email_status = send_verification_email(user)   
+                email_status = send_verification_email(user, 'test_reminders')   
             elif user and not user.password_hash:   # User exists without password
-                email_status = send_password_reset_email(user)
+                email_status = send_password_reset_email(user, 'test_reminders')
             else:   # User has saved password
                 flash('An account with this email already exists. Please log in.')
                 return redirect(url_for('signin'))
@@ -543,7 +543,7 @@ def test_reminders():
                     flash('Verification email did not send. Please contact ' + hello, 'error')
         except:
             db.session.rollback()
-            flash('Test dates were not updated, please contact '+ hello, 'error')
+            flash('Test dates were not updated, please contact ' + hello, 'error')
         return redirect(url_for('index'))
     return render_template('test-reminders.html', form=form, tests=tests, \
         upcoming_dates=upcoming_dates, selected_date_ids=selected_date_ids)

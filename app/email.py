@@ -328,12 +328,16 @@ def send_test_reminders_email(student, test_date):
         return result.status_code
 
 
-def send_verification_email(user):
+def send_verification_email(user, page=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     token = user.get_email_verification_token()
+
+    purpose = ""
+    if page == 'test_reminders':
+        purpose = " to get test reminders"
 
     data = {
         'Messages': [
@@ -347,7 +351,8 @@ def send_verification_email(user):
                     "Email": user.email
                     }
                 ],
-                "Subject": "Please verify your email address",
+                "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
+                "Subject": "Please verify your email address" + purpose,
                 "TextPart": render_template('email/verification-email.txt',
                                          user=user, token=token),
                 "HTMLPart": render_template('email/verification-email.html',
@@ -365,7 +370,7 @@ def send_verification_email(user):
     return result.status_code
 
 
-def send_password_reset_email(user):
+def send_password_reset_email(user, page=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -375,6 +380,10 @@ def send_password_reset_email(user):
         pw_type = 'set'
     else:
         pw_type = 'reset'
+    
+    purpose = ''
+    if page == 'test_reminders':
+        purpose = ' to get test reminders'
 
     data = {
         'Messages': [
@@ -388,7 +397,8 @@ def send_password_reset_email(user):
                     "Email": user.email
                     }
                 ],
-                "Subject": pw_type.title() + ' your password',
+                "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
+                "Subject": pw_type.title() + ' your password' + purpose,
                 "ReplyTo": { "Email": user.email },
                 "TextPart": render_template('email/reset-password.txt', \
                                          user=user, token=token, pw_type=pw_type),
