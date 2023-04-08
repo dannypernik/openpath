@@ -230,10 +230,10 @@ def main():
         for row in summary_data:
             for s in students:
                 if row[0] == full_name(s):
-                    if row[14] != s.status.title():
-                        status_fixes.append([full_name(s), s.status.title(), row[14]])
-            if row[14] == 'Active' and float(row[1]) <= 1.5:
-                low_active_students.append([row[0], row[1]])
+                    if row[1] != s.status.title():
+                        status_fixes.append([full_name(s), s.status.title(), row[1]])
+            if row[1] == 'Active' and float(row[2]) <= 1.5:
+                low_active_students.append([row[0], row[2]])
         
         spreadsheet_data = {'low_active_students': low_active_students}
 
