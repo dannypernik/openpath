@@ -328,6 +328,41 @@ def send_test_reminders_email(student, test_date):
         return result.status_code
 
 
+def send_signup_notification_email(user, dates):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    date_series = ', '.join(dates)
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": app.config['MAIL_USERNAME']
+                    }
+                ],
+                "Subject": user.first_name + " signed up for test reminders",
+                "TextPart": render_template('email/signup-notification.txt', user=user,
+                    date_series=date_series)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+
+    if result.status_code == 200:
+        print("Signup notification email sent to " + app.config['MAIL_USERNAME'])
+    else:
+        print("Signup notification email to " + app.config['MAIL_USERNAME'] + " failed with code " + result.status_code)
+    return result.status_code
+
+
 def send_verification_email(user, page=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -351,7 +386,6 @@ def send_verification_email(user, page=None):
                     "Email": user.email
                     }
                 ],
-                "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
                 "Subject": "Please verify your email address" + purpose,
                 "TextPart": render_template('email/verification-email.txt',
                                          user=user, token=token),
@@ -397,9 +431,7 @@ def send_password_reset_email(user, page=None):
                     "Email": user.email
                     }
                 ],
-                "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
                 "Subject": pw_type.title() + ' your password' + purpose,
-                "ReplyTo": { "Email": user.email },
                 "TextPart": render_template('email/reset-password.txt', \
                                          user=user, token=token, pw_type=pw_type),
                 "HTMLPart": render_template('email/reset-password.html', \
@@ -410,9 +442,9 @@ def send_password_reset_email(user, page=None):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print(result.json())
+        print("Password reset email sent to " + user.email)
     else:
-        print("Password reset email failed to send with code " + str(result.status_code), result.reason)
+        print("Password reset email to " + user.email + " failed to send with code " + str(result.status_code), result.reason)
     return result.status_code
 
 

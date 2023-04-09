@@ -8,10 +8,10 @@ from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate
 from werkzeug.urls import url_parse
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
-    send_prep_class_email
+    send_prep_class_email, send_signup_notification_email
 from functools import wraps
 
 @app.before_request
@@ -122,6 +122,9 @@ def login():
     signup_form = SignupForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower()).first()
+        if user and not user.password_hash:
+            flash('Please verify your email to set or reset your password.')
+            return redirect(url_for('request_password_reset'))
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('signin'))
@@ -433,9 +436,11 @@ def tutors():
 def test_dates():
     form = TestDateForm()
     tests = TestDate.query.with_entities(TestDate.test).distinct()
-    dates_filter = (TestDate.status == 'confirmed') | (TestDate.status == 'unconfirmed')
-    upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(dates_filter)
-    other_dates = TestDate.query.order_by(TestDate.date).filter(~dates_filter)
+    today = datetime.today().date()
+    print(datetime.today())
+    upcoming_filter = (TestDate.status != 'school') & (TestDate.date >= today)
+    upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_filter)
+    other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_filter)
     if form.validate_on_submit():
         date = TestDate(test=form.test.data, date=form.date.data, \
             reg_date=form.reg_date.data, late_date=form.late_date.data, \
@@ -506,8 +511,13 @@ def edit_date(id):
 def test_reminders():
     form = EmailListForm()
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
-    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
+    today = datetime.today().date()
+    reminder_cutoff = today + timedelta(days=5)
+    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.late_date >= reminder_cutoff)
+    imminent_deadlines = TestDate.query.order_by(TestDate.date).filter(
+        (TestDate.late_date > today) & (TestDate.late_date <= reminder_cutoff))
     selected_date_ids = []
+    selected_date_strs = []
     if current_user.is_authenticated:
         user = User.query.filter_by(id=current_user.id).first_or_404()
         selected_dates = user.get_dates().all()
@@ -519,21 +529,22 @@ def test_reminders():
         if not current_user.is_authenticated:
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
-                user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower())
-                email_status = send_verification_email(user, 'test_reminders')   
-            elif user and not user.password_hash:   # User exists without password
+                user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower()) 
+            if not user.password_hash:   # User does not have password
                 email_status = send_password_reset_email(user, 'test_reminders')
             else:   # User has saved password
                 flash('An account with this email already exists. Please log in.')
-                return redirect(url_for('signin'))
+                return redirect(url_for('signin', next='test_reminders'))
+        for d in upcoming_dates:
+            if str(d.id) in selected_date_ids:
+                user.interested_test_date(d)
+                selected_date_strs.append(d.date.strftime('%b %-d'))
+            else:
+                user.remove_test_date(d)
+        send_signup_notification_email(user, selected_date_strs)
         try:
             db.session.add(user)
             db.session.commit()
-            for d in upcoming_dates:
-                if str(d.id) in selected_date_ids:
-                    user.interested_test_date(d)
-                else:
-                    user.remove_test_date(d)
             if current_user.is_authenticated:
                 flash('Test dates updated')
             else:
@@ -545,8 +556,8 @@ def test_reminders():
             db.session.rollback()
             flash('Test dates were not updated, please contact ' + hello, 'error')
         return redirect(url_for('index'))
-    return render_template('test-reminders.html', form=form, tests=tests, \
-        upcoming_dates=upcoming_dates, selected_date_ids=selected_date_ids)
+    return render_template('test-reminders.html', form=form, tests=tests, upcoming_dates=upcoming_dates, \
+        imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
 
 @app.route('/griffin', methods=['GET', 'POST'])
