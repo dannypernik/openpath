@@ -14,6 +14,8 @@ from app.email import send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_spreadsheet_report_email, send_test_reminders_email
 import requests
+from sqlalchemy.orm import joinedload
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -96,6 +98,8 @@ def main():
 
     reminder_list = []
     students = User.query.order_by(User.first_name).filter(User.role == 'student')
+    test_reminder_users = User.query.order_by(User.first_name).filter(
+        User.test_dates).filter(User.test_reminders).options(joinedload('parent'), joinedload('tutor'))
     active_students = students.filter(User.status == 'active')
     upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
     paused_students = students.filter(User.status == 'paused')
@@ -111,7 +115,7 @@ def main():
         else:
             name = user.first_name + " " + user.last_name
         return name
-    
+
 ### Test date reminders
     test_dates = TestDate.query.all()
 
@@ -122,15 +126,15 @@ def main():
             db.session.add(d)
             db.session.commit()
             print('Test date', d.date, 'marked as past')
-    
-    for s in students:
-        for d in s.get_dates():
+
+    for u in test_reminder_users:
+        for d in u.get_dates():
             if d.reg_date == today + datetime.timedelta(days=5):
-                send_registration_reminder_email(s, d)
+                email = send_registration_reminder_email(u, d)
             elif d.late_date == today + datetime.timedelta(days=5):
-                send_late_registration_reminder_email(s, d)
+                send_late_registration_reminder_email(u, d)
             elif d.date == today + datetime.timedelta(days=6):
-                send_test_reminders_email(s, d)
+                send_test_reminders_email(u, d)
 
     for id in calendars:
         bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start,

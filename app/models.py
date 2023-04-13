@@ -23,19 +23,18 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(32), index=True)
     secondary_email = db.Column(db.String(64))
     password_hash = db.Column(db.String(128))
-    timezone = db.Column(db.Integer)
+    timezone = db.Column(db.Integer, default=0)
     location = db.Column(db.String(128))
     status = db.Column(db.String(24), default = "active", index=True)
-    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'), default=1)
     students = db.relationship('User',
-        backref=db.backref('tutor', remote_side=[id]), 
+        backref=db.backref('tutor', lazy='joined', remote_side=[id]), 
         primaryjoin=(id==tutor_id),
-        foreign_keys=[tutor_id],
-        post_update=True)
+        foreign_keys=[tutor_id])
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     children = db.relationship('User',
         primaryjoin=(id==parent_id),
-        backref=db.backref('parent', remote_side=[id]),
+        backref=db.backref('parent', lazy='joined', remote_side=[id]),
         foreign_keys=[parent_id],
         post_update=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -43,13 +42,13 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(24), index=True)
     is_admin = db.Column(db.Boolean)
     is_verified = db.Column(db.Boolean)
-    session_reminders = db.Column(db.Boolean)
-    test_reminders = db.Column(db.Boolean)
+    session_reminders = db.Column(db.Boolean, default=True)
+    test_reminders = db.Column(db.Boolean, default=True)
     test_dates = db.relationship('UserTestDate',
-                                foreign_keys=[UserTestDate.user_id],
-                                backref=db.backref('user', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
+        foreign_keys=[UserTestDate.user_id],
+        backref=db.backref('user', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
