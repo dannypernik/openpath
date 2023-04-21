@@ -117,7 +117,7 @@ def send_reminder_email(event, student, quote):
 
     dt = datetime.datetime
     start_time = event['start'].get('dateTime')
-    start_date = dt.strftime(parse(start_time), format="%A, %b %-d, %Y")
+    start_date = dt.strftime(parse(start_time), format="%A, %b %-d")
     start_time_formatted = re.sub(r'([-+]\d{2}):(\d{2})(?:(\d{2}))?$', r'\1\2\3', start_time)
     start_offset = dt.strptime(start_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
     end_time = event['end'].get('dateTime')
@@ -159,7 +159,7 @@ def send_reminder_email(event, student, quote):
                 ],
                 "Cc": cc_email,
                 "ReplyTo": { "Email": reply_email },
-                "Subject": "Reminder for " + event.get('summary') + " + a quote from " + author,
+                "Subject": "Reminder for session on " + start_date + " at " + start_display + " " + timezone,
                 "HTMLPart": "Hi " + student.first_name + ", this is an automated reminder " + \
                     " that you are scheduled for a tutoring session with " + tutor.first_name + " " + \
                     tutor.last_name + " on " + start_date + " from " + start_display + " to " + \

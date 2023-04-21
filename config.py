@@ -25,3 +25,5 @@ class Config(object):
     PHONE = os.environ.get('PHONE')
     GMAIL_USERNAME = os.environ.get('GMAIL_USERNAME')
     SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
+    ONEPAGECRM_ID = os.environ.get('ONEPAGECRM_ID')
+    ONEPAGECRM_PW = os.environ.get('ONEPAGECRM_PW')

@@ -190,6 +190,7 @@ def main():
 
 ### send weekly reports
     if day_of_week == "Friday":
+        print('\n')
         # Get number of active students, number of sessions, and list of unscheduled students
         for student in active_students:
             name = full_name(student)
