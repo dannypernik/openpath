@@ -57,14 +57,17 @@
     </div>
     <div class="row justify-content-center">
       <div class="col col-sm-11">
-        <a class="btn lead mx-2"
+        <a id="request-trial" class="btn lead" href="#contact">
+          Request a free trial session
+        </a>
+        <!-- <a class="btn lead mx-2"
           onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=1'});return false;">
           Free Test Prep session
         </a>
         <a class="btn lead sec mx-2"
           onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=2'});return false;">
           Free Power session
-        </a>
+        </a> -->
 
         <div class="home-next">
           <a href="#benefits">
@@ -223,7 +226,6 @@
 
   <script>
     document.getElementById("request-trial").addEventListener("click", function () {
-      document.getElementById("subject").classList.remove('d-none');
       document.getElementById("subject").setAttribute('value', 'Trial session request');
     });
 

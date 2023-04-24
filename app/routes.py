@@ -13,6 +13,8 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email
 from functools import wraps
+import requests
+import json
 
 @app.before_request
 def before_request():
@@ -50,14 +52,22 @@ def admin_required(f):
 def index():
     form = InquiryForm()
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
-            return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
+        # if hcaptcha.verify():
+        #     pass
+        # else:
+        #     flash('A computer has questioned your humanity. Please try again.', 'error')
+        #     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
+        new_contact = {
+            "first_name": user.first_name, "last_name": "OPT web form", \
+            "emails": [{ "type": "home", "value": user.email}], \
+            "phones": [{ "type": "mobile", "value": user.phone}], \
+            "tags": ["Website"]
+        }
+        crm = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        print(crm)
         email_status = send_contact_email(user, message, subject)
         if email_status == 200:
             flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
