@@ -246,5 +246,50 @@ def main():
     
     print("\n\n" + quote.json()[0]['q'] + " - " + quote.json()[0]['a'])
 
+### Import Todoist tasks into OnePageCRM
+    todos = requests.get("https://api.todoist.com/rest/v2/tasks", auth='ea82e086fc651c139bda5aa412313e6e8da03b46')
+
+    current_actions = []
+    new_actions = []
+    position = 0
+    crm_response = {"success": 0, "failure": 0}
+
+    crm = requests.get("https://app.onepagecrm.com/api/v3/actions?contact_id=6447f2ce7241d14610745821&per_page=100", auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    todoist = TodoistAPI("ea82e086fc651c139bda5aa412313e6e8da03b46")
+
+    for item in crm.json()['data']['actions']:
+        current_actions.append(item['action']['text'])
+
+    try:
+        tasks = todoist.get_tasks(filter='!no date')
+    except Exception as error:
+        print(error)
+
+    tasks_sorted = sorted(tasks, key=lambda x: x.due.date)
+
+    for task in tasks_sorted:
+        if task.content not in current_actions:
+            new_action = {
+            "contact_id": "6447f2ce7241d14610745821",
+            "assignee_id": "642baeaccbd21b75915acb7a",
+            "status": "date",
+            "text": task.content,
+            "date": task.due.date,
+            "exact_time": round(parse(task.due.date).timestamp()),
+            "position": position
+            }
+            crm_post = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+            print(task.content, crm_post)
+            if crm_post == 201:
+                crm_response['success'] += 1
+            else:
+                crm_response['failure'] += 1
+        position += 1
+
+    if (crm_response['success'] + crm_response['failure']) > 0:
+        print('New tasks found:', crm_response['success'], 'successfully created', \
+            crm_response['failure'], 'failed.', )
+
+
 if __name__ == '__main__':
     main()
