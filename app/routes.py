@@ -52,11 +52,11 @@ def admin_required(f):
 def index():
     form = InquiryForm()
     if form.validate_on_submit():
-        # if hcaptcha.verify():
-        #     pass
-        # else:
-        #     flash('A computer has questioned your humanity. Please try again.', 'error')
-        #     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
@@ -66,8 +66,21 @@ def index():
             "phones": [{ "type": "mobile", "value": user.phone}], \
             "tags": ["Website"]
         }
-        crm = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        print(crm)
+        crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        if crm_contact.status_code == 201:
+            print('crm_contact passes')
+            new_action = {
+                "contact_id": crm_contact.json()['data']['contact']['id'],
+                "assignee_id": app.config['ONEPAGECRM_ID'],
+                "status": "asap",
+                "text": "Respond to OPT web form",
+                #"date": ,
+                #"exact_time": 1526472000,
+                #"position": 1
+            }
+            crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+            print('crm_action:', crm_action)
+
         email_status = send_contact_email(user, message, subject)
         if email_status == 200:
             flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')

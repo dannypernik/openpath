@@ -271,11 +271,11 @@ def main():
     #     if task.content not in current_actions:
     #         new_action = {
     #         "contact_id": "6447f2ce7241d14610745821",
-    #         "assignee_id": "642baeaccbd21b75915acb7a",
+    #         "assignee_id": app.config['ONEPAGECRM_ID'],
     #         "status": "date",
     #         "text": task.content,
     #         "date": task.due.date,
-    #         "exact_time": round(parse(task.due.date).timestamp()),
+    #         #"exact_time": round(parse(task.due.date).timestamp()),
     #         "position": position
     #         }
     #         crm_post = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
