@@ -56,7 +56,7 @@ def index():
             pass
         else:
             flash('A computer has questioned your humanity. Please try again.', 'error')
-            return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
+            return redirect(url_for('index', _anchor="home"))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
@@ -113,13 +113,19 @@ def signin():
 def signup():
     form = LoginForm()
     signup_form = SignupForm()
+    next = request.args.get('next')
     if signup_form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('signin', next=next))
         email_exists = User.query.filter_by(email=signup_form.email.data.lower()).first()
         if email_exists:
             flash('An account already exists for this email. Try logging in or resetting your password.', 'error')
-            return redirect(url_for('signup'))
+            return redirect(url_for('signin', next=next))
         user = User(first_name=signup_form.first_name.data, last_name=signup_form.last_name.data, \
-        email=signup_form.email.data.lower())
+            email=signup_form.email.data.lower())
         user.set_password(signup_form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -129,7 +135,6 @@ def signup():
             flash("Welcome! Please check your inbox to verify your email.")
         else:
             flash('Verification email failed to send, please contact ' + hello, 'error')
-        next = request.args.get('next')
         if not next or url_parse(next).netloc != '':
             return redirect(url_for('start_page'))
         return redirect(next)
@@ -144,13 +149,18 @@ def login():
     form = LoginForm()
     signup_form = SignupForm()
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('signin', next=next))
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user and not user.password_hash:
             flash('Please verify your email to set or reset your password.')
             return redirect(url_for('request_password_reset'))
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
-            return redirect(url_for('signin'))
+            return redirect(url_for('signin', next=next))
         login_user(user)
         if not user.is_verified:
             email_status = send_verification_email(user)
@@ -548,6 +558,11 @@ def test_reminders():
             if d in selected_dates:
                 selected_date_ids.append(d.id)
     if request.method == "POST":
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('test_reminders'))
         selected_date_ids = request.form.getlist('test_dates')
         if not current_user.is_authenticated:
             user = User.query.filter_by(email=form.email.data).first()
@@ -590,6 +605,11 @@ def griffin():
     test='ACT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('griffin'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
@@ -609,6 +629,11 @@ def appamada():
     test='mini SAT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('appamada'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
@@ -628,6 +653,11 @@ def huntington_surrey():
     test='SAT'
     submit_text='Send me the score analysis'
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('huntington_surrey'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
@@ -647,6 +677,11 @@ def ati_austin():
     test='SAT'
     submit_text='Submit'
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('ati_austin'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
@@ -666,6 +701,11 @@ def kaps():
     test='SAT'
     submit_text='Request score analysis'
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('kaps'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
@@ -677,52 +717,52 @@ def kaps():
     return render_template('kaps.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
-@app.route('/centerville', methods=['GET', 'POST'])
-def centerville():
-    form = ScoreAnalysisForm()
-    school = 'Centerville Elks Soccer'
-    test = 'ACT'
-    date = 'Saturday, December 3rd, 2022'
-    time = '9:30am to 1:00pm'
-    location = 'Centerville High School Room West 126'
-    contact_info = 'Tom at 513-519-6784'
-    submit_text = 'Register'
-    if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
-        if email_status == 200:
-            return render_template('test-registration-submitted.html', email=parent.email,
-            student=student, test=test)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('centerville.html', form=form, school=school, test=test, \
-        date=date, time=time, location=location, submit_text=submit_text)
+# @app.route('/centerville', methods=['GET', 'POST'])
+# def centerville():
+#     form = ScoreAnalysisForm()
+#     school = 'Centerville Elks Soccer'
+#     test = 'ACT'
+#     date = 'Saturday, December 3rd, 2022'
+#     time = '9:30am to 1:00pm'
+#     location = 'Centerville High School Room West 126'
+#     contact_info = 'Tom at 513-519-6784'
+#     submit_text = 'Register'
+#     if form.validate_on_submit():
+#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+#             grad_year=form.grad_year.data)
+#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+#         email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
+#         if email_status == 200:
+#             return render_template('test-registration-submitted.html', email=parent.email,
+#             student=student, test=test)
+#         else:
+#             flash('Email failed to send, please contact ' + hello, 'error')
+#     return render_template('centerville.html', form=form, school=school, test=test, \
+#         date=date, time=time, location=location, submit_text=submit_text)
 
 
-@app.route('/spartans', methods=['GET', 'POST'])
-def spartans():
-    form = ScoreAnalysisForm()
-    school = 'Spartans Swimming'
-    test = 'ACT, SAT, or PSAT'
-    date = 'Saturday, December 3rd, 2022'
-    time = '9:30am to 1:00pm'
-    location = 'Zoom'
-    contact_info = ''
-    submit_text = 'Register'
-    if form.validate_on_submit():
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = tbd(student, parent, school, test, date, time, location, contact_info)
-        if email_status == 200:
-            return render_template('test-registration-submitted.html', email=parent.email,
-            student=student, test=test)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('spartans.html', form=form, school=school, test=test, \
-        date=date, time=time, location=location, submit_text=submit_text)
+# @app.route('/spartans', methods=['GET', 'POST'])
+# def spartans():
+#     form = ScoreAnalysisForm()
+#     school = 'Spartans Swimming'
+#     test = 'ACT, SAT, or PSAT'
+#     date = 'Saturday, December 3rd, 2022'
+#     time = '9:30am to 1:00pm'
+#     location = 'Zoom'
+#     contact_info = ''
+#     submit_text = 'Register'
+#     if form.validate_on_submit():
+#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+#             grad_year=form.grad_year.data)
+#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+#         email_status = tbd(student, parent, school, test, date, time, location, contact_info)
+#         if email_status == 200:
+#             return render_template('test-registration-submitted.html', email=parent.email,
+#             student=student, test=test)
+#         else:
+#             flash('Email failed to send, please contact ' + hello, 'error')
+#     return render_template('spartans.html', form=form, school=school, test=test, \
+#         date=date, time=time, location=location, submit_text=submit_text)
 
 
 @app.route('/sat-act-data')
@@ -734,6 +774,11 @@ def sat_act_data():
 def test_strategies():
     form = TestStrategiesForm()
     if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('test_strategies'))
         relation = form.relation.data
         if relation == 'student':
             student = User(first_name=form.first_name.data, email=form.email.data)
