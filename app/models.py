@@ -9,7 +9,7 @@ from flask_login import UserMixin
 class UserTestDate(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
-    is_registered = db.Column(db.Boolean)
+    is_registered = db.Column(db.Boolean, default=False)
     users = db.relationship("User", backref=db.backref('planned_tests', lazy='dynamic'))
     test_dates = db.relationship("TestDate", backref=db.backref('users_interested', lazy='dynamic'))
 
@@ -40,8 +40,8 @@ class User(UserMixin, db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
     role = db.Column(db.String(24), index=True)
-    is_admin = db.Column(db.Boolean)
-    is_verified = db.Column(db.Boolean)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
     test_dates = db.relationship('UserTestDate',
