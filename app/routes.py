@@ -717,52 +717,62 @@ def kaps():
     return render_template('kaps.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
-# @app.route('/centerville', methods=['GET', 'POST'])
-# def centerville():
-#     form = ScoreAnalysisForm()
-#     school = 'Centerville Elks Soccer'
-#     test = 'ACT'
-#     date = 'Saturday, December 3rd, 2022'
-#     time = '9:30am to 1:00pm'
-#     location = 'Centerville High School Room West 126'
-#     contact_info = 'Tom at 513-519-6784'
-#     submit_text = 'Register'
-#     if form.validate_on_submit():
-#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-#             grad_year=form.grad_year.data)
-#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-#         email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
-#         if email_status == 200:
-#             return render_template('test-registration-submitted.html', email=parent.email,
-#             student=student, test=test)
-#         else:
-#             flash('Email failed to send, please contact ' + hello, 'error')
-#     return render_template('centerville.html', form=form, school=school, test=test, \
-#         date=date, time=time, location=location, submit_text=submit_text)
+@app.route('/centerville', methods=['GET', 'POST'])
+def centerville():
+    form = ScoreAnalysisForm()
+    school = 'Centerville Elks Soccer'
+    test = 'ACT'
+    date = 'Saturday, December 3rd, 2022'
+    time = '9:30am to 1:00pm'
+    location = 'Centerville High School Room West 126'
+    contact_info = 'Tom at 513-519-6784'
+    submit_text = 'Register'
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('centerville'))
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
+        if email_status == 200:
+            return render_template('test-registration-submitted.html', email=parent.email,
+            student=student, test=test)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('centerville.html', form=form, school=school, test=test, \
+        date=date, time=time, location=location, submit_text=submit_text)
 
 
-# @app.route('/spartans', methods=['GET', 'POST'])
-# def spartans():
-#     form = ScoreAnalysisForm()
-#     school = 'Spartans Swimming'
-#     test = 'ACT, SAT, or PSAT'
-#     date = 'Saturday, December 3rd, 2022'
-#     time = '9:30am to 1:00pm'
-#     location = 'Zoom'
-#     contact_info = ''
-#     submit_text = 'Register'
-#     if form.validate_on_submit():
-#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-#             grad_year=form.grad_year.data)
-#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-#         email_status = tbd(student, parent, school, test, date, time, location, contact_info)
-#         if email_status == 200:
-#             return render_template('test-registration-submitted.html', email=parent.email,
-#             student=student, test=test)
-#         else:
-#             flash('Email failed to send, please contact ' + hello, 'error')
-#     return render_template('spartans.html', form=form, school=school, test=test, \
-#         date=date, time=time, location=location, submit_text=submit_text)
+@app.route('/spartans', methods=['GET', 'POST'])
+def spartans():
+    form = ScoreAnalysisForm()
+    school = 'Spartans Swimming'
+    test = 'ACT, SAT, or PSAT'
+    date = 'Saturday, December 3rd, 2022'
+    time = '9:30am to 1:00pm'
+    location = 'Zoom'
+    contact_info = ''
+    submit_text = 'Register'
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('spartans'))
+        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+            grad_year=form.grad_year.data)
+        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+        email_status = tbd(student, parent, school, test, date, time, location, contact_info)
+        if email_status == 200:
+            return render_template('test-registration-submitted.html', email=parent.email,
+            student=student, test=test)
+        else:
+            flash('Email failed to send, please contact ' + hello, 'error')
+    return render_template('spartans.html', form=form, school=school, test=test, \
+        date=date, time=time, location=location, submit_text=submit_text)
 
 
 @app.route('/sat-act-data')

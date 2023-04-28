@@ -19,6 +19,7 @@
             {{ form.email }}
             {{ form.password }}
             {{ form.submit }}
+            {{ hcaptcha }}
           </form>
           <p class="mt-3 text-center">
             <a href="{{ url_for('request_password_reset') }}" class="btn clr sm">Reset password</a>
@@ -35,6 +36,7 @@
             {{ signup_form.password }}
             {{ signup_form.password2 }}
             {{ signup_form.submit }}
+            {{ hcaptcha }}
           </form>
         </div>
       </div>

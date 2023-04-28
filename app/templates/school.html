@@ -29,7 +29,8 @@
               {{ form.parent_email }}
               {{ form.school(value=school, class="d-none") }}
             </div>
-            <div class="col-12">
+            <div class="col-12 mt-2">
+              {{ hcaptcha }}
               {{ form.submit(value=submit_text) }}
             </div>
           </div>
