@@ -94,9 +94,12 @@ class UserForm(FlaskForm):
         validators=[InputRequired()])
     location = StringField('Location', render_kw={"placeholder": "Location"})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2023', '2023 (Senior)'), \
-        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')])
-    status = SelectField('Status', choices=[('none','None'),('active', 'Active'),('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
-    role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'),('tutor','Tutor'),('admin','Admin')])
+        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)'), \
+        ('college', 'College'), ('school', 'Grade school')])
+    status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
+        ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
+    role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'), \
+        ('tutor','Tutor'),('admin','Admin')])
     tutor_id = SelectField('Tutor', coerce=int)
     parent_id = SelectField('Parent', coerce=int)
     is_admin = BooleanField('Admin')
@@ -124,7 +127,8 @@ class StudentForm(FlaskForm):
             validate_email])
     student_phone = StringField('Student phone', render_kw={"placeholder": "Student phone"})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2023', '2023 (Senior)'), \
-        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)')])
+        ('2024', '2024 (Junior)'), ('2025', '2025 (Sophomore)'), ('2026', '2026 (Freshman)'), \
+        ('college', 'College'), ('school', 'Grade school')])
     parent_id = SelectField('Parent', coerce=int)
     parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
     parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
@@ -134,7 +138,8 @@ class StudentForm(FlaskForm):
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={"placeholder": "Location"})
-    status = SelectField('Status', choices=[('active', 'Active'),('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
+    status = SelectField('Status', choices=[('active', 'Active'),('prospective','Prospective'), \
+        ('paused','Paused'),('inactive','Inactive')])
     tutor_id = SelectField('Tutor', coerce=int)
     submit = SubmitField('Save')
 
@@ -163,7 +168,8 @@ class TestDateForm(FlaskForm):
     late_date = DateField('Late deadline', format='%Y-%m-%d', validators=(validators.Optional(),))
     other_date = DateField('Other deadline', format='%Y-%m-%d', validators=(validators.Optional(),))
     score_date = DateField('Score release date', format='%Y-%m-%d', validators=(validators.Optional(),))
-    status = SelectField('Status', choices=[('confirmed','Confirmed'),('unconfirmed','Unconfirmed'),('school','School day'),('past','Past')])
+    status = SelectField('Status', choices=[('confirmed','Confirmed'),('unconfirmed','Unconfirmed'), \
+        ('school','School day'),('past','Past')])
     submit = SubmitField('Save')
 
 
