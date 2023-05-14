@@ -14,7 +14,6 @@
     {{ form.student_name }}
     {{ form.student_last_name(onchange="update()") }}
     {{ form.student_email }}
-    {{ form.secondary_email }}
     {{ form.timezone }}
     {{ form.location }}
     <div class="my-2">
@@ -25,6 +24,7 @@
       {{ form.parent_name }}
       {{ form.parent_last_name }}
       {{ form.parent_email }}
+      {{ form.secondary_email }}
     </div>
 
     {% for t in tests %}
