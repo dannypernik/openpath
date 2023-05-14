@@ -133,7 +133,7 @@ class StudentForm(FlaskForm):
     parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
     parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
     parent_email = StringField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
-    secondary_email = secondary_email = StringField('Secondary email', render_kw={"placeholder": "Secondary email"})
+    secondary_email = secondary_email = StringField('Parent email 2', render_kw={"placeholder": "Parent email 2"})
     parent_phone = StringField('Parent phone', render_kw={"placeholder": "Parent phone"})
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
