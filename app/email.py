@@ -673,7 +673,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     return result.status_code
 
 
-def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes):
+def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_not_in_db):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -693,6 +693,8 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes):
     for s in status_fixes:
         student_statuses.append(s[0] + ' is listed as ' + s[1] + ' in the database and ' + \
             s[2] + ' in the spreadsheet.')
+    
+    not_in_db = (', ').join(students_not_in_db)
 
     low_hours_list = ', '.join(low_active_students)
     student_fix_list = '<br>'.join(student_statuses)
@@ -712,7 +714,7 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes):
                 ],
                 "Subject": "Spreadsheet data report for " + start_date + " to " + end_date,
                 "HTMLPart": "Active students with low hours:<br>" + low_hours_list + "<br><br>" + \
-                    student_fix_list,
+                    student_fix_list + "<br>Students not added to database:<br><br>" + not_in_db,
             }
         ]
     }

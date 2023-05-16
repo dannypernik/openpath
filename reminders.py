@@ -104,6 +104,8 @@ def main():
     upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
     paused_students = students.filter(User.status == 'paused')
     status_fixes = []
+    student_names_db = []
+    students_not_in_db = []
 
     # Use fallback quote if request fails
     quote = None
@@ -186,7 +188,7 @@ def main():
             print(name + ' is listed as ' + student.status + ' and is on the schedule.')
 
     if len(reminder_list) == 0:
-        print("No reminders sent.\n")
+        print("No reminders sent.")
 
 ### send weekly reports
     if day_of_week == "Friday":
@@ -231,18 +233,21 @@ def main():
             print('No summary data found.')
             return
 
-        # Get list of students with low hours
+        # Get list of students with conflicting statuses, low hours, or missing from DB
         for row in summary_data:
             for s in students:
                 if row[0] == full_name(s):
                     if row[1] != s.status.title():
                         status_fixes.append([full_name(s), s.status.title(), row[1]])
+                student_names_db.append(full_name(s))
             if row[1] == 'Active' and float(row[2]) <= 1.5:
                 low_active_students.append([row[0], row[2]])
+            if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
+                students_not_in_db.append(row[0])
         
         spreadsheet_data = {'low_active_students': low_active_students}
 
-        send_spreadsheet_report_email(now, spreadsheet_data, status_fixes)
+        send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_not_in_db)
     
     print("\n\n" + quote.json()[0]['q'] + " - " + quote.json()[0]['a'])
 
