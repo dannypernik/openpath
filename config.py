@@ -27,3 +27,4 @@ class Config(object):
     SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
     ONEPAGECRM_ID = os.environ.get('ONEPAGECRM_ID')
     ONEPAGECRM_PW = os.environ.get('ONEPAGECRM_PW')
+    TODOIST_ID = os.environ.get('TODOIST_ID')
