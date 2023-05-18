@@ -140,8 +140,16 @@ def send_reminder_email(event, student, quote):
         timezone = "your"
 
     location = event.get('location')
+    warnings = []
+    warnings_str = ''
+
+    if location != student.location:
+        warnings.append('Event location != DB location')
     if location is None:
         location = student.location
+        warnings.append('Event location missing')
+    if warnings.__len__() > 0:
+        warnings_str = '(' + (', ').join(warnings) + ')'
     if "http" in location:
         location = "<a href=\"" + location + "\">" + location + "</a>"
 
@@ -177,7 +185,7 @@ def send_reminder_email(event, student, quote):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        print(student.first_name, student.last_name, start_display, timezone)
+        print(student.first_name, student.last_name, start_display, timezone, warnings_str)
     else:
         print("Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code), result.reason)
     return result.status_code
