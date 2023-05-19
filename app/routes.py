@@ -804,7 +804,7 @@ def test_strategies():
     return render_template('test-strategies.html', form=form)
 
 @app.route('/pay')
-def sessions():
+def pay():
     return redirect('https://link.waveapps.com/4yu6up-ne82sd')
 
 @app.route("/download/<filename>")
