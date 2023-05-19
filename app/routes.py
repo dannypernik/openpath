@@ -803,6 +803,9 @@ def test_strategies():
             flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('test-strategies.html', form=form)
 
+@app.route('/pay')
+def sessions():
+    return redirect('https://link.waveapps.com/4yu6up-ne82sd')
 
 @app.route("/download/<filename>")
 def download_file (filename):
