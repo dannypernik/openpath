@@ -5,6 +5,7 @@ from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
 from app.models import User, TestDate, UserTestDate
+from datetime import datetime
 
 
 def validate_email(self, email):
@@ -171,6 +172,15 @@ class TestDateForm(FlaskForm):
     status = SelectField('Status', choices=[('confirmed','Confirmed'),('unconfirmed','Unconfirmed'), \
         ('school','School day'),('past','Past')])
     submit = SubmitField('Save')
+
+
+class RecapForm(FlaskForm):
+    students = SelectField('Student name', coerce=int, validators=[InputRequired()])
+    date = DateField('Session date', format='%Y-%m-%d', default=datetime.today, validators=[InputRequired()])
+    homework = TextAreaField('Homework', render_kw={"placeholder": "Homework", 'rows': '3'}, \
+        validators=[InputRequired()])
+    audio = StringField('Audio recap link', render_kw={'placeholder': 'Audio recap link'})
+    submit = SubmitField('Send')    
 
 
 class TestStrategiesForm(FlaskForm):

@@ -4,17 +4,18 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-        ResetPasswordForm, TutorForm
+        ResetPasswordForm, TutorForm, RecapForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate
 from werkzeug.urls import url_parse
 from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
-    send_prep_class_email, send_signup_notification_email
+    send_prep_class_email, send_signup_notification_email, send_session_recap_email
 from functools import wraps
 import requests
 import json
+from reminders import get_student_events, full_name
 
 @app.before_request
 def before_request():
@@ -539,6 +540,31 @@ def edit_date(id):
     return render_template('edit-date.html', title='Edit date', form=form, date=date, \
         students=students)
 
+@app.route('/recap', methods=['GET', 'POST'])
+@admin_required
+def recap():
+    form = RecapForm()
+    students = User.query.order_by(User.first_name).filter(
+        (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
+    student_list = [(0, 'Student name')] + [(s.id, full_name(s)) for s in students] #[(0,'')] +
+    form.students.choices = student_list
+    if form.students.data == 0:
+        flash('Please select a student', 'error')
+    elif form.validate_on_submit():
+        user = User.query.get_or_404(form.students.data)
+        user.homework = form.homework.data
+        user.date = form.date.data
+        user.audio = form.audio.data
+        events = get_student_events(full_name(user))
+
+        email_status = send_session_recap_email(user, events)
+        if email_status == 200:
+            flash('Update email sent for ' + user.first_name)
+        else:
+            flash('Email failed to send', 'error')
+        return redirect(url_for('recap'))
+    return render_template('recap.html', form=form)
+
 
 @app.route('/test-reminders', methods=['GET', 'POST'])
 def test_reminders():
@@ -552,7 +578,7 @@ def test_reminders():
     selected_date_ids = []
     selected_date_strs = []
     if current_user.is_authenticated:
-        user = User.query.filter_by(id=current_user.id).first_or_404()
+        user = User.query.filter_by(id=current_user.id).first()
         selected_dates = user.get_dates().all()
         for d in upcoming_dates:
             if d in selected_dates:

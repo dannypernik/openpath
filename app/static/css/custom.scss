@@ -219,6 +219,10 @@ select {
   border-radius: 10px;
   padding: 0.5rem;
   font-size: 1.6rem;
+  &.select-header {
+    display: inline-block;
+    font-size: 1.8rem;
+  }
 }
 
 .semibold {

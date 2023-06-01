@@ -1,0 +1,3 @@
+{% for alert in alerts %}
+  {{ alert }}
+{% endfor %}

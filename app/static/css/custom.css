@@ -5923,6 +5923,10 @@ select {
   padding: 0.5rem;
   font-size: 1.6rem;
 }
+select.select-header {
+  display: inline-block;
+  font-size: 1.8rem;
+}
 
 .semibold {
   font-weight: 600;

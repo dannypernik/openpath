@@ -1,0 +1,44 @@
+{% if user.audio != '' %}
+	<p>
+		<b><u>Progress update</u></b>
+	</p>
+	<p>Here's a brief audio clip reviewing today's session and previewing what's up next:</p>
+	<div id="audio-player-image" style="padding: 4px 0px 2px 0px">
+		<a href="{{ user.audio }}" style="text-decoration: none">
+			<img
+				alt="To listen, visit {{ user.audio }}"
+				title="{{ user.audio }}"
+				width="147"
+				height="35"
+				class="02940762"
+				style="display: inline"
+				src="https://www.beepaudio.com/play-voice-message.png" />
+			<p class="7fc2942f" style="display: inline">&nbsp;</p></a
+		>
+		<p
+			style="
+				display: block;
+				text-align: center;
+				font-size: 10px;
+				width: 147px;
+				line-height: 5px;
+				margin-top: 0px !important;
+				margin-bottom: 0px;
+			">
+			<a
+				style="color: #2473e8 !important; text-decoration: none"
+				href="{{ user.audio }}"
+				class="04a776f3"
+				>{{ user.audio }}</a
+			>
+		</p>
+	</div>
+{% endif %}
+
+<p>Next scheduled sessions:</p>
+<ul>
+	{% for event in event_details[:4] %}
+	<li>{{event['date']}}: {{ event['start'] }}-{{ event['end'] }}</li>
+	{% endfor %}
+</ul>
+
