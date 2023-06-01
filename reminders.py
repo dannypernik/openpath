@@ -10,7 +10,7 @@ from google.oauth2.credentials import Credentials
 from app import app, db
 from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
-from app.email import send_reminder_email, send_weekly_report_email, \
+from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_spreadsheet_report_email, send_test_reminders_email
 from sqlalchemy.orm import joinedload
@@ -27,8 +27,56 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:Q'
+calendars = ['primary', "n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com"]
 
-def main():
+now  = datetime.datetime.strptime(datetime.datetime.utcnow().isoformat(), "%Y-%m-%dT%H:%M:%S.%f")
+today = datetime.date.today()
+day_of_week = datetime.datetime.strftime(now, format="%A")
+upcoming_start = (now + datetime.timedelta(hours=39)).isoformat() + 'Z'
+upcoming_end = (now + datetime.timedelta(hours=63)).isoformat() + 'Z'
+week_end = (now + datetime.timedelta(days=7, hours=31)).isoformat() + 'Z'
+bimonth_end = (now + datetime.timedelta(days=60, hours=31)).isoformat() + 'Z'
+upcoming_events = []
+week_events = []
+week_events_list = []
+bimonth_events = []
+bimonth_events_list = []
+unscheduled_list = []
+outsourced_unscheduled_list = []
+paused_list = []
+scheduled_students = set()
+future_schedule = set()
+outsourced_scheduled_students = set()
+low_active_students = []
+
+tutoring_hours = 0
+session_count = 0
+outsourced_hours = 0
+outsourced_session_count = 0
+
+reminder_list = []
+students = User.query.order_by(User.first_name).filter(User.role == 'student')
+test_reminder_users = User.query.order_by(User.first_name).filter(
+    User.test_dates).filter(User.test_reminders).options(joinedload('parent'), joinedload('tutor'))
+active_students = students.filter(User.status == 'active')
+upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
+paused_students = students.filter(User.status == 'paused')
+status_fixes = []
+student_names_db = []
+students_not_in_db = []
+
+### Test date reminders
+test_dates = TestDate.query.all()
+
+def full_name(user):
+    if user.last_name == "" or user.last_name is None:
+        name = user.first_name
+    else:
+        name = user.first_name + " " + user.last_name
+    return name
+
+
+def get_events_and_data():
     """
     """
     flow = Flow.from_client_secrets_file(
@@ -61,6 +109,14 @@ def main():
 
     # Call the Calendar API
     service_cal = build('calendar', 'v3', credentials=creds)
+    for id in calendars:
+        bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start,
+            timeMax=bimonth_end, singleEvents=True, orderBy='startTime').execute()
+        bimonth_events_result = bimonth_cal_events.get('items', [])
+
+        for e in range(len(bimonth_events_result)):
+            if bimonth_events_result[e]['start'].get('dateTime'):
+                bimonth_events.append(bimonth_events_result[e])
 
     # Call the Sheets API
     service_sheets = build('sheets', 'v4', credentials=creds)
@@ -69,58 +125,25 @@ def main():
                                 range=SUMMARY_RANGE).execute()
     summary_data = result.get('values', [])
 
-    now  = datetime.datetime.strptime(datetime.datetime.utcnow().isoformat(), "%Y-%m-%dT%H:%M:%S.%f")
-    today = datetime.date.today()
-    day_of_week = datetime.datetime.strftime(now, format="%A")
-    upcoming_start = (now + datetime.timedelta(hours=39)).isoformat() + 'Z'
-    upcoming_end = (now + datetime.timedelta(hours=63)).isoformat() + 'Z'
-    week_end = (now + datetime.timedelta(days=7, hours=31)).isoformat() + 'Z'
-    bimonth_end = (now + datetime.timedelta(days=60, hours=31)).isoformat() + 'Z'
-    calendars = ['primary', "n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com"]
+    return bimonth_events, summary_data
 
-    upcoming_events = []
-    week_events = []
-    week_events_list = []
-    bimonth_events = []
-    bimonth_events_list = []
-    unscheduled_list = []
-    outsourced_unscheduled_list = []
-    paused_list = []
-    scheduled_students = set()
-    future_schedule = set()
-    outsourced_scheduled_students = set()
-    low_active_students = []
 
-    tutoring_hours = 0
-    session_count = 0
-    outsourced_hours = 0
-    outsourced_session_count = 0
+def get_upcoming_events():
+    bimonth_events, summary_data = get_events_and_data()
 
-    reminder_list = []
-    students = User.query.order_by(User.first_name).filter(User.role == 'student')
-    test_reminder_users = User.query.order_by(User.first_name).filter(
-        User.test_dates).filter(User.test_reminders).options(joinedload('parent'), joinedload('tutor'))
-    active_students = students.filter(User.status == 'active')
-    upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
-    paused_students = students.filter(User.status == 'paused')
-    status_fixes = []
-    student_names_db = []
-    students_not_in_db = []
+    for e in range(len(bimonth_events)):
+        event_start = bimonth_events[e]['start'].get('dateTime')
+        if event_start < week_end:
+            week_events.append(bimonth_events[e])
+            if event_start < upcoming_end:
+                upcoming_events.append(bimonth_events[e])
+    
+    return week_events, upcoming_events
 
-    # Use fallback quote if request fails
-    quote = None
-    quote = requests.get("https://zenquotes.io/api/today")
 
-    def full_name(user):
-        if user.last_name == "" or user.last_name is None:
-            name = user.first_name
-        else:
-            name = user.first_name + " " + user.last_name
-        return name
-
-### Test date reminders
-    test_dates = TestDate.query.all()
-
+def main():
+    week_events, upcoming_events = get_upcoming_events()
+    
     # mark test dates as past
     for d in test_dates:
         if d.date == today:
@@ -138,22 +161,6 @@ def main():
             elif d.date == today + datetime.timedelta(days=6):
                 send_test_reminders_email(u, d)
 
-    for id in calendars:
-        bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start,
-            timeMax=bimonth_end, singleEvents=True, orderBy='startTime').execute()
-        bimonth_events_result = bimonth_cal_events.get('items', [])
-
-        for e in range(len(bimonth_events_result)):
-            if bimonth_events_result[e]['start'].get('dateTime'):
-                bimonth_events.append(bimonth_events_result[e])
-
-    for e in range(len(bimonth_events)):
-        event_start = bimonth_events[e]['start'].get('dateTime')
-        if event_start < week_end:
-            week_events.append(bimonth_events[e])
-            if event_start < upcoming_end:
-                upcoming_events.append(bimonth_events[e])
-
     upcoming_start_formatted = datetime.datetime.strftime(parse(upcoming_start), format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
 
@@ -163,7 +170,7 @@ def main():
             name = full_name(student)
             if name in event.get('summary'):
                 reminder_list.append(name)
-                send_reminder_email(event, student, quote)
+                send_reminder_email(event, student)
 
     # get list of event names for the bimonth
     for e in bimonth_events:
@@ -226,7 +233,7 @@ def main():
         send_weekly_report_email(str(session_count), str(tutoring_hours), str(len(scheduled_students)), \
             future_schedule, unscheduled_list, str(outsourced_session_count), \
             str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-            outsourced_unscheduled_list, paused_list, now, quote)
+            outsourced_unscheduled_list, paused_list, now)
 
 ### Generate spreadsheet report
         if not summary_data:
@@ -249,7 +256,19 @@ def main():
 
         send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_not_in_db)
     
-    print("\n\n" + quote.json()[0]['q'] + " - " + quote.json()[0]['a'])
+    msg, author, header = get_quote()
+    print("\n\n" + msg + " - " + author)
+
+
+def get_student_events(full_name):
+    student_events = []
+    bimonth_events, summary_data = get_events_and_data()
+
+    for event in bimonth_events:
+        if full_name in event.get('summary'):
+            student_events.append(event)
+    
+    return student_events
 
 
 if __name__ == '__main__':
