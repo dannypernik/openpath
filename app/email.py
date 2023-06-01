@@ -5,19 +5,23 @@ from flask import render_template, url_for
 import re
 import datetime
 from dateutil.parser import parse
+import requests
 
 
-def verify_quote(quote):
-    # Use fallback quote if request fails
-    if quote is not None:
+def get_quote():
+    try:
+        quote = requests.get("https://zenquotes.io/api/today")
+
         message = quote.json()[0]['q']
         author = quote.json()[0]['a']
         quote_header = "<strong>Random inspirational quote of the day:</strong><br/>"
-    else:
+    except requests.exceptions.RequestException:
         message = "We don't have to do all of it alone. We were never meant to."
         author = "Brene Brown"
         quote_header = ""
     return message, author, quote_header
+
+message, author, quote_header = get_quote()
 
 
 def send_contact_email(user, message, subject):
@@ -91,7 +95,7 @@ def send_confirmation_email(user, message):
     return result.status_code
 
 
-def send_reminder_email(event, student, quote):
+def send_reminder_email(event, student):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -101,8 +105,8 @@ def send_reminder_email(event, student, quote):
         parent = student.parent
         if parent.session_reminders:
             cc_email.append({ "Email": parent.email })
-        if parent.secondary_email:
-            cc_email.append({ "Email": parent.secondary_email })
+            if parent.secondary_email:
+                cc_email.append({ "Email": parent.secondary_email })
 
     if student.tutor:
         tutor = student.tutor
@@ -125,8 +129,6 @@ def send_reminder_email(event, student, quote):
     end_offset = dt.strptime(end_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
     start_display = dt.strftime(start_offset, "%-I:%M%p").lower()
     end_display = dt.strftime(end_offset, "%-I:%M%p").lower()
-
-    message, author, quote_header = verify_quote(quote)
 
     if student.timezone == -2:
         timezone = "Pacific"
@@ -188,6 +190,149 @@ def send_reminder_email(event, student, quote):
         print(student.first_name, student.last_name, start_display, timezone, warnings_str)
     else:
         print("Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code), result.reason)
+    return result.status_code
+
+
+def send_session_recap_email(student, events):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    cc_email = []
+    if student.parent:
+        parent = student.parent
+        if parent.session_reminders:
+            cc_email.append({ "Email": parent.email })
+            if parent.secondary_email:
+                cc_email.append({ "Email": parent.secondary_email })
+
+    if student.tutor:
+        tutor = student.tutor
+        if tutor.session_reminders:
+            cc_email.append({ "Email": tutor.email })
+    
+        reply_email = tutor.email
+        if reply_email == '':
+            reply_email = app.config['MAIL_USERNAME']
+    
+    tz_difference = student.timezone - tutor.timezone
+
+    dt = datetime.datetime
+    
+
+    session_date = dt.strftime(student.date, format="%A, %b %-d")
+
+    if student.timezone == -2:
+        timezone = "Pacific"
+    elif student.timezone == -1:
+        timezone = "Mountain"
+    elif student.timezone == 0:
+        timezone = "Central"
+    elif student.timezone == 1:
+        timezone = "Eastern"
+    else:
+        timezone = "your"
+    
+    event_details = []
+    alerts = []
+    location = None
+    for event in events:
+        start_time = event['start'].get('dateTime')
+        start_date = dt.strftime(parse(start_time), format="%A, %b %-d")
+        start_time_formatted = re.sub(r'([-+]\d{2}):(\d{2})(?:(\d{2}))?$', r'\1\2\3', start_time)
+        start_offset = dt.strptime(start_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
+        end_time = event['end'].get('dateTime')
+        end_time_formatted = re.sub(r'([-+]\d{2}):(\d{2})(?:(\d{2}))?$', r'\1\2\3', end_time)
+        end_offset = dt.strptime(end_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
+        start_display = dt.strftime(start_offset, "%-I:%M%p").lower()
+        end_display = dt.strftime(end_offset, "%-I:%M%p").lower()
+        
+        event_details.append({
+            'date': start_date,
+            'start': start_display,
+            'end': end_display,
+        })
+
+        if location == None:
+            location = event.get('location')
+        elif location != event.get('location'):
+            alerts.append('Location mismatch error for ' + student.first_name + ' ' + student.last_name + ' on ' + start_date)
+
+    if alerts.__len__() > 0:
+        send_notification_email(alerts)
+        
+    warnings = []
+    warnings_str = ''
+
+    if location != student.location:
+        warnings.append('Event location != DB location')
+    if location is None:
+        location = student.location
+        warnings.append('Event location missing')
+    if warnings.__len__() > 0:
+        warnings_str = '(' + (', ').join(warnings) + ')'
+    if "http" in location:
+        location = '<a href=\"' + location + '\">' + location + '<a>'
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": student.email
+                    }
+                ],
+                "Cc": cc_email,
+                "ReplyTo": { "Email": reply_email },
+                "Subject": "Session recap for " + session_date,
+                "HTMLPart": render_template('email/recap-email.html', student=student, event_details=event_details),
+                "TextPart": render_template('email/recap-email.txt', student=student, event_details=event_details)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+
+    if result.status_code == 200:
+        print(student.first_name, student.last_name, start_display, timezone, warnings_str)
+    else:
+        print("Error for " + student.first_name + "\'s session update email with code", result.status_code, result.reason)
+    return result.status_code
+
+
+def send_notification_email(alerts):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": app.config['MAIL_USERNAME']
+                    }
+                ],
+                "Subject": 'Open Path Tutoring notification',
+                "TextPart": render_template('email/notification-email.txt', alerts=alerts),
+                "HTMLPart": render_template('email/notification-email.html', alerts=alerts)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("Notification email sent to " + app.config['MAIL_USERNAME'])
+    else:
+        print("Notification email to " + app.config['MAIL_USERNAME'] + " failed to send with code " + result.status_code, result.reason)
     return result.status_code
 
 
@@ -615,7 +760,7 @@ def send_score_analysis_email(student, parent, school):
 def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled_student_count, \
     future_list, unscheduled_list, outsourced_session_count, outsourced_hours, \
     outsourced_scheduled_student_count, outsourced_unscheduled_list, \
-    paused, now, quote):
+    paused, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -638,8 +783,6 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     paused_students = ', '.join(paused)
     if paused_students == '':
         paused_students = "None"
-
-    message, author, quote_header = verify_quote(quote)
 
     data = {
         'Messages': [
@@ -704,7 +847,6 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_
     
     not_in_db = (', ').join(students_not_in_db)
 
-    low_hours_list = ', '.join(low_active_students)
     student_fix_list = '<br>'.join(student_statuses)
     
 
@@ -721,8 +863,8 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_
                     }
                 ],
                 "Subject": "Spreadsheet data report for " + start_date + " to " + end_date,
-                "HTMLPart": "Active students with low hours:<br>" + low_hours_list + "<br><br>" + \
-                    student_fix_list + "<br>Students not added to database:<br><br>" + not_in_db,
+                "HTMLPart": "Active students with low hours:<br>" + low_active_students + "<br><br>" + \
+                    student_fix_list + "<br><br>Students not added to database:<br><br>" + not_in_db,
             }
         ]
     }
