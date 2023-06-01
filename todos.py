@@ -3,9 +3,7 @@ import requests
 from todoist_api_python.api import TodoistAPI
 
 ### Import Todoist tasks into OnePageCRM
-current_actions = []
-action_statuses = []
-action_ids = []
+dated_actions = []
 new_actions = []
 all_task_labels = []
 position = 0
@@ -15,12 +13,12 @@ crm = requests.get("https://app.onepagecrm.com/api/v3/actions?contact_id=6465094
 todoist = TodoistAPI(app.config['TODOIST_ID'])
 
 for item in crm.json()['data']['actions']:
-    current_actions.append(item['action']['text'])
-    action_statuses.append({
-        "id": item['action']['id'],
-        "done": item['action']['done']
-    })
-    action_ids.append(item['action']['id'])
+    if 'date' in item['action']:
+        dated_actions.append({
+            "id": item['action']['id'],
+            "date": item['action']['date'],
+            "done": item['action']['done']
+        })
 
 try:
     tasks = todoist.get_tasks(filter='!no date&!recurring')
@@ -36,9 +34,16 @@ for task in tasks_sorted:
             "id": task.id,
             "label": label
         })
-    for action in action_statuses:
+    for action in dated_actions:
         if action['id'] in task.labels:
             has_match = True
+            if action['date'] != task.due.date:
+                try:
+                    todoist.update_task(task_id=task.id, due_date=action['date'])
+                    print('Todoist date updated')
+                except:
+                    print('Todoist update failed')
+
             if action['done']:
                 todoist.close_task(task_id=task.id)
     if not has_match:
@@ -53,7 +58,7 @@ for task in tasks_sorted:
 
         crm_post = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW'])).json()
 
-        # Assign CRM id to Todoist task description
+        # Assign CRM id to Todoist task label
         task.labels.append(crm_post['data']['action']['id'])
         todoist.update_task(task_id=task.id, labels=task.labels)
 
