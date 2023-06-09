@@ -13,7 +13,10 @@
           <div id="menu-title" class="d-none d-sm-block text-truncate">
             {% if current_user.is_authenticated %}
               <span class="">
-                {{ current_user.first_name }} {{ current_user.last_name }}
+                {{ current_user.first_name }}
+                {% if current_user.last_name %}
+                  {{ current_user.last_name }}
+                {% endif %}
               </span>
             {% else %}
               Menu
