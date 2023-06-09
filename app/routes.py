@@ -188,8 +188,11 @@ def logout():
 def start_page():
     if current_user.is_admin:
         return redirect(url_for('students'))
-    else:
+    elif current_user.password_hash:
         return redirect(url_for('test_reminders'))
+    else:
+        return redirect(url_for('set_password'))
+
 
 
 @app.route('/verify-email/<token>', methods=['GET', 'POST'])
@@ -202,7 +205,10 @@ def verify_email(token):
         db.session.add(user)
         db.session.commit()
         flash('Thank you for verifying your account.')
-        return redirect(url_for('start_page'))
+        if user.password_hash:
+            return redirect(url_for('start_page'))
+        else:
+            return redirect(url_for('set_password', token=token))
     else:
         flash('Your verification link is expired or invalid. Log in to receive a new link.')
         return redirect(url_for('signin'))
