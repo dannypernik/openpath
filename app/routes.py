@@ -84,10 +84,11 @@ def index():
 
         email_status = send_contact_email(user, message, subject)
         if email_status == 200:
-            flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
-            return redirect(url_for('index', _anchor="home"))
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
+            conf_status = send_confirmation_email(user, message)
+            if conf_status == 200:
+                flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
+                return redirect(url_for('index', _anchor="home"))
+        flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
 
 
@@ -622,6 +623,36 @@ def test_reminders():
         return redirect(url_for('index'))
     return render_template('test-reminders.html', form=form, tests=tests, upcoming_dates=upcoming_dates, \
         imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
+
+
+@app.route('/sat', methods=['GET', 'POST'])
+def sat():
+    form = EmailListForm()
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('sat'))
+        email_exists = User.query.filter_by(email=form.email.data.lower()).first()
+        if email_exists:
+            flash('An account already exists for this email. Try logging in or resetting your password.', 'error')
+            return redirect(url_for('signin'))
+        user = User(first_name=form.first_name.data, email=form.email.data.lower())
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            flash('User was not saved, please contact ' + hello, 'error')
+        email_status = send_contact_email(user, 'Interested in Digital SAT app', 'Digital SAT inquiry')
+        if email_status == 200:
+            verification_status = send_verification_email(user)
+            if verification_status == 200:
+                flash('Please check your inbox to verify your email.')
+                return redirect(url_for('sat'))
+        flash('Verification email did not send, please contact ' + hello, 'error')
+    return render_template('sat.html', form=form)
 
 
 @app.route('/griffin', methods=['GET', 'POST'])

@@ -54,7 +54,6 @@ def send_contact_email(user, message, subject):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        send_confirmation_email(user, message)
         print("Contact email sent from " + user.email)
     else:
         print("Contact email from " + user.email + " failed with code " + result.status_code)
@@ -863,7 +862,7 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_
                     }
                 ],
                 "Subject": "Spreadsheet data report for " + start_date + " to " + end_date,
-                "HTMLPart": "Active students with low hours:<br>" + low_active_students + "<br><br>" + \
+                "HTMLPart": "Active students with low hours:<br>" + (', ').join(low_active_students) + "<br><br>" + \
                     student_fix_list + "<br><br>Students not added to database:<br><br>" + not_in_db,
             }
         ]

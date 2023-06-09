@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Yes, I'm interested in a digital SAT practice app with my company's branding.</h2>
+  <ul>
+    <li>Upload your logo and select your colors</li>
+    <li>Use your own questions or third-party resources</li>
+    <li>Option to categorize questions for automated score reports</li>
+    <li>Estimated cost of $5 per student per month</li>
+  </ul>
+  <form method="post" >
+    {{ form.hidden_tag() }}
+    <div class="row">
+      <div class="col-6">
+        {{ form.first_name }}
+      </div>
+      <div class="col-6">
+        {{ form.email }}
+      </div>
+      <div class="col-12">
+        {{ hcaptcha }}
+        {{ form.submit }}
+      </div>
+    </div>
+  </form>
+{% endblock content %}

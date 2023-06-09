@@ -49,11 +49,6 @@ future_schedule = set()
 outsourced_scheduled_students = set()
 low_active_students = []
 
-tutoring_hours = 0
-session_count = 0
-outsourced_hours = 0
-outsourced_session_count = 0
-
 reminder_list = []
 students = User.query.order_by(User.first_name).filter(User.role == 'student')
 test_reminder_users = User.query.order_by(User.first_name).filter(
@@ -138,11 +133,11 @@ def get_upcoming_events():
             if event_start < upcoming_end:
                 upcoming_events.append(bimonth_events[e])
     
-    return week_events, upcoming_events
+    return week_events, upcoming_events, bimonth_events, summary_data
 
 
 def main():
-    week_events, upcoming_events = get_upcoming_events()
+    week_events, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
     
     # mark test dates as past
     for d in test_dates:
@@ -200,6 +195,12 @@ def main():
 ### send weekly reports
     if day_of_week == "Friday":
         print('\n')
+
+        session_count = 0
+        tutoring_hours = 0
+        outsourced_hours = 0
+        outsourced_session_count = 0
+
         # Get number of active students, number of sessions, and list of unscheduled students
         for student in active_students:
             name = full_name(student)
