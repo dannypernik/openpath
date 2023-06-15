@@ -19,6 +19,12 @@ for item in crm.json()['data']['actions']:
             "date": item['action']['date'],
             "done": item['action']['done']
         })
+    else:
+        dated_actions.append({
+            "id": item['action']['id'],
+            "date": '',
+            "done": item['action']['done']
+        })
 
 try:
     tasks = todoist.get_tasks(filter='!no date&!recurring')
@@ -35,7 +41,9 @@ for task in tasks_sorted:
             "label": label
         })
     for action in dated_actions:
+        print(action['id'], task.content, task.labels)
         if action['id'] in task.labels:
+            print('action[\'id\'] in task.labels')
             has_match = True
             if action['date'] != task.due.date:
                 try:
@@ -46,6 +54,7 @@ for task in tasks_sorted:
 
             if action['done']:
                 todoist.close_task(task_id=task.id)
+
     if not has_match:
         new_action = {
             "contact_id": "646509467241d177b7078a39",
