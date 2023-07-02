@@ -56,6 +56,7 @@ test_reminder_users = User.query.order_by(User.first_name).filter(
 active_students = students.filter(User.status == 'active')
 upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
 paused_students = students.filter(User.status == 'paused')
+primary_tutor = User.query.filter(User.email == 'danny@openpathtutoring.com').first()
 status_fixes = []
 student_names_db = []
 students_not_in_db = []
@@ -191,6 +192,9 @@ def main():
 
     if len(reminder_list) == 0:
         print("No reminders sent.")
+    
+    if primary_tutor.timezone != 0:
+        print('\nYour timezone was changed. Reminder emails have incorrect time.')
 
 ### send weekly reports
     if day_of_week == "Friday":
