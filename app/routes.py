@@ -11,7 +11,8 @@ from werkzeug.urls import url_parse
 from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
-    send_prep_class_email, send_signup_notification_email, send_session_recap_email
+    send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
+    send_confirmation_email
 from functools import wraps
 import requests
 import json
@@ -409,7 +410,6 @@ def students():
     parents = User.query.order_by(User.first_name).filter_by(role='parent')
     parent_list = [(0,'New parent')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
     form.parent_id.choices = parent_list
-    print(parent_list)
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, u.first_name + " " + u.last_name) for u in tutors]
     form.tutor_id.choices = tutor_list
@@ -432,7 +432,6 @@ def students():
         try:
             db.session.add(parent)
             db.session.flush()
-            print(form.parent_id.data)
             student.parent_id = parent.id
             db.session.add(student)
             db.session.commit()
