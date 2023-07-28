@@ -206,7 +206,7 @@ def main():
         outsourced_session_count = 0
 
         # Get number of active students, number of sessions, and list of unscheduled students
-        for student in active_students:
+        for student in upcoming_students:
             name = full_name(student)
             if any(name in nest[0] for nest in week_events_list):
                 print(name + " scheduled with " + student.tutor.first_name)
