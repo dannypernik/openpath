@@ -20,6 +20,8 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 @import "../scss/_modal.scss";
 @import "../scss/_close.scss";
 @import "../scss/_tables.scss";
+@import "../scss/_accordion.scss";
+@import "../scss/_transitions.scss";
 @import "menu.css";
 
 // Sitewide stylings //
@@ -638,6 +640,28 @@ div.alert {
 
 .student-list, .user-list {
   transition: height 0.2s ease-out;
+  overflow: hidden;
+}
+
+.accordion-button {
+  padding: 1.5rem;
+}
+
+.accordion-button.collapsed, .accordion-button:not(.collapsed)  {
+  background-color: #7e7e7e;
+  color: white;
+  margin-bottom: 0rem;
+
+  &::after {
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>"); 
+  }
+}
+
+.accordion-item {
+  color: $primary-color;
+}
+
+div.row.student > * {
   overflow: hidden;
 }
 
