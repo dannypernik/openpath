@@ -315,6 +315,8 @@ def edit_user(id):
     tutor_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in tutors]
     form.parent_id.choices = parent_list
     form.tutor_id.choices = tutor_list
+    registered_tests = []
+    interested_tests = []
     
     if form.validate_on_submit():
         if 'save' in request.form:
@@ -388,8 +390,6 @@ def edit_user(id):
 
 ##  Determine which option to select in template for each test date
         test_selections = user.get_dates().all()
-        registered_tests = []
-        interested_tests = []
         for d in upcoming_dates:
             if d in test_selections:
                 if user.is_registered(d):

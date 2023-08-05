@@ -14,7 +14,7 @@ def get_quote():
 
         message = quote.json()[0]['q']
         author = quote.json()[0]['a']
-        quote_header = "<strong>Random inspirational quote of the day:</strong><br/>"
+        quote_header = "Random inspirational quote of the day:"
     except requests.exceptions.RequestException:
         message = "We don't have to do all of it alone. We were never meant to."
         author = "Brene Brown"
@@ -140,6 +140,13 @@ def send_reminder_email(event, student):
     else:
         timezone = "your"
 
+    if 'practice sat' in event.get('summary').lower():
+        event_type = 'practice SAT'
+    elif 'practice act' in event.get('summary').lower():
+        event_type = 'practice ACT'
+    else:
+        event_type = 'tutoring session'
+
     location = event.get('location')
     warnings = []
     warnings_str = ''
@@ -151,37 +158,30 @@ def send_reminder_email(event, student):
         warnings.append('Event location missing')
     if warnings.__len__() > 0:
         warnings_str = '(' + (', ').join(warnings) + ')'
-    if "http" in location:
-        location = "<a href=\"" + location + "\">" + location + "</a>"
 
-    data = {
-        'Messages': [
-            {
-                "From": {
-                    "Email": app.config['MAIL_USERNAME'],
-                    "Name": "Open Path Tutoring"
-                },
-                "To": [
-                    {
-                    "Email": student.email
-                    }
-                ],
-                "Cc": cc_email,
-                "ReplyTo": { "Email": reply_email },
-                "Subject": "Reminder for session on " + start_date + " at " + start_display + " " + timezone,
-                "HTMLPart": "Hi " + student.first_name + ", this is an automated reminder " + \
-                    " that you are scheduled for a tutoring session with " + tutor.first_name + " " + \
-                    tutor.last_name + " on " + start_date + " from " + start_display + " to " + \
-                    end_display + " " + timezone + " time. <br/><br/>Location: " + location + \
-                    "<br/><br/>You are welcome to reply to this email with any questions. " + \
-                    "Please provide at least 24 hours notice when cancelling or rescheduling " + \
-                    "in order to avoid being charged for the session. Note that you will not receive " + \
-                    "a reminder email for sessions scheduled less than 2 days in advance. Thank you!" + \
-                    "<br/><br/><br/>" + \
-                    quote_header + '"' + message + '"' + "<br/>&ndash; " + author
-            }
-        ]
-    }
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
+                    },
+                    "To": [
+                        {
+                        "Email": student.email
+                        }
+                    ],
+                    "Cc": cc_email,
+                    "ReplyTo": { "Email": reply_email },
+                    "Subject": "Reminder for " + event_type + " on " + start_date + " at " + start_display + " " + timezone,
+                    "HTMLPart": render_template('email/reminder-email.html', student=student, \
+                        tutor=tutor, start_date=start_date, start_display=start_display, \
+                        end_display=end_display, timezone=timezone, location=location,
+                        quote_header=quote_header, message=message, author=author, event_type=event_type)
+                }
+            ]
+        }
 
     result = mailjet.send.create(data=data)
 
@@ -810,7 +810,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
                     "<br/>Unscheduled active students for other tutors: " + outsourced_unscheduled_students + \
                     "<br/>Active students scheduled after next week: " + future_students + \
                     "<br/>Paused students: " + paused_students + \
-                    "<br/><br/><br/>" + quote_header + '"' + message + '"' + "<br/>&ndash; " + author
+                    "<br/><br/><br/>" + quote_header + '<br/>"' + message + '"' + "<br/>&ndash; " + author
             }
         ]
     }
@@ -823,7 +823,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     return result.status_code
 
 
-def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_not_in_db):
+def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -837,40 +837,41 @@ def send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_
     low_active_students = []
     student_statuses = []
 
-    for s in spreadsheet_data['low_active_students']:
-        low_active_students.append('<br>' + str(s[0]) + ": " + str(s[1]) + ' hrs')
+    weekly_data = admin_data['weekly_data']
+
+    for s in admin_data['low_active_students']:
+        low_active_students.append(str(s[0]) + ": " + str(s[1]) + ' hrs')
 
     for s in status_fixes:
         student_statuses.append(s[0] + ' is listed as ' + s[1] + ' in the database and ' + \
             s[2] + ' in the spreadsheet.')
     
     not_in_db = (', ').join(students_not_in_db)
-
     student_fix_list = '<br>'.join(student_statuses)
     
-
-    data = {
-        'Messages': [
-            {
-                "From": {
-                    "Email": app.config['MAIL_USERNAME'],
-                    "Name": "Open Path Tutoring"
-                },
-                "To": [
-                    {
-                    "Email": app.config['MAIL_USERNAME']
-                    }
-                ],
-                "Subject": "Spreadsheet data report for " + start_date + " to " + end_date,
-                "HTMLPart": "Active students with low hours:<br>" + (', ').join(low_active_students) + "<br><br>" + \
-                    student_fix_list + "<br><br>Students not added to database:<br><br>" + not_in_db,
-            }
-        ]
-    }
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
+                    },
+                    "To": [
+                        {
+                        "Email": app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    "Subject": "Admin data report for " + start_date + " to " + end_date,
+                    "HTMLPart": render_template('email/admin-email.html', low_active_students=low_active_students, \
+                        student_fix_list=student_fix_list, not_in_db=not_in_db, weekly_data=weekly_data)
+                }
+            ]
+        }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print("Spreadsheet report email sent.\n")
+        print("Admin report email sent.\n")
     else:
-        print("Spreadsheet report email error:", str(result.status_code), result.reason, "\n")
+        print("Admin report email error:", str(result.status_code), result.reason, "\n")
     return result.status_code

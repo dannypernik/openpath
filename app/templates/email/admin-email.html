@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      table {
+        border-spacing: initial;
+      }
+
+      td {
+        padding: 2px 5px;
+      }
+
+      thead td {
+        border-bottom: 1px solid #1C4D65;
+      }
+    </style>
+  </head>
+  <body style="color: #1C4D65;">
+    <p>
+      Active students with low hours:<br>
+      {% for s in low_active_students %}
+        {{ s }}<br>
+      {% endfor %}
+    </p>
+    <p>
+      {{ student_fix_list }}
+    </p>
+    <p>
+      Students not added to database:<br>
+      {{ not_in_db }}
+    </p>
+    
+    <table>
+      <thead style="font-weight: bold">
+        <td>Week of</td>
+        <td>Daytime</td>
+        <td>Evening</td>
+        <td>Total  </td>
+      </thead>
+      <tbody>
+        {% for i in range(10) %}
+          <tr>
+            <td style="border-right: 1px solid #1C4D65; font-weight: bold">
+              {{ weekly_data['dates'][i] }}
+            </td>
+            <td>
+              {{ weekly_data['day_hours'][i] }}
+            </td>
+            <td>
+              {{ weekly_data['evening_hours'][i] }}
+            </td>
+            <td style="font-weight: bold">
+              {{ weekly_data['day_hours'][i] + weekly_data['evening_hours'][i] }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

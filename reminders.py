@@ -2,7 +2,9 @@ from __future__ import print_function
 import datetime
 from dateutil.parser import parse, isoparse
 from dateutil import tz
+import pytz
 import os.path
+import math
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.auth.transport.requests import Request
@@ -12,7 +14,7 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_spreadsheet_report_email, send_test_reminders_email
+    send_admin_report_email, send_test_reminders_email
 from sqlalchemy.orm import joinedload
 import requests
 
@@ -27,20 +29,23 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:Q'
-calendars = ['primary', "n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com"]
+calendars = ['primary', 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com']
 
-now  = datetime.datetime.strptime(datetime.datetime.utcnow().isoformat(), "%Y-%m-%dT%H:%M:%S.%f")
+now = datetime.datetime.utcnow()
+now_tz_aware = pytz.utc.localize(now)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format="%A")
-upcoming_start = (now + datetime.timedelta(hours=39)).isoformat() + 'Z'
-upcoming_end = (now + datetime.timedelta(hours=63)).isoformat() + 'Z'
-week_end = (now + datetime.timedelta(days=7, hours=31)).isoformat() + 'Z'
-bimonth_end = (now + datetime.timedelta(days=60, hours=31)).isoformat() + 'Z'
+upcoming_start = now + datetime.timedelta(hours=39)
+upcoming_start_str = upcoming_start.isoformat() + 'Z'
+upcoming_end = now_tz_aware + datetime.timedelta(hours=63)
+bimonth_end = now + datetime.timedelta(days=70, hours=39)
+bimonth_end_str = bimonth_end.isoformat() + 'Z'
 upcoming_events = []
-week_events = []
-week_events_list = []
+events_by_week = []
+events_next_week = []
 bimonth_events = []
 bimonth_events_list = []
+tutoring_events = []
 unscheduled_list = []
 outsourced_unscheduled_list = []
 paused_list = []
@@ -56,7 +61,7 @@ test_reminder_users = User.query.order_by(User.first_name).filter(
 active_students = students.filter(User.status == 'active')
 upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
 paused_students = students.filter(User.status == 'paused')
-primary_tutor = User.query.filter(User.email == 'danny@openpathtutoring.com').first()
+primary_tutor = User.query.filter(User.email == app.config['ADMIN_EMAIL']).first()
 status_fixes = []
 student_names_db = []
 students_not_in_db = []
@@ -106,8 +111,8 @@ def get_events_and_data():
     # Call the Calendar API
     service_cal = build('calendar', 'v3', credentials=creds)
     for id in calendars:
-        bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start,
-            timeMax=bimonth_end, singleEvents=True, orderBy='startTime').execute()
+        bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start_str,
+            timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime').execute()
         bimonth_events_result = bimonth_cal_events.get('items', [])
 
         for e in range(len(bimonth_events_result)):
@@ -128,17 +133,40 @@ def get_upcoming_events():
     bimonth_events, summary_data = get_events_and_data()
 
     for e in range(len(bimonth_events)):
-        event_start = bimonth_events[e]['start'].get('dateTime')
-        if event_start < week_end:
-            week_events.append(bimonth_events[e])
-            if event_start < upcoming_end:
+        e_start = isoparse(bimonth_events[e]['start'].get('dateTime'))
+        e_end = isoparse(bimonth_events[e]['end'].get('dateTime'))
+        duration = str(e_end - e_start)
+        (h, m, s) = duration.split(':')
+        hours = int(h) + int(m) / 60 + int(s) / 3600
+
+        if e_end.hour + (e_end.minute / 60) <= 16.25:
+            time_group = 'day_hours'
+        else:
+            time_group = 'evening_hours'
+
+
+        week_num = max(1, math.ceil((e_start - pytz.utc.localize(upcoming_start)).days / 7)) - 1
+
+        events_by_week.append({
+            'name': bimonth_events[e].get('summary'),
+            'hours': hours,
+            'time_group': time_group,
+            'week_num': week_num
+        })
+
+        if week_num == 0:
+            events_next_week.append({
+                'name': bimonth_events[e].get('summary'),
+                'hours': hours
+            })
+            if e_start < upcoming_end:
                 upcoming_events.append(bimonth_events[e])
     
-    return week_events, upcoming_events, bimonth_events, summary_data
+    return events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data
 
 
 def main():
-    week_events, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
+    events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
     
     # mark test dates as past
     for d in test_dates:
@@ -157,7 +185,7 @@ def main():
             elif d.date == today + datetime.timedelta(days=6):
                 send_test_reminders_email(u, d)
 
-    upcoming_start_formatted = datetime.datetime.strftime(parse(upcoming_start), format="%A, %b %-d")
+    upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
 
 ### Send reminder email to students ~2 days in advance
@@ -172,22 +200,11 @@ def main():
     for e in bimonth_events:
         bimonth_events_list.append(e.get('summary'))
 
-    # get list of event names and durations for the week
-    for e in week_events:
-        if e['start'].get('dateTime'):
-            start = isoparse(e['start'].get('dateTime'))
-            end = isoparse(e['end'].get('dateTime'))
-            duration = str(end - start)
-            (h, m, s) = duration.split(':')
-            hours = int(h) + int(m) / 60 + int(s) / 3600
-            event_details = [e.get('summary'), hours]
-            week_events_list.append(event_details)
-
     # check for students who should be listed as active
     for student in students:
         name = full_name(student)
 
-        if student.status not in ['active', 'prospective'] and any(name in nest[0] for nest in week_events_list):
+        if student.status not in ['active', 'prospective'] and any(name in nest['name'] for nest in events_next_week):
             print(name + ' is listed as ' + student.status + ' and is on the schedule.')
 
     if len(reminder_list) == 0:
@@ -195,6 +212,7 @@ def main():
     
     if primary_tutor.timezone != 0:
         print('\nYour timezone was changed. Reminder emails have incorrect time.')
+
 
 ### send weekly reports
     if day_of_week == "Friday":
@@ -208,14 +226,18 @@ def main():
         # Get number of active students, number of sessions, and list of unscheduled students
         for student in upcoming_students:
             name = full_name(student)
-            if any(name in nest[0] for nest in week_events_list):
+            for x in events_by_week:
+                if name in x['name']:
+                    tutoring_events.append(x)
+
+            if any(name in e['name'] for e in events_next_week):
                 print(name + " scheduled with " + student.tutor.first_name)
-                for x in week_events_list:
+                for x in events_next_week:
                     count = 0
                     hours = 0
-                    if name in x[0]:
+                    if name in x['name']:
                         count += 1
-                        hours += x[1]
+                        hours += x['hours']
                         if student.tutor_id == 1:
                             scheduled_students.add(name)
                             session_count += count
@@ -224,7 +246,7 @@ def main():
                             outsourced_scheduled_students.add(name)
                             outsourced_session_count += count
                             outsourced_hours += hours
-            elif any(name in nest for nest in bimonth_events_list):
+            elif any(name in e['name'] for e in tutoring_events):
                 future_schedule.add(name)
             elif student.tutor_id == 1:
                 unscheduled_list.append(name)
@@ -240,7 +262,27 @@ def main():
             str(outsourced_hours), str(len(outsourced_scheduled_students)), \
             outsourced_unscheduled_list, paused_list, now)
 
-### Generate spreadsheet report
+
+### Generate admin report
+        weekly_data = {
+            'dates': [0,0,0,0,0,0,0,0,0,0],
+            'sessions': [0,0,0,0,0,0,0,0,0,0],
+            'day_hours': [0,0,0,0,0,0,0,0,0,0],
+            'evening_hours': [0,0,0,0,0,0,0,0,0,0]
+        }
+
+        next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
+
+        for i in range(10):
+            s = next_sunday + datetime.timedelta(days=(i * 7))
+            s_str = s.strftime('%b %-d')
+            weekly_data['dates'][i] = s_str
+
+        for e in tutoring_events:
+            weekly_data[e['time_group']][e['week_num']] += e['hours']
+            weekly_data['sessions'][e['week_num']] += 1        
+
+        # Spreadsheet data
         if not summary_data:
             print('No summary data found.')
             return
@@ -257,9 +299,12 @@ def main():
             if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
                 students_not_in_db.append(row[0])
         
-        spreadsheet_data = {'low_active_students': low_active_students}
+        admin_data = {
+            'low_active_students': low_active_students,
+            'weekly_data': weekly_data
+        }
 
-        send_spreadsheet_report_email(now, spreadsheet_data, status_fixes, students_not_in_db)
+        send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
     
     msg, author, header = get_quote()
     print("\n\n" + msg + " - " + author)
