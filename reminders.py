@@ -219,7 +219,7 @@ def main():
 
 
 ### send weekly reports
-    if day_of_week == 'Wednesday':
+    if day_of_week == 'Friday':
         print('\n')
 
         session_count = 0
