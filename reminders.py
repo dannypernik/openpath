@@ -139,7 +139,9 @@ def get_upcoming_events():
         (h, m, s) = duration.split(':')
         hours = int(h) + int(m) / 60 + int(s) / 3600
 
-        if e_end.hour + (e_end.minute / 60) <= 16.25:
+        if 'projected' in bimonth_events[e].get('summary').lower():
+            time_group = 'projected_hours'
+        elif e_end.hour + (e_end.minute / 60) <= 16.25:
             time_group = 'day_hours'
         else:
             time_group = 'evening_hours'
@@ -176,25 +178,25 @@ def main():
             db.session.commit()
             print('Test date', d.date, 'marked as past')
 
-    for u in test_reminder_users:
-        for d in u.get_dates():
-            if d.reg_date == today + datetime.timedelta(days=5):
-                email = send_registration_reminder_email(u, d)
-            elif d.late_date == today + datetime.timedelta(days=5):
-                send_late_registration_reminder_email(u, d)
-            elif d.date == today + datetime.timedelta(days=6):
-                send_test_reminders_email(u, d)
+    # for u in test_reminder_users:
+    #     for d in u.get_dates():
+    #         if d.reg_date == today + datetime.timedelta(days=5):
+    #             email = send_registration_reminder_email(u, d)
+    #         elif d.late_date == today + datetime.timedelta(days=5):
+    #             send_late_registration_reminder_email(u, d)
+    #         elif d.date == today + datetime.timedelta(days=6):
+    #             send_test_reminders_email(u, d)
 
     upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
 
 ### Send reminder email to students ~2 days in advance
-    for event in upcoming_events:
-        for student in upcoming_students:
-            name = full_name(student)
-            if name in event.get('summary'):
-                reminder_list.append(name)
-                send_reminder_email(event, student)
+    # for event in upcoming_events:
+    #     for student in upcoming_students:
+    #         name = full_name(student)
+    #         if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+    #             reminder_list.append(name)
+    #             send_reminder_email(event, student)
 
     # get list of event names for the bimonth
     for e in bimonth_events:
@@ -215,7 +217,7 @@ def main():
 
 
 ### send weekly reports
-    if day_of_week == "Friday":
+    if day_of_week == 'Wednesday':
         print('\n')
 
         session_count = 0
@@ -257,10 +259,10 @@ def main():
             name = full_name(student)
             paused_list.append(name)
 
-        send_weekly_report_email(str(session_count), str(tutoring_hours), str(len(scheduled_students)), \
-            future_schedule, unscheduled_list, str(outsourced_session_count), \
-            str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-            outsourced_unscheduled_list, paused_list, now)
+        # send_weekly_report_email(str(session_count), str(tutoring_hours), str(len(scheduled_students)), \
+        #     future_schedule, unscheduled_list, str(outsourced_session_count), \
+        #     str(outsourced_hours), str(len(outsourced_scheduled_students)), \
+        #     outsourced_unscheduled_list, paused_list, now)
 
 
 ### Generate admin report
@@ -268,7 +270,8 @@ def main():
             'dates': [0,0,0,0,0,0,0,0,0,0],
             'sessions': [0,0,0,0,0,0,0,0,0,0],
             'day_hours': [0,0,0,0,0,0,0,0,0,0],
-            'evening_hours': [0,0,0,0,0,0,0,0,0,0]
+            'evening_hours': [0,0,0,0,0,0,0,0,0,0],
+            'projected_hours': [0,0,0,0,0,0,0,0,0,0]
         }
 
         next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
