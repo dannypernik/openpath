@@ -1,139 +1,107 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <div>
-    <button id="add-user" class="btn d-inline-block me-2 mt-0">+ Add user</button>
-  </div>
-
-  <form id="add-user-form" class="hidden-form" action="" method="post">
-    <h1 class="mb-3 me-3 d-inline-block">Add user</h1>
-    <a id="hide-form" href="#">Hide</a>
-
-    {{ form.hidden_tag() }}
-    {{ form.first_name }}
-    {{ form.last_name }}
-    {{ form.email }}
-    {{ form.phone }}
-    {{ form.secondary_email }}
-    {{ form.timezone }}
-    {{ form.location }}
-    <div class="d-none">
-      {{ form.status }}
-      {{ form.is_admin }}
-    </div>
-    <div class="d-sm-flex mt-3 justify-content-between">
-      <div class="mb-2">
-        <h3 class="mb-1">Role:</h3>
-        {{ form.role }}
+{% block container %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10">
+      <div>
+        <button id="add-user" class="btn d-inline-block me-2 mt-0">+ Add user</button>
       </div>
-      <div id="parent-div" class="mb-2">
-        <h3 class="mb-1">Parent:</h3>
-        {{ form.parent_id }}
-      </div>
-      <div id="tutor-div" class="mb-2">
-        <h3 class="mb-1">Tutor:</h3>
-        {{ form.tutor_id }}
-      </div>
-    </div>
-  
-    {{ form.submit(class="mb-3") }}
-  </form>
 
-  
-  {% for r in roles %}
-    <h1 class="slide-toggle mb-2 mt-3">Active {{ r }}s</h1>
-    <div id="active-{{ r }}s" class="user-list">
-      {% for u in active_users %}
-        {% if u.role == r %}
-          <div class="row">
-            <div class="col">
-              <h3 class="my-1">
-                <a class="semibold" href="{{ url_for('edit_user', id=u.id) }}">
-                  {{ u.first_name }} {{ u.last_name }}
-                </a>
-              </h3>
-              <p class="mb-1">
-                <a href="mailto:{{ u.email }}" target="_blank">
-                  {{ u.email }}
-                </a>{% if u.phone != "" %},
-                <a href="tel:+1{{ u.phone }}">
-                  {{ u.phone }}
-                </a>{% endif %}
-              </p>
-              <ul>
-              {% if u.role == 'student' %}
-                <li>
-                  Parent:
-                  {% if u.parent_id %}
-                    <a href="{{ url_for('edit_user', id=u.parent_id) }}">
-                      {{ u.parent.first_name }} {{ u.parent.last_name }}
-                    </a>
-                  {% else %}
-                    None
+      <form id="add-user-form" class="hidden-form" action="" method="post">
+        <h1 class="mb-3 me-3 d-inline-block">Add user</h1>
+        <a id="hide-form" href="#">Hide</a>
+
+        {{ form.hidden_tag() }}
+        {{ form.first_name }}
+        {{ form.last_name }}
+        {{ form.email }}
+        {{ form.phone }}
+        {{ form.secondary_email }}
+        {{ form.timezone }}
+        {{ form.location }}
+        <div class="d-none">
+          {{ form.status }}
+          {{ form.is_admin }}
+        </div>
+        <div class="d-sm-flex mt-3 justify-content-between">
+          <div class="mb-2">
+            <h3 class="mb-1">Role:</h3>
+            {{ form.role }}
+          </div>
+          <div id="parent-div" class="mb-2">
+            <h3 class="mb-1">Parent:</h3>
+            {{ form.parent_id }}
+          </div>
+          <div id="tutor-div" class="mb-2">
+            <h3 class="mb-1">Tutor:</h3>
+            {{ form.tutor_id }}
+          </div>
+        </div>
+      
+        {{ form.submit(class="mb-3") }}
+      </form>
+
+      <div id="user-list" class="accordion">
+        {% for role in roles %}
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <h2 class="accordion-button collapsed" data-bs-toggle="collapse"
+                data-bs-target="#{{ role[0] }}-list" type="button">
+                {{ role[0].title() }}s
+              </h2>
+            </div>
+            
+            <div id="{{ role[0] }}-list" class="accordion-collapse collapse">
+              <div class="accordion-body">
+                <div class="row mb-1 semibold">
+                  <div class="col-3">
+                    Name
+                  </div>
+                  <div class="col-3">
+                    Email
+                  </div>
+                  <div class="col-3">
+                    Status
+                  </div>
+                </div>
+
+                {% for u in users %}
+                  {% if u.role == role[0] %}
+                    <div class="row student">
+                      <div class="col-3">
+                        <a href="{{ url_for('edit_user', id=u.id) }}">
+                          {{ u.first_name }} {{ u.last_name }}
+                        </a>
+                        {% if u.is_admin %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                        fill="currentColor" class="bi bi-person-fill" viewBox="0 2 16 16">
+                          <title>Admin</title>
+                          <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                        </svg>
+                        {% endif %}
+                      </div>
+                      <div class="col-3">
+                        <a href="mailto:{{ u.email }}" target="_blank">
+                          {{ u.email }}
+                        </a>
+                      </div>
+                      <div class="col-3">
+                        {{ u.status }}
+                      </div>
+                    </div>
                   {% endif %}
-                </li>
-                <li>
-                  Tutor:
-                  {% if u.tutor_id %}
-                    <a href="{{ url_for('edit_user', id=u.tutor_id) }}">
-                      {{ u.tutor.first_name }} {{ u.tutor.last_name }}
-                    </a>
-                  {% else %}
-                    None  
-                  {% endif %}
-                </li>
-
-                {% elif u.role == 'tutor' %}
-                  <li>Students:
-                    {% for s in u.students %}
-                      <a href="{{ url_for('edit_user', id=s.id) }}">
-                        {{ s.first_name }} {{ s.last_name }}{{ "," if not loop.last else "" }}
-                      </a>
-                    {% endfor %}
-                  </li>
-                
-                {% elif u.role == 'parent' %}
-                  <li>Children:
-                    {% for c in u.children %}
-                      <a href="{{ url_for('edit_user', id=c.id) }}">
-                        {{ c.first_name }} {{ c.last_name }}{{ "," if not loop.last else "" }}
-                      </a>
-                    {% endfor %}
-                  </li>
-                {% endif %}
-
-                <li>Tests:
-                  {% for d in u.test_dates %}
-                    <a href="{{ url_for('edit_date', id=d.test_date_id) }}">
-                      {{ d.test_dates.date.strftime('%b %-d, %Y') }}
-                    </a>{{ ";" if not loop.last else "" }}
-                  {% endfor %}
-                </li>
-              </ul>
+                {% endfor %}
+              </div>
             </div>
           </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  {% endfor %}
-
-  <h1 class="slide-toggle mt-2">Other users</h1>
-  {% for u in other_users %}
-    <div class="row mb-3">
-      <div class="col">
-        <h3 class="mb-1">
-          <a class="semibold" href="{{ url_for('edit_user', id=u.id) }}">
-            {{ u.first_name }} {{ u.last_name }}
-          </a>
-          ({% if u.status %}{{ u.status.title() }}{% else %}None{% endif %}
-            {{ u.role }})
-        </h3>
+        {% endfor %}
       </div>
     </div>
-  {% endfor %}
-{% endblock content %}
+  </div>
+{% endblock container %}
 
 {% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script>
     const slideDown = element => element.style.height = `${element.scrollHeight}px`;
     const slideUp = element => element.style.height = '0px';

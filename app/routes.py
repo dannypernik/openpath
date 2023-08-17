@@ -264,10 +264,8 @@ def study_club():
 @admin_required
 def users():
     form = UserForm(None)
-    roles = ['parent', 'tutor', 'student', 'admin']
-    active_users = User.query.order_by(User.first_name).filter((User.status == 'active'))
-    other_users = User.query.order_by(User.first_name).filter((User.status != 'active') | (User.status == None) | \
-        (User.role.notin_(roles)) | (User.role == None))
+    roles = User.query.with_entities(User.role).distinct()
+    users = User.query.order_by(User.first_name, User.last_name).all()
     parents = User.query.filter_by(role='parent')
     parent_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
     tutors = User.query.filter_by(role='tutor')
@@ -298,8 +296,7 @@ def users():
             flash(user.first_name + ' could not be added', 'error')
             return redirect(url_for('users'))
         return redirect(url_for('users'))
-    return render_template('users.html', title="Users", form=form, active_users=active_users, \
-        other_users=other_users, roles=roles)
+    return render_template('users.html', title="Users", form=form, users=users, roles=roles)
 
 
 @app.route('/edit-user/<int:id>', methods=['GET', 'POST'])
