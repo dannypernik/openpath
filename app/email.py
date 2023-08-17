@@ -847,7 +847,7 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
             s[2] + ' in the spreadsheet.')
     
     not_in_db = (', ').join(students_not_in_db)
-    student_fix_list = '<br>'.join(student_statuses)
+    student_fix_list = '\n'.join(student_statuses)
     
     with app.app_context():
         data = {
