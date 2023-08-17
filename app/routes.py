@@ -314,9 +314,9 @@ def edit_user(id):
     form = UserForm(user.email, obj=user)
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
-    parents = User.query.order_by(full_name(User)).filter_by(role='parent')
+    parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
     parent_list = [(0,'')]+[(u.id, full_name(u)) for u in parents]
-    tutors = User.query.order_by(full_name(User)).filter_by(role='tutor')
+    tutors = User.query.order_by(User.first_name, User.last_name).filter_by(role='tutor')
     tutor_list = [(0,'')]+[(u.id, full_name(u)) for u in tutors]
     form.parent_id.choices = parent_list
     form.tutor_id.choices = tutor_list
@@ -411,8 +411,8 @@ def edit_user(id):
 @admin_required
 def students():
     form = StudentForm()
-    students = User.query.order_by(User.first_name).filter_by(role='student')
-    parents = User.query.order_by(User.first_name).filter_by(role='parent')
+    students = User.query.order_by(User.first_name, User.last_name).filter_by(role='student')
+    parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
     parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
     form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
@@ -463,7 +463,7 @@ def students():
 @admin_required
 def tutors():
     form = TutorForm()
-    tutors = User.query.order_by(User.first_name).filter_by(role='tutor')
+    tutors = User.query.order_by(User.first_name, User.last_name).filter_by(role='tutor')
     statuses = User.query.filter_by(role='tutor').with_entities(User.status).distinct()
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
@@ -561,7 +561,7 @@ def edit_date(id):
 @admin_required
 def recap():
     form = RecapForm()
-    students = User.query.order_by(User.first_name).filter(
+    students = User.query.order_by(User.first_name, User.last_name).filter(
         (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
     student_list = [(0, 'Student name')] + [(s.id, full_name(s)) for s in students] #[(0,'')] +
     form.students.choices = student_list
