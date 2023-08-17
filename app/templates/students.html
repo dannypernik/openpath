@@ -67,14 +67,14 @@
             <div class="accordion-header">
               <h2 class="accordion-button {% if status == 'inactive' %} collapsed {% endif %}" data-bs-toggle="collapse"
                 data-bs-target="#{{ status }}-list" type="button">
-                {{ status.title() }} students
+                {{ proper(status) }} students
               </h2>
             </div>
             
             <div id="{{ status }}-list" class="accordion-collapse collapse
               {% if status != 'inactive' %} show {% endif %}">
               <div class="accordion-body">
-                <div class="row mb-1">
+                <div class="row mb-1 semibold">
                   <div class="col-3">
                     Name
                   </div>
@@ -94,7 +94,7 @@
                     <div class="row student">
                       <div class="col-3">
                         <a class="semibold" href="{{ url_for('edit_user', id=s.id) }}">
-                          {{ s.first_name }} {{ s.last_name }}
+                          {{ full_name(s) }}
                         </a>
                       </div>
                       <div class="col-3">
@@ -105,7 +105,7 @@
                       <div class="col-3">
                         {% if s.parent_id %}
                           <a href="{{ url_for('edit_user', id=s.parent_id) }}">
-                            {{ s.parent.first_name }} {{ s.parent.last_name }}
+                            {{ full_name(s.parent) }}
                           </a>
                         {% endif %}
                       </div>
@@ -143,24 +143,6 @@
     document.getElementById("hide-form").addEventListener("click", function () {
       slideUp(this.parentElement);
       document.getElementById("add-student").parentElement.style.display = "block";
-    });
-
-    let slideToggle = (target) => {
-      var style = window.getComputedStyle(target),
-          height = style.getPropertyValue('height');
-      if (height == '0px') {
-        return slideDown(target);
-      } else {
-        return slideUp(target);
-      }
-    }
-
-    var elements = document.getElementsByClassName("slide-toggle");
-
-    Array.from(elements).forEach(function(element) {
-      element.addEventListener("click", function () {
-          slideToggle(element.nextElementSibling);
-        });
     });
 
     function update() {

@@ -48,6 +48,13 @@ def admin_required(f):
             return redirect(login_url('signin', next_url=request.url))
     return wrap
 
+def proper(name):
+    try:
+        name = name.title()
+        return name
+    except:
+        return name
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -265,11 +272,11 @@ def study_club():
 def users():
     form = UserForm(None)
     roles = User.query.with_entities(User.role).distinct()
-    users = User.query.order_by(User.first_name, User.last_name).all()
+    users = User.query.order_by(full_name(User)).all()
     parents = User.query.filter_by(role='parent')
-    parent_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
+    parent_list = [(0,'')]+[(u.id, full_name(u)) for u in parents]
     tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in tutors]
+    tutor_list = [(0,'')]+[(u.id, full_name(u)) for u in tutors]
     form.parent_id.choices = parent_list
     form.tutor_id.choices = tutor_list
     if form.validate_on_submit():
@@ -296,7 +303,8 @@ def users():
             flash(user.first_name + ' could not be added', 'error')
             return redirect(url_for('users'))
         return redirect(url_for('users'))
-    return render_template('users.html', title="Users", form=form, users=users, roles=roles)
+    return render_template('users.html', title="Users", form=form, users=users, roles=roles, \
+        full_name=full_name, proper=proper)
 
 
 @app.route('/edit-user/<int:id>', methods=['GET', 'POST'])
@@ -306,10 +314,10 @@ def edit_user(id):
     form = UserForm(user.email, obj=user)
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
-    parents = User.query.order_by(User.first_name).filter_by(role='parent')
-    parent_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
-    tutors = User.query.order_by(User.first_name).filter_by(role='tutor')
-    tutor_list = [(0,'')]+[(u.id, u.first_name + " " + u.last_name) for u in tutors]
+    parents = User.query.order_by(full_name(User)).filter_by(role='parent')
+    parent_list = [(0,'')]+[(u.id, full_name(u)) for u in parents]
+    tutors = User.query.order_by(full_name(User)).filter_by(role='tutor')
+    tutor_list = [(0,'')]+[(u.id, full_name(u)) for u in tutors]
     form.parent_id.choices = parent_list
     form.tutor_id.choices = tutor_list
     registered_tests = []
@@ -405,12 +413,16 @@ def students():
     form = StudentForm()
     students = User.query.order_by(User.first_name).filter_by(role='student')
     parents = User.query.order_by(User.first_name).filter_by(role='parent')
-    parent_list = [(0,'New parent')]+[(u.id, u.first_name + " " + u.last_name) for u in parents]
+    parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
     form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(u.id, u.first_name + " " + u.last_name) for u in tutors]
+    tutor_list = [(u.id, full_name(u)) for u in tutors]
     form.tutor_id.choices = tutor_list
-    statuses = ['prospective', 'active', 'paused', 'inactive']
+    status_order = ['prospective', 'active', 'paused', 'inactive']
+    statuses = []
+    for s in status_order:
+        if User.query.filter(User.status == s).first():
+            statuses.append(s)
     other_students = User.query.filter((User.role=='student') & (User.status.notin_(statuses)))
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
@@ -443,7 +455,8 @@ def students():
         flash(student.first_name + ' added')
         return redirect(url_for('students'))
     return render_template('students.html', title="Students", form=form, students=students, \
-        statuses=statuses, upcoming_dates=upcoming_dates, tests=tests, other_students=other_students)
+        statuses=statuses, upcoming_dates=upcoming_dates, tests=tests, other_students=other_students, \
+        full_name=full_name, proper=proper)
 
 
 @app.route('/tutors', methods=['GET', 'POST'])
@@ -466,7 +479,8 @@ def tutors():
             flash(tutor.first_name + ' could not be added', 'error')
             return redirect(url_for('tutors'))
         return redirect(url_for('tutors'))
-    return render_template('tutors.html', title="Tutors", form=form, tutors=tutors, statuses=statuses)
+    return render_template('tutors.html', title="Tutors", form=form, tutors=tutors, \
+        statuses=statuses, full_name=full_name, proper=proper)
 
 
 @app.route('/test-dates', methods=['GET', 'POST'])
