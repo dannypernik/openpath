@@ -272,7 +272,7 @@ def study_club():
 def users():
     form = UserForm(None)
     roles = User.query.with_entities(User.role).distinct()
-    users = User.query.order_by(full_name(User)).all()
+    users = User.query.order_by(User.first_name, User.last_name).all()
     parents = User.query.filter_by(role='parent')
     parent_list = [(0,'')]+[(u.id, full_name(u)) for u in parents]
     tutors = User.query.filter_by(role='tutor')
