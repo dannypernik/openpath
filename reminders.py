@@ -164,8 +164,6 @@ def get_upcoming_events():
             if e_start < upcoming_end:
                 upcoming_events.append(bimonth_events[e])
     
-    print(events_by_week)
-    
     return events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data
 
 
