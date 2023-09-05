@@ -178,6 +178,10 @@ def send_reminder_email(event, student):
                     "HTMLPart": render_template('email/reminder-email.html', student=student, \
                         tutor=tutor, start_date=start_date, start_display=start_display, \
                         end_display=end_display, timezone=timezone, location=location,
+                        quote_header=quote_header, message=message, author=author, event_type=event_type),
+                    "TextPart": render_template('email/reminder-email.txt', student=student, \
+                        tutor=tutor, start_date=start_date, start_display=start_display, \
+                        end_display=end_display, timezone=timezone, location=location,
                         quote_header=quote_header, message=message, author=author, event_type=event_type)
                 }
             ]
