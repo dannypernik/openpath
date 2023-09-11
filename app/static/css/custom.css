@@ -6193,12 +6193,12 @@ a.btn {
 }
 
 .btn.highlight {
-  background-color: #d35137;
+  background-color: #f06d53;
   border: none;
 }
 
 .btn.highlight:hover {
-  background-color: #b94129;
+  background-color: #ed4d2d;
 }
 
 .btn.sm {
