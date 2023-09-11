@@ -162,7 +162,7 @@ class TutorForm(FlaskForm):
 
 
 class TestDateForm(FlaskForm):
-    test = SelectField('Test', render_kw={'placeholder': 'Test'}, choices=[('sat','SAT'),('act','ACT')], \
+    test = SelectField('Test', render_kw={'placeholder': 'Test'}, choices=[('sat','SAT'),('act','ACT'),('psat','PSAT')], \
         validators=[InputRequired()])
     date = DateField('Test date', format='%Y-%m-%d', validators=[InputRequired()])
     reg_date = DateField('Registration deadline', format='%Y-%m-%d', validators=(validators.Optional(),))
