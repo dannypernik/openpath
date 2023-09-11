@@ -29,7 +29,7 @@
               <label for="reg_date">Registration deadline:</label>{{ form.reg_date(class='mb-2') }}
               <label for="late_date">Late deadline:</label>{{ form.late_date(class='mb-2') }}
               <label for="other_date">Other deadline:</label>{{ form.other_date(class='mb-2') }}
-              <label for="other_date">Score release date:</label>{{ form.score_date }}
+              <label for="score_date">Score release date:</label>{{ form.score_date }}
               {{ form.submit }}
             </div>
           </div>
@@ -146,5 +146,20 @@
       slideUp(this.parentElement);
       document.getElementById("add-date").parentElement.style.display = "block";
     });
+
+    function changeDate(days) {
+      const dateVal = document.querySelector('#date').value + " EDT";
+      const date = new Date(dateVal);
+      
+      const changedDate = new Date(date.getTime() + ((days+1) * 60 * 60 * 24 * 1000) - (date.getTimezoneOffset()*60000)).toISOString().split("T")[0];
+
+      return changedDate;
+    }
+
+    document.querySelector('#date').addEventListener('change', (e) => {
+      document.querySelector('#reg_date').value = changeDate(-15);
+      document.querySelector('#late_date').value = changeDate(-11);
+      document.querySelector('#score_date').value = changeDate(13);
+    })
   </script>
 {% endblock end_scripts %}

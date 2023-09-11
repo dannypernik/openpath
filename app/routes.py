@@ -493,9 +493,9 @@ def test_dates():
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_filter)
     other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_filter)
     if form.validate_on_submit():
-        date = TestDate(test=form.test.data, date=form.date.data, \
-            reg_date=form.reg_date.data, late_date=form.late_date.data, \
-            other_date=form.other_date.data, status=form.status.data)
+        date = TestDate(test=form.test.data, date=form.date.data, reg_date=form.reg_date.data, \
+            late_date=form.late_date.data, other_date=form.other_date.data, \
+            score_date=form.score_date.data, status=form.status.data)
         try:
             db.session.add(date)
             db.session.commit()
