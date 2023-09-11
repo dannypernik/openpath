@@ -67,9 +67,9 @@
                       {% if current_user.is_admin %}
                         <a href="{{ url_for('edit_date', id=d.id) }}">
                       {% endif %}
-                        <strong>
+                        <span class="semibold">
                           {{ d.date.strftime('%B %-d, %Y') }}
-                        </strong>
+                        </span>
                       </a>
                       {% if d.status == 'unconfirmed' %}
                         *
