@@ -156,10 +156,19 @@
       return changedDate;
     }
 
-    document.querySelector('#date').addEventListener('change', (e) => {
-      document.querySelector('#reg_date').value = changeDate(-15);
-      document.querySelector('#late_date').value = changeDate(-11);
-      document.querySelector('#score_date').value = changeDate(13);
+    document.querySelector('#date').addEventListener('change', () => {
+      const selectVal = document.querySelector('#test').value;
+      
+      if(selectVal == 'sat') {
+        document.querySelector('#reg_date').value = changeDate(-15);
+        document.querySelector('#late_date').value = changeDate(-11);
+        document.querySelector('#score_date').value = changeDate(13);
+      }
+      else if(selectVal == 'act') {
+        document.querySelector('#reg_date').value = changeDate(-36);
+        document.querySelector('#late_date').value = changeDate(-22);
+        document.querySelector('#score_date').value = changeDate(10);
+      }
     })
   </script>
 {% endblock end_scripts %}
