@@ -4,9 +4,10 @@ $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
-$primary-color: #1C4D65;
-$secondary-color: #4ad1cc;//58bba4;
-$highlight-color: #f06d53;//#d35137;//e97435;
+$primary-color: #01496d;//#1C4D65;
+$secondary-color: #f06d53;//#d35137;//e97435;
+$hover-color: #e45b39;
+$table-color: #2fb2cb;
 $grey: #888;
 $light-grey: #ddd;
 $body-font: 'Montserrat', 'Helvetica', sans-serif;
@@ -24,9 +25,22 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 @import "../scss/_transitions.scss";
 @import "menu.css";
 
+// Mixins
+@mixin fill-color($color: $secondary-color) {
+  background-color: $color;
+  border-color: $color;
+  color: white;
+}
+
+@mixin underline-hover($color: $secondary-color) {
+  text-decoration: underline;
+  text-underline-offset: 7px;
+  text-decoration-color: $color;
+}
+
 // Sitewide stylings //
 .btn, input[type='submit'] {
-  --bs-btn-hover-bg: #{lighten($primary-color, 15%)};
+  --bs-btn-hover-bg: #{$hover-color};
   --bs-btn-hover-color: white;
   --bs-btn-font-size: #{$font-size-base};
 }
@@ -39,7 +53,7 @@ html {
 body {
   height: 100%;
   font-family: $body-font;
-  color: $primary-color;
+  color: lighten($primary-color, 3%);
   font-size: $font-size-base;
   display: flex;
   flex-direction:  column;
@@ -233,13 +247,12 @@ select {
 
 a {
   display: inline-block;
+  color: lighten($primary-color, 6%);
   text-decoration: none;
-  color: darken($secondary-color, 15%);
-  transition: all 0.2s ease-in-out;
-}
 
-a:hover {
-  color: $secondary-color;
+  &:hover {
+    @include underline-hover();
+  }
 }
 
 .inverse a:hover, .inverse a:hover h4 {
@@ -261,12 +274,11 @@ a:before {
 }
 
 button, .btn, input[type="submit"] {
+  @include fill-color();
   display: block;
   margin: 1rem auto 2rem;
   padding: 1rem 2rem;
-  background-color: $primary-color;
-  border: 2px solid $primary-color;
-  color: white;
+  border-width: 2px;
   transition: 0.3s;
   font-weight: 600;
 }
@@ -291,36 +303,21 @@ a.btn {
   color: $grey;
 }
 
-.btn.sec {
-  background-color: $secondary-color;
-  border-color: $secondary-color;
-}
-
-.btn.sec:hover {
-  background-color: darken($secondary-color, 15%);
-  border-color: darken($secondary-color, 15%);
-}
-
 .btn.clr {
   color: $primary-color;
   border-color: $primary-color;
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
+
+  &:hover {
+    @include fill-color($primary-color);
+  }
 }
 
 .inverse .btn.clr {
   background-color: transparent;
   border-color: white;
-}
-
-.btn.highlight {
-  background-color: $highlight-color;
-  border: none;
-}
-
-.btn.highlight:hover {
-  background-color: darken($highlight-color, 6%);
 }
 
 .btn.sm {
@@ -347,15 +344,15 @@ a.btn {
 }
 
 .btn.alert:hover {
-  background-color: #d61212;
-  border-color: #d61212;
-  color: white;
+  @include fill-color(#d61212);
 }
 
-button:hover, .btn:hover, input[type="submit"]:hover, .menu-link:hover {
-  background-color: lighten($primary-color, 15%);
-  border-color: lighten($primary-color, 15%);
-  color: white;
+button:hover, .btn:hover, input[type="submit"]:hover {
+  @include fill-color($hover-color);
+}
+
+.menu-link:hover {
+  @include fill-color();
 }
 
 .img-fluid {
@@ -410,10 +407,14 @@ div.alert {
   flex-shrink: 0;
   width: 100%;
   bottom: 0;
-  padding: 20px;
+  padding: 2rem 0;
   background-color: $primary-color;
   color: white;
   margin-top: 11rem;
+
+  .sm {
+    font-size: 1.3rem;
+  }
 }
 
 // Nav //
@@ -441,6 +442,11 @@ div.alert {
   padding-left: 15px;
 }
 
+.drawer__wrapper {
+  background-color: $primary-color;
+  box-shadow: 0 2px 6px #0000005c;
+}
+
 .drawer__back {
   border: solid $light-grey;
   border-width: 0 1px 1px 0;
@@ -455,7 +461,7 @@ div.alert {
 .menu-link {
   height: 60px;
   border-bottom: 1px solid $light-grey;
-  color: $primary-color;
+  color: white;
   transition: 0.3s;
 }
 
@@ -556,22 +562,22 @@ div.alert {
   justify-content: space-between;
   background-color: transparent;
   border: none;
-}
 
-.home-nav li {
-  list-style: none;
-}
+  a {
+    color: white;
+    font-size: 2rem;
+    padding: calc(3rem + 2vw) 0;
+    text-transform: capitalize;
 
-.home-nav a {
-  color: white;
-  font-size: 2rem;
-  text-decoration: none;
-  padding: calc(3rem + 2vw) 0;
-  text-transform: capitalize;
-}
+    &:focus, &:hover {
+      font-weight: 600;
+      // @include underline-hover();
+    }
+  }
 
-.home-nav a:focus, .home-nav a:hover {
-  font-weight: 600;
+  li {
+    list-style: none;
+  }
 }
 
 .home-section {
@@ -600,6 +606,19 @@ div.alert {
   display: table;
   margin: calc(2rem + 1vw) auto 3rem;
   text-align: center;
+
+  a:hover {
+    color: $primary-color;
+    text-decoration: none;
+
+    h4 {
+      font-weight: 600;
+    }
+
+    svg {
+      color: $secondary-color;
+    }
+  }
 }
 
 .bi-chevron-down {
@@ -613,7 +632,7 @@ div.alert {
 .usp-icon {
   width: 7rem;
   height: 7rem;
-  fill: $secondary-color;
+  fill: #ffa68c;
   margin-bottom: 2rem;
 }
 
@@ -667,7 +686,7 @@ div.row.student > * {
 
 .table-container {
   overflow: overlay;
-  border: 1px solid #58adc7;
+  border: 1px solid $table-color;
   border-radius: 5px;
 }
 
@@ -676,7 +695,7 @@ div.row.student > * {
 }
 
 thead {
-  background-color: #58adc7;
+  background-color: $table-color;
   color: white;
 }
 
@@ -686,7 +705,7 @@ th, td {
 }
 
 td {
-  color: $primary-color;
+  color: lighten($primary-color, 3%);
 }
 
 .test-date {

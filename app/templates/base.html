@@ -114,8 +114,8 @@
     {% block footer %}
       <footer class="footer inverse">
         <div class="row justify-content-center">
-          <div class="col-sm-10">
-            <p class="mb-2 mt-3">
+          <div class="col-11 col-md-5">
+            <p class="mb-2">
               <img src="{{ url_for('static', filename='img/phone.svg') }}"/>
               <a class="ms-2" href="tel:+1{{ phone }}">{{ phone }}</a>
             </p>
@@ -123,8 +123,21 @@
               <img src="{{ url_for('static', filename='img/mail.svg') }}"/>
               <a class="ms-2" href="mailto:{{ hello }}" target="_blank">{{ hello }}</a>
             </p>
-            <p>
-              <span class="me-3 h3">&copy;</span><script>document.write(new Date().getFullYear())</script>
+            <p class="mb-2 mb-md-0">
+              <span class="me-2 align-bottom"><img width="22" height="22" src="{{ url_for('static',
+                filename='img/creatorsweb.svg') }}" alt="">
+              </span>
+              <span class="align-bottom">
+                Designed in collaboration with
+                <a id="creatorsweb" class="semibold" href="https://creatorsweb.co" target="_blank">
+                  Creators Web
+                </a>
+              </span>
+            </p>
+          </div>
+          <div class="justify-content-end text-md-end col-11 col-md-5">
+            <p class="mb-2">
+              <span class="me-3 h4">&copy;</span><script>document.write(new Date().getFullYear())</script>
               Open Path Tutoring LLC
             </p>
             {% block footnote %}{% endblock footnote %}
