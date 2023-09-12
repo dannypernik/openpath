@@ -447,6 +447,10 @@ div.alert {
   box-shadow: 0 2px 6px #0000005c;
 }
 
+.drawer__header {
+  padding: 2.1rem;
+}
+
 .drawer__back {
   border: solid $light-grey;
   border-width: 0 1px 1px 0;
@@ -571,7 +575,6 @@ div.alert {
 
     &:focus, &:hover {
       font-weight: 600;
-      // @include underline-hover();
     }
   }
 

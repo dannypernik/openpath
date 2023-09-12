@@ -6318,6 +6318,10 @@ div.alert {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3607843137);
 }
 
+.drawer__header {
+  padding: 2.1rem;
+}
+
 .drawer__back {
   border: solid #ddd;
   border-width: 0 1px 1px 0;
