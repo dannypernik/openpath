@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
     SubmitField, IntegerField, RadioField, SelectField, validators
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, EmailField
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
 from app.models import User, TestDate, UserTestDate
@@ -17,7 +17,7 @@ def validate_email(self, email):
 class InquiryForm(FlaskForm):
     first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
         validators=[InputRequired()])
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     phone = StringField('Phone number (optional)', render_kw={"placeholder": "Phone number (optional)"})
     subject = StringField('Subject', render_kw={'placeholder': 'Subject'}, default='Message')
@@ -29,14 +29,14 @@ class InquiryForm(FlaskForm):
 class EmailListForm(FlaskForm):
     first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
         validators=[InputRequired()])
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     submit = SubmitField()
 
 
 class SignupForm(FlaskForm):
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
@@ -51,7 +51,7 @@ class SignupForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     password = PasswordField('Password', render_kw={"placeholder": "Password"}, \
         validators=[InputRequired()])
@@ -60,7 +60,7 @@ class LoginForm(FlaskForm):
 
 
 class RequestPasswordResetForm(FlaskForm):
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     submit = SubmitField('Request password reset')
 
@@ -87,7 +87,7 @@ class UserForm(FlaskForm):
     first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={"placeholder": "Last name"})
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     phone = StringField('Phone', render_kw={"placeholder": "Phone"})
     secondary_email = StringField('Secondary email', render_kw={"placeholder": "Secondary email"})
@@ -123,7 +123,7 @@ class StudentForm(FlaskForm):
     student_name = StringField('Student first name', render_kw={"placeholder": "Student first name"}, \
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={"placeholder": "Student last name"})
-    student_email = StringField('Student Email address', render_kw={"placeholder": "Student Email address"}, \
+    student_email = EmailField('Student Email address', render_kw={"placeholder": "Student Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     student_phone = StringField('Student phone', render_kw={"placeholder": "Student phone"})
@@ -133,8 +133,8 @@ class StudentForm(FlaskForm):
     parent_id = SelectField('Parent', coerce=int)
     parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
     parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
-    parent_email = StringField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
-    secondary_email = secondary_email = StringField('Parent email 2', render_kw={"placeholder": "Parent email 2"})
+    parent_email = EmailField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
+    secondary_email = EmailField('Parent email 2', render_kw={"placeholder": "Parent email 2"})
     parent_phone = StringField('Parent phone', render_kw={"placeholder": "Parent phone"})
     timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
@@ -150,7 +150,7 @@ class TutorForm(FlaskForm):
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
         validators=[InputRequired()])
-    email = StringField('Email address', render_kw={"placeholder": "Email address"}, \
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     phone = StringField('Phone', render_kw={"placeholder": "Phone"})
@@ -186,12 +186,12 @@ class RecapForm(FlaskForm):
 class TestStrategiesForm(FlaskForm):
     first_name = StringField('Your first name', render_kw={'placeholder': 'Your first name'}, \
         validators=[InputRequired()])
-    email = StringField('Email address', render_kw={'placeholder': 'Email address'}, \
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     relation = RadioField('I am a:', choices=[('parent','Parent'),('student','Student')], \
         validators=[InputRequired()])
     parent_name = StringField('Parent\'s name', render_kw={'placeholder': 'Parent\'s name'})
-    parent_email = StringField('Parent\'s email', render_kw={'placeholder': 'Parent\'s email'})
+    parent_email = EmailField('Parent\'s email', render_kw={'placeholder': 'Parent\'s email'})
     student_name = StringField('Student\'s name', render_kw={'placeholder': 'Student\'s name'})
     #pronouns = RadioField('Student\'s preferred pronouns:', choices=[("he","He/him"),("she","She/her"),("they","They/them")], \
     #    validators=[InputRequired()])
@@ -210,6 +210,6 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     parent_first_name = StringField('Parent\'s first name', render_kw={'placeholder': 'Parent\'s first name'}, \
         validators=[InputRequired()])
-    parent_email = StringField('Parent\'s email address', render_kw={'placeholder': 'Parent\'s email address'}, \
+    parent_email = EmailField('Parent\'s email address', render_kw={'placeholder': 'Parent\'s email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     submit = SubmitField()
