@@ -252,6 +252,7 @@ a {
 
   &:hover {
     @include underline-hover();
+    color: $secondary-color;
   }
 }
 

@@ -6118,6 +6118,7 @@ a:hover {
   text-decoration: underline;
   text-underline-offset: 7px;
   text-decoration-color: #f06d53;
+  color: #f06d53;
 }
 
 .inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
