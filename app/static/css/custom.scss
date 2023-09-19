@@ -35,7 +35,7 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 
 @mixin underline-hover($color: $secondary-color) {
   text-decoration: underline;
-  text-underline-offset: 7px;
+  text-underline-offset: 6px;
   text-decoration-color: $color;
 }
 
@@ -59,6 +59,7 @@ body {
   display: flex;
   flex-direction:  column;
   -ms-overflow-style: none;
+  --bs-body-line-height: 1.6;
 }
 
 body::-webkit-scrollbar {
@@ -253,12 +254,12 @@ a {
 
   &:hover {
     @include underline-hover();
-    color: $secondary-color;
+    color: $text-color;
+    font-weight: 600;
   }
 }
 
 .inverse a:hover, .inverse a:hover h4 {
-  font-weight: 600;
   color: white;
 }
 

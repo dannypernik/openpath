@@ -5939,6 +5939,7 @@ body {
   display: flex;
   flex-direction: column;
   -ms-overflow-style: none;
+  --bs-body-line-height: 1.6;
 }
 
 body::-webkit-scrollbar {
@@ -6116,13 +6117,13 @@ a {
 }
 a:hover {
   text-decoration: underline;
-  text-underline-offset: 7px;
+  text-underline-offset: 6px;
   text-decoration-color: #f06d53;
-  color: #f06d53;
+  color: #006179;
+  font-weight: 600;
 }
 
 .inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
-  font-weight: 600;
   color: white;
 }
 
