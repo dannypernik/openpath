@@ -434,10 +434,12 @@ div.alert {
   margin: 17px 0 17px auto;
   color: white;
   text-decoration: none;
+  cursor: pointer;
+  font-weight: 400;
 }
 
-#menu-btn:hover, #menu-btn:focus {
-  text-decoration: none;
+#menu-btn:hover {
+  @include underline-hover();
 }
 
 #menu-icon {
@@ -451,7 +453,7 @@ div.alert {
 }
 
 .drawer__header {
-  padding: 2.1rem;
+  padding: 0 2rem;
 }
 
 .drawer__back {
@@ -465,11 +467,23 @@ div.alert {
   display: inline;
 }
 
+.menu-close {
+  color: white;
+  font-size: 4rem;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:hover {
+    color: $secondary-color;
+  }
+}
+
 .menu-link {
   height: 60px;
   border-bottom: 1px solid $light-grey;
   color: white;
   transition: 0.3s;
+  font-weight: 400;
 }
 
 .menu-link p {
