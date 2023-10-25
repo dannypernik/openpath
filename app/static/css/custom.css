@@ -6208,14 +6208,14 @@ a.btn {
 }
 
 .btn.alert {
-  color: #d61212;
-  border-color: #d61212;
+  color: #850017;
+  border-color: #850017;
   background-color: transparent;
 }
 
 .btn.alert:hover {
-  background-color: #d61212;
-  border-color: #d61212;
+  background-color: #850017;
+  border-color: #850017;
   color: white;
 }
 

@@ -7,12 +7,10 @@
 {% endblock styles_scripts %}
 
 {% block container %}
-  <div class="row justify-content-center">
+  <div class="pt-2 row justify-content-center">
     <div class="col-11 col-lg-10">
       {% if current_user.is_admin %}
-        <div>
-          <button id="add-date" class="btn d-inline-block mt-0 me-2">+ Add date</button>
-        </div>
+        <a id="add-date" class="mt-4 btn d-inline-block mt-0 me-2">Add date</a>
 
         <form id="add-date-form" class="hidden-form" action="" method="post">
           <h1 class="me-2 d-inline-block">Add test date</h1>
@@ -35,7 +33,7 @@
           </div>
         </form>
       {% else %}
-        <h1>Test dates and deadlines</h1>
+        <h1 class="mt-4">Test dates and deadlines</h1>
         <p>
           In addition to the weekend dates listed below, schools and districts may offer the
           ACT<sup>&#174;</sup> or SAT<sup>&#174;</sup> on a school day. Schools handle student
@@ -121,9 +119,6 @@
         {% endfor %}
       {% else %}
         <div class="text-center">
-          <a href="{{ url_for('test_reminders') }}" class="btn mt-4 d-block w-fit" onclick="dataLayer.push({'event': 'get-reminders'});">
-            Get registration reminders for your test dates
-          </a>
           <a href="{{ url_for('index') }}" class="btn clr sm">Learn more about Open Path test prep</a>
         </div>
       {% endif %}
