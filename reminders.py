@@ -180,11 +180,11 @@ def main():
 
     for u in test_reminder_users:
         for d in u.get_dates():
-            if d.reg_date == today + datetime.timedelta(days=5):
+            if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                 email = send_registration_reminder_email(u, d)
-            elif d.late_date == today + datetime.timedelta(days=5):
+            elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                 send_late_registration_reminder_email(u, d)
-            elif d.date == today + datetime.timedelta(days=6):
+            elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
                 send_test_reminders_email(u, d)
 
     upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")

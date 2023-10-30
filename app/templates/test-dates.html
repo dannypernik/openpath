@@ -7,10 +7,12 @@
 {% endblock styles_scripts %}
 
 {% block container %}
-  <div class="pt-2 row justify-content-center">
+  <div class="pt-4 row justify-content-center">
     <div class="col-11 col-lg-10">
       {% if current_user.is_admin %}
-        <a id="add-date" class="mt-4 btn d-inline-block mt-0 me-2">Add date</a>
+        <div>
+          <a id="add-date" class="btn d-inline-block mt-2 me-2">Add date</a>
+        </div>
 
         <form id="add-date-form" class="hidden-form" action="" method="post">
           <h1 class="me-2 d-inline-block">Add test date</h1>

@@ -313,7 +313,7 @@ def edit_user(id):
     user = User.query.get_or_404(id)
     form = UserForm(user.email, obj=user)
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
-    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
+    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date > datetime.today().date())
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
     parent_list = [(0,'')]+[(u.id, full_name(u)) for u in parents]
     tutors = User.query.order_by(User.first_name, User.last_name).filter_by(role='tutor')
@@ -488,7 +488,6 @@ def test_dates():
     form = TestDateForm()
     tests = TestDate.query.with_entities(TestDate.test).distinct()
     today = datetime.today().date()
-    print(datetime.today())
     upcoming_filter = (TestDate.status != 'school') & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_filter)
     other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_filter)
