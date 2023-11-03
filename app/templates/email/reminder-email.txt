@@ -1,4 +1,4 @@
-Hi {{ student.first_name }}, this is an automated reminder that you are scheduled for a {{ event_type }} with {{ tutor.first_name }} {{ tutor.last_name }} on {{ start_date }} from {{ start_display }} to {{ end_display }} {{ timezone }} time.
+This is an automated reminder that a {{ event_type }} is scheduled with {{ tutor.first_name }} {{ tutor.last_name }} on {{ start_date }} from {{ start_display }} to {{ end_display }} {{ timezone }} time.
 
 Location: {{ location }}
 

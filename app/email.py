@@ -144,6 +144,8 @@ def send_reminder_email(event, student):
         event_type = 'practice SAT'
     elif 'practice act' in event.get('summary').lower():
         event_type = 'practice ACT'
+    elif 'test prep class' in event.get('summary').lower():
+        event_type = 'test prep class'
     else:
         event_type = 'tutoring session'
 
