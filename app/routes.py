@@ -884,6 +884,12 @@ def download_file (filename):
     path = os.path.join(app.root_path, 'static/files/')
     return send_from_directory(path, filename, as_attachment=False)
 
+@app.route('/cal-check', methods=['POST'])
+def cal_check():
+    if request.method == 'POST':
+        json = request.json
+        
+
 
 @app.route('/favicon.ico')
 def favicon():
