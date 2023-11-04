@@ -446,7 +446,7 @@ def send_late_registration_reminder_email(user, test_date):
         return result.status_code
 
 
-def send_test_reminders_email(user, test_date):
+def send_test_reminder_email(user, test_date):
     with app.app_context():
         api_key = app.config['MAILJET_KEY']
         api_secret = app.config['MAILJET_SECRET']
@@ -880,4 +880,38 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
         print("Admin report email sent.\n")
     else:
         print("Admin report email error:", str(result.status_code), result.reason, "\n")
+    return result.status_code
+
+
+def send_schedule_conflict_email(message):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": app.config['MAIL_USERNAME']
+                    }
+                ],
+                "Subject": "Schedule conflict email",
+                "TextPart": render_template('email/schedule-conflict.txt',
+                                        message=message),
+                "HTMLPart": render_template('email/schedule-conflict.html',
+                                        message=message)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("Schedule conflict email sent to " + user.email)
+    else:
+        print("Schedule conflict email to " + user.email + " failed to send with code " + result.status_code, result.reason)
     return result.status_code

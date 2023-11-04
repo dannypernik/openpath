@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email
+    send_confirmation_email, send_schedule_conflict_email
 from functools import wraps
 import requests
 import json
@@ -875,6 +875,12 @@ def test_strategies():
             flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('test-strategies.html', form=form)
 
+
+@app.route('/cal-check', methods=['POST'])
+def cal_check():
+    send_schedule_conflict_email(request.json)
+
+
 @app.route('/pay')
 def pay():
     return redirect('https://link.waveapps.com/4yu6up-ne82sd')
@@ -883,13 +889,6 @@ def pay():
 def download_file (filename):
     path = os.path.join(app.root_path, 'static/files/')
     return send_from_directory(path, filename, as_attachment=False)
-
-@app.route('/cal-check', methods=['POST'])
-def cal_check():
-    if request.method == 'POST':
-        json = request.json
-        
-
 
 @app.route('/favicon.ico')
 def favicon():

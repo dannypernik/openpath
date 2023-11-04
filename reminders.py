@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_test_reminders_email
+    send_admin_report_email, send_test_reminder_email
 from sqlalchemy.orm import joinedload
 import requests
 
@@ -170,7 +170,7 @@ def get_upcoming_events():
 def main():
     events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
     
-    # mark test dates as past
+### mark test dates as past
     for d in test_dates:
         if d.date == today:
             d.status = 'past'
@@ -178,6 +178,7 @@ def main():
             db.session.commit()
             print('Test date', d.date, 'marked as past')
 
+### send registration and test reminder emails
     for u in test_reminder_users:
         for d in u.get_dates():
             if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
@@ -185,7 +186,7 @@ def main():
             elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                 send_late_registration_reminder_email(u, d)
             elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                send_test_reminders_email(u, d)
+                send_test_reminder_email(u, d)
 
     upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
