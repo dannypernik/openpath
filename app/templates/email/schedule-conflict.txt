@@ -1,0 +1,3 @@
+The recently scheduled event conflicts with this existing one:
+
+{{ message }}
