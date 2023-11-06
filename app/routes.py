@@ -878,7 +878,7 @@ def test_strategies():
 
 @app.route('/cal-check', methods=['POST'])
 def cal_check():
-    send_schedule_conflict_email(request.get_json(force=True))
+    send_schedule_conflict_email(request.json)
     return '', 201
 
 
