@@ -5,7 +5,7 @@
       <title>
         {% block title %}
           {% if title %}
-            {{ title }} -
+            {{ title.capitalize() }} -
           {% endif %}
           Open Path Tutoring
         {% endblock title %}
@@ -100,7 +100,8 @@
       {% endblock navbar %}
 
       {% block container %}
-        <div class="row section-margin justify-content-center">
+        <div id="{% block container_id %}{{ title }}{% endblock container_id %}" class="row section-margin justify-content-center
+          {% block container_class %}{% endblock container_class %}">
           <div class="col-11 col-sm-10 col-lg-8">
 
             {% block content %}{% endblock content %}
@@ -109,6 +110,7 @@
         </div>
       {% endblock container %}
     </div>
+
 
     {% block footer %}
       <footer class="footer inverse">
@@ -122,24 +124,24 @@
               <img src="{{ url_for('static', filename='img/mail.svg') }}"/>
               <a class="ms-2" href="mailto:{{ hello }}" target="_blank">{{ hello }}</a>
             </p>
-            <p class="mb-2 mb-md-0">
-              <span class="me-2 align-bottom"><img width="22" height="22" src="{{ url_for('static',
+            <p class="mb-1 mb-md-0">
+              <span class="me-3 lead">&copy;</span><script>document.write(new Date().getFullYear())</script>
+              Open Path Tutoring LLC
+            </p>
+          </div>
+          <div class="d-flex flex-column align-items-end justify-content-end text-md-end col-11 col-md-5">
+            {% block footnote %}{% endblock footnote %}
+            <p class="mb-0">
+              <span class="me-2"><img width="22" height="22" src="{{ url_for('static',
                 filename='img/creatorsweb.svg') }}" alt="">
               </span>
-              <span class="align-bottom">
-                Designed in collaboration with
-                <a id="creatorsweb" class="semibold" href="https://creatorsweb.co" target="_blank">
+              <span class="align-text-top">
+                Website by
+                <a id="creatorsweb" class="semibold ms-xl-0" href="https://creatorsweb.co" target="_blank">
                   Creators Web
                 </a>
               </span>
             </p>
-          </div>
-          <div class="justify-content-end text-md-end col-11 col-md-5">
-            <p class="mb-2">
-              <span class="me-3 h4">&copy;</span><script>document.write(new Date().getFullYear())</script>
-              Open Path Tutoring LLC
-            </p>
-            {% block footnote %}{% endblock footnote %}
           </div>
         </div>
       </footer>

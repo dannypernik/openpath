@@ -67,15 +67,12 @@
         ask questions that cover the same old concepts. Identifying the concept is
         often half the challenge.
       </li>
-      <li>
-        {% if test_date.test == 'sat' %}
-          The SAT usually ends with a 5th experimental section.
-          This section does not count toward your score.
-        {% elif test_date.test == 'act' %}
+      {% if test_date.test == 'act' %}
+        <li>
           The ACT usually includes a 5th experimental section after Science but
           before the optional essay. This section does not count toward your score.
-        {% endif %}
-      </li>
+        </li>
+      {% endif %}
     </p>
     <p>
       Above all, remember to trust yourself! You've put in the work to train your
