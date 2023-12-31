@@ -74,17 +74,20 @@
             <div id="{{ status }}-list" class="accordion-collapse collapse
               {% if status != 'inactive' %} show {% endif %}">
               <div class="accordion-body">
-                <div class="row mb-1 semibold">
-                  <div class="col-3 col-lg-2">
-                    Name
+                <div class="row mb-1 semibold text-nowrap overflow-hidden">
+                  <div class="col-2">
+                    First
                   </div>
-                  <div class="col-3 col-lg-4">
+                  <div class="col-2">
+                    Last
+                  </div>
+                  <div class="col-3">
                     Email
                   </div>
-                  <div class="col-3 col-lg-2">
+                  <div class="col-2">
                     Parent
                   </div>
-                  <div class="col-3 col-lg-4">
+                  <div class="col-3">
                     Parent email
                   </div>
                 </div>
@@ -92,24 +95,29 @@
                 {% for s in students %}
                   {% if s.status == status %}
                     <div class="row student text-nowrap">
-                      <div class="col-3 col-lg-2">
+                      <div class="col-2">
                         <a href="{{ url_for('edit_user', id=s.id) }}">
-                          {{ full_name(s) }}
+                          {{ s.first_name }}
                         </a>
                       </div>
-                      <div class="col-3 col-lg-4">
+                      <div class="col-2">
+                        <a href="{{ url_for('edit_user', id=s.id) }}">
+                          {{ s.last_name }}
+                        </a>
+                      </div>
+                      <div class="col-3">
                         <a href="mailto:{{ s.email }}" target="_blank">
                           {{ s.email }}
                         </a>
                       </div>
-                      <div class="col-3 col-lg-2">
+                      <div class="col-2">
                         {% if s.parent_id %}
                           <a href="{{ url_for('edit_user', id=s.parent_id) }}">
-                            {{ full_name(s.parent) }}
+                            {{ s.parent.first_name }}
                           </a>
                         {% endif %}
                       </div>
-                      <div class="col-3 col-lg-4">
+                      <div class="col-3">
                         {% if s.parent_id %}
                           <a href="mailto:{{ s.parent.email }}" target="_blank">
                             {{ s.parent.email }}
