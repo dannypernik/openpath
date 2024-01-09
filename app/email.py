@@ -883,6 +883,38 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
     return result.status_code
 
 
+def send_student_status_update_email(student, event):
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
+                    },
+                    "To": [
+                        {
+                        "Email": app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    "Subject": "Update student status for " + student.first_name,
+                    "HTMLPart": render_template('email/student-status-update-email.html', 
+                        student=student, event=event)
+                }
+            ]
+        }
+
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("\nStudent status update email sent.")
+    else:
+        print("Student status update email error:", str(result.status_code), result.reason, "\n")
+    return result.status_code
+
+
+
 def send_schedule_conflict_email(message):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']

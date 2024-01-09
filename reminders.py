@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_test_reminder_email
+    send_admin_report_email, send_test_reminder_email, send_student_status_update_email
 from sqlalchemy.orm import joinedload
 import requests
 
@@ -159,6 +159,7 @@ def get_upcoming_events():
         if week_num == 0:
             events_next_week.append({
                 'name': bimonth_events[e].get('summary'),
+                'date': bimonth_events[e]['start'].get('dateTime'),
                 'hours': hours
             })
             if e_start < upcoming_end:
@@ -207,8 +208,8 @@ def main():
     for student in students:
         name = full_name(student)
 
-        if student.status not in ['active', 'prospective'] and any(name in nest['name'] for nest in events_next_week):
-            print(name + ' is listed as ' + student.status + ' and is on the schedule.')
+        if student.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
+            send_student_status_update_email(student, event)
 
     if len(reminder_list) == 0:
         print("No reminders sent.")
