@@ -884,6 +884,9 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
 
 
 def send_student_status_update_email(student, event):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     with app.app_context():
         data = {
