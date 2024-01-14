@@ -208,8 +208,8 @@ def main():
     for student in students:
         name = full_name(student)
 
-        if student.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
-            send_student_status_update_email(student, event)
+        if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in bimonth_events):
+            send_student_status_update_email(student, now)
 
     if len(reminder_list) == 0:
         print("No reminders sent.")

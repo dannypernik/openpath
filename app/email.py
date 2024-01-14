@@ -883,10 +883,14 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
     return result.status_code
 
 
-def send_student_status_update_email(student, event):
+def send_student_status_update_email(student, now):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    dt = datetime.datetime
+    start = (now + datetime.timedelta(hours=40)).isoformat() + 'Z'
+    start_date = dt.strftime(parse(start), format="%b %-d")
 
     with app.app_context():
         data = {
@@ -903,7 +907,7 @@ def send_student_status_update_email(student, event):
                     ],
                     "Subject": "Update student status for " + student.first_name,
                     "HTMLPart": render_template('email/student-status-update-email.html', 
-                        student=student, event=event)
+                        student=student, start_date=start_date)
                 }
             ]
         }
