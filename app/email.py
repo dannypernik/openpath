@@ -812,9 +812,9 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
                     "are scheduled with Danny for " + scheduled_student_count + " students next week. <br/><br/>" + \
                     "An additional " + outsourced_hours + " hours (" + outsourced_session_count + " sessions) " + \
                     "are scheduled with other tutors for " + outsourced_scheduled_student_count + " students. " + \
-                    "<br/><br/>Unscheduled active students for Danny: " + unscheduled_students + \
-                    "<br/>Unscheduled active students for other tutors: " + outsourced_unscheduled_students + \
-                    "<br/>Active students scheduled after next week: " + future_students + \
+                    "<br/><br/>Unscheduled upcoming students for Danny: " + unscheduled_students + \
+                    "<br/>Unscheduled upcoming students for other tutors: " + outsourced_unscheduled_students + \
+                    "<br/>Upcoming students scheduled after next week: " + future_students + \
                     "<br/>Paused students: " + paused_students + \
                     "<br/><br/><br/>" + quote_header + '<br/>"' + message + '"' + "<br/>&ndash; " + author
             }
