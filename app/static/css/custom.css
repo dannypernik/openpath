@@ -5934,7 +5934,7 @@ html {
 body {
   height: 100%;
   font-family: "Montserrat", "Helvetica", sans-serif;
-  color: #006179;
+  color: #00617b;
   font-size: 1.8rem;
   display: flex;
   flex-direction: column;
@@ -5995,11 +5995,11 @@ input, textarea {
   border-bottom: 1px solid #999;
   width: 100%;
   outline: none;
-  color: #004455;
+  color: rgb(0, 69, 87);
 }
 
 input:focus, textarea:focus {
-  border-bottom: 1px solid #004455;
+  border-bottom: 1px solid rgb(0, 69, 87);
 }
 
 input[type=checkbox] {
@@ -6022,11 +6022,11 @@ input[type=checkbox] + label::before {
   margin-right: 10px;
   width: 20px;
   height: 20px;
-  border: 2px solid #004455;
+  border: 2px solid rgb(0, 69, 87);
   border-radius: 3px;
 }
 input[type=checkbox]:checked + label::before {
-  background-color: #004455;
+  background-color: rgb(0, 69, 87);
 }
 input[type=checkbox]:checked + label::after {
   content: "";
@@ -6040,7 +6040,7 @@ input[type=checkbox]:checked + label::after {
   transform: rotate(-45deg);
 }
 input[type=checkbox]:focus + label::before {
-  box-shadow: 0 0px 8px #004455;
+  box-shadow: 0 0px 8px rgb(0, 69, 87);
 }
 
 input[type=radio] {
@@ -6062,7 +6062,7 @@ input[type=radio] + label::before {
   width: 2rem;
   height: 2rem;
   background: transparent;
-  border: 2px solid #004455;
+  border: 2px solid rgb(0, 69, 87);
   border-radius: 50%;
 }
 input[type=radio] + label::after {
@@ -6076,10 +6076,10 @@ input[type=radio] + label::after {
   height: 1rem;
 }
 input[type=radio]:checked + label::after {
-  background: #004455;
+  background: rgb(0, 69, 87);
 }
 input[type=radio]:focus + label::before {
-  box-shadow: 0 0px 8px #004455;
+  box-shadow: 0 0px 8px rgb(0, 69, 87);
 }
 
 .radio-wrapper {
@@ -6095,8 +6095,8 @@ input[type=radio]:focus + label::before {
 }
 
 select {
-  color: #004455;
-  border: 2px solid #004455;
+  color: rgb(0, 69, 87);
+  border: 2px solid rgb(0, 69, 87);
   border-radius: 10px;
   padding: 0.5rem;
   font-size: 1.6rem;
@@ -6112,14 +6112,14 @@ select.select-header {
 
 a {
   display: inline-block;
-  color: #006179;
+  color: #00617b;
   text-decoration: none;
 }
 a:hover {
   text-decoration: underline;
   text-underline-offset: 6px;
   text-decoration-color: #f06d53;
-  color: #006179;
+  color: #00617b;
   font-weight: 600;
 }
 
@@ -6173,15 +6173,15 @@ a.btn {
 }
 
 .btn.clr {
-  color: #004455;
-  border-color: #004455;
+  color: rgb(0, 69, 87);
+  border-color: rgb(0, 69, 87);
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
 }
 .btn.clr:hover {
-  background-color: #004455;
-  border-color: #004455;
+  background-color: rgb(0, 69, 87);
+  border-color: rgb(0, 69, 87);
   color: white;
 }
 
@@ -6284,7 +6284,7 @@ div.alert {
   width: 100%;
   bottom: 0;
   padding: 2rem 0;
-  background-color: #004455;
+  background-color: rgb(0, 69, 87);
   color: white;
   margin-top: 7rem;
 }
@@ -6320,7 +6320,7 @@ div.alert {
 }
 
 .drawer__wrapper {
-  background-color: #004455;
+  background-color: rgb(0, 69, 87);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3607843137);
 }
 
@@ -6376,8 +6376,8 @@ div.alert {
   position: sticky;
   top: 0;
   border: none;
-  border-bottom: 1px solid #004455;
-  background-color: #004455;
+  border-bottom: 1px solid rgb(0, 69, 87);
+  background-color: rgb(0, 69, 87);
   z-index: 100;
 }
 
@@ -6480,7 +6480,7 @@ div.alert {
   text-align: center;
 }
 .home-next a:hover {
-  color: #004455;
+  color: rgb(0, 69, 87);
   text-decoration: none;
 }
 .home-next a:hover h4, .home-next a:hover .h4 {
@@ -6506,14 +6506,25 @@ div.alert {
 }
 
 .profile-pic, .school-logo {
-  display: block;
-  margin: 0 auto 3rem;
-  max-height: 155px;
-  max-width: 333px;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 200px;
+  max-width: 100%;
 }
 
 .profile-pic {
   border-radius: 100%;
+}
+
+.double-arrow {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 55px;
+  max-width: 100%;
 }
 
 .review-img {
@@ -6540,7 +6551,7 @@ div.alert {
 }
 
 .accordion-item {
-  color: #006179;
+  color: #00617b;
 }
 
 div.row.student > * {
@@ -6568,7 +6579,7 @@ th, td {
 }
 
 td {
-  color: #005064;
+  color: #005166;
 }
 
 .test-date {
@@ -6587,6 +6598,28 @@ td {
 
 .w-fit {
   width: fit-content;
+}
+
+#scholarship {
+  background: linear-gradient(195deg, transparent, transparent 25%, rgba(0, 57, 71, 0.85) 45%, rgba(0, 57, 71, 0.85) 80%, rgb(0, 57, 71)), url(../img/adam-winger-NExnr_fcsSw-unsplash.jpg) center top no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+  overflow: auto;
+}
+
+#scholarship-title {
+  margin-top: 16rem;
+}
+
+@media screen and (max-width: 635px) {
+  #scholarship {
+    background: linear-gradient(225deg, transparent, transparent 10%, rgba(0, 57, 71, 0.75) 20%, rgb(0, 57, 71) 60%), url(../img/adam-winger-NExnr_fcsSw-unsplash-sm.jpg) right top no-repeat;
+    background-attachment: scroll;
+    background-size: contain;
+  }
+  #scholarship-title {
+    margin-top: 5rem;
+  }
 }
 
 /*# sourceMappingURL=custom.css.map */

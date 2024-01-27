@@ -4,7 +4,7 @@ $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
-$primary-color: #004455;//#01496d;//#1C4D65;
+$primary-color: rgb(0, 69, 87);//#01496d;//#1C4D65;
 $secondary-color: #f06d53;//#d35137;//e97435;
 $text-color: lighten($primary-color, 7%);
 $hover-color: #e45b39;
@@ -38,6 +38,13 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
   text-decoration: underline;
   text-underline-offset: 6px;
   text-decoration-color: $color;
+}
+
+@mixin xy-center() {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
 
 // Sitewide stylings //
@@ -657,17 +664,24 @@ div.alert {
   margin-bottom: 2rem;
 }
 
-// About page //
+// About & School pages //
 
 .profile-pic, .school-logo {
-  display: block;
-  margin: 0 auto 3rem;
-  max-height: 155px;
-  max-width: 333px;
+  @include xy-center();
+  // display: block;
+  // margin: 0 auto 3rem;
+  width: 200px;
+  max-width: 100%;
 }
 
 .profile-pic {
   border-radius: 100%;
+}
+
+.double-arrow {
+  @include xy-center();
+  width: 55px;
+  max-width: 100%;
 }
 
 // Reviews page //
