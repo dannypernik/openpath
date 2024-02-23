@@ -6,6 +6,7 @@ import re
 import datetime
 from dateutil.parser import parse
 import requests
+import json
 
 
 def get_quote():
@@ -50,6 +51,29 @@ def send_contact_email(user, message, subject):
             }
         ]
     }
+
+    new_contact = {
+        "first_name": user.first_name, "last_name": "OPT contact form", \
+        "emails": [{ "type": "home", "value": user.email}], \
+        "phones": [{ "type": "mobile", "value": user.phone}], \
+        "tags": ["Website"]
+    }
+
+    crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    
+    if crm_contact.status_code == 201:
+        print('crm_contact passes')
+        new_action = {
+            "contact_id": crm_contact.json()['data']['contact']['id'],
+            "assignee_id": app.config['ONEPAGECRM_ID'],
+            "status": "asap",
+            "text": "Respond to OPT web form",
+            #"date": ,
+            #"exact_time": 1526472000,
+            #"position": 1
+        }
+        crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        print('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
@@ -521,6 +545,29 @@ def send_signup_notification_email(user, dates):
         ]
     }
 
+    new_contact = {
+        "first_name": user.first_name, "last_name": "OPT test reminders form", \
+        "emails": [{ "type": "home", "value": user.email}], \
+        "phones": [{ "type": "mobile", "value": user.phone}], \
+        "tags": ["Website"]
+    }
+
+    crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    
+    if crm_contact.status_code == 201:
+        print('crm_contact passes')
+        new_action = {
+            "contact_id": crm_contact.json()['data']['contact']['id'],
+            "assignee_id": app.config['ONEPAGECRM_ID'],
+            "status": "asap",
+            "text": "Respond to OPT web form",
+            #"date": ,
+            #"exact_time": 1526472000,
+            #"position": 1
+        }
+        crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        print('crm_action:', crm_action)
+
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
@@ -645,6 +692,29 @@ def send_test_strategies_email(student, parent, relation):
         ]
     }
 
+    new_contact = {
+        "first_name": user.first_name, "last_name": "OPT test strategies form", \
+        "emails": [{ "type": "home", "value": user.email}], \
+        "phones": [{ "type": "mobile", "value": user.phone}], \
+        "tags": ["Website"]
+    }
+
+    crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    
+    if crm_contact.status_code == 201:
+        print('crm_contact passes')
+        new_action = {
+            "contact_id": crm_contact.json()['data']['contact']['id'],
+            "assignee_id": app.config['ONEPAGECRM_ID'],
+            "status": "asap",
+            "text": "Respond to OPT web form",
+            #"date": ,
+            #"exact_time": 1526472000,
+            #"position": 1
+        }
+        crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        print('crm_action:', crm_action)
+
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
         print(result.json())
@@ -753,6 +823,29 @@ def send_score_analysis_email(student, parent, school):
             }
         ]
     }
+
+    new_contact = {
+        "first_name": user.first_name, "last_name": "OPT score analysis form", \
+        "emails": [{ "type": "home", "value": user.email}], \
+        "phones": [{ "type": "mobile", "value": user.phone}], \
+        "tags": ["Website"]
+    }
+
+    crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    
+    if crm_contact.status_code == 201:
+        print('crm_contact passes')
+        new_action = {
+            "contact_id": crm_contact.json()['data']['contact']['id'],
+            "assignee_id": app.config['ONEPAGECRM_ID'],
+            "status": "asap",
+            "text": "Respond to OPT web form",
+            #"date": ,
+            #"exact_time": 1526472000,
+            #"position": 1
+        }
+        crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        print('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:

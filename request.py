@@ -2,12 +2,13 @@ import os
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 import requests
 import uuid
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-SCOPES = 'https://www.googleapis.com/auth/calendar/readonly'
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 
 flow = Flow.from_client_secrets_file(
                 os.path.join(basedir, 'credentials.json'), SCOPES)
@@ -45,9 +46,14 @@ service = build('calendar', 'v3', credentials=creds)
 eventcollect = {
     'id': str(uuid.uuid1()),
     'type': "web_hook",
-    "address": "https://openpathtutoring.com/cal-check"
+    "address": "https://openpathtutoring.com/cal-check",
 }
 
-check = service.events().watch(calendarId='primary', body=eventcollect).execute()
+# eventcollect = {
+#     'id': '7eec8970-7c56-11ee-8797-d25b3ef06edb',
+#     'resourceId': '1HknjLymchI6W0RlQUu9L0FpXrM',
+# }
 
-print(check)
+check = requests.post('https://www.googleapis.com/calendar/v3/calendars/danny@openpathtutoring.com/events/watch', json=eventcollect, headers={'Authorization': 'Bearer ' + creds.token})
+
+print(check, check.reason)
