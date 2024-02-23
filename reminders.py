@@ -30,8 +30,8 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:Q'
 calendars = [
-    'primary',
-    'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com',
+    # 'primary',
+    # 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com',
     '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com']
 
 now = datetime.datetime.utcnow()
@@ -222,7 +222,7 @@ def main():
 
 
 ### send weekly reports
-    if day_of_week == 'Friday':
+    if day_of_week == 'Monday':
         print('\n')
 
         session_count = 0
