@@ -69,26 +69,26 @@ def index():
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
-        new_contact = {
-            "first_name": user.first_name, "last_name": "OPT web form", \
-            "emails": [{ "type": "home", "value": user.email}], \
-            "phones": [{ "type": "mobile", "value": user.phone}], \
-            "tags": ["Website"]
-        }
-        crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        if crm_contact.status_code == 201:
-            print('crm_contact passes')
-            new_action = {
-                "contact_id": crm_contact.json()['data']['contact']['id'],
-                "assignee_id": app.config['ONEPAGECRM_ID'],
-                "status": "asap",
-                "text": "Respond to OPT web form",
-                #"date": ,
-                #"exact_time": 1526472000,
-                #"position": 1
-            }
-            crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-            print('crm_action:', crm_action)
+        # new_contact = {
+        #     "first_name": user.first_name, "last_name": "OPT web form", \
+        #     "emails": [{ "type": "home", "value": user.email}], \
+        #     "phones": [{ "type": "mobile", "value": user.phone}], \
+        #     "tags": ["Website"]
+        # }
+        # crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        # if crm_contact.status_code == 201:
+        #     print('crm_contact passes')
+        #     new_action = {
+        #         "contact_id": crm_contact.json()['data']['contact']['id'],
+        #         "assignee_id": app.config['ONEPAGECRM_ID'],
+        #         "status": "asap",
+        #         "text": "Respond to OPT web form",
+        #         #"date": ,
+        #         #"exact_time": 1526472000,
+        #         #"position": 1
+        #     }
+        #     crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        #     print('crm_action:', crm_action)
 
         email_status = send_contact_email(user, message, subject)
         if email_status == 200:
