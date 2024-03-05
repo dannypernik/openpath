@@ -491,6 +491,9 @@ def test_dates():
     upcoming_filter = (TestDate.status != 'school') & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_filter)
     other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_filter)
+    upcoming_students = User.query.filter(
+        (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
+    undecided_students = User.query.filter(~User.test_dates.any() & (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
     if form.validate_on_submit():
         date = TestDate(test=form.test.data, date=form.date.data, reg_date=form.reg_date.data, \
             late_date=form.late_date.data, other_date=form.other_date.data, \
@@ -505,7 +508,8 @@ def test_dates():
             return redirect(url_for('test_dates'))
         return redirect(url_for('test_dates'))
     return render_template('test-dates.html', title="Test dates", form=form, tests=tests,
-        upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates)
+        upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates,
+        upcoming_students=upcoming_students, undecided_students=undecided_students)
 
 
 @app.route('/edit-date/<int:id>', methods=['GET', 'POST'])
