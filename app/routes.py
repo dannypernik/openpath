@@ -486,7 +486,7 @@ def tutors():
 @app.route('/test-dates', methods=['GET', 'POST'])
 def test_dates():
     form = TestDateForm()
-    tests = TestDate.query.with_entities(TestDate.test).distinct()
+    tests = TestDate.query.with_entities(TestDate.test).order_by(TestDate.test.desc()).distinct()
     today = datetime.today().date()
     upcoming_filter = (TestDate.status != 'school') & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_filter)
@@ -504,7 +504,7 @@ def test_dates():
             flash(date.date.strftime('%b %-d') + date.test.upper() + ' could not be added', 'error')
             return redirect(url_for('test_dates'))
         return redirect(url_for('test_dates'))
-    return render_template('test-dates.html', title="Test dates", form=form, tests=tests, \
+    return render_template('test-dates.html', title="Test dates", form=form, tests=tests,
         upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates)
 
 
