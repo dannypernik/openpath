@@ -667,10 +667,10 @@ div.alert {
 // About & School pages //
 
 .profile-pic, .school-logo {
-  @include xy-center();
-  // display: block;
-  // margin: 0 auto 3rem;
-  width: 200px;
+  // @include xy-center();
+  display: block;
+  margin: 0 auto 3rem;
+  width: 155px;
   max-width: 100%;
 }
 

@@ -6506,11 +6506,9 @@ div.alert {
 }
 
 .profile-pic, .school-logo {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  width: 200px;
+  display: block;
+  margin: 0 auto 3rem;
+  width: 155px;
   max-width: 100%;
 }
 
@@ -6598,28 +6596,6 @@ td {
 
 .w-fit {
   width: fit-content;
-}
-
-#scholarship {
-  background: linear-gradient(195deg, transparent, transparent 25%, rgba(0, 57, 71, 0.85) 45%, rgba(0, 57, 71, 0.85) 80%, rgb(0, 57, 71)), url(../img/adam-winger-NExnr_fcsSw-unsplash.jpg) center top no-repeat;
-  background-size: cover;
-  min-height: 100vh;
-  overflow: auto;
-}
-
-#scholarship-title {
-  margin-top: 16rem;
-}
-
-@media screen and (max-width: 635px) {
-  #scholarship {
-    background: linear-gradient(225deg, transparent, transparent 10%, rgba(0, 57, 71, 0.75) 20%, rgb(0, 57, 71) 60%), url(../img/adam-winger-NExnr_fcsSw-unsplash-sm.jpg) right top no-repeat;
-    background-attachment: scroll;
-    background-size: contain;
-  }
-  #scholarship-title {
-    margin-top: 5rem;
-  }
 }
 
 /*# sourceMappingURL=custom.css.map */
