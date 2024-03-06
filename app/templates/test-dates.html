@@ -57,7 +57,9 @@
                 <th>Registration deadline</th>
                 <th>Late deadline</th>
                 <th>Score release date</th>
-                <th>Students</th>
+                {% if current_user.is_admin %}
+                  <th>Students</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -91,18 +93,20 @@
                         {{ d.score_date.strftime('%B %-d') }}
                       {% endif %}
                     </td>
-                    <td>
-                      {% for s in upcoming_students %}
-                        {% if s in d.students %}
-                          <a href="{{ url_for('edit_user', id=s.id) }}" class="me-2">
-                            {{ s.first_name }} {{ s.last_name }}<br>
-                          </a>
-                          {% if s.is_registered(d) %}
-                            &#x2713;
+                    {% if current_user.is_admin %}
+                      <td>
+                        {% for s in upcoming_students %}
+                          {% if s in d.students %}
+                            <a href="{{ url_for('edit_user', id=s.id) }}" class="ms-2">
+                              {{ s.first_name }} {{ s.last_name }}<br>
+                            </a>
+                            {% if s.is_registered(d) %}
+                              &#x2713;
+                            {% endif %}
                           {% endif %}
-                        {% endif %}
-                      {% endfor %}
-                    </td>
+                        {% endfor %}
+                      </td>
+                    {% endif %}
                   </tr>
                 {% endif %}
               {% endfor %}
