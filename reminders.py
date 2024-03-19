@@ -304,8 +304,8 @@ def main():
                     if row[1] != s.status.title():
                         status_fixes.append([full_name(s), s.status.title(), row[1]])
                 student_names_db.append(full_name(s))
-            if row[1] == 'Active' and float(row[2]) <= 1.5:
-                low_active_students.append([row[0], row[2]])
+            if row[1] == 'Active' and float(row[3]) <= 2:
+                low_active_students.append([row[0], row[3]])
             if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
                 students_not_in_db.append(row[0])
         
