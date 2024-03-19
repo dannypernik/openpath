@@ -152,7 +152,7 @@ def get_upcoming_events():
             time_group = 'evening_hours'
 
 
-        week_num = max(1, math.ceil((e_start - pytz.utc.localize(upcoming_start) + 1).days / 7)) - 1
+        week_num = max(1, math.ceil(((e_start - pytz.utc.localize(upcoming_start)).days + 1) / 7)) - 1
 
         events_by_week.append({
             'name': bimonth_events[e].get('summary'),
