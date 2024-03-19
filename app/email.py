@@ -867,7 +867,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     dt = datetime.datetime
     start = (now + datetime.timedelta(hours=40)).isoformat() + 'Z'
     start_date = dt.strftime(parse(start), format="%b %-d")
-    end = (now + datetime.timedelta(days=7, hours=40)).isoformat() + 'Z'
+    end = (now + datetime.timedelta(days=6, hours=40)).isoformat() + 'Z'
     end_date = dt.strftime(parse(end), format="%b %-d")
     future_students = ', '.join(future_list)
     if future_students == '':
