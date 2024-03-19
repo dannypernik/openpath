@@ -266,7 +266,7 @@ def main():
             name = full_name(student)
             paused_list.append(name)
 
-        send_weekly_report_email(str(session_count), str(tutoring_hours), str(len(scheduled_students)), \
+        send_weekly_report_email(str(session_count), str(round(tutoring_hours, 2)), str(len(scheduled_students)), \
             future_schedule, unscheduled_list, str(outsourced_session_count), \
             str(outsourced_hours), str(len(outsourced_scheduled_students)), \
             outsourced_unscheduled_list, paused_list, now)
