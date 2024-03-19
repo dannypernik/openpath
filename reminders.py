@@ -185,14 +185,14 @@ def main():
             print('Test date', d.date, 'marked as past')
 
 ### send registration and test reminder emails
-    for u in test_reminder_users:
-        for d in u.get_dates():
-            if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                email = send_registration_reminder_email(u, d)
-            elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                send_late_registration_reminder_email(u, d)
-            elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                send_test_reminder_email(u, d)
+    # for u in test_reminder_users:
+    #     for d in u.get_dates():
+    #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+    #             email = send_registration_reminder_email(u, d)
+    #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+    #             send_late_registration_reminder_email(u, d)
+    #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+    #             send_test_reminder_email(u, d)
 
     upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
@@ -203,7 +203,7 @@ def main():
             name = full_name(student)
             if name in event.get('summary') and 'projected' not in event.get('summary').lower():
                 reminder_list.append(name)
-                send_reminder_email(event, student)
+                # send_reminder_email(event, student)
 
     # get list of event names for the bimonth
     for e in bimonth_events:
@@ -266,7 +266,7 @@ def main():
             name = full_name(student)
             paused_list.append(name)
 
-        send_weekly_report_email(str(session_count), str(round(tutoring_hours, 2)), str(len(scheduled_students)), \
+        send_weekly_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
             future_schedule, unscheduled_list, str(outsourced_session_count), \
             str(outsourced_hours), str(len(outsourced_scheduled_students)), \
             outsourced_unscheduled_list, paused_list, now)
