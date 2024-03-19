@@ -875,7 +875,8 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     unscheduled_students = ', '.join(unscheduled_list)
     if unscheduled_students == '':
         unscheduled_students = "None"
-    outsourced_unscheduled_students = ', '.join(outsourced_unscheduled_list)
+    outsourced_unscheduled_students = '<br>'.join(
+        outsourced_unscheduled_list['name'] + ' (' + outsourced_unscheduled_list['tutor'] + ')')
     if outsourced_unscheduled_students == '':
         outsourced_unscheduled_students = "None"
     paused_students = ', '.join(paused)
@@ -907,7 +908,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
                     "are scheduled with other tutors for " + outsourced_scheduled_student_count + " students. " + \
                     "<br/><br/>Unscheduled upcoming students for Danny: " + unscheduled_students + \
                     "<br/>Unscheduled upcoming students for other tutors: " + outsourced_unscheduled_students + \
-                    "<br/>Upcoming students scheduled after next week: " + future_students + \
+                    "<br/><br/>Upcoming students scheduled after next week: " + future_students + \
                     "<br/>Paused students: " + paused_students + \
                     "<br/><br/><br/>" + quote_header + '<br/>"' + message + '"' + "<br/>&ndash; " + author
             }
