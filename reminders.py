@@ -185,14 +185,14 @@ def main():
             print('Test date', d.date, 'marked as past')
 
 ### send registration and test reminder emails
-    # for u in test_reminder_users:
-    #     for d in u.get_dates():
-    #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-    #             email = send_registration_reminder_email(u, d)
-    #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-    #             send_late_registration_reminder_email(u, d)
-    #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-    #             send_test_reminder_email(u, d)
+    for u in test_reminder_users:
+        for d in u.get_dates():
+            if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                email = send_registration_reminder_email(u, d)
+            elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                send_late_registration_reminder_email(u, d)
+            elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+                send_test_reminder_email(u, d)
 
     upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
     print("\nSession reminders for " + upcoming_start_formatted + ":")
@@ -203,7 +203,7 @@ def main():
             name = full_name(student)
             if name in event.get('summary') and 'projected' not in event.get('summary').lower():
                 reminder_list.append(name)
-                # send_reminder_email(event, student)
+                send_reminder_email(event, student)
 
     # get list of event names for the bimonth
     for e in bimonth_events:
@@ -224,7 +224,7 @@ def main():
 
 
 ### send weekly reports
-    if day_of_week == 'Tuesday':
+    if day_of_week == 'Friday':
         print('\n')
 
         session_count = 0
