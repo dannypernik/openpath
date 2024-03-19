@@ -893,12 +893,12 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
                     {
                     "Email": app.config['MAIL_USERNAME']
                     },
-                    {
-                    "Email": app.config['MOM_EMAIL']
-                    },
-                    {
-                    "Email": app.config['DAD_EMAIL']
-                    }
+                    # {
+                    # "Email": app.config['MOM_EMAIL']
+                    # },
+                    # {
+                    # "Email": app.config['DAD_EMAIL']
+                    # }
                 ],
                 "Subject": "Weekly tutoring report for " + start_date + " to " + end_date,
                 "HTMLPart": "A total of " + scheduled_hours + " hours (" + scheduled_session_count + " sessions) " + \
