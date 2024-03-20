@@ -48,16 +48,16 @@
               {{ weekly_data['dates'][i] }}
             </td>
             <td>
-              {{ weekly_data['day_hours'][i] }}
+              {{ '{:0.2f}'.format(weekly_data['day_hours'][i]) }}
             </td>
             <td>
-              {{ weekly_data['evening_hours'][i] }}
+              {{ '{:0.2f}'.format(weekly_data['evening_hours'][i]) }}
             </td>
             <td>
-              {{ weekly_data['projected_hours'][i] }}
+              {{ '{:0.2f}'.format(weekly_data['projected_hours'][i]) }}
             </td>
             <td style="font-weight: bold">
-              {{ weekly_data['day_hours'][i] + weekly_data['evening_hours'][i] + weekly_data['projected_hours'][i] }}
+              {{ '{:0.2f}'.format(weekly_data['day_hours'][i] + weekly_data['evening_hours'][i] + weekly_data['projected_hours'][i]) }}
             </td>
           </tr>
         {% endfor %}
