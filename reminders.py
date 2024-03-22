@@ -14,9 +14,11 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_test_reminder_email, send_student_status_update_email
+    send_admin_report_email, send_test_reminder_email, send_student_status_update_email, \
+    send_script_error_email
 from sqlalchemy.orm import joinedload
 import requests
+import traceback
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -176,152 +178,153 @@ def get_upcoming_events():
 def main():
     events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
     
-### mark test dates as past
-    for d in test_dates:
-        if d.date == today:
-            d.status = 'past'
-            db.session.add(d)
-            db.session.commit()
-            print('Test date', d.date, 'marked as past')
+    try:
+        ### mark test dates as past
+        for d in test_dates:
+            if d.date == today:
+                d.status = 'past'
+                db.session.add(d)
+                db.session.commit()
+                print('Test date', d.date, 'marked as past')
 
-### send registration and test reminder emails
-    for u in test_reminder_users:
-        for d in u.get_dates():
-            if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                email = send_registration_reminder_email(u, d)
-            elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                send_late_registration_reminder_email(u, d)
-            elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                send_test_reminder_email(u, d)
+        ### send registration and test reminder emails
+        for u in test_reminder_users:
+            for d in u.get_dates():
+                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    email = send_registration_reminder_email(u, d)
+                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    send_late_registration_reminder_email(u, d)
+                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+                    send_test_reminder_email(u, d)
 
-    upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-    print("\nSession reminders for " + upcoming_start_formatted + ":")
+        upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
+        print("\nSession reminders for " + upcoming_start_formatted + ":")
 
-### Send reminder email to students ~2 days in advance
-    for event in upcoming_events:
-        for student in upcoming_students:
+        ### Send reminder email to students ~2 days in advance
+        for event in upcoming_events:
+            for student in upcoming_students:
+                name = full_name(student)
+                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+                    reminder_list.append(name)
+                    send_reminder_email(event, student)
+
+        # get list of event names for the bimonth
+        for e in bimonth_events:
+            bimonth_events_list.append(e.get('summary'))
+
+        # check for students who should be listed as active
+        for student in students:
             name = full_name(student)
-            if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-                reminder_list.append(name)
-                send_reminder_email(event, student)
 
-    # get list of event names for the bimonth
-    for e in bimonth_events:
-        bimonth_events_list.append(e.get('summary'))
+            if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in bimonth_events):
+                send_student_status_update_email(student, now)
 
-    # check for students who should be listed as active
-    for student in students:
-        name = full_name(student)
-
-        if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in bimonth_events):
-            send_student_status_update_email(student, now)
-
-    if len(reminder_list) == 0:
-        print("No reminders sent.")
-    
-    if primary_tutor.timezone != 0:
-        print('\nYour timezone was changed. Reminder emails have incorrect time.')
-
-
-### send weekly reports
-    if day_of_week == 'Friday':
-        print('\n')
-
-        session_count = 0
-        tutoring_hours = 0
-        outsourced_hours = 0
-        outsourced_session_count = 0
-
-        # Get number of active students, number of sessions, and list of unscheduled students
-        for student in upcoming_students:
-            name = full_name(student)
-            for x in events_by_week:
-                if name in x['name']:
-                    tutoring_events.append(x)
-
-            if any(name in e['name'] for e in events_next_week):
-                print(name + " scheduled with " + student.tutor.first_name)
-                for x in events_next_week:
-                    count = 0
-                    hours = 0
-                    if name in x['name']:
-                        count += 1
-                        hours += x['hours']
-                        if student.tutor_id == 1:
-                            scheduled_students.add(name)
-                            session_count += count
-                            tutoring_hours += hours
-                        else:
-                            outsourced_scheduled_students.add(name)
-                            outsourced_session_count += count
-                            outsourced_hours += hours
-            elif any(name in e['name'] for e in tutoring_events):
-                future_schedule.add(name)
-            elif student.tutor_id == 1:
-                unscheduled_list.append(name)
-            else:
-                outsourced_unscheduled_list.append({
-                    'name': name,
-                    'tutor': student.tutor.first_name
-                })
-
-        for student in paused_students:
-            name = full_name(student)
-            paused_list.append(name)
-
-        send_weekly_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
-            future_schedule, unscheduled_list, str(outsourced_session_count), \
-            str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-            outsourced_unscheduled_list, paused_list, now)
-
-
-### Generate admin report
-        weekly_data = {
-            'dates': [0,0,0,0,0,0,0,0,0,0],
-            'sessions': [0,0,0,0,0,0,0,0,0,0],
-            'day_hours': [0,0,0,0,0,0,0,0,0,0],
-            'evening_hours': [0,0,0,0,0,0,0,0,0,0],
-            'projected_hours': [0,0,0,0,0,0,0,0,0,0]
-        }
-
-        next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
-
-        for i in range(10):
-            s = next_sunday + datetime.timedelta(days=(i * 7))
-            s_str = s.strftime('%b %-d')
-            weekly_data['dates'][i] = s_str
-
-        for e in tutoring_events:
-            weekly_data[e['time_group']][e['week_num']] += e['hours']
-            weekly_data['sessions'][e['week_num']] += 1        
-
-        # Spreadsheet data
-        if not summary_data:
-            print('No summary data found.')
-            return
-
-        # Get list of students with conflicting statuses, low hours, or missing from DB
-        for row in summary_data:
-            for s in students:
-                if row[0] == full_name(s):
-                    if row[1] != s.status.title():
-                        status_fixes.append([full_name(s), s.status.title(), row[1]])
-                student_names_db.append(full_name(s))
-            if row[1] == 'Active' and float(row[3]) <= 2:
-                low_active_students.append([row[0], row[3]])
-            if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
-                students_not_in_db.append(row[0])
+        if len(reminder_list) == 0:
+            print("No reminders sent.")
         
-        admin_data = {
-            'low_active_students': low_active_students,
-            'weekly_data': weekly_data
-        }
+        if primary_tutor.timezone != 0:
+            print('\nYour timezone was changed. Reminder emails have incorrect time.')
 
-        send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
+
+        ### send weekly reports
+        if day_of_week == 'Friday':
+            print('\n')
+
+            session_count = 0
+            tutoring_hours = 0
+            outsourced_hours = 0
+            outsourced_session_count = 0
+
+            # Get number of active students, number of sessions, and list of unscheduled students
+            for student in upcoming_students:
+                name = full_name(student)
+                for x in events_by_week:
+                    if name in x['name']:
+                        tutoring_events.append(x)
+
+                if any(name in e['name'] for e in events_next_week):
+                    print(name + " scheduled with " + student.tutor.first_name)
+                    for x in events_next_week:
+                        count = 0
+                        hours = 0
+                        if name in x['name']:
+                            count += 1
+                            hours += x['hours']
+                            if student.tutor_id == 1:
+                                scheduled_students.add(name)
+                                session_count += count
+                                tutoring_hours += hours
+                            else:
+                                outsourced_scheduled_students.add(name)
+                                outsourced_session_count += count
+                                outsourced_hours += hours
+                elif any(name in e['name'] for e in tutoring_events):
+                    future_schedule.add(name)
+                elif student.tutor_id == 1:
+                    unscheduled_list.append(name)
+                else:
+                    outsourced_unscheduled_list.append(name + '( ' + student.tutor.first_name + ')')
+
+            for student in paused_students:
+                name = full_name(student)
+                paused_list.append(name)
+
+            send_weekly_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
+                future_schedule, unscheduled_list, str(outsourced_session_count), \
+                str(outsourced_hours), str(len(outsourced_scheduled_students)), \
+                outsourced_unscheduled_list, paused_list, now)
+
+
+        ### Generate admin report
+            weekly_data = {
+                'dates': [0,0,0,0,0,0,0,0,0,0],
+                'sessions': [0,0,0,0,0,0,0,0,0,0],
+                'day_hours': [0,0,0,0,0,0,0,0,0,0],
+                'evening_hours': [0,0,0,0,0,0,0,0,0,0],
+                'projected_hours': [0,0,0,0,0,0,0,0,0,0]
+            }
+
+            next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
+
+            for i in range(10):
+                s = next_sunday + datetime.timedelta(days=(i * 7))
+                s_str = s.strftime('%b %-d')
+                weekly_data['dates'][i] = s_str
+
+            for e in tutoring_events:
+                weekly_data[e['time_group']][e['week_num']] += e['hours']
+                weekly_data['sessions'][e['week_num']] += 1        
+
+            # Spreadsheet data
+            if not summary_data:
+                print('No summary data found.')
+                return
+
+            # Get list of students with conflicting statuses, low hours, or missing from DB
+            for row in summary_data:
+                for s in students:
+                    if row[0] == full_name(s):
+                        if row[1] != s.status.title():
+                            status_fixes.append([full_name(s), s.status.title(), row[1]])
+                    student_names_db.append(full_name(s))
+                if row[1] == 'Active' and float(row[3]) <= 2:
+                    low_active_students.append([row[0], row[3]])
+                if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
+                    students_not_in_db.append(row[0])
+            
+            admin_data = {
+                'low_active_students': low_active_students,
+                'weekly_data': weekly_data
+            }
+
+            send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
+        
+        msg, author, header = get_quote()
+        print("\n\n" + msg + " - " + author)
+
+    except Exception:
+        send_script_error_email('reminders.py', traceback.format_exc())
     
-    msg, author, header = get_quote()
-    print("\n\n" + msg + " - " + author)
-
 
 def get_student_events(full_name):
     student_events = []

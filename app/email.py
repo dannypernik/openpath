@@ -875,8 +875,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     unscheduled_students = ', '.join(unscheduled_list)
     if unscheduled_students == '':
         unscheduled_students = "None"
-    outsourced_unscheduled_students = '<br>'.join(
-        outsourced_unscheduled_list['name'] + ' (' + outsourced_unscheduled_list['tutor'] + ')')
+    outsourced_unscheduled_students = '<br>'.join(outsourced_unscheduled_list)
     if outsourced_unscheduled_students == '':
         outsourced_unscheduled_students = "None"
     paused_students = ', '.join(paused)
@@ -1002,6 +1001,40 @@ def send_student_status_update_email(student, now):
                     "Subject": "Update student status for " + student.first_name,
                     "HTMLPart": render_template('email/student-status-update-email.html', 
                         student=student, start_date=start_date)
+                }
+            ]
+        }
+
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("\nStudent status update email sent.")
+    else:
+        print("Student status update email error:", str(result.status_code), result.reason, "\n")
+    return result.status_code
+
+
+def send_script_error_email(name, exception):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
+                    },
+                    "To": [
+                        {
+                        "Email": app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    "Subject": name + " did not finish running",
+                    "HTMLPart": render_template('email/script-error-email.html', 
+                        name=name, exception=exception)
                 }
             ]
         }
