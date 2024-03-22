@@ -263,7 +263,7 @@ def main():
                 elif student.tutor_id == 1:
                     unscheduled_list.append(name)
                 else:
-                    outsourced_unscheduled_list.append(name + '( ' + student.tutor.first_name + ')')
+                    outsourced_unscheduled_list.append(name + ' (' + student.tutor.first_name + ')')
 
             for student in paused_students:
                 name = full_name(student)
