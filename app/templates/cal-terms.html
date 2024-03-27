@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+ 
+{% block content %}
+  <h1>Terms of Service</h3>
+
+  <p>By using this app, you agree to the following terms of service:</p>
+
+  <p>This app will read your Google Calendar events for the purpose of sending reminder emails to your clients. The app will not modify or delete any of your events.</p>
+
+  <p>The app will read the following information about your Google Calendar events:</p>
+
+  <ul>
+  <li>Event title</li>
+  <li>Event start and end times</li>
+  <li>Event location</li>
+  <li>Event description</li>
+  </ul>
+
+  <p>The app will use this information to provide you with the following features:</p>
+
+  <ul>
+  <li>Emails to remind you and your clients of upcoming events</li>
+  </ul>
+
+  <p>The app will not share your Google Calendar events with any third parties without your consent.</p>
+
+  <p>You can revoke the app's access to your Google Calendar at any time by visiting the Google Calendar settings page.</p>
+
+  <p>By using this app, you agree to indemnify and hold harmless Open Path Tutoring from any and all claims, damages, losses, and expenses arising out of or in connection with your use of the app.</p>
+
+  <p>Open Path Tutoring reserves the right to change these terms of service at any time. If you continue to use the app after any changes are made, you agree to be bound by the new terms of service.</p>
+
+  <p>If you have any questions about this privacy policy, please <strong><a href="{{ url_for('index', _anchor='contact') }}">contact us</a></strong>.</p>
+
+{% endblock content %}
