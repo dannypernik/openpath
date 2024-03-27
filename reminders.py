@@ -178,7 +178,8 @@ def get_upcoming_events():
 
 def main():
     try:
-        events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data = get_upcoming_events()
+        events_by_week, events_next_week, upcoming_events, bimonth_events, 
+        summary_data = get_upcoming_events()
     
         ### mark test dates as past
         for d in test_dates:

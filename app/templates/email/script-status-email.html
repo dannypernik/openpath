@@ -6,7 +6,11 @@
   	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   </head>
   <body style="color: #1C4D65;">
-    <p>{{ messages }}</p>
+    <p>
+      {% for m in messages %}
+        {{ m }}<br>
+      {% endfor %}
+      </p>
     <p>{{ exception }}</p>
   </body>
 </html>
