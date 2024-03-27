@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+ 
+{% block content %}
+  <h1>Privacy Policy</h1>
+  <p>
+    This privacy policy explains how we collect, use, and share your information when you use our app.
+  </p>
+  <h3>Information We Collect</h3>
+  <p>
+    We collect the following information from you:
+    Your name, Your email address, and Your Google Calendar events.
+  </p> 
+  <h3>How We Use Your Information</h3>   
+  <p>We use your information to provide you with the services offered by our app. For example, we use your Google Calendar events to remind you of upcoming events.</p> 
+  <h3>How We Share Your Information</h3>
+  <p>We do not share your information with any third parties.</p>
+  <h3>Your Choices</h3>
+  <p>You can choose to stop using our app at any time. If you stop using our app, we will delete your information from our servers.</p> 
+  <h3>Changes to This Privacy Policy</h3>
+  <p>We may update this privacy policy from time to time. If we make any changes, we will post the new privacy policy on our website.</p>
+  <h3>Contact Us</h3>
+  <p>If you have any questions about this privacy policy, please <a href="{{ url_for('index', _anchor='contact') }}">contact us</a>.</p>
+{% endblock content %}
