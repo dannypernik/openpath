@@ -183,11 +183,11 @@ def main():
     
         ### mark test dates as past
         for d in test_dates:
-            if d.date <= today:
+            if d.status != 'past' and d.date <= today:
                 d.status = 'past'
                 db.session.add(d)
                 db.session.commit()
-                msg = 'Test date' + d.date + 'marked as past'
+                msg = 'Test date' + str(d.date) + 'marked as past'
                 print(msg)
                 messages.append(msg)
 
