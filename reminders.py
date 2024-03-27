@@ -15,7 +15,7 @@ from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_admin_report_email, send_test_reminder_email, send_student_status_update_email, \
-    send_script_error_email
+    send_script_status_email
 from sqlalchemy.orm import joinedload
 import requests
 import traceback
@@ -72,6 +72,7 @@ primary_tutor = User.query.filter(User.email == app.config['ADMIN_EMAIL']).first
 status_fixes = []
 student_names_db = []
 students_not_in_db = []
+messages = []
 
 ### Test date reminders
 test_dates = TestDate.query.all()
@@ -181,11 +182,14 @@ def main():
     try:
         ### mark test dates as past
         for d in test_dates:
-            if d.date == today:
+            if d.date <= today:
                 d.status = 'past'
                 db.session.add(d)
                 db.session.commit()
-                print('Test date', d.date, 'marked as past')
+                msg = 'Test date' + d.date + 'marked as past'
+                print(msg)
+                messages.append(msg)
+
 
         ### send registration and test reminder emails
         for u in test_reminder_users:
@@ -220,15 +224,21 @@ def main():
                 send_student_status_update_email(student, now)
 
         if len(reminder_list) == 0:
-            print("No reminders sent.")
+            msg = "No reminders sent."
+            print(msg)
+            messages.append(msg)
         
         if primary_tutor.timezone != 0:
-            print('\nYour timezone was changed. Reminder emails have incorrect time.')
+            msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
+            print(msg)
+            messages.append(msg)
 
 
         ### send weekly reports
         if day_of_week == 'Friday':
-            print('\n')
+            msg = '\n'
+            print(msg)
+            messages.append(msg)
 
             session_count = 0
             tutoring_hours = 0
@@ -243,7 +253,9 @@ def main():
                         tutoring_events.append(x)
 
                 if any(name in e['name'] for e in events_next_week):
-                    print(name + " scheduled with " + student.tutor.first_name)
+                    msg = name + " scheduled with " + student.tutor.first_name
+                    print(msg)
+                    messages.append(msg)
                     for x in events_next_week:
                         count = 0
                         hours = 0
@@ -297,7 +309,9 @@ def main():
 
             # Spreadsheet data
             if not summary_data:
-                print('No summary data found.')
+                msg = 'No summary data found.'
+                print(msg)
+                messages.append(msg)
                 return
 
             # Get list of students with conflicting statuses, low hours, or missing from DB
@@ -319,11 +333,14 @@ def main():
 
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
-        msg, author, header = get_quote()
-        print("\n\n" + msg + " - " + author)
+        quote, author, header = get_quote()
+        msg = "\n\n" + quote + " - " + author
+        print(msg)
+        messages.append(msg)
+        send_script_status_email('reminders.py', messages, 'succeeded')
 
     except Exception:
-        send_script_error_email('reminders.py', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):

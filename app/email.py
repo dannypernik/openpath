@@ -12,17 +12,16 @@ import json
 def get_quote():
     try:
         quote = requests.get("https://zenquotes.io/api/today")
-
         message = quote.json()[0]['q']
         author = quote.json()[0]['a']
-        quote_header = "Random inspirational quote of the day:"
+        header = "Random inspirational quote of the day:"
     except requests.exceptions.RequestException:
         message = "We don't have to do all of it alone. We were never meant to."
         author = "Brene Brown"
-        quote_header = ""
-    return message, author, quote_header
+        header = ""
+    return quote, author, header
 
-message, author, quote_header = get_quote()
+quote, author, quote_header = get_quote()
 
 
 def send_contact_email(user, message, subject):
@@ -1014,7 +1013,7 @@ def send_student_status_update_email(student, now):
     return result.status_code
 
 
-def send_script_error_email(name, exception):
+def send_script_status_email(name, messages, result, error=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -1029,12 +1028,12 @@ def send_script_error_email(name, exception):
                     },
                     "To": [
                         {
-                        "Email": app.config['MAIL_USERNAME']
+                            "Email": app.config['MAIL_USERNAME']
                         }
                     ],
-                    "Subject": name + " did not finish running",
-                    "HTMLPart": render_template('email/script-error-email.html', 
-                        name=name, exception=exception)
+                    "Subject": name + " " + result,
+                    "HTMLPart": render_template('email/script-status-email.html', 
+                        messages=messages, exception=exception)
                 }
             ]
         }
@@ -1042,9 +1041,9 @@ def send_script_error_email(name, exception):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print("\nStudent status update email sent.")
+        print("\nScript status email sent.")
     else:
-        print("Student status update email error:", str(result.status_code), result.reason, "\n")
+        print("Script status email error:", str(result.status_code), result.reason, "\n")
     return result.status_code
 
 
