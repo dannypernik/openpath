@@ -203,7 +203,7 @@ def main():
                     send_test_reminder_email(u, d)
 
         upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-        print("\nSession reminders for " + upcoming_start_formatted + ":")
+        print("<br>Session reminders for " + upcoming_start_formatted + ":")
 
         ### Send reminder email to students ~2 days in advance
         for event in upcoming_events:
@@ -230,14 +230,14 @@ def main():
             messages.append(msg)
         
         if primary_tutor.timezone != 0:
-            msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
+            msg = '<br>Your timezone was changed. Reminder emails have incorrect time.'
             print(msg)
             messages.append(msg)
 
 
         ### send weekly reports
         if day_of_week == 'Friday':
-            msg = '\n'
+            msg = '<br>'
             print(msg)
             messages.append(msg)
 
@@ -335,7 +335,7 @@ def main():
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
         quote, author, header = get_quote()
-        msg = "\n\n" + quote + " - " + author
+        msg = "<br><br>" + quote + " - " + author
         print(msg)
         messages.append(msg)
         send_script_status_email('reminders.py', messages, 'succeeded')
