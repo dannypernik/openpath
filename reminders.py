@@ -335,7 +335,7 @@ def main():
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
         message, author, header = get_quote()
-        msg = "<br><br>" + quote + " - " + author
+        msg = "<br><br>" + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
