@@ -19,7 +19,7 @@ def get_quote():
         message = "We don't have to do all of it alone. We were never meant to."
         author = "Brene Brown"
         header = ""
-    return quote, author, header
+    return message, author, header
 
 quote, author, quote_header = get_quote()
 
