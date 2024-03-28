@@ -1013,7 +1013,7 @@ def send_student_status_update_email(student, now):
     return result.status_code
 
 
-def send_script_status_email(name, messages, result, exception=None):
+def send_script_status_email(name, messages, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
