@@ -334,13 +334,15 @@ def main():
 
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
-        quote, author, header = get_quote()
+        message, author, header = get_quote()
         msg = "<br><br>" + quote + " - " + author
         print(msg)
         messages.append(msg)
+        print('Script succeeded')
         send_script_status_email('reminders.py', messages, 'succeeded')
 
     except Exception:
+        print('Script failed')
         send_script_status_email('reminders.py', messages, 'failed', traceback.format_exc())
     
 

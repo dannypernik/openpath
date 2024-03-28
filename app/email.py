@@ -21,7 +21,7 @@ def get_quote():
         header = ""
     return message, author, header
 
-quote, author, quote_header = get_quote()
+message, author, quote_header = get_quote()
 
 
 def send_contact_email(user, message, subject):
