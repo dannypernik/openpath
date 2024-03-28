@@ -187,7 +187,7 @@ def main():
                 d.status = 'past'
                 db.session.add(d)
                 db.session.commit()
-                msg = 'Test date' + str(d.date) + 'marked as past'
+                msg = 'Test date ' + str(d.date) + ' marked as past'
                 print(msg)
                 messages.append(msg)
 
