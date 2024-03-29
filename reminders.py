@@ -178,8 +178,8 @@ def get_upcoming_events():
 
 def main():
     try:
-        events_by_week, events_next_week, upcoming_events, bimonth_events, 
-        summary_data = get_upcoming_events()
+        events_by_week, events_next_week, upcoming_events, bimonth_events, \
+            summary_data = get_upcoming_events()
     
         ### mark test dates as past
         for d in test_dates:
@@ -203,7 +203,7 @@ def main():
                     send_test_reminder_email(u, d)
 
         upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-        print("<br>Session reminders for " + upcoming_start_formatted + ":")
+        print("\nSession reminders for " + upcoming_start_formatted + ":")
 
         ### Send reminder email to students ~2 days in advance
         for event in upcoming_events:
@@ -230,14 +230,14 @@ def main():
             messages.append(msg)
         
         if primary_tutor.timezone != 0:
-            msg = '<br>Your timezone was changed. Reminder emails have incorrect time.'
+            msg = '\n\nYour timezone was changed. Reminder emails have incorrect time.'
             print(msg)
             messages.append(msg)
 
 
         ### send weekly reports
         if day_of_week == 'Friday':
-            msg = '<br>'
+            msg = '\n'
             print(msg)
             messages.append(msg)
 
@@ -322,8 +322,8 @@ def main():
                         if row[1] != s.status.title():
                             status_fixes.append([full_name(s), s.status.title(), row[1]])
                     student_names_db.append(full_name(s))
-                if row[1] == 'Active' and float(row[3]) <= 2:
-                    low_active_students.append([row[0], row[3]])
+                if row[1] == 'Active' and float(row[2]) <= 2:
+                    low_active_students.append([row[0], row[2]])
                 if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
                     students_not_in_db.append(row[0])
             
@@ -335,7 +335,7 @@ def main():
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
         message, author, header = get_quote()
-        msg = "<br><br>" + message + " - " + author
+        msg = "\n\n" + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
