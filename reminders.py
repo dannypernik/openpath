@@ -32,11 +32,11 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:S'
 calendars = [
-    'primary',
-    #'887bb71d795fa8a55fa3205b763005d5b58765ce25bf9bf2a0e20f10a3b17132@group.calendar.google.com', #Danny B OPT
+    #'primary', # d@OPT
+    '887bb71d795fa8a55fa3205b763005d5b58765ce25bf9bf2a0e20f10a3b17132@group.calendar.google.com', # DB@gmail OPT
     'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com', # Sean
     '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com', #John
-    #'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
+    'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
 ]
 
 now = datetime.datetime.utcnow()
