@@ -36,7 +36,7 @@ calendars = [
     '887bb71d795fa8a55fa3205b763005d5b58765ce25bf9bf2a0e20f10a3b17132@group.calendar.google.com', # DB@gmail OPT
     'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com', # Sean
     '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com', #John
-    'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
+    # 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
 ]
 
 now = datetime.datetime.utcnow()
@@ -212,7 +212,9 @@ def main():
                 name = full_name(student)
                 if name in event.get('summary') and 'projected' not in event.get('summary').lower():
                     reminder_list.append(name)
-                    send_reminder_email(event, student)
+                    msg = send_reminder_email(event, student)
+                    print(msg)
+                    messages.append(msg)
 
         # get list of event names for the bimonth
         for e in bimonth_events:
