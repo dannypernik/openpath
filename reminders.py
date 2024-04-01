@@ -215,6 +215,7 @@ def main():
                     msg = send_reminder_email(event, student)
                     print(msg)
                     messages.append(msg)
+        messages.append('\n')
 
         # get list of event names for the bimonth
         for e in bimonth_events:
@@ -231,6 +232,7 @@ def main():
             msg = "No reminders sent."
             print(msg)
             messages.append(msg)
+            messages.append('\n')
         
         if primary_tutor.timezone != 0:
             msg = '\n\nYour timezone was changed. Reminder emails have incorrect time.'
@@ -338,7 +340,7 @@ def main():
             send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
         
         message, author, header = get_quote()
-        msg = "\n\n" + message + " - " + author
+        msg = message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
