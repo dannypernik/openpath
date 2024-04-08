@@ -212,12 +212,12 @@ def send_reminder_email(event, student):
             ]
         }
 
-    result = mailjet.send.create(data=data)
+    # result = mailjet.send.create(data=data)
 
-    if result.status_code == 200:
-        msg = student.first_name + ' ' + student.last_name + ' ' + start_display + ' ' + timezone + ' ' + warnings_str
-    else:
-        msg = "Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code) + ' ' + result.reason
+    # if result.status_code == 200:
+    msg = student.first_name + ' ' + student.last_name + ' ' + start_display + ' ' + timezone + ' ' + warnings_str
+    # else:
+    #     msg = "Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code) + ' ' + result.reason
     return msg
 
 
