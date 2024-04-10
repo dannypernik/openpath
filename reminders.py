@@ -218,6 +218,8 @@ def main():
             msg = "No reminders sent."
             print(msg)
             messages.append(msg)
+        
+        messages.append('')
 
         # get list of event names for the bimonth
         for e in bimonth_events:
@@ -227,7 +229,7 @@ def main():
         for student in students:
             name = full_name(student)
 
-            if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in events_next_week):
+            if student.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
                 msg = student.first_name + ' ' + student.last_name + ' is ' + student.status + ' in the database and scheduled next week.'
                 print(msg)
                 messages.append(msg)
