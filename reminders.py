@@ -14,8 +14,7 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_test_reminder_email, send_student_status_update_email, \
-    send_script_status_email
+    send_admin_report_email, send_test_reminder_email, send_script_status_email
 from sqlalchemy.orm import joinedload
 import requests
 import traceback
@@ -214,6 +213,11 @@ def main():
                     msg = send_reminder_email(event, student)
                     print(msg)
                     messages.append(msg)
+        
+        if len(reminder_list) == 0:
+            msg = "No reminders sent."
+            print(msg)
+            messages.append(msg)
 
         # get list of event names for the bimonth
         for e in bimonth_events:
@@ -223,24 +227,22 @@ def main():
         for student in students:
             name = full_name(student)
 
-            if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in bimonth_events):
-                send_student_status_update_email(student, now)
+            if student.status not in ['active', 'prospective'] and any(name in event.get('summary') for event in events_next_week):
+                msg = student.first_name + ' ' + student.last_name + ' is ' + student.status + ' in the database and scheduled next week.'
+                print(msg)
+                messages.append(msg)
 
-        if len(reminder_list) == 0:
-            msg = "No reminders sent."
-            print(msg)
-            messages.append(msg)
         messages.append('')
         
         if primary_tutor.timezone != 0:
-            msg = '\n\nYour timezone was changed. Reminder emails have incorrect time.'
+            msg = 'Your timezone was changed. Reminder emails have incorrect time.'
             print(msg)
             messages.append(msg)
 
 
         ### send weekly reports
         if day_of_week == 'Friday':
-            msg = '\n'
+            msg = ''
             print(msg)
             messages.append(msg)
 
