@@ -233,6 +233,8 @@ def main():
         add_students_header = True
         for row in summary_data:
             for s in students:
+                student_names_db.append(s.name)
+                
                 if row[0] == full_name(s):
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
