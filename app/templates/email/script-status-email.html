@@ -6,6 +6,30 @@
   	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   </head>
   <body style="color: #1C4D65;">
+    {% if status_updates %}
+      <p>
+        Status updates:<br>
+        {% for u in status_updates %}
+          {{ u }}<br>
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if low_hours_students %}
+      <p>
+        Students with low hours:<br>
+        {% for s in low_hours_students %}
+          {{ s }}<br>
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if add_students_to_db %}
+      <p>
+        Add students to database:<br>
+        {% for a in add_students_to_db %}
+          {{ a }}<br>
+        {% endfor %}
+      </p>
+    {% endif %}
     <p>
       {% for m in messages %}
         {{ m }}<br>

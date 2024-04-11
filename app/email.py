@@ -921,7 +921,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     return result.status_code
 
 
-def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
+def send_admin_report_email(now, admin_data):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -932,20 +932,7 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
     end = (now + datetime.timedelta(days=7, hours=40)).isoformat() + 'Z'
     end_date = dt.strftime(parse(end), format="%b %-d")
 
-    low_active_students = []
-    student_statuses = []
-
     weekly_data = admin_data['weekly_data']
-
-    for s in admin_data['low_active_students']:
-        low_active_students.append(str(s[0]) + ": " + str(s[1]) + ' hrs')
-
-    for s in status_fixes:
-        student_statuses.append(s[0] + ' is listed as ' + s[1] + ' in the database and ' + \
-            s[2] + ' in the spreadsheet.')
-    
-    not_in_db = (', ').join(students_not_in_db)
-    student_fix_list = '\n'.join(student_statuses)
     
     with app.app_context():
         data = {
@@ -961,8 +948,7 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
                         }
                     ],
                     "Subject": "Admin data report for " + start_date + " to " + end_date,
-                    "HTMLPart": render_template('email/admin-email.html', low_active_students=low_active_students, \
-                        student_fix_list=student_fix_list, not_in_db=not_in_db, weekly_data=weekly_data)
+                    "HTMLPart": render_template('email/admin-email.html', weekly_data=weekly_data)
                 }
             ]
         }
@@ -975,7 +961,7 @@ def send_admin_report_email(now, admin_data, status_fixes, students_not_in_db):
     return result.status_code
 
 
-def send_script_status_email(name, messages, result, exception=''):
+def send_script_status_email(name, messages, status_updates, low_hours_students, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -995,7 +981,8 @@ def send_script_status_email(name, messages, result, exception=''):
                     ],
                     "Subject": name + " " + result,
                     "HTMLPart": render_template('email/script-status-email.html', 
-                        messages=messages, exception=exception)
+                        messages=messages, status_updates=status_updates, low_hours_students=low_hours_students, \
+                        add_students_to_db=add_students_to_db, exception=exception)
                 }
             ]
         }

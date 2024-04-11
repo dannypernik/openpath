@@ -43,6 +43,7 @@ today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format="%A")
 upcoming_start = now + datetime.timedelta(hours=39)
 upcoming_start_str = upcoming_start.isoformat() + 'Z'
+upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
 upcoming_end = now_tz_aware + datetime.timedelta(hours=63)
 bimonth_end = now + datetime.timedelta(days=70, hours=39)
 bimonth_end_str = bimonth_end.isoformat() + 'Z'
@@ -68,9 +69,10 @@ active_students = students.filter(User.status == 'active')
 upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
 paused_students = students.filter(User.status == 'paused')
 primary_tutor = User.query.filter(User.email == app.config['ADMIN_EMAIL']).first()
-status_fixes = []
 student_names_db = []
-students_not_in_db = []
+status_updates = []
+low_hours_students = []
+add_students_to_db = []
 messages = []
 
 ### Test date reminders
@@ -200,9 +202,10 @@ def main():
                     send_late_registration_reminder_email(u, d)
                 elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
                     send_test_reminder_email(u, d)
-
-        upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-        print("\nSession reminders for " + upcoming_start_formatted + ":")
+        
+        msg = "\nSession reminders for " + upcoming_start_formatted + ":"
+        print(msg)
+        messages.append(msg)
 
         ### Send reminder email to students ~2 days in advance
         for event in upcoming_events:
@@ -224,20 +227,48 @@ def main():
         # get list of event names for the bimonth
         for e in bimonth_events:
             bimonth_events_list.append(e.get('summary'))
+        
+        # Get list of students with conflicting statuses, low hours, or missing from DB
+        low_hrs_header = True
+        add_students_header = True
+        for row in summary_data:
+            for s in students:
+                if row[0] == full_name(s):
+                    if row[1] != s.status.title():
+                        s.status = row[1].lower()
+                        try:
+                            db.session.add(s)
+                            db.session.commit()
+                            msg = full_name(s) + ' DB status = ' + s.status
+                            print(msg)
+                            status_updates.append(msg)
+                        except:
+                            err_msg = full_name(s) + ' DB status update failed.' 
+                            print(err_msg)
+                            messages.append(err_msg)
+            
+            if row[1] == 'Active' and float(row[3]) <= 2:
+                msg = row[0] + ' (' + row[3] + ' hrs)'
+                print(msg)
+                low_hours_students.append(msg)
+
+            if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
+                print(row[0])
+                add_students_to_db.append(row[0])
 
         # check for students who should be listed as active
+        schedule_status_header = True
         for student in students:
             name = full_name(student)
 
             if student.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
-                msg = student.first_name + ' ' + student.last_name + ' is ' + student.status + ' in the database and scheduled next week.'
+                student.status = 'active'
+                msg = name + ' is scheduled next week. Change status to active.'
                 print(msg)
-                messages.append(msg)
-
-        messages.append('')
+                status_updates.append(msg)
         
         if primary_tutor.timezone != 0:
-            msg = 'Your timezone was changed. Reminder emails have incorrect time.'
+            msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
             print(msg)
             messages.append(msg)
 
@@ -321,36 +352,23 @@ def main():
                 print(msg)
                 messages.append(msg)
                 return
-
-            # Get list of students with conflicting statuses, low hours, or missing from DB
-            for row in summary_data:
-                for s in students:
-                    if row[0] == full_name(s):
-                        if row[1] != s.status.title():
-                            status_fixes.append([full_name(s), s.status.title(), row[1]])
-                    student_names_db.append(full_name(s))
-                if row[1] == 'Active' and float(row[2]) <= 2:
-                    low_active_students.append([row[0], row[2]])
-                if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
-                    students_not_in_db.append(row[0])
             
             admin_data = {
-                'low_active_students': low_active_students,
                 'weekly_data': weekly_data
             }
 
-            send_admin_report_email(now, admin_data, status_fixes, students_not_in_db)
+            send_admin_report_email(now, admin_data)
         
         message, author, header = get_quote()
         msg = message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, 'succeeded')
+        send_script_status_email('reminders.py', messages, status_updates, low_hours_students, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed')
-        send_script_status_email('reminders.py', messages, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, low_hours_students, add_students_to_db, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):
