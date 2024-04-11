@@ -6,6 +6,12 @@
   	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   </head>
   <body style="color: #1C4D65;">
+    <p>
+      {% for m in messages %}
+        {{ m }}<br>
+      {% endfor %}
+    </p>
+
     {% if status_updates %}
       <p>
         Status updates:<br>
@@ -14,6 +20,7 @@
         {% endfor %}
       </p>
     {% endif %}
+
     {% if low_hours_students %}
       <p>
         Students with low hours:<br>
@@ -22,6 +29,7 @@
         {% endfor %}
       </p>
     {% endif %}
+
     {% if add_students_to_db %}
       <p>
         Add students to database:<br>
@@ -30,11 +38,7 @@
         {% endfor %}
       </p>
     {% endif %}
-    <p>
-      {% for m in messages %}
-        {{ m }}<br>
-      {% endfor %}
-      </p>
+    
     <p>{{ exception }}</p>
   </body>
 </html>
