@@ -413,10 +413,10 @@ def send_registration_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            print("Registration reminder for", td, test_date.test.upper(), "sent to", user.first_name, user.last_name)
+            msg = "Registration reminder for " + ' ' + td + ' ' + test_date.test.upper() + " sent to " + user.first_name + user.last_name
         else:
-            print("Error for " + user.first_name + "\'s registration reminder with code " + str(result.status_code), result.reason)
-        return result.status_code
+            msg = "Error for " + user.first_name + "\'s registration reminder with code " + str(result.status_code) + ' ' + result.reason
+        return msg
 
 
 def send_late_registration_reminder_email(user, test_date):
@@ -463,10 +463,10 @@ def send_late_registration_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            print("Late registration reminder for", td, test_date.test.upper(), "sent to", user.first_name, user.last_name)
+            msg = "Late registration reminder for " + td + ' ' + test_date.test.upper() + " sent to" + user.first_name + ' ' + user.last_name
         else:
-            print("Error for " + user.first_name + "\'s late registration reminder with code " + str(result.status_code), result.reason)
-        return result.status_code
+            msg = "Error for " + user.first_name + "\'s late registration reminder with code " + str(result.status_code) + ' ' + result.reason
+        return msg
 
 
 def send_test_reminder_email(user, test_date):
@@ -512,10 +512,10 @@ def send_test_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            print(td, test_date.test.upper(), "reminder sent to", user.first_name, user.last_name)
+            msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + user.first_name + ' ' + user.last_name
         else:
-            print("Error for " + user.first_name + "\'s test reminder with code " + str(result.status_code), result.reason)
-        return result.status_code
+            msg = 'Error for ' + user.first_name + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
+        return msg
 
 
 def send_signup_notification_email(user, dates):
