@@ -232,9 +232,11 @@ def main():
         low_hrs_header = True
         add_students_header = True
         for row in summary_data:
+            if row[0] == '':
+                break
             for s in students:
                 student_names_db.append(s.name)
-                
+
                 if row[0] == full_name(s):
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
@@ -249,7 +251,7 @@ def main():
                             print(err_msg)
                             messages.append(err_msg)
             
-            if row[1] == 'Active' and float(row[3]) <= 2:
+            if row[1] == 'Active' and row[8] == 'Package' and float(row[3]) <= 1.5:
                 msg = row[0] + ' (' + row[3] + ' hrs)'
                 print(msg)
                 low_hours_students.append(msg)
