@@ -917,7 +917,7 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     if result.status_code == 200:
         print("\nWeekly report email sent.")
     else:
-        print("Weekly report email error:", str(result.status_code), result.reason, "\n")
+        print("\nWeekly report email error:", str(result.status_code), result.reason, "\n")
     return result.status_code
 
 

@@ -236,9 +236,7 @@ def main():
             bimonth_events_list.append(e.get('summary'))
         
         # Get list of students with conflicting statuses, low hours, or missing from DB
-        low_hrs_header = True
-        add_students_header = True
-        for row in summary_data:
+        for i, row in enumerate(summary_data):
             if row[0] == '':
                 break
             for s in students:
@@ -257,14 +255,13 @@ def main():
                             err_msg = full_name(s) + ' DB status update failed.' 
                             print(err_msg)
                             messages.append(err_msg)
-            
-            if row[1] == 'Active' and row[8] == 'Package' and float(row[3]) <= 1.5:
+            print('\nStudents with low hours:')
+            if row[1] == 'Active' and row[7] == 'Package' and float(row[3]) <= 1.5:
                 msg = row[0] + ' (' + row[3] + ' hrs)'
                 print(msg)
                 low_hours_students.append(msg)
 
             if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
-                print(row[0])
                 add_students_to_db.append(row[0])
 
         # check for students who should be listed as active
@@ -286,10 +283,6 @@ def main():
 
         ### send weekly reports
         if day_of_week == 'Friday':
-            msg = ''
-            print(msg)
-            messages.append(msg)
-
             session_count = 0
             tutoring_hours = 0
             outsourced_hours = 0
@@ -303,9 +296,6 @@ def main():
                         tutoring_events.append(x)
 
                 if any(name in e['name'] for e in events_next_week):
-                    msg = name + " scheduled with " + student.tutor.first_name
-                    print(msg)
-                    messages.append(msg)
                     for x in events_next_week:
                         count = 0
                         hours = 0
