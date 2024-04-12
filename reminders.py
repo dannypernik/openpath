@@ -235,7 +235,7 @@ def main():
             if row[0] == '':
                 break
             for s in students:
-                student_names_db.append(s.name)
+                student_names_db.append(full_name(s))
 
                 if row[0] == full_name(s):
                     if row[1] != s.status.title():
