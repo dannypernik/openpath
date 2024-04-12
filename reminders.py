@@ -194,14 +194,14 @@ def main():
 
 
         ### send registration and test reminder emails
-        for u in test_reminder_users:
-            for d in u.get_dates():
-                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    email = send_registration_reminder_email(u, d)
-                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    send_late_registration_reminder_email(u, d)
-                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                    send_test_reminder_email(u, d)
+        # for u in test_reminder_users:
+        #     for d in u.get_dates():
+        #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             email = send_registration_reminder_email(u, d)
+        #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             send_late_registration_reminder_email(u, d)
+        #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+        #             send_test_reminder_email(u, d)
         
         msg = "\nSession reminders for " + upcoming_start_formatted + ":"
         print(msg)
