@@ -53,6 +53,7 @@ events_next_week = []
 bimonth_events = []
 bimonth_events_list = []
 tutoring_events = []
+my_tutoring_events = []
 unscheduled_list = []
 outsourced_unscheduled_list = []
 paused_list = []
@@ -294,6 +295,8 @@ def main():
                 for x in events_by_week:
                     if name in x['name']:
                         tutoring_events.append(x)
+                        if student.tutor_id == 1:
+                            my_tutoring_events.append(x)
 
                 if any(name in e['name'] for e in events_next_week):
                     for x in events_next_week:
@@ -343,7 +346,7 @@ def main():
                 s_str = s.strftime('%b %-d')
                 weekly_data['dates'][i] = s_str
 
-            for e in tutoring_events:
+            for e in my_tutoring_events:
                 weekly_data[e['time_group']][e['week_num']] += e['hours']
                 weekly_data['sessions'][e['week_num']] += 1        
 
