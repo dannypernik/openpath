@@ -188,19 +188,19 @@ def main():
         messages.append(msg)
 
         ### Send reminder email to students ~2 days in advance
-        # for event in upcoming_events:
-        #     for student in upcoming_students:
-        #         name = full_name(student)
-        #         if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-        #             reminder_list.append(name)
-        #             msg = send_reminder_email(event, student)
-        #             print(msg)
-        #             messages.append(msg)
+        for event in upcoming_events:
+            for student in upcoming_students:
+                name = full_name(student)
+                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+                    reminder_list.append(name)
+                    msg = send_reminder_email(event, student)
+                    print(msg)
+                    messages.append(msg)
         
-        # if len(reminder_list) == 0:
-        #     msg = "No reminders sent."
-        #     print(msg)
-        #     messages.append(msg)
+        if len(reminder_list) == 0:
+            msg = "No reminders sent."
+            print(msg)
+            messages.append(msg)
         
         messages.append('')
 
@@ -269,20 +269,20 @@ def main():
 
 
         ### send registration and test reminder emails
-        # for u in test_reminder_users:
-        #     for d in u.get_dates():
-        #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-        #             msg = send_registration_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
-        #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-        #             msg = send_late_registration_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
-        #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-        #             msg = send_test_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
+        for u in test_reminder_users:
+            for d in u.get_dates():
+                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    msg = send_registration_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
+                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    msg = send_late_registration_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
+                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+                    msg = send_test_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
 
 
         ### send weekly reports
@@ -367,7 +367,7 @@ def main():
             send_admin_report_email(now, admin_data)
         
         message, author, header = get_quote()
-        msg = message + " - " + author
+        msg = '\n' + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
