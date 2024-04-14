@@ -182,34 +182,6 @@ def main():
     try:
         events_by_week, events_next_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
-    
-        ### mark test dates as past
-        for d in test_dates:
-            if d.status != 'past' and d.date <= today:
-                d.status = 'past'
-                db.session.add(d)
-                db.session.commit()
-                msg = 'Test date ' + str(d.date) + ' marked as past'
-                print(msg)
-                messages.append(msg)
-
-
-        ### send registration and test reminder emails
-        for u in test_reminder_users:
-            for d in u.get_dates():
-                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    msg = send_registration_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
-                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    msg = send_late_registration_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
-                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                    msg = send_test_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
-                
         
         msg = "\nSession reminders for " + upcoming_start_formatted + ":"
         print(msg)
@@ -280,6 +252,34 @@ def main():
             msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
             print(msg)
             messages.append(msg)
+        
+
+        ### mark test dates as past
+        for d in test_dates:
+            if d.status != 'past' and d.date <= today:
+                d.status = 'past'
+                db.session.add(d)
+                db.session.commit()
+                msg = 'Test date ' + str(d.date) + ' marked as past'
+                print(msg)
+                messages.append(msg)
+
+
+        ### send registration and test reminder emails
+        # for u in test_reminder_users:
+        #     for d in u.get_dates():
+        #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             msg = send_registration_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
+        #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             msg = send_late_registration_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
+        #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+        #             msg = send_test_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
 
 
         ### send weekly reports
