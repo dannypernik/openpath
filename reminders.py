@@ -25,13 +25,13 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
-    'https://www.googleapis.com/auth/spreadsheets.readonly']
+    'https://www.googleapis.com/auth/spreadsheets']
 
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:S'
 calendars = [
-    'primary', # d@OPT
+    'danny@openpathtutoring.com', # d@OPT
     'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com', # Sean
     '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com', #John
     'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
