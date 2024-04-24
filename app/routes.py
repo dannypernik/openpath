@@ -463,8 +463,9 @@ def students():
 @admin_required
 def tutors():
     form = TutorForm()
-    tutors = User.query.order_by(User.first_name, User.last_name).filter_by(role='tutor')
+    tutors = User.query.order_by(User.id.desc() ).filter_by(role='tutor')
     statuses = User.query.filter_by(role='tutor').with_entities(User.status).distinct()
+    
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data.lower(), phone=form.phone.data, timezone=form.timezone.data, \
@@ -480,7 +481,7 @@ def tutors():
             return redirect(url_for('tutors'))
         return redirect(url_for('tutors'))
     return render_template('tutors.html', title="Tutors", form=form, tutors=tutors, \
-        statuses=statuses, full_name=full_name, proper=proper)
+        statuses=statuses, full_name=full_name, proper=proper, )
 
 
 @app.route('/test-dates', methods=['GET', 'POST'])

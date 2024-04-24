@@ -63,7 +63,11 @@
                         </a>
                       </div>
                       <div class="col-3">
-                        
+                        {% for s in t.students %}
+                          <a href="{{ url_for('edit_user', id=s.id) }}">
+                            {{ full_name(s)}}{{ "" if loop.last else ", " }}
+                          </a>
+                        {% endfor %}
                       </div>
                     </div>
                   {% endif %}
