@@ -62,11 +62,13 @@
                           {{ t.email }}
                         </a>
                       </div>
-                      <div class="col-3">
+                      <div class="col-6">
                         {% for s in t.students %}
-                          <a href="{{ url_for('edit_user', id=s.id) }}">
-                            {{ full_name(s)}}{{ "" if loop.last else ", " }}
-                          </a>
+                          {% if s.status == 'active' %}
+                            <a href="{{ url_for('edit_user', id=s.id) }}">
+                              {{ full_name(s)}}{{ "" if loop.last else ", " }}
+                            </a>
+                          {% endif %}
                         {% endfor %}
                       </div>
                     </div>
