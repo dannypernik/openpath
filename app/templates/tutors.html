@@ -64,7 +64,7 @@
                       </div>
                       <div class="col-6">
                         {% for s in t.students %}
-                          {% if s.status == 'active' %}
+                          {% if s.status == 'active' or s.status == 'prospective' %}
                             <a href="{{ url_for('edit_user', id=s.id) }}">
                               {{ full_name(s)}}{{ "" if loop.last else ", " }}
                             </a>
