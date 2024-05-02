@@ -26,7 +26,7 @@ class User(UserMixin, db.Model):
     timezone = db.Column(db.Integer)
     location = db.Column(db.String(128))
     status = db.Column(db.String(24), default = "active", index=True)
-    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'), default=1)
+    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     students = db.relationship('User',
         backref=db.backref('tutor', lazy='joined', remote_side=[id]), 
         primaryjoin=(id==tutor_id),
