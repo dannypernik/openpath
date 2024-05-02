@@ -230,9 +230,11 @@ def main():
                             print(err_msg)
                             messages.append(err_msg)
             if i == 0:
-                print('\nStudents with low hours:')
+                msg = '\nStudents with low hours:'
+                print(msg)
+                low_hours_students.append(msg)
             
-            if row[1] == 'Active' and row[7] == 'Package' and float(row[3]) <= 1.5:
+            if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
                 msg = row[0] + ' (' + row[3] + ' hrs)'
                 print(msg)
                 low_hours_students.append(msg)
