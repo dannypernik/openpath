@@ -12,9 +12,9 @@ from google.oauth2.credentials import Credentials
 from app import app, db
 from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
-from app.email import get_quote, send_reminder_email, send_weekly_report_email, \
+from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_test_reminder_email, send_script_status_email
+    send_admin_report_email, send_script_status_email
 from sqlalchemy.orm import joinedload
 import requests
 import traceback
@@ -318,12 +318,6 @@ def main():
                 name = full_name(student)
                 paused_list.append(name)
 
-            send_weekly_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
-                future_schedule, unscheduled_list, str(outsourced_session_count), \
-                str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-                outsourced_unscheduled_list, paused_list, weekly_data, now)
-
-
         ### Generate admin report
             weekly_data = {
                 'dates': [0,0,0,0,0,0,0,0,0,0],
@@ -350,12 +344,11 @@ def main():
                 print(msg)
                 messages.append(msg)
                 return
-            
-            admin_data = {
-                'weekly_data': weekly_data
-            }
 
-            send_admin_report_email(now, admin_data)
+            send_admin_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
+                future_schedule, unscheduled_list, str(outsourced_session_count), \
+                str(outsourced_hours), str(len(outsourced_scheduled_students)), \
+                outsourced_unscheduled_list, paused_list, weekly_data, now)
         
         message, author, header = get_quote()
         msg = '\n' + message + " - " + author

@@ -913,46 +913,6 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     return result.status_code
 
 
-def send_admin_report_email(now, admin_data):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-
-    dt = datetime.datetime
-    start = (now + datetime.timedelta(hours=40)).isoformat() + 'Z'
-    start_date = dt.strftime(parse(start), format="%b %-d")
-    end = (now + datetime.timedelta(days=7, hours=40)).isoformat() + 'Z'
-    end_date = dt.strftime(parse(end), format="%b %-d")
-
-    weekly_data = admin_data['weekly_data']
-    
-    with app.app_context():
-        data = {
-            'Messages': [
-                {
-                    "From": {
-                        "Email": app.config['MAIL_USERNAME'],
-                        "Name": "Open Path Tutoring"
-                    },
-                    "To": [
-                        {
-                        "Email": app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    "Subject": "Admin data report for " + start_date + " to " + end_date,
-                    "HTMLPart": render_template('email/admin-email.html', weekly_data=weekly_data)
-                }
-            ]
-        }
-
-    result = mailjet.send.create(data=data)
-    if result.status_code == 200:
-        print("Admin report email sent.\n")
-    else:
-        print("Admin report email error:", str(result.status_code), result.reason, "\n")
-    return result.status_code
-
-
 def send_script_status_email(name, messages, status_updates, low_hours_students, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
