@@ -216,7 +216,6 @@ def main():
                 student_names_db.append(full_name(s))
 
                 if row[0] == full_name(s):
-                    print(full_name(s))
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
                         try:
@@ -228,10 +227,6 @@ def main():
                             err_msg = full_name(s) + ' DB status update failed: ' + traceback.format_exc() 
                             print(err_msg)
                             messages.append(err_msg)
-            if i == 0:
-                msg = '\nStudents with low hours:'
-                print(msg)
-                low_hours_students.append(msg)
             
             if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
                 msg = row[0] + ' (' + row[3] + ' hrs)'

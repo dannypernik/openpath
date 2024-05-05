@@ -20,12 +20,14 @@
         {% endfor %}
       </p>
     {% endif %}
-    
-    <p>
-      {% for s in low_hours_students %}
-        {{ s }}<br>
-      {% endfor %}
-    </p>
+
+    {% if low_hours_students %}
+      <p>
+        {% for s in low_hours_students %}
+          {{ s }}<br>
+        {% endfor %}
+      </p>
+    {% endif %}
 
     {% if add_students_to_db %}
       <p>
