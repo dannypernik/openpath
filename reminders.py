@@ -209,26 +209,25 @@ def main():
             bimonth_events_list.append(e.get('summary'))
         
         # Get list of students with conflicting statuses, low hours, or missing from DB
-        
         for i, row in enumerate(summary_data):
             if row[0] == '':
                 break
             for s in students:
                 student_names_db.append(full_name(s))
 
-                # if row[0] == full_name(s):
-                #     if row[1] != s.status.title():
-                #         s.status = row[1].lower()
-                #         try:
-                #             db.session.add(s)
-                #             db.session.commit()
-                #             msg = full_name(s) + ' DB status = ' + s.status
-                #             print(msg)
-                #             status_updates.append(msg)
-                #         except Exception:
-                #             err_msg = full_name(s) + ' DB status update failed: ' + traceback.format_exc() 
-                #             print(err_msg)
-                #             messages.append(err_msg)
+                if row[0] == full_name(s):
+                    print(full_name(s))
+                    if row[1] != s.status.title():
+                        s.status = row[1].lower()
+                        try:
+                            db.session.commit()
+                            msg = full_name(s) + ' DB status = ' + s.status
+                            print(msg)
+                            status_updates.append(msg)
+                        except Exception:
+                            err_msg = full_name(s) + ' DB status update failed: ' + traceback.format_exc() 
+                            print(err_msg)
+                            messages.append(err_msg)
             if i == 0:
                 msg = '\nStudents with low hours:'
                 print(msg)
