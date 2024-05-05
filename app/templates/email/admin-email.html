@@ -19,6 +19,27 @@
     </style>
   </head>
   <body style="color: #1C4D65;">
+    <p>
+      A total of {{ scheduled_hours }} hours ({{ scheduled_session_count }} sessions)
+      are scheduled with Danny for {{ scheduled_student_count }} students next week.
+    </p>
+    <p>
+      An additional {{ outsourced_hours }} hours ({{ outsourced_session_count }} sessions)
+      are scheduled with other tutors for {{ outsourced_scheduled_student_count }} students.
+    </p>
+    <p>
+      Unscheduled upcoming students for Danny: {{ unscheduled_students }}
+    </p>
+    <p>
+      Unscheduled upcoming students for other tutors: {{ outsourced_unscheduled_students }}
+    </p>
+    <p>
+      Upcoming students scheduled after next week: {{ future_students }}
+    </p>
+    <p>
+      Paused students: {{ paused_students }}
+    </p>
+
     <table>
       <thead style="font-weight: bold">
         <td>Week of</td>
@@ -49,5 +70,11 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <p>
+      {{ quote_header }}<br/>
+      {{ message }}<br/>
+      &ndash; {{ author }}
+    </p>
   </body>
 </html>

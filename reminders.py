@@ -188,14 +188,14 @@ def main():
         messages.append(msg)
 
         ### Send reminder email to students ~2 days in advance
-        # for event in upcoming_events:
-        #     for student in upcoming_students:
-        #         name = full_name(student)
-        #         if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-        #             reminder_list.append(name)
-        #             msg = send_reminder_email(event, student)
-        #             print(msg)
-        #             messages.append(msg)
+        for event in upcoming_events:
+            for student in upcoming_students:
+                name = full_name(student)
+                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+                    reminder_list.append(name)
+                    msg = send_reminder_email(event, student)
+                    print(msg)
+                    messages.append(msg)
         
         if len(reminder_list) == 0:
             msg = "No reminders sent."
@@ -321,7 +321,7 @@ def main():
             send_weekly_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
                 future_schedule, unscheduled_list, str(outsourced_session_count), \
                 str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-                outsourced_unscheduled_list, paused_list, now)
+                outsourced_unscheduled_list, paused_list, weekly_data, now)
 
 
         ### Generate admin report

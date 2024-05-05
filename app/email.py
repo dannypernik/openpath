@@ -854,10 +854,9 @@ def send_score_analysis_email(student, parent, school):
     return result.status_code
 
 
-def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled_student_count, \
+def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_student_count, \
     future_list, unscheduled_list, outsourced_session_count, outsourced_hours, \
-    outsourced_scheduled_student_count, outsourced_unscheduled_list, \
-    paused, now):
+    outsourced_scheduled_student_count, outsourced_unscheduled_list, paused, weekly_data, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -881,37 +880,30 @@ def send_weekly_report_email(scheduled_session_count, scheduled_hours, scheduled
     if paused_students == '':
         paused_students = "None"
 
-    data = {
-        'Messages': [
-            {
-                "From": {
-                    "Email": app.config['MAIL_USERNAME'],
-                    "Name": "Open Path Tutoring"
-                },
-                "To": [
-                    {
-                    "Email": app.config['MAIL_USERNAME']
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
                     },
-                    # {
-                    # "Email": app.config['MOM_EMAIL']
-                    # },
-                    # {
-                    # "Email": app.config['DAD_EMAIL']
-                    # }
-                ],
-                "Subject": "Weekly tutoring report for " + start_date + " to " + end_date,
-                "HTMLPart": "A total of " + scheduled_hours + " hours (" + scheduled_session_count + " sessions) " + \
-                    "are scheduled with Danny for " + scheduled_student_count + " students next week. <br/><br/>" + \
-                    "An additional " + outsourced_hours + " hours (" + outsourced_session_count + " sessions) " + \
-                    "are scheduled with other tutors for " + outsourced_scheduled_student_count + " students. " + \
-                    "<br/><br/>Unscheduled upcoming students for Danny: " + unscheduled_students + \
-                    "<br/>Unscheduled upcoming students for other tutors: " + outsourced_unscheduled_students + \
-                    "<br/><br/>Upcoming students scheduled after next week: " + future_students + \
-                    "<br/>Paused students: " + paused_students + \
-                    "<br/><br/><br/>" + quote_header + '<br/>"' + message + '"' + "<br/>&ndash; " + author
-            }
-        ]
-    }
+                    "To": [
+                        {
+                        "Email": app.config['MAIL_USERNAME']
+                        },
+                    ],
+                    "Subject": "Admin tutoring report for " + start_date + " to " + end_date,
+                    "HTMLPart": render_template('email/admin-email.html', scheduled_hours=scheduled_hours, \
+                        scheduled_session_count=scheduled_session_count, scheduled_student_count=scheduled_student_count, \
+                        outsourced_hours=outsourced_hours, outsourced_session_count=outsourced_session_count, \
+                        outsourced_scheduled_student_count=outsourced_scheduled_student_count, \
+                        unscheduled_students=unscheduled_students, outsourced_unscheduled_students=outsourced_unscheduled_students, \
+                        future_students=future_students, paused_students=paused_students, 
+                        quote_header=quote_header, message=message, author=author, weekly_data=weekly_data)
+                }
+            ]
+        }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
