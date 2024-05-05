@@ -188,14 +188,14 @@ def main():
         messages.append(msg)
 
         ### Send reminder email to students ~2 days in advance
-        for event in upcoming_events:
-            for student in upcoming_students:
-                name = full_name(student)
-                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-                    reminder_list.append(name)
-                    msg = send_reminder_email(event, student)
-                    print(msg)
-                    messages.append(msg)
+        # for event in upcoming_events:
+        #     for student in upcoming_students:
+        #         name = full_name(student)
+        #         if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+        #             reminder_list.append(name)
+        #             msg = send_reminder_email(event, student)
+        #             print(msg)
+        #             messages.append(msg)
         
         if len(reminder_list) == 0:
             msg = "No reminders sent."
@@ -213,18 +213,24 @@ def main():
             if row[0] == '':
                 break
             for s in students:
-                student_names_db.append(full_name(s))
+                name = full_name(s)
+                student_names_db.append(name)
 
-                if row[0] == full_name(s):
+                if row[0] == name:
+                    # check for students who should be listed as active
+                    if s.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
+                        msg = name + ' is scheduled next week. Change status to active.'
+                        print(msg)
+                        status_updates.append(msg)
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
                         try:
                             db.session.commit()
-                            msg = full_name(s) + ' DB status = ' + s.status
+                            msg = name + ' DB status = ' + s.status
                             print(msg)
                             status_updates.append(msg)
                         except Exception:
-                            err_msg = full_name(s) + ' DB status update failed: ' + traceback.format_exc() 
+                            err_msg = name + ' DB status update failed: ' + traceback.format_exc() 
                             print(err_msg)
                             messages.append(err_msg)
             
@@ -235,17 +241,6 @@ def main():
 
             if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
                 add_students_to_db.append(row[0])
-
-        # check for students who should be listed as active
-        schedule_status_header = True
-        for student in students:
-            name = full_name(student)
-
-            if student.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
-                student.status = 'active'
-                msg = name + ' is scheduled next week. Change status to active.'
-                print(msg)
-                status_updates.append(msg)
         
         if primary_tutor.timezone != 0:
             msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
