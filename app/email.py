@@ -413,7 +413,7 @@ def send_registration_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            msg = "Registration reminder for " + ' ' + td + ' ' + test_date.test.upper() + " sent to " + user.first_name + user.last_name
+            msg = "Registration reminder for " + ' ' + td + ' ' + test_date.test.upper() + " sent to " + user.first_name + ' ' + user.last_name
         else:
             msg = "Error for " + user.first_name + "\'s registration reminder with code " + str(result.status_code) + ' ' + result.reason
         return msg
