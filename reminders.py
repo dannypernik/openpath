@@ -188,14 +188,14 @@ def main():
         messages.append(msg)
 
         ### Send reminder email to students ~2 days in advance
-        for event in upcoming_events:
-            for student in upcoming_students:
-                name = full_name(student)
-                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-                    reminder_list.append(name)
-                    msg = send_reminder_email(event, student)
-                    print(msg)
-                    messages.append(msg)
+        # for event in upcoming_events:
+        #     for student in upcoming_students:
+        #         name = full_name(student)
+        #         if name in event.get('summary') and 'projected' not in event.get('summary').lower():
+        #             reminder_list.append(name)
+        #             msg = send_reminder_email(event, student)
+        #             print(msg)
+        #             messages.append(msg)
         
         if len(reminder_list) == 0:
             msg = "No reminders sent."
@@ -225,6 +225,7 @@ def main():
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
                         try:
+                            db.session.merge(s)
                             db.session.commit()
                             msg = name + ' DB status = ' + s.status
                             print(msg)
