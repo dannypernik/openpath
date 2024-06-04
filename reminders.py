@@ -239,8 +239,8 @@ def main():
                 msg = row[0] + ' (' + row[3] + ' hrs)'
                 print(msg)
                 low_hours_students.append(msg)
-
-            if row[1] == ('Active' or 'Prospective') and row[0] not in student_names_db:
+            
+            if row[1] in ['Active', 'Prospective'] and row[0] not in student_names_db:
                 add_students_to_db.append(row[0])
         
         if primary_tutor.timezone != 0:
