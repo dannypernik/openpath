@@ -14,6 +14,15 @@
     <p>
       <strong>Before test day</strong>
       <ul>
+        {% if test_date.test == 'sat' %}
+          <li>
+            <strong>Important:</strong> Log into the Bluebook app prior to test day and click
+            the yellow button that says "Complete Exam Setup". This button is only displayed
+            5 days prior to test day. Make sure you can see your admission ticket at the end
+            of the process. You can be denied admittance on test day if you do not complete
+            this step.
+          </li>
+        {% endif %}
         <li>
           Look at your schedule from now until the test to see how you can minimize
           stress in the couple days leading up to the {{ test_date.test.upper() }}.
