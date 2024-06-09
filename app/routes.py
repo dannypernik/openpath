@@ -4,7 +4,7 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-        ResetPasswordForm, TutorForm, RecapForm
+        ResetPasswordForm, TutorForm, RecapForm, NtpaForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate
 from werkzeug.urls import url_parse
@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_schedule_conflict_email
+    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email
 from functools import wraps
 import requests
 import json
@@ -879,6 +879,28 @@ def test_strategies():
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('test-strategies.html', form=form)
+
+
+@app.route('/ntpa', methods=['GET', 'POST'])
+def ntpa():
+    form = NtpaForm()
+    if form.validate_on_submit():
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        biz_name = form.biz_name.data
+        email = form.email.data
+
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('ntpa'))
+        email_status = send_ntpa_email(first_name, last_name, biz_name, email)
+        if email_status == 200:
+            flash('We\'ve received your request and will be in touch!')
+        else:
+            flash('Request did not send, please retry or contact ' + hello, 'error')
+    return render_template('ntpa.html', form=form)    
 
 
 @app.route('/cal-check', methods=['POST'])

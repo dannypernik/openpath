@@ -180,7 +180,19 @@ class RecapForm(FlaskForm):
     homework = TextAreaField('Homework', render_kw={"placeholder": "Homework", 'rows': '3'}, \
         validators=[InputRequired()])
     audio = StringField('Audio recap link', render_kw={'placeholder': 'Audio recap link'})
-    submit = SubmitField('Send')    
+    submit = SubmitField('Send')
+
+
+class NtpaForm(FlaskForm):
+    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+        validators=[InputRequired()])
+    last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
+        validators=[InputRequired()])
+    biz_name = StringField('Business name', render_kw={"placeholder": "Business name (optional)"})
+    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
+        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+            validate_email])
+    submit = SubmitField('Submit')    
 
 
 class TestStrategiesForm(FlaskForm):

@@ -6151,6 +6151,11 @@ button, .btn, input[type=submit] {
   transition: 0.3s;
   font-weight: 600;
 }
+button.sec, .btn.sec, input[type=submit].sec {
+  background-color: rgb(0, 69, 87);
+  border-color: rgb(0, 69, 87);
+  color: white;
+}
 
 .lead {
   font-size: calc(2rem + 0.1vw);

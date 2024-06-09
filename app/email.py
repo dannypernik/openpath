@@ -981,3 +981,36 @@ def send_schedule_conflict_email(message):
     else:
         print("Schedule conflict email to " + user.email + " failed to send with code " + result.status_code, result.reason)
     return result.status_code
+
+
+def send_ntpa_email(first_name, last_name, biz_name, email):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": app.config['MAIL_USERNAME'],
+                    "Name": "Open Path Tutoring"
+                },
+                "To": [
+                    {
+                    "Email": app.config['MAIL_USERNAME']
+                    }
+                ],
+                "ReplyTo": { "Email": email },
+                "Subject": 'Test analysis folder requested',
+                "HTMLPart": render_template('email/ntpa-email.html', first_name=first_name, \
+                    last_name=last_name, biz_name=biz_name, email=email)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("NTPA email sent to " + app.config['MAIL_USERNAME'])
+    else:
+        print("NTPA email to " + app.config['MAIL_USERNAME'] + " failed to send with code " + result.status_code, result.reason)
+    return result.status_code

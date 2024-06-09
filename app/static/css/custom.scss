@@ -292,6 +292,10 @@ button, .btn, input[type="submit"] {
   border-width: 2px;
   transition: 0.3s;
   font-weight: 600;
+
+  &.sec {
+    @include fill-color($primary-color);
+  }
 }
 
 .lead {
