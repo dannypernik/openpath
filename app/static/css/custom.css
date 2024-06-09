@@ -6297,6 +6297,11 @@ div.alert {
   font-size: 1.3rem;
 }
 
+#ntpa-logo {
+  width: 200px;
+  margin: auto;
+}
+
 #nav-img {
   height: 36px;
   margin: 12px 0;
