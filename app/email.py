@@ -873,7 +873,7 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     unscheduled_students = ', '.join(unscheduled_list)
     if unscheduled_students == '':
         unscheduled_students = "None"
-    outsourced_unscheduled_students = '<br>'.join(outsourced_unscheduled_list)
+    outsourced_unscheduled_students = '\n'.join(outsourced_unscheduled_list)
     if outsourced_unscheduled_students == '':
         outsourced_unscheduled_students = "None"
     paused_students = ', '.join(paused)
@@ -918,6 +918,10 @@ def send_script_status_email(name, messages, status_updates, low_hours_students,
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
+    tutors = [ item['tutor'] for item in low_hours_students ]
+    print(tutors)
+
+
     with app.app_context():
         data = {
             'Messages': [
@@ -934,11 +938,10 @@ def send_script_status_email(name, messages, status_updates, low_hours_students,
                     "Subject": name + " " + result,
                     "HTMLPart": render_template('email/script-status-email.html', 
                         messages=messages, status_updates=status_updates, low_hours_students=low_hours_students, \
-                        add_students_to_db=add_students_to_db, exception=exception)
+                        add_students_to_db=add_students_to_db, exception=exception, tutors=tutors)
                 }
             ]
         }
-
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:

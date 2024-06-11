@@ -236,7 +236,11 @@ def main():
                             messages.append(err_msg)
             
             if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
-                msg = row[0] + ' (' + row[3] + ' hrs)'
+                msg = {
+                    'name': row[0],
+                    'hours': row[3],
+                    'tutor': row[15]
+                }
                 print(msg)
                 low_hours_students.append(msg)
             
