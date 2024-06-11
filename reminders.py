@@ -217,11 +217,7 @@ def main():
                 student_names_db.append(name)
 
                 if row[0] == name:
-                    # check for students who should be listed as active
-                    if s.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
-                        msg = name + ' is scheduled next week. Change status to active.'
-                        print(msg)
-                        status_updates.append(msg)
+                    # Update DB status based on spreadsheet status
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
                         try:
@@ -234,6 +230,12 @@ def main():
                             err_msg = name + ' DB status update failed: ' + traceback.format_exc() 
                             print(err_msg)
                             messages.append(err_msg)
+
+                    # check for students who should be listed as active
+                    if s.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
+                        msg = name + ' is scheduled next week. Change status to active.'
+                        print(msg)
+                        status_updates.append(msg)
             
             if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
                 msg = {
