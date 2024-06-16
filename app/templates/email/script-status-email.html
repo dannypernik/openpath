@@ -23,15 +23,17 @@
 
     {% if low_hours_students %}
       <p>
-        Students with low hours for...<br>
+        <strong>Students with low hours for...</strong><br>
         {% for t in tutors %}
-          {{ t }}:<br>
-          {% for s in low_hours_students %}
-            {% if t == low_hours_students['tutor'] %}
-              {{ s['name'] }} ({{ s['hours'] }} hrs)<br>
-            {% endif %}
-          {% endfor %}
-        {% endfor %}<br>
+          <strong>{{ t }}</strong>
+          <ul style="margin: 0.5rem 0 1rem">
+            {% for s in low_hours_students %}
+              {% if t == s['tutor'] %}
+                <li style="margin-left: -15px">{{ s['name'] }} ({{ s['hours'] }} hrs)</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endfor %}
       </p>
     {% endif %}
 

@@ -913,14 +913,12 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     return result.status_code
 
 
-def send_script_status_email(name, messages, status_updates, low_hours_students, add_students_to_db, result, exception=''):
+def send_script_status_email(name, messages, status_updates, tutors, low_hours_students, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    tutors = [ item['tutor'] for item in low_hours_students ]
-    print(tutors)
-
+    tutors = set(item['tutor'] for item in low_hours_students)
 
     with app.app_context():
         data = {

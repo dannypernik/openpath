@@ -175,6 +175,8 @@ def main():
         events_by_week, events_next_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
         
+        tutors = User.query.order_by(User.id.desc() ).filter_by(role='tutor')
+        
         msg = "\nSession reminders for " + upcoming_start_formatted + ":"
         print(msg)
         messages.append(msg)
@@ -235,7 +237,6 @@ def main():
                     'hours': row[3],
                     'tutor': row[15]
                 }
-                print(msg)
                 low_hours_students.append(msg)
             
             if row[1] in ['Active', 'Prospective'] and row[0] not in student_names_db:
@@ -354,11 +355,11 @@ def main():
         print(msg)
         messages.append(msg)
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, status_updates, low_hours_students, add_students_to_db, 'succeeded')
+        send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed')
-        send_script_status_email('reminders.py', messages, status_updates, low_hours_students, add_students_to_db, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):
