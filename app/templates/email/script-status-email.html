@@ -22,7 +22,6 @@
     {% endif %}
 
     {% if low_hours_students %}
-      <p>
         <strong>Students with low hours for...</strong><br>
         {% for t in tutors %}
           <strong>{{ t }}</strong>
@@ -34,7 +33,6 @@
             {% endfor %}
           </ul>
         {% endfor %}
-      </p>
     {% endif %}
 
     {% if add_students_to_db %}
