@@ -21,6 +21,13 @@ login.login_view = 'login'
 bootstrap = Bootstrap(app)
 hcaptcha = hCaptcha(app)
 
+def full_name(user):
+    if user.last_name == "" or user.last_name is None:
+        name = user.first_name
+    else:
+        name = user.first_name + " " + user.last_name
+    return name
+
 from app import routes, models, errors
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 login.login_message = u'Please sign in to access this page.'

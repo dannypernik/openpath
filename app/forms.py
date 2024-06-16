@@ -73,14 +73,14 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset password')
 
 
-def get_tutors():
-    return User.query.filter_by(role='tutor')
+# def get_tutors():
+#     return User.query.filter_by(role='tutor')
 
-def get_parents():
-    return User.query.filter_by(role='parent')
+# def get_parents():
+#     return User.query.filter_by(role='parent')
 
-def full_name(User):
-    return User.first_name + " " + User.last_name
+# def full_name(User):
+#     return User.first_name + " " + User.last_name
 
 
 class UserForm(FlaskForm):

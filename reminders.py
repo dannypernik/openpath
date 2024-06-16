@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from app import app, db
+from app import app, db, full_name
 from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
@@ -78,14 +78,6 @@ messages = []
 
 ### Test date reminders
 test_dates = TestDate.query.all()
-
-def full_name(user):
-    if user.last_name == "" or user.last_name is None:
-        name = user.first_name
-    else:
-        name = user.first_name + " " + user.last_name
-    return name
-
 
 def get_events_and_data():
     """

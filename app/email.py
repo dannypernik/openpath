@@ -1,5 +1,5 @@
 from threading import Thread
-from app import app
+from app import app, full_name
 from mailjet_rest import Client
 from flask import render_template, url_for
 import re
@@ -215,7 +215,7 @@ def send_reminder_email(event, student):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        msg = student.first_name + ' ' + student.last_name + ' ' + start_display + ' ' + timezone + ' ' + warnings_str
+        msg = full_name(student) + ' ' + start_display + ' ' + timezone + ' ' + warnings_str
     else:
         msg = "Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code) + ' ' + result.reason
     return msg
@@ -284,7 +284,7 @@ def send_session_recap_email(student, events):
         if location == None:
             location = event.get('location')
         elif location != event.get('location'):
-            alerts.append('Location mismatch error for ' + student.first_name + ' ' + student.last_name + ' on ' + start_date)
+            alerts.append('Location mismatch error for ' + full_name(student) + ' on ' + start_date)
 
     if alerts.__len__() > 0:
         send_notification_email(alerts)
@@ -413,7 +413,7 @@ def send_registration_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            msg = "Registration reminder for " + ' ' + td + ' ' + test_date.test.upper() + " sent to " + user.first_name + ' ' + user.last_name
+            msg = "Registration reminder for " + ' ' + td + ' ' + test_date.test.upper() + " sent to " + full_name(user)
         else:
             msg = "Error for " + user.first_name + "\'s registration reminder with code " + str(result.status_code) + ' ' + result.reason
         return msg
@@ -463,7 +463,7 @@ def send_late_registration_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            msg = "Late registration reminder for " + td + ' ' + test_date.test.upper() + " sent to " + user.first_name + ' ' + user.last_name
+            msg = "Late registration reminder for " + td + ' ' + test_date.test.upper() + " sent to " + full_name(user)
         else:
             msg = "Error for " + user.first_name + "\'s late registration reminder with code " + str(result.status_code) + ' ' + result.reason
         return msg
@@ -512,7 +512,7 @@ def send_test_reminder_email(user, test_date):
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
-            msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + user.first_name + ' ' + user.last_name
+            msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + full_name(user)
         else:
             msg = 'Error for ' + user.first_name + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
         return msg
@@ -740,7 +740,7 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
                     }
                 ],
                 "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
-                "Subject": student.first_name + " " + student.last_name + " is registered for the practice ACT on " + date,
+                "Subject": full_name(student) + " is registered for the practice ACT on " + date,
                 "TextPart": render_template('email/test-registration-email.txt',
                             student=student, parent=parent, school=school, test=test, \
                             date=date, time=time, location=location, contact_info=contact_info),
@@ -777,7 +777,7 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
                     }
                 ],
                 "Bcc": [{"Email": app.config['MAIL_USERNAME']}],
-                "Subject": student.first_name + " " + student.last_name + " is registered for " + test + " Study Club",
+                "Subject": full_name(student) + " is registered for " + test + " Study Club",
                 "TextPart": render_template('email/prep-class-email.txt',
                             student=student, parent=parent, school=school, test=test, \
                             time=time, location=location),

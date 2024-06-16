@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, flash, Markup, redirect, url_for, \
     request, send_from_directory, send_file, make_response
-from app import app, db, login, hcaptcha
+from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
         ResetPasswordForm, TutorForm, RecapForm, NtpaForm
@@ -16,7 +16,7 @@ from app.email import send_contact_email, send_verification_email, send_password
 from functools import wraps
 import requests
 import json
-from reminders import get_student_events, full_name
+from reminders import get_student_events
 
 @app.before_request
 def before_request():
