@@ -854,9 +854,60 @@ def send_score_analysis_email(student, parent, school):
     return result.status_code
 
 
+def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    unscheduled_students = []
+    low_students = []
+
+    tutor_name = full_name(tutor)
+
+    for s in outsourced_unscheduled_list:
+        if tutor.id == s['tutor_id']:
+            unscheduled_students.append(s['name'])
+
+    for s in low_hours_students:
+        if full_name(tutor) == s['tutor']:
+            low_students.append(s['name'])
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": app.config['MAIL_USERNAME'],
+                        "Name": "Open Path Tutoring"
+                    },
+                    "To": [
+                        {
+                        "Email": tutor.email
+                        }
+                    ],
+                    "Cc": [
+                        {
+                        "Email": app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    "Subject": 'Student schedule notifications',
+                    "HTMLPart": render_template('email/tutor-email.html', tutor_name=tutor_name,
+                        unscheduled_students=unscheduled_students, low_students=low_students)
+                }
+            ]
+        }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("Tutor email sent to " + full_name(tutor))
+    else:
+        print("Tutor email to " + full_name(tutor) + " failed to send with code " + result.status_code, result.reason)
+    return result.status_code
+
+
 def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_student_count, \
     future_list, unscheduled_list, outsourced_session_count, outsourced_hours, \
-    outsourced_scheduled_student_count, outsourced_unscheduled_list, paused, weekly_data, now):
+    outsourced_scheduled_student_count, outsourced_unscheduled_students, paused, weekly_data, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -873,9 +924,9 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     unscheduled_students = ', '.join(unscheduled_list)
     if unscheduled_students == '':
         unscheduled_students = "None"
-    outsourced_unscheduled_students = '\n'.join(outsourced_unscheduled_list)
-    if outsourced_unscheduled_students == '':
-        outsourced_unscheduled_students = "None"
+    
+    tutors = set(item['tutor_id'] for item in outsourced_unscheduled_students)
+    
     paused_students = ', '.join(paused)
     if paused_students == '':
         paused_students = "None"

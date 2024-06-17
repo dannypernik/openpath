@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_script_status_email
+    send_admin_report_email, send_script_status_email, send_tutor_email
 from sqlalchemy.orm import joinedload
 import requests
 import traceback
@@ -277,7 +277,7 @@ def main():
 
 
         ### send weekly reports
-        if day_of_week == 'Friday':
+        if day_of_week == 'Wednesday':
             session_count = 0
             tutoring_hours = 0
             outsourced_hours = 0
@@ -312,11 +312,18 @@ def main():
                 elif student.tutor_id == 1:
                     unscheduled_list.append(name)
                 else:
-                    outsourced_unscheduled_list.append(name + ' (' + student.tutor.first_name + ')')
+                    outsourced_unscheduled_list.append({
+                        'name': name,
+                        'tutor_id': student.tutor_id
+                    })
 
             for student in paused_students:
                 name = full_name(student)
                 paused_list.append(name)
+            
+            for tutor in tutors:
+                if any(s['tutor_id'] == tutor.id for s in outsourced_unscheduled_list):
+                    send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students)
 
         ### Generate admin report
             weekly_data = {

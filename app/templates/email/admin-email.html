@@ -30,9 +30,21 @@
     <p>
       Unscheduled upcoming students for Danny: {{ unscheduled_students }}
     </p>
-    <p>
-      Unscheduled upcoming students for other tutors: {{ outsourced_unscheduled_students }}
-    </p>
+    {% if outsourced_unscheduled_students %}
+      <strong>Unscheduled upcoming students for...</strong>
+      {% for t in tutors %}
+        <strong>{{ full_name(t) }}:</strong>
+        {% for s in outsourced_unscheduled_students %}
+          {% if t.id == s['tutor_id'] %}
+            {{ s['name'] }}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      <p>
+        
+      </p>
+    
+    {% endif %}
     <p>
       Upcoming students scheduled after next week: {{ future_students }}
     </p>
