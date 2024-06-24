@@ -862,8 +862,6 @@ def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
     unscheduled_students = []
     low_students = []
 
-    tutor_name = full_name(tutor)
-
     for s in outsourced_unscheduled_list:
         if tutor.id == s['tutor_id']:
             unscheduled_students.append(s['name'])
@@ -891,7 +889,7 @@ def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
                         }
                     ],
                     "Subject": 'Student schedule notifications',
-                    "HTMLPart": render_template('email/tutor-email.html', tutor_name=tutor_name,
+                    "HTMLPart": render_template('email/tutor-email.html', tutor=tutor,
                         unscheduled_students=unscheduled_students, low_students=low_students)
                 }
             ]
