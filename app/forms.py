@@ -91,7 +91,7 @@ class UserForm(FlaskForm):
         validators=[InputRequired(), Email(message="Please enter a valid email address")])
     phone = StringField('Phone', render_kw={"placeholder": "Phone"})
     secondary_email = StringField('Secondary email', render_kw={"placeholder": "Secondary email"})
-    timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={"placeholder": "Location"})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
