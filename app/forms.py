@@ -136,7 +136,7 @@ class StudentForm(FlaskForm):
     parent_email = EmailField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
     secondary_email = EmailField('Parent email 2', render_kw={"placeholder": "Parent email 2"})
     parent_phone = StringField('Parent phone', render_kw={"placeholder": "Parent phone"})
-    timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={"placeholder": "Location"})
     status = SelectField('Status', choices=[('active', 'Active'),('prospective','Prospective'), \
@@ -154,7 +154,7 @@ class TutorForm(FlaskForm):
         validators=[InputRequired(), Email(message="Please enter a valid email address"), \
             validate_email])
     phone = StringField('Phone', render_kw={"placeholder": "Phone"})
-    timezone = IntegerField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
         validators=[InputRequired()])
     session_reminders = BooleanField('Session reminders')
     test_reminders = BooleanField('Test reminders')
