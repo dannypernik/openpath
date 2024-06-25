@@ -4,6 +4,7 @@ from mailjet_rest import Client
 from flask import render_template, url_for
 import re
 import datetime
+from zoneinfo import ZoneInfo
 from dateutil.parser import parse
 import requests
 import json
@@ -139,29 +140,19 @@ def send_reminder_email(event, student):
         if reply_email == '':
             reply_email = app.config['MAIL_USERNAME']
     
-    tz_difference = student.timezone - tutor.timezone
-
     dt = datetime.datetime
-    start_time = event['start'].get('dateTime')
-    start_date = dt.strftime(parse(start_time), format="%A, %b %-d")
-    start_time_formatted = re.sub(r'([-+]\d{2}):(\d{2})(?:(\d{2}))?$', r'\1\2\3', start_time)
-    start_offset = dt.strptime(start_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
-    end_time = event['end'].get('dateTime')
-    end_time_formatted = re.sub(r'([-+]\d{2}):(\d{2})(?:(\d{2}))?$', r'\1\2\3', end_time)
-    end_offset = dt.strptime(end_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
-    start_display = dt.strftime(start_offset, "%-I:%M%p").lower()
-    end_display = dt.strftime(end_offset, "%-I:%M%p").lower()
 
-    if student.timezone == -2:
-        timezone = "Pacific"
-    elif student.timezone == -1:
-        timezone = "Mountain"
-    elif student.timezone == 0:
-        timezone = "Central"
-    elif student.timezone == 1:
-        timezone = "Eastern"
-    else:
-        timezone = "your"
+    start_time_utc = event['start'].get('dateTime')
+    end_time_utc = event['end'].get('dateTime')
+
+    student_tz = ZoneInfo(student.timezone)
+    start_obj_tz = parse(start_time_utc).astimezone(student_tz)
+    end_obj_tz = parse(end_time_utc).astimezone(student_tz)
+
+    start_date = dt.strftime(start_obj_tz, format="%A, %b %-d")
+    start_time = dt.strftime(start_obj_tz, format="%-I:%M%p").lower()
+    end_time = dt.strftime(end_obj_tz, format="%-I:%M%p").lower()
+    timezone = dt.strftime(end_obj_tz, format=" %Z")
 
     if 'practice sat' in event.get('summary').lower():
         event_type = 'practice SAT'
@@ -199,14 +190,14 @@ def send_reminder_email(event, student):
                     ],
                     "Cc": cc_email,
                     "ReplyTo": { "Email": reply_email },
-                    "Subject": "Reminder for " + event_type + " on " + start_date + " at " + start_display + " " + timezone,
+                    "Subject": "Reminder for " + event_type + " on " + start_date + " at " + start_time + " " + timezone,
                     "HTMLPart": render_template('email/reminder-email.html', student=student, \
-                        tutor=tutor, start_date=start_date, start_display=start_display, \
-                        end_display=end_display, timezone=timezone, location=location,
+                        tutor=tutor, start_date=start_date, start_time=start_time, \
+                        end_time=end_time, location=location, timezone=timezone, \
                         quote_header=quote_header, message=message, author=author, event_type=event_type),
                     "TextPart": render_template('email/reminder-email.txt', student=student, \
-                        tutor=tutor, start_date=start_date, start_display=start_display, \
-                        end_display=end_display, timezone=timezone, location=location,
+                        tutor=tutor, start_date=start_date, start_time=start_time, \
+                        end_time=end_time, location=location, timezone=timezone, \
                         quote_header=quote_header, message=message, author=author, event_type=event_type)
                 }
             ]
@@ -215,7 +206,7 @@ def send_reminder_email(event, student):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        msg = full_name(student) + ' ' + start_display + ' ' + timezone + ' ' + warnings_str
+        msg = full_name(student) + ' ' + start_time + timezone + ' ' + warnings_str
     else:
         msg = "Error for " + student.first_name + "\'s reminder email with code " + str(result.status_code) + ' ' + result.reason
     return msg

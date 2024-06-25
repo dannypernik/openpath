@@ -41,11 +41,11 @@ now = datetime.datetime.utcnow()
 now_tz_aware = pytz.utc.localize(now)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format="%A")
-upcoming_start = now + datetime.timedelta(hours=39)
+upcoming_start = now + datetime.timedelta(hours=33)
 upcoming_start_str = upcoming_start.isoformat() + 'Z'
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-upcoming_end = now_tz_aware + datetime.timedelta(hours=63)
-bimonth_end = now + datetime.timedelta(days=70, hours=39)
+upcoming_end = now_tz_aware + datetime.timedelta(hours=57)
+bimonth_end = now + datetime.timedelta(days=70, hours=33)
 bimonth_end_str = bimonth_end.isoformat() + 'Z'
 upcoming_events = []
 events_by_week = []
@@ -114,7 +114,7 @@ def get_events_and_data():
     service_cal = build('calendar', 'v3', credentials=creds)
     for id in calendars:
         bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start_str,
-            timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime').execute()
+            timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
         bimonth_events_result = bimonth_cal_events.get('items', [])
 
         for e in range(len(bimonth_events_result)):
@@ -242,11 +242,6 @@ def main():
             if row[1] in ['Active', 'Prospective'] and row[0] not in student_names_db:
                 add_students_to_db.append(row[0])
         
-        if primary_tutor.timezone != 0:
-            msg = '\nYour timezone was changed. Reminder emails have incorrect time.'
-            print(msg)
-            messages.append(msg)
-        
 
         ### mark test dates as past
         for d in test_dates:
@@ -260,20 +255,20 @@ def main():
 
 
         ### send registration and test reminder emails
-        for u in test_reminder_users:
-            for d in u.get_dates():
-                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    msg = send_registration_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
-                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-                    msg = send_late_registration_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
-                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                    msg = send_test_reminder_email(u, d)
-                    print(msg)
-                    messages.append(msg)
+        # for u in test_reminder_users:
+        #     for d in u.get_dates():
+        #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             msg = send_registration_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
+        #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+        #             msg = send_late_registration_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
+        #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+        #             msg = send_test_reminder_email(u, d)
+        #             print(msg)
+        #             messages.append(msg)
 
 
         ### send weekly reports
@@ -365,7 +360,7 @@ def main():
         send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'succeeded')
 
     except Exception:
-        print('Script failed')
+        print('Script failed:', traceback.format_exc() )
         send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'failed', traceback.format_exc())
     
 
