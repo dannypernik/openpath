@@ -23,7 +23,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(32), index=True)
     secondary_email = db.Column(db.String(64))
     password_hash = db.Column(db.String(128))
-    timezone = db.Column(db.Integer)
+    timezone = db.Column(db.String(32))
     location = db.Column(db.String(128))
     status = db.Column(db.String(24), default = "active", index=True)
     tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
