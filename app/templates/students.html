@@ -16,8 +16,18 @@
         {{ form.student_name }}
         {{ form.student_last_name(onchange="update()") }}
         {{ form.student_email }}
-        {{ form.timezone }}
         {{ form.location }}
+        
+        <div id="tz-container">
+          <select id="tz-select">
+            <option value="">Timezone</option>
+            <option value="America/Los_Angeles">Pacific time</option>
+            <option value="America/Denver">Mountain</option>
+            <option value="America/Chicago">Central</option>
+            <option value="America/New_York">Eastern</option>
+          </select>
+          {{ form.timezone }}
+        </div>
         <div class="my-2">
           {{ form.grad_year }}
         </div>
@@ -170,6 +180,21 @@
       else {
         document.getElementById('new-parent-info').style.display = 'none';
       }
+    });
+  </script>
+
+  <script>
+    // Get references to the select and text field
+    const selectElement = document.getElementById('tz-select');
+    const timezoneText = document.getElementById('timezone');
+    
+    // Add event listener to the select element
+    selectElement.addEventListener('change', function() {
+      // Get the selected value from the select element
+      const selectedValue = selectElement.value;
+      
+      // Update the value of the text field with the selected value
+      timezoneText.value = selectedValue;
     });
   </script>
 {% endblock end_scripts %}

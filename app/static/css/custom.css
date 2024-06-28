@@ -6100,6 +6100,7 @@ select {
   border-radius: 10px;
   padding: 0.5rem;
   font-size: 1.6rem;
+  height: 4rem;
 }
 select.select-header {
   display: inline-block;
@@ -6598,6 +6599,16 @@ td {
   height: 0px;
   transition: height 0.5s ease-out;
   overflow: hidden;
+}
+
+#tz-container {
+  width: 100%;
+  display: flex;
+}
+
+#tz-select {
+  margin: 0.5rem 1rem 0 0;
+  box-sizing: border-box;
 }
 
 .slide-toggle {
