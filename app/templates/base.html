@@ -115,7 +115,7 @@
     {% block footer %}
       <footer class="footer inverse">
         <div class="row justify-content-center">
-          <div class="col-11 col-md-5">
+          <div class="col-11 col-md-5 col-lg-4">
             <p class="mb-2">
               <img src="{{ url_for('static', filename='img/phone.svg') }}"/>
               <a class="ms-2" href="tel:+1{{ phone }}">{{ phone }}</a>
@@ -128,10 +128,7 @@
               <span class="me-3 lead">&copy;</span><script>document.write(new Date().getFullYear())</script>
               Open Path Tutoring LLC
             </p>
-          </div>
-          <div class="d-flex flex-column align-items-end justify-content-end text-md-end col-11 col-md-5">
-            {% block footnote %}{% endblock footnote %}
-            <p class="mb-0">
+            <p class="mb-3 d-block d-md-none">
               <span class="me-2"><img width="22" height="22" src="{{ url_for('static',
                 filename='img/creatorsweb.svg') }}" alt="">
               </span>
@@ -143,9 +140,26 @@
               </span>
             </p>
           </div>
-          <div class="col-12 text-center mt-4">
-            <img id="ntpa-logo" src="{{ url_for('static', filename='img/ntpa-member.png') }}" class="img-fluid">
+          <div class="col-11 d-md-none d-lg-block col-lg-2 col-xl-3 text-md-center">
+            {% block ntpa_logo %}{% endblock ntpa_logo %}
           </div>
+          <div class="d-flex flex-column align-items-md-end justify-content-end text-md-end col-11 col-md-5 col-xl-4">
+            {% block footnote %}{% endblock footnote %}
+            <p class="mb-0 d-none d-md-block">
+              <span class="me-2"><img width="22" height="22" src="{{ url_for('static',
+                filename='img/creatorsweb.svg') }}" alt="">
+              </span>
+              <span class="align-text-top">
+                Website by
+                <a id="creatorsweb" class="semibold ms-xl-0" href="https://creatorsweb.co" target="_blank">
+                  Creators Web
+                </a>
+              </span>
+            </p>
+          </div>
+          <!-- <div class="col-11 col-md-10 text-start d-md-none mt-4">
+            <img id="ntpa-logo" src="{{ url_for('static', filename='img/ntpa-member.png') }}" class="img-fluid">
+          </div> -->
         </div>
       </footer>
     {% endblock footer %}
