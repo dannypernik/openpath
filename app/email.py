@@ -858,7 +858,7 @@ def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
             unscheduled_students.append(s['name'])
 
     for s in low_hours_students:
-        if full_name(tutor) == s['tutor']:
+        if full_name(tutor) in s['tutors']:
             low_students.append(s['name'])
 
     with app.app_context():
@@ -914,7 +914,7 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     if unscheduled_students == '':
         unscheduled_students = "None"
     
-    tutors = set(item['tutor_id'] for item in outsourced_unscheduled_students)
+    # tutors = set(item['tutor_id'] for item in outsourced_unscheduled_students)
     
     paused_students = ', '.join(paused)
     if paused_students == '':
@@ -958,7 +958,7 @@ def send_script_status_email(name, messages, status_updates, tutors, low_hours_s
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    tutors = set(item['tutor'] for item in low_hours_students)
+    tutors = set(item['tutors'][0] for item in low_hours_students)
 
     with app.app_context():
         data = {

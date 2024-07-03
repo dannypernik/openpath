@@ -231,11 +231,13 @@ def main():
                         print(msg)
                         status_updates.append(msg)
             
+            s_tutors = row[6].split(', ')
+            
             if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
                 msg = {
                     'name': row[0],
                     'hours': row[3],
-                    'tutor': row[15]
+                    'tutors': s_tutors
                 }
                 low_hours_students.append(msg)
             
@@ -255,20 +257,20 @@ def main():
 
 
         ### send registration and test reminder emails
-        # for u in test_reminder_users:
-        #     for d in u.get_dates():
-        #         if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-        #             msg = send_registration_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
-        #         elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
-        #             msg = send_late_registration_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
-        #         elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-        #             msg = send_test_reminder_email(u, d)
-        #             print(msg)
-        #             messages.append(msg)
+        for u in test_reminder_users:
+            for d in u.get_dates():
+                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    msg = send_registration_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
+                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                    msg = send_late_registration_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
+                elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
+                    msg = send_test_reminder_email(u, d)
+                    print(msg)
+                    messages.append(msg)
 
 
         ### send weekly reports

@@ -27,7 +27,7 @@
           <strong>{{ t }}</strong>
           <ul style="margin: 0.5rem 0 1rem">
             {% for s in low_hours_students %}
-              {% if t == s['tutor'] %}
+              {% if t in s['tutors'] %}
                 <li style="margin-left: -15px">{{ s['name'] }} ({{ s['hours'] }} hrs)</li>
               {% endif %}
             {% endfor %}
