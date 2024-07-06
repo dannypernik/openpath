@@ -426,6 +426,9 @@ def students():
     other_students = User.query.filter((User.role=='student') & (User.status.notin_(statuses)))
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    registered_tests = []
+    interested_tests = []
+
     if form.validate_on_submit():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
             email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
@@ -438,16 +441,20 @@ def students():
                 session_reminders=True, test_reminders=True)
         else:
             parent = User.query.filter_by(id=form.parent_id.data).first()
+            
+
         try:
             db.session.add(parent)
             db.session.flush()
             student.parent_id = parent.id
             db.session.add(student)
             db.session.commit()
-            selected_dates = request.form.getlist('test_dates')
+            test_selections = request.form.getlist('test_dates')
             for d in upcoming_dates:
-                if str(d.date) in selected_dates:
+                if str(d.id) + '-interested' in test_selections:
                     student.interested_test_date(d)
+                elif str(d.id) + '-registered' in test_selections:
+                    student.register_test_date(d)
         except:
             db.session.rollback()
             flash(student.first_name + ' could not be added', 'error')
