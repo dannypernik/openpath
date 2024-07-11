@@ -860,8 +860,7 @@ def send_tutor_email(tutor, student_data):
                 unscheduled_students.append(s)
                 if action_str == "":
                     action_str = " - Action requested"
-            elif (s['hours'] < s['next_duration'] and s['pay_type'] == 'Package') or
-                (s['hours'] < 0):
+            elif (s['hours'] < s['next_duration'] and s['pay_type'] == 'Package') or (s['hours'] < 0):
                 low_scheduled_students.append(s)
                 action_str = " - Action required"
             else:
@@ -949,7 +948,7 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
                         },
                     ],
                     "Subject": "Admin tutoring report for " + start_date + " to " + end_date,
-                    "HTMLPart": render_template('email/weekly-report.html',
+                    "HTMLPart": render_template('email/weekly-report-email.html',
                         my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count, 
                         other_tutoring_hours=other_tutoring_hours, other_session_count=other_session_count,
                         unscheduled_students=unscheduled_students, paused_str=paused_str, tutors_attention=tutors_attention,
