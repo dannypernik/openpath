@@ -14,10 +14,11 @@ from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
-    send_admin_report_email, send_script_status_email, send_tutor_email
+    send_weekly_report_email, send_script_status_email, send_tutor_email
 from sqlalchemy.orm import joinedload
 import requests
 import traceback
+from pprint import pprint
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -31,59 +32,47 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Student summary!A1:S'
 calendars = [
-    'danny@openpathtutoring.com', # d@OPT
-    'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com', # Sean
-    '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com', #John
-    'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com', # Michele
+    { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
+    { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
+    { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
+    { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' }
 ]
 
 now = datetime.datetime.utcnow()
+now_str = now.isoformat() + 'Z'
 now_tz_aware = pytz.utc.localize(now)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format="%A")
-upcoming_start = now + datetime.timedelta(hours=33)
-upcoming_start_str = upcoming_start.isoformat() + 'Z'
+upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-upcoming_end = now_tz_aware + datetime.timedelta(hours=57)
-bimonth_end = now + datetime.timedelta(days=70, hours=33)
+upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
+bimonth_end = now + datetime.timedelta(days=70)
 bimonth_end_str = bimonth_end.isoformat() + 'Z'
-upcoming_events = []
-events_by_week = []
-events_next_week = []
+bimonth_hours = 0
 bimonth_events = []
-bimonth_events_list = []
+events_by_week = []
+upcoming_events = []
 tutoring_events = []
 my_tutoring_events = []
-unscheduled_list = []
-outsourced_unscheduled_list = []
-paused_list = []
-scheduled_students = set()
-future_schedule = set()
-outsourced_scheduled_students = set()
-low_active_students = []
-
-reminder_list = []
 students = User.query.order_by(User.first_name).filter(User.role == 'student')
+tutors = User.query.order_by(User.id.desc()).filter(User.role == 'tutor')
+test_dates = TestDate.query.all()
 test_reminder_users = User.query.order_by(User.first_name).filter(
-    User.test_dates).filter(User.test_reminders).options(joinedload('parent'), joinedload('tutor'))
-active_students = students.filter(User.status == 'active')
+    User.test_dates).filter(User.test_reminders) #.options(joinedload('parent'), joinedload('tutor'))
 upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
 paused_students = students.filter(User.status == 'paused')
-primary_tutor = User.query.filter(User.email == app.config['ADMIN_EMAIL']).first()
-student_names_db = []
+scheduled_students = []
+unscheduled_students = []
 status_updates = []
-low_hours_students = []
+student_data = []
 add_students_to_db = []
 messages = []
 
-### Test date reminders
-test_dates = TestDate.query.all()
 
 def get_events_and_data():
     """
     """
-    flow = Flow.from_client_secrets_file(
-                os.path.join(basedir, 'credentials.json'), SCOPES)
+    flow = Flow.from_client_secrets_file(os.path.join(basedir, 'credentials.json'), SCOPES)
 
     authorization_url, state = flow.authorization_url(
     # Enable offline access so that you can refresh an access token without
@@ -112,14 +101,19 @@ def get_events_and_data():
 
     # Call the Calendar API
     service_cal = build('calendar', 'v3', credentials=creds)
-    for id in calendars:
-        bimonth_cal_events = service_cal.events().list(calendarId=id, timeMin=upcoming_start_str,
+
+    # Collect next 2 months of events for all calendars
+    for cal in calendars:
+        bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=now_str,
             timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
         bimonth_events_result = bimonth_cal_events.get('items', [])
 
-        for e in range(len(bimonth_events_result)):
-            if bimonth_events_result[e]['start'].get('dateTime'):
-                bimonth_events.append(bimonth_events_result[e])
+        for e in bimonth_events_result:
+            if e['start'].get('dateTime'):
+                bimonth_events.append({
+                    'event': e,
+                    'tutor': cal['tutor']
+                })
 
     # Call the Sheets API
     service_sheets = build('sheets', 'v4', credentials=creds)
@@ -128,87 +122,93 @@ def get_events_and_data():
                                 range=SUMMARY_RANGE).execute()
     summary_data = result.get('values', [])
 
+    if not summary_data:
+        msg = 'No summary data found.'
+        print(msg)
+        messages.append(msg)
+        return
+
     return bimonth_events, summary_data
 
 
 def get_upcoming_events():
     bimonth_events, summary_data = get_events_and_data()
 
-    for e in range(len(bimonth_events)):
-        e_start = isoparse(bimonth_events[e]['start'].get('dateTime'))
-        e_end = isoparse(bimonth_events[e]['end'].get('dateTime'))
+    # Collect necessary event information
+    for e in bimonth_events:
+        e_start = isoparse(e['event']['start'].get('dateTime'))
+        e_end = isoparse(e['event']['end'].get('dateTime'))
         duration = str(e_end - e_start)
         (h, m, s) = duration.split(':')
         hours = int(h) + int(m) / 60 + int(s) / 3600
 
-        if 'projected' in bimonth_events[e].get('summary').lower():
+        if 'projected' in e['event'].get('summary').lower():
             time_group = 'projected_hours'
         elif e_end.hour + (e_end.minute / 60) <= 16.25:
             time_group = 'day_hours'
         else:
             time_group = 'evening_hours'
 
-
-        week_num = max(1, math.ceil(((e_start - pytz.utc.localize(upcoming_start)).days + 1) / 7)) - 1
+        week_num = max(1, math.ceil(((e_start - now_tz_aware).days + 1) / 7)) - 1
 
         events_by_week.append({
-            'name': bimonth_events[e].get('summary'),
+            'name': e['event'].get('summary'),
+            'date': e['event']['start'].get('dateTime'),
             'hours': hours,
+            'tutor': e['tutor'],
             'time_group': time_group,
             'week_num': week_num
         })
 
-        if week_num == 0:
-            events_next_week.append({
-                'name': bimonth_events[e].get('summary'),
-                'date': bimonth_events[e]['start'].get('dateTime'),
-                'hours': hours
-            })
-            if e_start < upcoming_end:
-                upcoming_events.append(bimonth_events[e])
+        if upcoming_start < e_start <= upcoming_end:
+            upcoming_events.append(e)
     
-    return events_by_week, events_next_week, upcoming_events, bimonth_events, summary_data
+    return events_by_week, upcoming_events, bimonth_events, summary_data
 
 
 def main():
     try:
-        events_by_week, events_next_week, upcoming_events, bimonth_events, \
+        events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
-        
-        tutors = User.query.order_by(User.id.desc() ).filter_by(role='tutor')
         
         msg = "\nSession reminders for " + upcoming_start_formatted + ":"
         print(msg)
         messages.append(msg)
 
-        ### Send reminder email to students ~2 days in advance
-        for event in upcoming_events:
+        # Send reminder email to students ~2 days in advance
+        reminder_count = 0
+        for e in upcoming_events:
             for student in upcoming_students:
                 name = full_name(student)
-                if name in event.get('summary') and 'projected' not in event.get('summary').lower():
-                    reminder_list.append(name)
-                    msg = send_reminder_email(event, student)
+                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+                    reminder_count += 1
+                    msg = send_reminder_email(e, student, get_tutor_from_name(e['tutor']))
                     print(msg)
                     messages.append(msg)
         
-        if len(reminder_list) == 0:
+        if reminder_count == 0:
             msg = "No reminders sent."
             print(msg)
             messages.append(msg)
-        
+
         messages.append('')
 
-        # get list of event names for the bimonth
-        for e in bimonth_events:
-            bimonth_events_list.append(e.get('summary'))
-        
-        # Get list of students with conflicting statuses, low hours, or missing from DB
-        for i, row in enumerate(summary_data):
-            if row[0] == '':
-                break
-            for s in students:
-                name = full_name(s)
-                student_names_db.append(name)
+        for s in students:
+            ss_status = None
+            ss_hours = None
+            ss_tutors = []
+            ss_pay_type = None
+            next_session = None
+            next_duration = None
+            next_tutor = None
+            repurchase_deadline = None
+
+            name = full_name(s)
+
+            for i, row in enumerate(summary_data):
+                if row[0] == '':
+                    add_students_to_db.append(name)
+                    break
 
                 if row[0] == name:
                     # Update DB status based on spreadsheet status
@@ -226,35 +226,68 @@ def main():
                             messages.append(err_msg)
 
                     # check for students who should be listed as active
-                    if s.status not in ['active', 'prospective'] and any(name in event['name'] for event in events_next_week):
+                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] == 0 for event in events_by_week):
                         msg = name + ' is scheduled next week. Change status to active.'
                         print(msg)
                         status_updates.append(msg)
             
-            s_tutors = row[6].split(', ')
+                    ss_status = row[1]
+                    ss_hours = float(row[3])
+                    ss_tutors = row[6].split(', ')
+                    ss_pay_type = row[5]
+                    break
             
-            if row[1] == 'Active' and row[5] == 'Package' and float(row[3]) <= 1.5:
-                msg = {
-                    'name': row[0],
-                    'hours': row[3],
-                    'tutors': s_tutors
+            if ss_status in {'Active', 'Prospective'}:
+                for e in events_by_week:
+                    if name in e['name']:
+                        tutoring_events.append(e)
+                        if s.tutor_id == 1:
+                            my_tutoring_events.append(e)
+
+                if any(name in e['name'] for e in tutoring_events):
+                    for e in tutoring_events:
+                        if name in e['name']:
+                            bimonth_hours += e['hours']
+                            if next_session is None:
+                                next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                                next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
+                                next_duration = e['hours']
+                                next_tutor = e['tutor']
+
+                            if ss_hours < 0:
+                                repurchase_deadline = 'ASAP'  
+                            elif bimonth_hours > ss_hours and repurchase_deadline is None:
+                                rep_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                                repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
+
+                s_data = {
+                    'name': name,
+                    'hours': ss_hours,
+                    'status': ss_status,
+                    'tutors': ss_tutors,
+                    'pay_type': ss_pay_type,
+                    'next_session': next_session,
+                    'next_duration' : next_duration,
+                    'next_tutor': next_tutor,
+                    'deadline': repurchase_deadline
                 }
-                low_hours_students.append(msg)
-            
-            if row[1] in ['Active', 'Prospective'] and row[0] not in student_names_db:
-                add_students_to_db.append(row[0])
-        
+
+                student_data.append(s_data)
+
+                if s_data['next_session'] is None:
+                    unscheduled_students.append(s_data)
+                else:
+                    scheduled_students.append(s_data)
 
         ### mark test dates as past
         for d in test_dates:
             if d.status != 'past' and d.date <= today:
                 d.status = 'past'
-                db.session.merge(d)
+                db.session.add(d)
                 db.session.commit()
                 msg = 'Test date ' + str(d.date) + ' marked as past'
                 print(msg)
                 messages.append(msg)
-
 
         ### send registration and test reminder emails
         for u in test_reminder_users:
@@ -274,55 +307,24 @@ def main():
 
 
         ### send weekly reports
-        if day_of_week == 'Wednesday':
-            session_count = 0
-            tutoring_hours = 0
-            outsourced_hours = 0
-            outsourced_session_count = 0
+        if day_of_week == 'Sunday':
+            my_session_count = 0
+            my_student_count = 0
+            my_tutoring_hours = 0
+            other_session_count = 0
+            other_student_count = 0
+            other_tutoring_hours = 0
 
-            # Get number of active students, number of sessions, and list of unscheduled students
-            for student in upcoming_students:
-                name = full_name(student)
-                for x in events_by_week:
-                    if name in x['name']:
-                        tutoring_events.append(x)
-                        if student.tutor_id == 1:
-                            my_tutoring_events.append(x)
+            for e in tutoring_events:
+                if e['week_num'] == 0:
+                    if e['tutor'] == 'Danny Pernik':
+                        my_session_count += 1
+                        my_tutoring_hours += e['hours']
+                    else:
+                        other_session_count += 1
+                        other_tutoring_hours += e['hours']
 
-                if any(name in e['name'] for e in events_next_week):
-                    for x in events_next_week:
-                        count = 0
-                        hours = 0
-                        if name in x['name']:
-                            count += 1
-                            hours += x['hours']
-                            if student.tutor_id == 1:
-                                scheduled_students.add(name)
-                                session_count += count
-                                tutoring_hours += hours
-                            else:
-                                outsourced_scheduled_students.add(name)
-                                outsourced_session_count += count
-                                outsourced_hours += hours
-                elif any(name in e['name'] for e in tutoring_events):
-                    future_schedule.add(name)
-                elif student.tutor_id == 1:
-                    unscheduled_list.append(name)
-                else:
-                    outsourced_unscheduled_list.append({
-                        'name': name,
-                        'tutor_id': student.tutor_id
-                    })
-
-            for student in paused_students:
-                name = full_name(student)
-                paused_list.append(name)
-            
-            for tutor in tutors:
-                if any(s['tutor_id'] == tutor.id for s in outsourced_unscheduled_list):
-                    send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students)
-
-        ### Generate admin report
+            ### Generate admin report
             weekly_data = {
                 'dates': [0,0,0,0,0,0,0,0,0,0],
                 'sessions': [0,0,0,0,0,0,0,0,0,0],
@@ -341,29 +343,25 @@ def main():
             for e in my_tutoring_events:
                 weekly_data[e['time_group']][e['week_num']] += e['hours']
                 weekly_data['sessions'][e['week_num']] += 1        
+            
+            for tutor in tutors:
+                if any(full_name(tutor) in s['tutors'] for s in student_data):
+                    send_tutor_email(tutor, student_data)
 
-            # Spreadsheet data
-            if not summary_data:
-                msg = 'No summary data found.'
-                print(msg)
-                messages.append(msg)
-                return
-
-            send_admin_report_email(str(session_count), '{:0.2f}'.format(tutoring_hours), str(len(scheduled_students)), \
-                future_schedule, unscheduled_list, str(outsourced_session_count), \
-                str(outsourced_hours), str(len(outsourced_scheduled_students)), \
-                outsourced_unscheduled_list, paused_list, weekly_data, now)
+            send_weekly_report_email(my_session_count, my_tutoring_hours,
+                other_session_count, other_tutoring_hours, scheduled_students,
+                unscheduled_students, paused_students, tutors, weekly_data, now)
         
         message, author, header = get_quote()
         msg = '\n' + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'succeeded')
+        send_script_status_email('reminders.py', messages, status_updates, student_data, tutors, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed:', traceback.format_exc() )
-        send_script_status_email('reminders.py', messages, status_updates, tutors, low_hours_students, add_students_to_db, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, student_data, tutors, add_students_to_db, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):
@@ -375,6 +373,12 @@ def get_student_events(full_name):
             student_events.append(event)
     
     return student_events
+
+
+def get_tutor_from_name(name):
+    for tutor in tutors:
+        if full_name(tutor) == name:
+            return tutor
 
 
 if __name__ == '__main__':

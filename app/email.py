@@ -15,7 +15,7 @@ def get_quote():
         quote = requests.get("https://zenquotes.io/api/today")
         message = quote.json()[0]['q']
         author = quote.json()[0]['a']
-        header = "Random inspirational quote of the day:"
+        header = "Random inspirational quote of the day"
     except requests.exceptions.RequestException:
         message = "We don't have to do all of it alone. We were never meant to."
         author = "Brene Brown"
@@ -118,7 +118,7 @@ def send_confirmation_email(user, message):
     return result.status_code
 
 
-def send_reminder_email(event, student):
+def send_reminder_email(event, student, tutor):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -131,8 +131,7 @@ def send_reminder_email(event, student):
             if parent.secondary_email:
                 cc_email.append({ "Email": parent.secondary_email })
 
-    if student.tutor:
-        tutor = student.tutor
+    if tutor:
         if tutor.session_reminders:
             cc_email.append({ "Email": tutor.email })
     
@@ -142,8 +141,8 @@ def send_reminder_email(event, student):
     
     dt = datetime.datetime
 
-    start_time_utc = event['start'].get('dateTime')
-    end_time_utc = event['end'].get('dateTime')
+    start_time_utc = event['event']['start'].get('dateTime')
+    end_time_utc = event['event']['end'].get('dateTime')
 
     student_tz = ZoneInfo(student.timezone)
     start_obj_tz = parse(start_time_utc).astimezone(student_tz)
@@ -154,16 +153,16 @@ def send_reminder_email(event, student):
     end_time = dt.strftime(end_obj_tz, format="%-I:%M%p").lower()
     timezone = dt.strftime(end_obj_tz, format=" %Z")
 
-    if 'practice sat' in event.get('summary').lower():
+    if 'practice sat' in event['event'].get('summary').lower():
         event_type = 'practice SAT'
-    elif 'practice act' in event.get('summary').lower():
+    elif 'practice act' in event['event'].get('summary').lower():
         event_type = 'practice ACT'
-    elif 'test prep class' in event.get('summary').lower():
+    elif 'test prep class' in event['event'].get('summary').lower():
         event_type = 'test prep class'
     else:
         event_type = 'tutoring session'
 
-    location = event.get('location')
+    location = event['event'].get('location')
     warnings = []
     warnings_str = ''
 
@@ -845,21 +844,28 @@ def send_score_analysis_email(student, parent, school):
     return result.status_code
 
 
-def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
+def send_tutor_email(tutor, student_data):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
+    low_scheduled_students = []
+    other_scheduled_students = []
     unscheduled_students = []
-    low_students = []
+    action_str = ""
 
-    for s in outsourced_unscheduled_list:
-        if tutor.id == s['tutor_id']:
-            unscheduled_students.append(s['name'])
-
-    for s in low_hours_students:
+    for s in student_data:
         if full_name(tutor) in s['tutors']:
-            low_students.append(s['name'])
+            if s['next_session'] is None:
+                unscheduled_students.append(s)
+                if action_str == "":
+                    action_str = " - Action requested"
+            elif (s['hours'] < s['next_duration'] and s['pay_type'] == 'Package') or
+                (s['hours'] < 0):
+                low_scheduled_students.append(s)
+                action_str = " - Action required"
+            else:
+                other_scheduled_students.append(s)
 
     with app.app_context():
         data = {
@@ -879,24 +885,29 @@ def send_tutor_email(tutor, outsourced_unscheduled_list, low_hours_students):
                         "Email": app.config['MAIL_USERNAME']
                         }
                     ],
-                    "Subject": 'Student schedule notifications',
+                    "ReplyTo": { "Email": app.config['MAIL_USERNAME'] },
+                    "Subject": 'OPT weekly report' + action_str,
                     "HTMLPart": render_template('email/tutor-email.html', tutor=tutor,
-                        unscheduled_students=unscheduled_students, low_students=low_students)
+                        low_scheduled_students=low_scheduled_students, other_scheduled_students=other_scheduled_students,
+                        unscheduled_students=unscheduled_students, full_name=full_name)
                 }
             ]
         }
 
-    result = mailjet.send.create(data=data)
-    if result.status_code == 200:
-        print("Tutor email sent to " + full_name(tutor))
+    if len(unscheduled_students) + len(low_scheduled_students) + len(other_scheduled_students) > 0:
+        result = mailjet.send.create(data=data)
+        if result.status_code == 200:
+            print("Tutor email sent to " + full_name(tutor))
+        else:
+            print("Tutor email to " + full_name(tutor) + " failed to send with code " + result.status_code, result.reason)
+        return result.status_code
     else:
-        print("Tutor email to " + full_name(tutor) + " failed to send with code " + result.status_code, result.reason)
-    return result.status_code
+        print('No students for ' + full_name(tutor))
 
 
-def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_student_count, \
-    future_list, unscheduled_list, outsourced_session_count, outsourced_hours, \
-    outsourced_scheduled_student_count, outsourced_unscheduled_students, paused, weekly_data, now):
+def send_weekly_report_email(my_session_count, my_tutoring_hours,
+    other_session_count, other_tutoring_hours, scheduled_students,
+    unscheduled_students, paused_students, tutors, weekly_data, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -907,18 +918,22 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     start_date = dt.strftime(parse(start), format="%b %-d")
     end = (now + datetime.timedelta(days=6, hours=40)).isoformat() + 'Z'
     end_date = dt.strftime(parse(end), format="%b %-d")
-    future_students = ', '.join(future_list)
-    if future_students == '':
-        future_students = "None"
-    unscheduled_students = ', '.join(unscheduled_list)
-    if unscheduled_students == '':
-        unscheduled_students = "None"
-    
-    # tutors = set(item['tutor_id'] for item in outsourced_unscheduled_students)
-    
-    paused_students = ', '.join(paused)
-    if paused_students == '':
-        paused_students = "None"
+
+    paused = []
+    for s in paused_students:
+        paused.append(full_name(s))
+    paused_str = (', ').join(paused)
+
+    tutors_attention = set()
+    for t in tutors:
+        for s in scheduled_students:
+            if full_name(t) in s['tutors'] and s['hours'] <= 3:
+                tutors_attention.add(t)
+                break
+        for s in unscheduled_students:
+            if full_name(t) in s['tutors']:
+                tutors_attention.add(t)
+                break
 
     with app.app_context():
         data = {
@@ -934,13 +949,11 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
                         },
                     ],
                     "Subject": "Admin tutoring report for " + start_date + " to " + end_date,
-                    "HTMLPart": render_template('email/admin-email.html', scheduled_hours=scheduled_hours, \
-                        scheduled_session_count=scheduled_session_count, scheduled_student_count=scheduled_student_count, \
-                        outsourced_hours=outsourced_hours, outsourced_session_count=outsourced_session_count, \
-                        outsourced_scheduled_student_count=outsourced_scheduled_student_count, \
-                        unscheduled_students=unscheduled_students, outsourced_unscheduled_students=outsourced_unscheduled_students, \
-                        future_students=future_students, paused_students=paused_students, 
-                        quote_header=quote_header, message=message, author=author, weekly_data=weekly_data)
+                    "HTMLPart": render_template('email/weekly-report.html',
+                        my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count, 
+                        other_tutoring_hours=other_tutoring_hours, other_session_count=other_session_count,
+                        unscheduled_students=unscheduled_students, paused_str=paused_str, tutors_attention=tutors_attention,
+                        message=message, author=author, weekly_data=weekly_data, full_name=full_name)
                 }
             ]
         }
@@ -953,12 +966,10 @@ def send_admin_report_email(scheduled_session_count, scheduled_hours, scheduled_
     return result.status_code
 
 
-def send_script_status_email(name, messages, status_updates, tutors, low_hours_students, add_students_to_db, result, exception=''):
+def send_script_status_email(name, messages, status_updates, student_data, tutors, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-
-    tutors = set(item['tutors'][0] for item in low_hours_students)
 
     with app.app_context():
         data = {
@@ -975,8 +986,8 @@ def send_script_status_email(name, messages, status_updates, tutors, low_hours_s
                     ],
                     "Subject": name + " " + result,
                     "HTMLPart": render_template('email/script-status-email.html', 
-                        messages=messages, status_updates=status_updates, low_hours_students=low_hours_students, \
-                        add_students_to_db=add_students_to_db, exception=exception, tutors=tutors)
+                        messages=messages, status_updates=status_updates, tutors=tutors,
+                        add_students_to_db=add_students_to_db, exception=exception)
                 }
             ]
         }

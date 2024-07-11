@@ -20,36 +20,39 @@
   </head>
   <body style="color: #1C4D65;">
     <p>
-      A total of {{ scheduled_hours }} hours ({{ scheduled_session_count }} sessions)
-      are scheduled with Danny for {{ scheduled_student_count }} students next week.
+      A total of {{ my_tutoring_hours }} hours ({{ my_session_count }} sessions)
+      are scheduled with Danny for {{ my_student_count }} students next week.
     </p>
     <p>
-      An additional {{ outsourced_hours }} hours ({{ outsourced_session_count }} sessions)
-      are scheduled with other tutors for {{ outsourced_scheduled_student_count }} students.
+      An additional {{ other_tutoring_hours }} hours ({{ other_session_count }} sessions)
+      are scheduled with other tutors for {{ other_student_count }} students.
     </p>
-    <p>
-      Unscheduled upcoming students for Danny: {{ unscheduled_students }}
-    </p>
-    {% if outsourced_unscheduled_students %}
-      <strong>Unscheduled upcoming students for...</strong>
-      {% for t in tutors %}
-        <strong>{{ full_name(t) }}:</strong>
-        {% for s in outsourced_unscheduled_students %}
-          {% if t.id == s['tutor_id'] %}
-            {{ s['name'] }}
+
+    {% for t in tutors_attention %}
+      <p style="margin-bottom: 10px">
+        <strong>{{ full_name(t) }}'s students requiring attention</strong>
+      </p>
+      
+      <ul style="margin-top:10px; padding-left:15px">
+        {% for s in scheduled_students %}
+          {% if full_name(t) in s['tutors'] and s['hours'] <= 3 %}
+            <li>
+              {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
+            </li>
           {% endif %}
         {% endfor %}
-      {% endfor %}
-      <p>
-        
-      </p>
-    
-    {% endif %}
+
+        {% for s in unscheduled_students %}
+          {% if full_name(t) in s['tutors'] %}
+            <li>
+              {{ s['name'] }} (Unscheduled, {{ s['hours'] }} hrs remaining)
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endfor %}
     <p>
-      Upcoming students scheduled after next week: {{ future_students }}
-    </p>
-    <p>
-      Paused students: {{ paused_students }}
+      Paused students: {{ paused_str }}
     </p>
 
     <table>
@@ -84,7 +87,7 @@
     </table>
 
     <p>
-      {{ quote_header }}<br/>
+      <strong>Random inspirational quote of the day</strong><br/>
       {{ message }}<br/>
       &ndash; {{ author }}
     </p>
