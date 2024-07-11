@@ -48,7 +48,6 @@ upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A
 upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
 bimonth_end = now + datetime.timedelta(days=70)
 bimonth_end_str = bimonth_end.isoformat() + 'Z'
-bimonth_hours = 0
 bimonth_events = []
 events_by_week = []
 upcoming_events = []
@@ -193,6 +192,7 @@ def main():
 
         messages.append('')
 
+        bimonth_hours = 0
         for s in students:
             ss_status = None
             ss_hours = None
