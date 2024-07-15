@@ -1,95 +1,76 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends '_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <style>
-      table {
-        border-spacing: initial;
-      }
-
-      td {
-        padding: 2px 5px;
-      }
-
-      thead td {
-        border-bottom: 1px solid #1C4D65;
-      }
-    </style>
-  </head>
-  <body style="color: #1C4D65;">
-    <p>
-      A total of {{ my_tutoring_hours }} hours ({{ my_session_count }} sessions)
-      are scheduled with Danny for {{ my_student_count }} students next week.
+{% block content %}
+  <p>
+    A total of {{ my_tutoring_hours }} hours ({{ my_session_count }} sessions)
+    are scheduled with Danny for {{ my_student_count }} students next week.
+  </p>
+  <p>
+    An additional {{ other_tutoring_hours }} hours ({{ other_session_count }} sessions)
+    are scheduled with other tutors for {{ other_student_count }} students.
+  </p>
+  
+  {% for t in tutors_attention %}
+    <p style="margin-bottom: 10px">
+      <strong>{{ full_name(t) }}'s students requiring attention</strong>
     </p>
-    <p>
-      An additional {{ other_tutoring_hours }} hours ({{ other_session_count }} sessions)
-      are scheduled with other tutors for {{ other_student_count }} students.
-    </p>
-
-    {% for t in tutors_attention %}
-      <p style="margin-bottom: 10px">
-        <strong>{{ full_name(t) }}'s students requiring attention</strong>
-      </p>
-      
-      <ul style="margin-top:10px; padding-left:15px">
-        {% for s in scheduled_students %}
-          {% if full_name(t) in s['tutors'] and s['hours'] <= 3 %}
-            <li>
-              {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
-            </li>
-          {% endif %}
-        {% endfor %}
-
-        {% for s in unscheduled_students %}
-          {% if full_name(t) in s['tutors'] %}
-            <li>
-              {{ s['name'] }} (Unscheduled, {{ s['hours'] }} hrs remaining)
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endfor %}
-    <p>
-      Paused students: {{ paused_str }}
-    </p>
-
-    <table>
-      <thead style="font-weight: bold">
-        <td>Week of</td>
-        <td>Daytime</td>
-        <td>Evening</td>
-        <td>Projected</td>
-        <td>Total &emsp;</td>
-      </thead>
-      <tbody>
-        {% for i in range(10) %}
-          <tr>
-            <td style="border-right: 1px solid #1C4D65; font-weight: bold">
-              {{ weekly_data['dates'][i] }}
-            </td>
-            <td>
-              {{ '{:0.2f}'.format(weekly_data['day_hours'][i]) }}
-            </td>
-            <td>
-              {{ '{:0.2f}'.format(weekly_data['evening_hours'][i]) }}
-            </td>
-            <td>
-              {{ '{:0.2f}'.format(weekly_data['projected_hours'][i]) }}
-            </td>
-            <td style="font-weight: bold">
-              {{ '{:0.2f}'.format(weekly_data['day_hours'][i] + weekly_data['evening_hours'][i] + weekly_data['projected_hours'][i]) }}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <p>
-      <strong>Random inspirational quote of the day</strong><br/>
-      {{ message }}<br/>
-      &ndash; {{ author }}
-    </p>
-  </body>
-</html>
+    
+    <ul style="margin-top:10px; padding-left:15px">
+      {% for s in low_scheduled_students %}
+        {% if full_name(t) in s['tutors'] %}
+          <li>
+            {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
+          </li>
+        {% endif %}
+      {% endfor %}
+  
+      {% for s in unscheduled_students %}
+        {% if full_name(t) in s['tutors'] %}
+          <li>
+            {{ s['name'] }} (Unscheduled, {{ s['hours'] }} hrs remaining)
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endfor %}
+  <p>
+    Paused students: {{ paused_str }}
+  </p>
+  
+  <table>
+    <thead style="font-weight: bold">
+      <td>Week of</td>
+      <td>Daytime</td>
+      <td>Evening</td>
+      <td>Projected</td>
+      <td>Total &emsp;</td>
+    </thead>
+    <tbody>
+      {% for i in range(10) %}
+        <tr>
+          <td style="border-right: 1px solid #1C4D65; font-weight: bold">
+            {{ weekly_data['dates'][i] }}
+          </td>
+          <td>
+            {{ '{:0.2f}'.format(weekly_data['day_hours'][i]) }}
+          </td>
+          <td>
+            {{ '{:0.2f}'.format(weekly_data['evening_hours'][i]) }}
+          </td>
+          <td>
+            {{ '{:0.2f}'.format(weekly_data['projected_hours'][i]) }}
+          </td>
+          <td style="font-weight: bold">
+            {{ '{:0.2f}'.format(weekly_data['day_hours'][i] + weekly_data['evening_hours'][i] + weekly_data['projected_hours'][i]) }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <p>
+    <strong>Random inspirational quote of the day</strong><br/>
+    {{ message }}<br/>
+    &ndash; {{ author }}
+  </p>
+{% endblock content %}

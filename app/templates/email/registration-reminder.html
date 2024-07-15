@@ -1,28 +1,22 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends '_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body style="color: #1C4D65;">
-    <p>
-      Hi {{ user.first_name }}, this is an automated reminder that the regular
-      registration deadline for the {{ test_date.test.upper() }} on {{ td }} is coming up
-      on {{ reg_dl }}.
-      {% if test_date.late_date is not none %}
-        Registration after this date until the late registration
-        deadline on {{ late_dl }} will incur an additional fee.
-      {% endif %}
-    </p>
-    <p>
-      If you have already registered, that's great! Reply to this email so we can update your
-      status. If you have decided against taking the test on this date, let us know so that
-      you only receive relevant reminders.
-    </p>
-    <p>
-      All the best,<br>
-      The Open Path Team
-    </p>
-  </body>
-</html>
+{% block content %}
+  <p>
+    Hi {{ user.first_name }}, this is an automated reminder that the regular
+    registration deadline for the {{ test_date.test.upper() }} on {{ td }} is coming up
+    on {{ reg_dl }}.
+    {% if test_date.late_date is not none %}
+      Registration after this date until the late registration
+      deadline on {{ late_dl }} will incur an additional fee.
+    {% endif %}
+  </p>
+  <p>
+    If you have already registered, that's great! Reply to this email so we can update your
+    status. If you have decided against taking the test on this date, let us know so that
+    you only receive relevant reminders.
+  </p>
+  <p>
+    All the best,<br>
+    The Open Path Team
+  </p>
+{% endblock content %}

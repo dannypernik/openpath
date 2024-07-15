@@ -1,56 +1,50 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends '_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body>
-    <p>
-      Hi {{ tutor.first_name }}, here's your weekly tutoring report:
-    </p>
+{% block content %}
+  <p>
+    Hi {{ tutor.first_name }}, here's your weekly tutoring report:
+  </p>
 
-    {% if low_scheduled_students %}
-      <strong>These students need hours added before your next session</strong><br>
-      <span>(or Danny just needs to pay you)</span>
-      <ul style="margin-top: 5px; padding-left: 15px">
-        {% for s in low_scheduled_students %}
-          <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+  {% if low_scheduled_students %}
+    <strong>These students need hours added before your next session</strong><br>
+    <span>(or Danny just needs to pay you)</span>
+    <ul style="margin-top: 5px; padding-left: 15px">
+      {% for s in low_scheduled_students %}
+        <li>
+          {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-    {% if unscheduled_students %}
-      <strong>Unscheduled students</strong><br>
-      <span>
-        Please reach out to parents and students, or reply here to let Danny know why
-        a student should be marked as Paused or Inactive.
-      </span>
-      <ul style="margin-top: 5px; padding-left: 15px">
-        {% for s in unscheduled_students %}
-          <li style="margin-left: -15px">
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+  {% if unscheduled_students %}
+    <strong>Unscheduled students</strong><br>
+    <span>
+      Please reach out to parents and students, or reply here to let Danny know why
+      a student should be marked as Paused or Inactive.
+    </span>
+    <ul>
+      {% for s in unscheduled_students %}
+        <li>
+          {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-    {% if other_scheduled_students %}
-      <strong>Next session for students without low hours</strong><br>
-      <span>No action required</span>
-      <ul style="margin-top: 5px">
-        {% for s in other_scheduled_students %}
-          <li style="margin-left: -15px">
-            {{ s['name'] }}
-            {% if s['next_tutor'] != full_name(tutor) %}
-              (with {{ s['next_tutor'] }})
-            {% endif %}
-            - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </body>
-</html>
+  {% if other_scheduled_students %}
+    <strong>Next session for students without low hours</strong><br>
+    <span>No action required</span>
+    <ul>
+      {% for s in other_scheduled_students %}
+        <li style="margin-left: -15px">
+          {{ s['name'] }}
+          {% if s['next_tutor'] != full_name(tutor) %}
+            (with {{ s['next_tutor'] }})
+          {% endif %}
+          - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock content %}

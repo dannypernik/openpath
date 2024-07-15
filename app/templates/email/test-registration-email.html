@@ -1,42 +1,36 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends '_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body style="color: #1C4D65;">
-    <p>
-      Hi {{ parent.first_name }}, thank you for registering {{ student.first_name }} for the
-      practice {{ test }} with {{ school }}. Here are the details:
-    </p>
-    <p>
-      <strong>{{ school }} Practice {{ test }}</strong><br>
-      When: {{ date }} from {{ time }}<br>
-      Where: {{ location }}
-    </p>
-    <p>
-      Things to bring:
-      <ul>
-        <li>#2 pencils: 2 sharpened, 1 dull</li>
-        <li>Calculator with new batteries</li>
-        <li>Watch with alarm setting turned off</li>
-        <li>Snacks and drink for break time</li>
-        <li>Extra layer of clothing</li>
-      </ul>
-    </p>
-    <p>
-      You're welcome to reply to this email if you have any questions prior to the
-      test date. For assistance on the day of the test, you can reach out to {{ contact_info }}.
-    </p>
-    <p>
-      Thank you,<br>
-      The Open Path Team
-    </p>
-    <p>
-      <br/>
-      "We don't have to do all of it alone. We were never meant to."<br/>
-      &ndash; Brene Brown
-    </p>
-  </body>
-</html>
+{% block content %}
+  <p>
+    Hi {{ parent.first_name }}, thank you for registering {{ student.first_name }} for the
+    practice {{ test }} with {{ school }}. Here are the details:
+  </p>
+  <p>
+    <strong>{{ school }} Practice {{ test }}</strong><br>
+    When: {{ date }} from {{ time }}<br>
+    Where: {{ location }}
+  </p>
+  <p>
+    Things to bring:
+    <ul>
+      <li>#2 pencils: 2 sharpened, 1 dull</li>
+      <li>Calculator with new batteries</li>
+      <li>Watch with alarm setting turned off</li>
+      <li>Snacks and drink for break time</li>
+      <li>Extra layer of clothing</li>
+    </ul>
+  </p>
+  <p>
+    You're welcome to reply to this email if you have any questions prior to the
+    test date. For assistance on the day of the test, you can reach out to {{ contact_info }}.
+  </p>
+  <p>
+    Thank you,<br>
+    The Open Path Team
+  </p>
+  <p>
+    <br/>
+    "We don't have to do all of it alone. We were never meant to."<br/>
+    &ndash; Brene Brown
+  </p>
+{% endblock content %}

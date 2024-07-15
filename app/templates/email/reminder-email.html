@@ -1,35 +1,28 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends '_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body style="color: #1C4D65;">
-    <p>
-      This is an automated reminder that a {{ event_type }} is scheduled for {{ student.first_name }}
-      with {{ tutor.first_name }} {{ tutor.last_name }} on {{ start_date }}
-      from {{ start_time }} to {{ end_time }} {{ timezone }}.
-    </p>
-    <p>
-      Location:
-      {% if "http" in location %}
-        <a href="{{ location }}">{{ location }}</a>
-      {% else %}
-        {{ location }}
-      {% endif %}
-    </p>
-    <p>
-      You are welcome to reply to this email with any questions. Please provide at least
-      24 hours notice when making schedule changes in order to avoid being charged for
-      the session. Note that you will not receive a reminder email for sessions scheduled
-      less than 2 days in advance. Thank you!
-    </p>
-    <p>
-      <br><strong>{{ quote_header }}</strong><br>
-      "{{ message }}"
-      <br/>&ndash; {{ author }}
-    </p>
-  </body>
-</html>
-
+{% block content %}
+  <p>
+    This is an automated reminder that a {{ event_type }} is scheduled for {{ student.first_name }}
+    with {{ tutor.first_name }} {{ tutor.last_name }} on {{ start_date }}
+    from {{ start_time }} to {{ end_time }} {{ timezone }}.
+  </p>
+  <p>
+    Location:
+    {% if "http" in location %}
+      <a href="{{ location }}">{{ location }}</a>
+    {% else %}
+      {{ location }}
+    {% endif %}
+  </p>
+  <p>
+    You are welcome to reply to this email with any questions. Please provide at least
+    24 hours notice when making schedule changes in order to avoid being charged for
+    the session. Note that you will not receive a reminder email for sessions scheduled
+    less than 2 days in advance. Thank you!
+  </p>
+  <p>
+    <br><strong>{{ quote_header }}</strong><br>
+    "{{ message }}"
+    <br/>&ndash; {{ author }}
+  </p>
+{% endblock content %}
