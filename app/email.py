@@ -124,6 +124,7 @@ def send_reminder_email(event, student, tutor):
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     cc_email = []
+    reply_email = []
     if student.parent:
         parent = student.parent
         if parent.session_reminders:
@@ -132,12 +133,11 @@ def send_reminder_email(event, student, tutor):
                 cc_email.append({ "Email": parent.secondary_email })
 
     if tutor:
+        reply_email = tutor.email
         if tutor.session_reminders:
             cc_email.append({ "Email": tutor.email })
-    
-        reply_email = tutor.email
-        if reply_email == '':
-            reply_email = app.config['MAIL_USERNAME']
+    if not reply_email:
+        reply_email = app.config['MAIL_USERNAME']
     
     dt = datetime.datetime
 
@@ -844,27 +844,17 @@ def send_score_analysis_email(student, parent, school):
     return result.status_code
 
 
-def send_tutor_email(tutor, student_data):
+def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    low_scheduled_students = []
-    other_scheduled_students = []
-    unscheduled_students = []
-    action_str = ""
-
-    for s in student_data:
-        if full_name(tutor) in s['tutors']:
-            if s['next_session'] is None:
-                unscheduled_students.append(s)
-                if action_str == "":
-                    action_str = " - Action requested"
-            elif (s['hours'] < s['next_duration'] and s['pay_type'] == 'Package') or (s['hours'] < 0):
-                low_scheduled_students.append(s)
-                action_str = " - Action required"
-            else:
-                other_scheduled_students.append(s)
+    if low_scheduled_students:
+        action_str = " - Action required"
+    elif unscheduled_students:
+        action_str = " - Action requested"
+    else:
+        action_str = ""
 
     with app.app_context():
         data = {
@@ -905,8 +895,8 @@ def send_tutor_email(tutor, student_data):
 
 
 def send_weekly_report_email(my_session_count, my_tutoring_hours,
-    other_session_count, other_tutoring_hours, scheduled_students,
-    unscheduled_students, paused_students, tutors, weekly_data, now):
+    other_session_count, other_tutoring_hours, low_scheduled_students,
+    unscheduled_students, paused_students, tutors_attention, weekly_data, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -922,17 +912,6 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
     for s in paused_students:
         paused.append(full_name(s))
     paused_str = (', ').join(paused)
-
-    tutors_attention = set()
-    for t in tutors:
-        for s in scheduled_students:
-            if full_name(t) in s['tutors'] and s['hours'] <= 3:
-                tutors_attention.add(t)
-                break
-        for s in unscheduled_students:
-            if full_name(t) in s['tutors']:
-                tutors_attention.add(t)
-                break
 
     with app.app_context():
         data = {
@@ -951,8 +930,9 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
                     "HTMLPart": render_template('email/weekly-report-email.html',
                         my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count, 
                         other_tutoring_hours=other_tutoring_hours, other_session_count=other_session_count,
-                        unscheduled_students=unscheduled_students, paused_str=paused_str, tutors_attention=tutors_attention,
-                        message=message, author=author, weekly_data=weekly_data, full_name=full_name)
+                        scheduled_students=scheduled_students, unscheduled_students=unscheduled_students,
+                        paused_str=paused_str, tutors_attention=tutors_attention, message=message,
+                        author=author, weekly_data=weekly_data, full_name=full_name)
                 }
             ]
         }
@@ -965,7 +945,7 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
     return result.status_code
 
 
-def send_script_status_email(name, messages, status_updates, student_data, tutors, add_students_to_db, result, exception=''):
+def send_script_status_email(name, messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -984,8 +964,9 @@ def send_script_status_email(name, messages, status_updates, student_data, tutor
                         }
                     ],
                     "Subject": name + " " + result,
-                    "HTMLPart": render_template('email/script-status-email.html', 
-                        messages=messages, status_updates=status_updates, tutors=tutors,
+                    "HTMLPart": render_template('email/script-status-email.html',
+                        low_scheduled_students=low_scheduled_students, messages=messages,
+                        status_updates=status_updates, tutors_attention=tutors_attention,
                         add_students_to_db=add_students_to_db, exception=exception)
                 }
             ]

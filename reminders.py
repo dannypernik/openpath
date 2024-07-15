@@ -62,10 +62,13 @@ upcoming_students = students.filter((User.status == 'active') | (User.status == 
 paused_students = students.filter(User.status == 'paused')
 scheduled_students = []
 unscheduled_students = []
+low_scheduled_students = []
+other_scheduled_students = []
 status_updates = []
 student_data = []
 add_students_to_db = []
 messages = []
+tutors_attention = set()
 
 
 def get_events_and_data():
@@ -199,7 +202,7 @@ def main():
             ss_tutors = []
             ss_pay_type = None
             next_session = None
-            next_duration = None
+            hours_this_week = 0
             next_tutor = None
             repurchase_deadline = None
 
@@ -248,12 +251,12 @@ def main():
                     for e in tutoring_events:
                         if name in e['name']:
                             bimonth_hours += e['hours']
+                            if e['week_num'] == 0:
+                                hours_this_week += e['hours']
                             if next_session is None:
                                 next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                                 next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
-                                next_duration = e['hours']
                                 next_tutor = e['tutor']
-
                             if ss_hours < 0:
                                 repurchase_deadline = 'ASAP'  
                             elif bimonth_hours > ss_hours and repurchase_deadline is None:
@@ -267,8 +270,8 @@ def main():
                     'tutors': ss_tutors,
                     'pay_type': ss_pay_type,
                     'next_session': next_session,
-                    'next_duration' : next_duration,
                     'next_tutor': next_tutor,
+                    'hours_this_week' : hours_this_week,
                     'deadline': repurchase_deadline
                 }
 
@@ -278,6 +281,16 @@ def main():
                     unscheduled_students.append(s_data)
                 else:
                     scheduled_students.append(s_data)
+
+        for s in student_data:
+            if s['next_session'] is None:
+                unscheduled_students.append(s)
+                tutors_attention.update(s['tutors'])
+            elif (s['hours'] < s['hours_this_week'] or s['hours'] < 0) and s['pay_type'] == 'Package' :
+                low_scheduled_students.append(s)
+                tutors_attention.update(s['tutors'])
+            else:
+                other_scheduled_students.append(s)
 
         ### mark test dates as past
         for d in test_dates:
@@ -314,6 +327,14 @@ def main():
             other_session_count = 0
             other_student_count = 0
             other_tutoring_hours = 0
+            next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
+            weekly_data = {
+                'dates': [0,0,0,0,0,0,0,0,0,0],
+                'sessions': [0,0,0,0,0,0,0,0,0,0],
+                'day_hours': [0,0,0,0,0,0,0,0,0,0],
+                'evening_hours': [0,0,0,0,0,0,0,0,0,0],
+                'projected_hours': [0,0,0,0,0,0,0,0,0,0]
+            }
 
             for e in tutoring_events:
                 if e['week_num'] == 0:
@@ -325,16 +346,6 @@ def main():
                         other_tutoring_hours += e['hours']
 
             ### Generate admin report
-            weekly_data = {
-                'dates': [0,0,0,0,0,0,0,0,0,0],
-                'sessions': [0,0,0,0,0,0,0,0,0,0],
-                'day_hours': [0,0,0,0,0,0,0,0,0,0],
-                'evening_hours': [0,0,0,0,0,0,0,0,0,0],
-                'projected_hours': [0,0,0,0,0,0,0,0,0,0]
-            }
-
-            next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
-
             for i in range(10):
                 s = next_sunday + datetime.timedelta(days=(i * 7))
                 s_str = s.strftime('%b %-d')
@@ -342,26 +353,26 @@ def main():
 
             for e in my_tutoring_events:
                 weekly_data[e['time_group']][e['week_num']] += e['hours']
-                weekly_data['sessions'][e['week_num']] += 1        
+                weekly_data['sessions'][e['week_num']] += 1
             
             for tutor in tutors:
                 if any(full_name(tutor) in s['tutors'] for s in student_data):
-                    send_tutor_email(tutor, student_data)
+                    send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
 
             send_weekly_report_email(my_session_count, my_tutoring_hours,
-                other_session_count, other_tutoring_hours, scheduled_students,
-                unscheduled_students, paused_students, tutors, weekly_data, now)
+                other_session_count, other_tutoring_hours, low_scheduled_students,
+                unscheduled_students, paused_students, tutors_attention, weekly_data, now)
         
         message, author, header = get_quote()
         msg = '\n' + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, status_updates, student_data, tutors, add_students_to_db, 'succeeded')
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed:', traceback.format_exc() )
-        send_script_status_email('reminders.py', messages, status_updates, student_data, tutors, add_students_to_db, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):
