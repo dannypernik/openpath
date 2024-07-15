@@ -1,49 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% extends 'email/_email-base.html' %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body style="color: #1C4D65;">
+{% block content %}
+  <p>
+    {% for m in messages %}
+      {{ m }}<br>
+    {% endfor %}
+  </p>
+  
+  {% if status_updates %}
     <p>
-      {% for m in messages %}
-        {{ m }}<br>
+      Status updates:<br>
+      {% for u in status_updates %}
+        {{ u }}<br>
       {% endfor %}
     </p>
-
-    {% if status_updates %}
-      <p>
-        Status updates:<br>
-        {% for u in status_updates %}
-          {{ u }}<br>
+  {% endif %}
+  
+  {% if low_scheduled_students %}
+    <strong>Students with low hours for...</strong><br>
+    {% for t in tutors_attention %}
+      <strong>{{ t }}</strong>
+      <ul>
+        {% for s in low_scheduled_students %}
+          {% if t in s['tutors'] %}
+            <li>{{ s['name'] }} ({{ s['hours'] }} hrs)</li>
+          {% endif %}
         {% endfor %}
-      </p>
-    {% endif %}
-
-    {% if low_hours_students %}
-        <strong>Students with low hours for...</strong><br>
-        {% for t in tutors %}
-          <strong>{{ t }}</strong>
-          <ul style="margin: 0.5rem 0 1rem">
-            {% for s in low_hours_students %}
-              {% if t in s['tutors'] %}
-                <li style="margin-left: -15px">{{ s['name'] }} ({{ s['hours'] }} hrs)</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        {% endfor %}
-    {% endif %}
-
-    {% if add_students_to_db %}
-      <p>
-        Add students to database:<br>
-        {% for a in add_students_to_db %}
-          {{ a }}<br>
-        {% endfor %}
-      </p>
-    {% endif %}
-    
-    <p>{{ exception }}</p>
-  </body>
-</html>
+      </ul>
+    {% endfor %}
+  {% endif %}
+  
+  {% if add_students_to_db %}
+    <p>
+      Add students to database:<br>
+      {% for a in add_students_to_db %}
+        {{ a }}<br>
+      {% endfor %}
+    </p>
+  {% endif %}
+  
+  <p>{{ exception }}</p>
+{% endblock content %}
