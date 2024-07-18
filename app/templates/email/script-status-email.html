@@ -23,7 +23,9 @@
       <ul>
         {% for s in low_scheduled_students %}
           {% if t in s['tutors'] %}
-            <li>{{ s['name'] }} ({{ s['hours'] }} hrs)</li>
+            <li>
+              {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+            </li>
           {% endif %}
         {% endfor %}
       </ul>
