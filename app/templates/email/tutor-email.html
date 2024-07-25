@@ -10,9 +10,11 @@
     <span>(or Danny just needs to pay you)</span>
     <ul style="margin-top: 5px; padding-left: 15px">
       {% for s in low_scheduled_students %}
-        <li>
-          {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
-        </li>
+        {% if full_name(tutor) in s['tutors'] %}
+          <li>
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% endif %}
@@ -25,9 +27,11 @@
     </span>
     <ul>
       {% for s in unscheduled_students %}
-        <li>
-          {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
-        </li>
+        {% if full_name(tutor) in s['tutors'] %}
+          <li>
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% endif %}
@@ -37,13 +41,15 @@
     <span>No action required</span>
     <ul>
       {% for s in other_scheduled_students %}
-        <li style="margin-left: -15px">
-          {{ s['name'] }}
-          {% if s['next_tutor'] != full_name(tutor) %}
-            (with {{ s['next_tutor'] }})
-          {% endif %}
-          - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
-        </li>
+        {% if full_name(tutor) in s['tutors'] %}
+          <li style="margin-left: -15px">
+            {{ s['name'] }}
+            {% if s['next_tutor'] != full_name(tutor) %}
+              (with {{ s['next_tutor'] }})
+            {% endif %}
+            - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% endif %}
