@@ -18,7 +18,7 @@
             <h3 class="mb-2">{{ t.upper() }}<sup class="h6">&#174;</sup> dates:</h3>
             <div class="d-flex flex-wrap">
               {% for d in upcoming_dates %}
-                {% if d.test == t and t.status == 'confirmed' %}
+                {% if d.test == t and d.status == 'confirmed' %}
                   <div class="test-date mt-1">
                     <input type="checkbox" id="{{ d.id }}" value="{{ d.id }}" name="test_dates"
                       {{ "checked" if d.id in selected_date_ids }}>
