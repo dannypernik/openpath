@@ -497,12 +497,13 @@ def test_dates():
     tests = TestDate.query.with_entities(TestDate.test).order_by(TestDate.test.desc()).distinct()
     today = datetime.today().date()
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= today)
+    upcoming_date_ids = {date.id for date in upcoming_dates}
     upcoming_weekend_filter = (TestDate.status != 'school') & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_weekend_filter)
-    other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_filter)
+    other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_weekend_filter)
     upcoming_students = User.query.filter(
         (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
-    undecided_students = User.query.filter(~User.upcoming_dates.any() & (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
+    undecided_students = User.query.filter(~User.test_dates.any(TestDate.id.in_(upcoming_date_ids)) & (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
     if form.validate_on_submit():
         date = TestDate(test=form.test.data, date=form.date.data, reg_date=form.reg_date.data, \
             late_date=form.late_date.data, other_date=form.other_date.data, \
