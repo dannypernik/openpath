@@ -261,12 +261,6 @@ def set_password(token):
     return render_template('set-password.html', form=form)
 
 
-@app.route('/study-club')
-def study_club():
-    
-    return render_template('study-club.html', title="Open Path Study Club")
-
-
 @app.route('/users', methods=['GET', 'POST'])
 @admin_required
 def users():
@@ -402,7 +396,7 @@ def edit_user(id):
                 else:
                     interested_tests.append(d.id)
 
-    return render_template('edit-user.html', title='Edit User', form=form, user=user, \
+    return render_template('edit-user.html', title=full_name(user), form=form, user=user, \
         tests=tests, upcoming_dates=upcoming_dates, registered_tests=registered_tests, \
         interested_tests=interested_tests)
 
@@ -985,7 +979,7 @@ def TemplateRenderer(app):
     def register_template_endpoint(name, endpoint):
         @app.route('/' + name, endpoint=endpoint)
         def route_handler():
-            title = name.replace('-', ' ')
+            title = name.replace('-', ' ').capitalize()
             return render_template(name + '.html', title=title)
     return register_template_endpoint
 
