@@ -930,9 +930,9 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
                     "HTMLPart": render_template('email/weekly-report-email.html',
                         my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count, 
                         other_tutoring_hours=other_tutoring_hours, other_session_count=other_session_count,
-                        scheduled_students=scheduled_students, unscheduled_students=unscheduled_students,
-                        paused_str=paused_str, tutors_attention=tutors_attention, message=message,
-                        author=author, weekly_data=weekly_data, full_name=full_name)
+                        unscheduled_students=unscheduled_students, paused_str=paused_str,
+                        tutors_attention=tutors_attention, message=message, author=author,
+                        weekly_data=weekly_data, full_name=full_name)
                 }
             ]
         }
@@ -945,7 +945,7 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
     return result.status_code
 
 
-def send_script_status_email(name, messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, result, exception=''):
+def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -965,7 +965,8 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                     ],
                     "Subject": name + " " + result,
                     "HTMLPart": render_template('email/script-status-email.html',
-                        low_scheduled_students=low_scheduled_students, messages=messages,
+                        messages=messages, low_scheduled_students=low_scheduled_students,
+                        unscheduled_students=unscheduled_students, other_scheduled_students=other_scheduled_students, 
                         status_updates=status_updates, tutors_attention=tutors_attention,
                         add_students_to_db=add_students_to_db, exception=exception)
                 }

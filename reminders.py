@@ -359,20 +359,20 @@ def main():
                 if any(full_name(tutor) in s['tutors'] for s in student_data):
                     send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
 
-            send_weekly_report_email(my_session_count, my_tutoring_hours,
-                other_session_count, other_tutoring_hours, low_scheduled_students,
-                unscheduled_students, paused_students, tutors_attention, weekly_data, now)
+            send_weekly_report_email(my_session_count, my_tutoring_hours, other_session_count,
+                other_tutoring_hours, low_scheduled_students, unscheduled_students,
+                paused_students, tutors_attention, weekly_data, now)
         
         message, author, header = get_quote()
         msg = '\n' + message + " - " + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed:', traceback.format_exc() )
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, tutors_attention, add_students_to_db, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'failed', traceback.format_exc())
     
 
 def get_student_events(full_name):
