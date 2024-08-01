@@ -60,7 +60,6 @@ test_reminder_users = User.query.order_by(User.first_name).filter(
     User.test_dates).filter(User.test_reminders) #.options(joinedload('parent'), joinedload('tutor'))
 upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
 paused_students = students.filter(User.status == 'paused')
-scheduled_students = []
 unscheduled_students = []
 low_scheduled_students = []
 other_scheduled_students = []
@@ -276,11 +275,6 @@ def main():
                 }
 
                 student_data.append(s_data)
-
-                if s_data['next_session'] is None:
-                    unscheduled_students.append(s_data)
-                else:
-                    scheduled_students.append(s_data)
 
         for s in student_data:
             if s['next_session'] is None:
