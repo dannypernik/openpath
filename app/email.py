@@ -60,7 +60,7 @@ def send_contact_email(user, message, subject):
     }
 
     crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-    
+
     if crm_contact.status_code == 201:
         print('crm_contact passes')
         new_action = {
@@ -138,7 +138,7 @@ def send_reminder_email(event, student, tutor):
             cc_email.append({ "Email": tutor.email })
     if not reply_email:
         reply_email = app.config['MAIL_USERNAME']
-    
+
     dt = datetime.datetime
 
     start_time_utc = event['event']['start'].get('dateTime')
@@ -228,15 +228,15 @@ def send_session_recap_email(student, events):
         tutor = student.tutor
         if tutor.session_reminders:
             cc_email.append({ "Email": tutor.email })
-    
+
         reply_email = tutor.email
         if reply_email == '':
             reply_email = app.config['MAIL_USERNAME']
-    
+
     tz_difference = student.timezone - tutor.timezone
 
     dt = datetime.datetime
-    
+
 
     session_date = dt.strftime(student.date, format="%A, %b %-d")
 
@@ -250,7 +250,7 @@ def send_session_recap_email(student, events):
         timezone = "Eastern"
     else:
         timezone = "your"
-    
+
     event_details = []
     alerts = []
     location = None
@@ -264,7 +264,7 @@ def send_session_recap_email(student, events):
         end_offset = dt.strptime(end_time_formatted, "%Y-%m-%dT%H:%M:%S%z") + datetime.timedelta(hours = tz_difference)
         start_display = dt.strftime(start_offset, "%-I:%M%p").lower()
         end_display = dt.strftime(end_offset, "%-I:%M%p").lower()
-        
+
         event_details.append({
             'date': start_date,
             'start': start_display,
@@ -278,7 +278,7 @@ def send_session_recap_email(student, events):
 
     if alerts.__len__() > 0:
         send_notification_email(alerts)
-        
+
     warnings = []
     warnings_str = ''
 
@@ -373,7 +373,7 @@ def send_registration_reminder_email(user, test_date):
         td = test_date.date.strftime('%B %-d')
         reg_dl = test_date.reg_date.strftime('%A, %B %-d')
         reg_dl_day = test_date.reg_date.strftime('%A')
-        
+
         if test_date.late_date is not None:
             late_dl = test_date.late_date.strftime('%A, %B %-d')
         else:
@@ -399,7 +399,7 @@ def send_registration_reminder_email(user, test_date):
                 }
             ]
         }
-        
+
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
@@ -449,7 +449,7 @@ def send_late_registration_reminder_email(user, test_date):
                 }
             ]
         }
-        
+
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
@@ -498,7 +498,7 @@ def send_test_reminder_email(user, test_date):
                 }
             ]
         }
-        
+
         result = mailjet.send.create(data=data)
 
         if result.status_code == 200:
@@ -542,7 +542,7 @@ def send_signup_notification_email(user, dates):
     }
 
     crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-    
+
     if crm_contact.status_code == 201:
         print('crm_contact passes')
         new_action = {
@@ -617,7 +617,7 @@ def send_password_reset_email(user, page=None):
         pw_type = 'set'
     else:
         pw_type = 'reset'
-    
+
     purpose = ''
     if page == 'test_reminders':
         purpose = ' to get test reminders'
@@ -689,7 +689,7 @@ def send_test_strategies_email(student, parent, relation):
     }
 
     crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-    
+
     if crm_contact.status_code == 201:
         print('crm_contact passes')
         new_action = {
@@ -821,7 +821,7 @@ def send_score_analysis_email(student, parent, school):
     }
 
     crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-    
+
     if crm_contact.status_code == 201:
         print('crm_contact passes')
         new_action = {
@@ -861,7 +861,7 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
             'Messages': [
                 {
                     "From": {
-                        "Email": app.config['MAIL_USERNAME'],
+                        "Email": app.config['ADMIN_EMAIL'],
                         "Name": "Open Path Tutoring"
                     },
                     "To": [
@@ -869,12 +869,11 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
                         "Email": tutor.email
                         }
                     ],
-                    "Cc": [
+                    "Bcc": [
                         {
-                        "Email": app.config['MAIL_USERNAME']
+                        "Email": app.config['ADMIN_EMAIL']
                         }
                     ],
-                    "ReplyTo": { "Email": app.config['MAIL_USERNAME'] },
                     "Subject": 'OPT weekly report' + action_str,
                     "HTMLPart": render_template('email/tutor-email.html', tutor=tutor,
                         low_scheduled_students=low_scheduled_students, other_scheduled_students=other_scheduled_students,
@@ -928,7 +927,7 @@ def send_weekly_report_email(my_session_count, my_tutoring_hours,
                     ],
                     "Subject": "Admin tutoring report for " + start_date + " to " + end_date,
                     "HTMLPart": render_template('email/weekly-report-email.html',
-                        my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count, 
+                        my_tutoring_hours=my_tutoring_hours, my_session_count=my_session_count,
                         other_tutoring_hours=other_tutoring_hours, other_session_count=other_session_count,
                         unscheduled_students=unscheduled_students, paused_str=paused_str,
                         tutors_attention=tutors_attention, message=message, author=author,
@@ -966,7 +965,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                     "Subject": name + " " + result,
                     "HTMLPart": render_template('email/script-status-email.html',
                         messages=messages, low_scheduled_students=low_scheduled_students,
-                        unscheduled_students=unscheduled_students, other_scheduled_students=other_scheduled_students, 
+                        unscheduled_students=unscheduled_students, other_scheduled_students=other_scheduled_students,
                         status_updates=status_updates, tutors_attention=tutors_attention,
                         add_students_to_db=add_students_to_db, exception=exception)
                 }
