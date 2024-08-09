@@ -6,7 +6,7 @@
       {{ m }}<br>
     {% endfor %}
   </p>
-  
+
   {% if status_updates %}
     <p>
       Status updates:<br>
@@ -15,23 +15,29 @@
       {% endfor %}
     </p>
   {% endif %}
-  
-  {% if low_scheduled_students %}
-    <strong>Students with low hours for...</strong><br>
-    {% for t in tutors_attention %}
-      <strong>{{ t }}</strong>
-      <ul>
-        {% for s in low_scheduled_students %}
-          {% if t in s['tutors'] %}
-            <li>
-              {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endfor %}
-  {% endif %}
-  
+
+  {% for t in tutors_attention %}
+    <strong>{{ t }}</strong>
+
+    <ul>
+      {% for s in low_scheduled_students %}
+        {% if t in s['tutors'] %}
+          <li>
+            {{ s['name'] }} low ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% for s in unscheduled_students %}
+        {% if full_name(tutor) in s['tutors'] %}
+          <li>
+            {{ s['name'] }} unscheduled ({{ s['hours'] }} hrs remaining)
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endfor %}
+
   {% if add_students_to_db %}
     <p>
       Add students to database:<br>
@@ -40,6 +46,6 @@
       {% endfor %}
     </p>
   {% endif %}
-  
+
   <p>{{ exception }}</p>
 {% endblock content %}
