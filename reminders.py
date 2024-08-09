@@ -26,18 +26,11 @@ session = db.session
 now = datetime.datetime.utcnow()
 now_str = now.isoformat() + 'Z'
 now_tz_aware = pytz.utc.localize(now)
-today = datetime.date.today()
-day_of_week = datetime.datetime.strftime(now, format="%A")
 upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
 upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
-bimonth_end = now + datetime.timedelta(days=70)
-bimonth_end_str = bimonth_end.isoformat() + 'Z'
-bimonth_events = []
-events_by_week = []
-upcoming_events = []
-tutoring_events = []
-my_tutoring_events = []
+today = datetime.date.today()
+day_of_week = datetime.datetime.strftime(now, format="%A")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -89,6 +82,9 @@ def get_events_and_data():
 
     # Call the Calendar API
     service_cal = build('calendar', 'v3', credentials=creds)
+    bimonth_end = now + datetime.timedelta(days=70)
+    bimonth_end_str = bimonth_end.isoformat() + 'Z'
+    bimonth_events = []
 
     # Collect next 2 months of events for all calendars
     for cal in calendars:
@@ -116,11 +112,14 @@ def get_events_and_data():
         messages.append(msg)
         return
 
-    return bimonth_events, summary_data
+    return bimonth_events, summary_data, now_tz_aware
 
 
 def get_upcoming_events():
-    bimonth_events, summary_data = get_events_and_data()
+    bimonth_events, summary_data, now_tz_aware = get_events_and_data()
+
+    events_by_week = []
+    upcoming_events = []
 
     # Collect necessary event information
     for e in bimonth_events:
@@ -168,9 +167,11 @@ def main():
         other_scheduled_students = []
         status_updates = []
         student_data = []
+        tutors_attention = set()
+        tutoring_events = []
+        my_tutoring_events = []
         add_students_to_db = []
         messages = []
-        tutors_attention = set()
 
 
         events_by_week, upcoming_events, bimonth_events, \
