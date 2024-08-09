@@ -15,11 +15,29 @@ from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_weekly_report_email, send_script_status_email, send_tutor_email
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, sessionmaker
 import requests
 import traceback
 from pprint import pprint
 
+# Create a new session
+session = db.session
+
+now = datetime.datetime.utcnow()
+now_str = now.isoformat() + 'Z'
+now_tz_aware = pytz.utc.localize(now)
+today = datetime.date.today()
+day_of_week = datetime.datetime.strftime(now, format="%A")
+upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
+upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
+upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
+bimonth_end = now + datetime.timedelta(days=70)
+bimonth_end_str = bimonth_end.isoformat() + 'Z'
+bimonth_events = []
+events_by_week = []
+upcoming_events = []
+tutoring_events = []
+my_tutoring_events = []
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -37,37 +55,6 @@ calendars = [
     { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
     { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' }
 ]
-
-now = datetime.datetime.utcnow()
-now_str = now.isoformat() + 'Z'
-now_tz_aware = pytz.utc.localize(now)
-today = datetime.date.today()
-day_of_week = datetime.datetime.strftime(now, format="%A")
-upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
-upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
-upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
-bimonth_end = now + datetime.timedelta(days=70)
-bimonth_end_str = bimonth_end.isoformat() + 'Z'
-bimonth_events = []
-events_by_week = []
-upcoming_events = []
-tutoring_events = []
-my_tutoring_events = []
-students = User.query.order_by(User.first_name).filter(User.role == 'student')
-tutors = User.query.order_by(User.id.desc()).filter(User.role == 'tutor')
-test_dates = TestDate.query.all()
-test_reminder_users = User.query.order_by(User.first_name).filter(
-    User.test_dates).filter(User.test_reminders) #.options(joinedload('parent'), joinedload('tutor'))
-upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
-paused_students = students.filter(User.status == 'paused')
-unscheduled_students = []
-low_scheduled_students = []
-other_scheduled_students = []
-status_updates = []
-student_data = []
-add_students_to_db = []
-messages = []
-tutors_attention = set()
 
 
 def get_events_and_data():
@@ -163,15 +150,32 @@ def get_upcoming_events():
 
         if upcoming_start < e_start <= upcoming_end:
             upcoming_events.append(e)
-    
+
     return events_by_week, upcoming_events, bimonth_events, summary_data
 
 
 def main():
     try:
+        students = session.query(User).order_by(User.first_name).filter(User.role == 'student')
+        tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
+        test_dates = session.query(TestDate).all()
+        test_reminder_users = session.query(User).order_by(User.first_name).filter(
+            User.test_dates).filter(User.test_reminders) #.options(joinedload('parent'), joinedload('tutor'))
+        upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
+        paused_students = students.filter(User.status == 'paused')
+        unscheduled_students = []
+        low_scheduled_students = []
+        other_scheduled_students = []
+        status_updates = []
+        student_data = []
+        add_students_to_db = []
+        messages = []
+        tutors_attention = set()
+
+
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
-        
+
         msg = "\nSession reminders for " + upcoming_start_formatted + ":"
         print(msg)
         messages.append(msg)
@@ -186,7 +190,7 @@ def main():
                     msg = send_reminder_email(e, student, get_tutor_from_name(e['tutor']))
                     print(msg)
                     messages.append(msg)
-        
+
         if reminder_count == 0:
             msg = "No reminders sent."
             print(msg)
@@ -223,7 +227,7 @@ def main():
                             print(msg)
                             status_updates.append(msg)
                         except Exception:
-                            err_msg = name + ' DB status update failed: ' + traceback.format_exc() 
+                            err_msg = name + ' DB status update failed: ' + traceback.format_exc()
                             print(err_msg)
                             messages.append(err_msg)
 
@@ -232,13 +236,13 @@ def main():
                         msg = name + ' is scheduled next week. Change status to active.'
                         print(msg)
                         status_updates.append(msg)
-            
+
                     ss_status = row[1]
                     ss_hours = float(row[3])
                     ss_tutors = row[6].split(', ')
                     ss_pay_type = row[5]
                     break
-            
+
             if ss_status in {'Active', 'Prospective'}:
                 for e in events_by_week:
                     if name in e['name']:
@@ -257,7 +261,7 @@ def main():
                                 next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
                                 next_tutor = e['tutor']
                             if ss_hours < 0:
-                                repurchase_deadline = 'ASAP'  
+                                repurchase_deadline = 'ASAP'
                             elif bimonth_hours > ss_hours and repurchase_deadline is None:
                                 rep_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
@@ -348,7 +352,7 @@ def main():
             for e in my_tutoring_events:
                 weekly_data[e['time_group']][e['week_num']] += e['hours']
                 weekly_data['sessions'][e['week_num']] += 1
-            
+
             for tutor in tutors:
                 if any(full_name(tutor) in s['tutors'] for s in student_data):
                     send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
@@ -356,7 +360,7 @@ def main():
             send_weekly_report_email(my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students,
                 paused_students, tutors_attention, weekly_data, now)
-        
+
         message, author, header = get_quote()
         msg = '\n' + message + " - " + author
         print(msg)
@@ -367,7 +371,10 @@ def main():
     except Exception:
         print('Script failed:', traceback.format_exc() )
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'failed', traceback.format_exc())
-    
+
+    finally:
+        session.close()
+
 
 def get_student_events(full_name):
     student_events = []
@@ -376,7 +383,7 @@ def get_student_events(full_name):
     for event in bimonth_events:
         if full_name in event.get('summary'):
             student_events.append(event)
-    
+
     return student_events
 
 
