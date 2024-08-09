@@ -188,7 +188,7 @@ def main():
                 name = full_name(student)
                 if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
                     reminder_count += 1
-                    msg = send_reminder_email(e, student, get_tutor_from_name(e['tutor']))
+                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
                     print(msg)
                     messages.append(msg)
 
@@ -388,7 +388,7 @@ def get_student_events(full_name):
     return student_events
 
 
-def get_tutor_from_name(name):
+def get_tutor_from_name(tutors, name):
     for tutor in tutors:
         if full_name(tutor) == name:
             return tutor
