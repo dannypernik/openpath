@@ -5,11 +5,11 @@
     Hi {{ tutor.first_name }}, here's your weekly tutoring report:
   </p>
 
-  {% if low_scheduled_students %}
+  {% if my_low_students %}
     <strong>These students need hours added before your next session</strong><br>
     <span>(or Danny just needs to pay you)</span>
     <ul style="margin-top: 5px; padding-left: 15px">
-      {% for s in low_scheduled_students %}
+      {% for s in my_low_students %}
         {% if full_name(tutor) in s['tutors'] %}
           <li>
             {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
@@ -19,14 +19,14 @@
     </ul>
   {% endif %}
 
-  {% if unscheduled_students %}
+  {% if my_unscheduled_students %}
     <strong>Unscheduled students</strong><br>
     <span>
       Please reach out to parents and students, or reply here to let Danny know why
       a student should be marked as Paused or Inactive.
     </span>
     <ul>
-      {% for s in unscheduled_students %}
+      {% for s in my_unscheduled_students %}
         {% if full_name(tutor) in s['tutors'] %}
           <li>
             {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
@@ -36,11 +36,10 @@
     </ul>
   {% endif %}
 
-  {% if other_scheduled_students %}
-    <strong>Next session for students without low hours</strong><br>
-    <span>No action required</span>
+  {% if my_scheduled_students %}
+    <strong>Scheduled students, no action required:</strong>
     <ul>
-      {% for s in other_scheduled_students %}
+      {% for s in my_scheduled_students %}
         {% if full_name(tutor) in s['tutors'] %}
           <li style="margin-left: -15px">
             {{ s['name'] }}

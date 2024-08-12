@@ -849,9 +849,24 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    if low_scheduled_students:
+    my_low_students = []
+    for s in low_scheduled_students:
+        if full_name(tutor) in s['tutors']:
+            my_low_students.append(s)
+
+    my_unscheduled_students = []
+    for s in unscheduled_students:
+        if full_name(tutor) in s['tutors']:
+            my_unscheduled_students.append(s)
+
+    my_scheduled_students = []
+    for s in other_scheduled_students:
+        if full_name(tutor) in s['tutors']:
+            my_scheduled_students.append(s)
+
+    if my_low_students:
         action_str = " - Action required"
-    elif unscheduled_students:
+    elif my_unscheduled_students:
         action_str = " - Action requested"
     else:
         action_str = ""
@@ -876,21 +891,18 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
                     ],
                     "Subject": 'OPT weekly report' + action_str,
                     "HTMLPart": render_template('email/tutor-email.html', tutor=tutor,
-                        low_scheduled_students=low_scheduled_students, other_scheduled_students=other_scheduled_students,
-                        unscheduled_students=unscheduled_students, full_name=full_name)
+                        my_low_students=my_low_students, my_scheduled_students=my_scheduled_students,
+                        my_unscheduled_students=my_unscheduled_students, full_name=full_name)
                 }
             ]
         }
 
-    if len(unscheduled_students) + len(low_scheduled_students) + len(other_scheduled_students) > 0:
-        result = mailjet.send.create(data=data)
-        if result.status_code == 200:
-            print("Tutor email sent to " + full_name(tutor))
-        else:
-            print("Tutor email to " + full_name(tutor) + " failed to send with code " + result.status_code, result.reason)
-        return result.status_code
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print("Tutor email sent to " + full_name(tutor))
     else:
-        print('No students for ' + full_name(tutor))
+        print("Tutor email to " + full_name(tutor) + " failed to send with code " + result.status_code, result.reason)
+    return result.status_code
 
 
 def send_weekly_report_email(my_session_count, my_tutoring_hours,

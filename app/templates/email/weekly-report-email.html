@@ -9,23 +9,23 @@
     An additional {{ other_tutoring_hours }} hours ({{ other_session_count }} sessions)
     are scheduled with other tutors for {{ other_student_count }} students.
   </p>
-  
-  {% for t in tutors_attention %}
+
+  {% for tutor in tutors_attention %}
     <p style="margin-bottom: 10px">
-      <strong>{{ full_name(t) }}'s students requiring attention</strong>
+      <strong>{{ tutor }}'s students requiring attention</strong>
     </p>
-    
+
     <ul style="margin-top:10px; padding-left:15px">
       {% for s in low_scheduled_students %}
-        {% if full_name(t) in s['tutors'] %}
+        {% if tutor in s['tutors'] %}
           <li>
             {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
           </li>
         {% endif %}
       {% endfor %}
-  
+
       {% for s in unscheduled_students %}
-        {% if full_name(t) in s['tutors'] %}
+        {% if tutor in s['tutors'] %}
           <li>
             {{ s['name'] }} (Unscheduled, {{ s['hours'] }} hrs remaining)
           </li>
@@ -36,7 +36,7 @@
   <p>
     Paused students: {{ paused_str }}
   </p>
-  
+
   <table>
     <thead style="font-weight: bold">
       <td>Week of</td>
@@ -67,7 +67,7 @@
       {% endfor %}
     </tbody>
   </table>
-  
+
   <p>
     <strong>Random inspirational quote of the day</strong><br/>
     {{ message }}<br/>

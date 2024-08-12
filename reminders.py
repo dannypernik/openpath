@@ -319,7 +319,7 @@ def main():
 
 
         ### send weekly reports
-        if day_of_week == 'Sunday':
+        if day_of_week == 'Monday':
             my_session_count = 0
             my_student_count = 0
             my_tutoring_hours = 0
@@ -355,7 +355,7 @@ def main():
                 weekly_data['sessions'][e['week_num']] += 1
 
             for tutor in tutors:
-                if any(full_name(tutor) in s['tutors'] for s in student_data):
+                if full_name(tutor) in tutors_attention:
                     send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
 
             send_weekly_report_email(my_session_count, my_tutoring_hours, other_session_count,

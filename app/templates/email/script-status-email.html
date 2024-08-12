@@ -29,7 +29,7 @@
       {% endfor %}
 
       {% for s in unscheduled_students %}
-        {% if full_name(tutor) in s['tutors'] %}
+        {% if t in s['tutors'] %}
           <li>
             {{ s['name'] }} unscheduled ({{ s['hours'] }} hrs remaining)
           </li>
