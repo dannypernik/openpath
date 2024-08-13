@@ -19,6 +19,7 @@
   {% for t in tutors_attention %}
     <strong>{{ t }}</strong>
 
+    <span>Low hours:</span>
     <ul>
       {% for s in low_scheduled_students %}
         {% if t in s['tutors'] %}
@@ -27,11 +28,14 @@
           </li>
         {% endif %}
       {% endfor %}
+    </ul>
 
+    <span>Unscheduled:</span>
+    <ul>
       {% for s in unscheduled_students %}
         {% if t in s['tutors'] %}
           <li>
-            {{ s['name'] }} unscheduled ({{ s['hours'] }} hrs remaining)
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
           </li>
         {% endif %}
       {% endfor %}
