@@ -20,29 +20,44 @@
     <strong>{{ t }}</strong>
 
     <ul>
-      <li>Students with low hours:</li>
-      <ul>
-        {% for s in low_scheduled_students %}
-          {% if t in s['tutors'] %}
-            <li>
-              {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
-            </li>
+      {% set low = namespace(first=true) %}
+      {% for s in low_scheduled_students %}
+        {% if t in s['tutors'] %}
+          {% if low.first %}
+            <li>Students with low hours:</li>
+            <ul>
+            {% set low.first = false %}
           {% endif %}
-        {% endfor %}
-      </ul>
+
+          <li>
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if not low.first %}
+        </ul>
+      {% endif %}
     </ul>
 
     <ul>
-      <li>Unscheduled students:</li>
-      <ul>
-        {% for s in unscheduled_students %}
-          {% if t in s['tutors'] %}
-            <li>
-              {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
-            </li>
+      {% set unscheduled = namespace(first=true) %}
+      {% for s in unscheduled_students %}
+        {% if t in s['tutors'] %}
+          {% if unscheduled.first %}
+            <li>Unscheduled students:</li>
+            <ul>
+            {% set unscheduled.first = false %}
           {% endif %}
-        {% endfor %}
-      </ul>
+
+          <li>
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if not unscheduled.first %}
+        </ul>
+      {% endif %}
     </ul>
   {% endfor %}
 

@@ -285,7 +285,7 @@ def main():
             if s['next_session'] is None:
                 unscheduled_students.append(s)
                 tutors_attention.update(s['tutors'])
-            elif (s['hours'] < s['hours_this_week'] or s['hours'] < 0) and s['pay_type'] == 'Package' :
+            elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['pay_type'] == 'Package' :
                 low_scheduled_students.append(s)
                 tutors_attention.update(s['tutors'])
             else:
