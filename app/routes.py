@@ -65,29 +65,29 @@ def index():
             pass
         else:
             flash('A computer has questioned your humanity. Please try again.', 'error')
-            return redirect(url_for('index', _anchor="home"))
+            return redirect(url_for('index', _anchor='home'))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
         # new_contact = {
-        #     "first_name": user.first_name, "last_name": "OPT web form", \
-        #     "emails": [{ "type": "home", "value": user.email}], \
-        #     "phones": [{ "type": "mobile", "value": user.phone}], \
-        #     "tags": ["Website"]
+        #     'first_name': user.first_name, 'last_name': 'OPT web form', \
+        #     'emails': [{ 'type': 'home', 'value': user.email}], \
+        #     'phones': [{ 'type': 'mobile', 'value': user.phone}], \
+        #     'tags': ['Website']
         # }
-        # crm_contact = requests.post("https://app.onepagecrm.com/api/v3/contacts", json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        # crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
         # if crm_contact.status_code == 201:
         #     print('crm_contact passes')
         #     new_action = {
-        #         "contact_id": crm_contact.json()['data']['contact']['id'],
-        #         "assignee_id": app.config['ONEPAGECRM_ID'],
-        #         "status": "asap",
-        #         "text": "Respond to OPT web form",
-        #         #"date": ,
-        #         #"exact_time": 1526472000,
-        #         #"position": 1
+        #         'contact_id': crm_contact.json()['data']['contact']['id'],
+        #         'assignee_id': app.config['ONEPAGECRM_ID'],
+        #         'status': 'asap',
+        #         'text': 'Respond to OPT web form',
+        #         #'date': ,
+        #         #'exact_time': 1526472000,
+        #         #'position': 1
         #     }
-        #     crm_action = requests.post("https://app.onepagecrm.com/api/v3/actions", json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        #     crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
         #     print('crm_action:', crm_action)
 
         email_status = send_contact_email(user, message, subject)
@@ -95,18 +95,18 @@ def index():
             conf_status = send_confirmation_email(user, message)
             if conf_status == 200:
                 flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
-                return redirect(url_for('index', _anchor="home"))
+                return redirect(url_for('index', _anchor='home'))
         flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
 
 
 @app.route('/about')
 def about():
-    return render_template('about.html', title="About")
+    return render_template('about.html', title='About')
 
 @app.route('/reviews')
 def reviews():
-    return render_template('reviews.html', title="Reviews")
+    return render_template('reviews.html', title='Reviews')
 
 
 @app.route('/signin', methods=['GET', 'POST'])
@@ -142,7 +142,7 @@ def signup():
         email_status = send_verification_email(user)
         login_user(user)
         if email_status == 200:
-            flash("Welcome! Please check your inbox to verify your email.")
+            flash('Welcome! Please check your inbox to verify your email.')
         else:
             flash('Verification email failed to send, please contact ' + hello, 'error')
         if not next or url_parse(next).netloc != '':
@@ -297,7 +297,7 @@ def users():
             flash(user.first_name + ' could not be added', 'error')
             return redirect(url_for('users'))
         return redirect(url_for('users'))
-    return render_template('users.html', title="Users", form=form, users=users, roles=roles, \
+    return render_template('users.html', title='Users', form=form, users=users, roles=roles, \
         full_name=full_name, proper=proper)
 
 
@@ -316,7 +316,7 @@ def edit_user(id):
     form.tutor_id.choices = tutor_list
     registered_tests = []
     interested_tests = []
-    
+
     if form.validate_on_submit():
         if 'save' in request.form:
             user.first_name=form.first_name.data
@@ -371,7 +371,7 @@ def edit_user(id):
             return redirect(url_for(user.role + 's'))
         else:
             return redirect(url_for('users'))
-    elif request.method == "GET":
+    elif request.method == 'GET':
         form.first_name.data=user.first_name
         form.last_name.data=user.last_name
         form.email.data=user.email
@@ -435,7 +435,7 @@ def students():
                 session_reminders=True, test_reminders=True)
         else:
             parent = User.query.filter_by(id=form.parent_id.data).first()
-            
+
 
         try:
             db.session.add(parent)
@@ -455,7 +455,7 @@ def students():
             return redirect(url_for('students'))
         flash(student.first_name + ' added')
         return redirect(url_for('students'))
-    return render_template('students.html', title="Students", form=form, students=students, \
+    return render_template('students.html', title='Students', form=form, students=students, \
         statuses=statuses, upcoming_dates=upcoming_dates, tests=tests, other_students=other_students, \
         full_name=full_name, proper=proper)
 
@@ -466,7 +466,7 @@ def tutors():
     form = TutorForm()
     tutors = User.query.order_by(User.id.desc() ).filter_by(role='tutor')
     statuses = User.query.filter_by(role='tutor').with_entities(User.status).distinct()
-    
+
     if form.validate_on_submit():
         tutor = User(first_name=form.first_name.data, last_name=form.last_name.data, \
             email=form.email.data.lower(), phone=form.phone.data, timezone=form.timezone.data, \
@@ -481,7 +481,7 @@ def tutors():
             flash(tutor.first_name + ' could not be added', 'error')
             return redirect(url_for('tutors'))
         return redirect(url_for('tutors'))
-    return render_template('tutors.html', title="Tutors", form=form, tutors=tutors, \
+    return render_template('tutors.html', title='Tutors', form=form, tutors=tutors, \
         statuses=statuses, full_name=full_name, proper=proper, )
 
 
@@ -505,13 +505,13 @@ def test_dates():
         try:
             db.session.add(date)
             db.session.commit()
-            flash(date.date.strftime('%b %-d') + " " + date.test.upper() + ' added')
+            flash(date.date.strftime('%b %-d') + ' ' + date.test.upper() + ' added')
         except:
             db.session.rollback()
             flash(date.date.strftime('%b %-d') + date.test.upper() + ' could not be added', 'error')
             return redirect(url_for('test_dates'))
         return redirect(url_for('test_dates'))
-    return render_template('test-dates.html', title="Test dates", form=form, tests=tests,
+    return render_template('test-dates.html', title='Test dates', form=form, tests=tests,
         upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates,
         upcoming_students=upcoming_students, undecided_students=undecided_students)
 
@@ -553,7 +553,7 @@ def edit_date(id):
         else:
             flash('Code error in POST request', 'error')
         return redirect(url_for('test_dates'))
-    elif request.method == "GET":
+    elif request.method == 'GET':
         form.test.data=date.test
         form.date.data=date.date
         form.reg_date.data=date.reg_date
@@ -607,7 +607,7 @@ def test_reminders():
         for d in upcoming_dates:
             if d in selected_dates:
                 selected_date_ids.append(d.id)
-    if request.method == "POST":
+    if request.method == 'POST':
         if hcaptcha.verify():
             pass
         else:
@@ -617,7 +617,7 @@ def test_reminders():
         if not current_user.is_authenticated:
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
-                user = User(first_name=form.first_name.data, last_name="", email=form.email.data.lower()) 
+                user = User(first_name=form.first_name.data, last_name='', email=form.email.data.lower())
             if not user.password_hash:   # User does not have password
                 email_status = send_password_reset_email(user, 'test_reminders')
             else:   # User has saved password
@@ -637,7 +637,7 @@ def test_reminders():
                 flash('Test dates updated')
             else:
                 if email_status == 200:
-                    flash("Test dates updated. Please check your inbox to verify your email.")
+                    flash('Test dates updated. Please check your inbox to verify your email.')
                 else:
                     flash('Verification email did not send. Please contact ' + hello, 'error')
         except:
@@ -789,7 +789,7 @@ def kaps():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_prep_class_email(student, parent, school, test, time, location, cost) 
+        email_status = send_prep_class_email(student, parent, school, test, time, location, cost)
         if email_status == 200:
             return render_template('registration-confirmed.html', email=form.parent_email.data)
         else:
@@ -857,7 +857,7 @@ def spartans():
 
 @app.route('/sat-act-data')
 def sat_act_data():
-    return render_template('sat-act-data.html', title="SAT & ACT data")
+    return render_template('sat-act-data.html', title='SAT & ACT data')
 
 
 @app.route('/test-strategies', methods=['GET', 'POST'])
@@ -903,21 +903,21 @@ def ntpa():
             flash('We\'ve received your request and will be in touch!')
         else:
             flash('Request did not send, please retry or contact ' + hello, 'error')
-    return render_template('ntpa.html', form=form)    
+    return render_template('ntpa.html', form=form)
 
 
 @app.route('/cal-check', methods=['POST'])
 def cal_check():
     if 1 == 0:
         send_schedule_conflict_email(request.json)
-    return ("", 200, None)
+    return ('', 200, None)
 
 
 @app.route('/pay')
 def pay():
     return redirect('https://link.waveapps.com/4yu6up-ne82sd')
 
-@app.route("/download/<filename>")
+@app.route('/download/<filename>')
 def download_file (filename):
     path = os.path.join(app.root_path, 'static/files/')
     return send_from_directory(path, filename, as_attachment=False)
@@ -934,27 +934,27 @@ def webmanifest():
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
-@app.route("/sitemap")
-@app.route("/sitemap/")
-@app.route("/sitemap.xml")
+@app.route('/sitemap')
+@app.route('/sitemap/')
+@app.route('/sitemap.xml')
 def sitemap():
-    """
+    '''
         Route to dynamically generate a sitemap of your website/application.
         lastmod and priority tags omitted on static pages.
         lastmod included on dynamic content such as blog posts.
-    """
+    '''
     #from urllib.parse import urlparse
 
     host_components = url_parse(request.host_url)
-    host_base = host_components.scheme + "://" + host_components.netloc
+    host_base = host_components.scheme + '://' + host_components.netloc
 
     # Static routes with static content
     static_urls = list()
     for rule in app.url_map.iter_rules():
-        if not str(rule).startswith("/admin") and not str(rule).startswith("/user"):
-            if "GET" in rule.methods and len(rule.arguments) == 0:
+        if not str(rule).startswith('/admin') and not str(rule).startswith('/user'):
+            if 'GET' in rule.methods and len(rule.arguments) == 0:
                 url = {
-                    "loc": f"{host_base}{str(rule)}"
+                    'loc': f'{host_base}{str(rule)}'
                 }
                 static_urls.append(url)
 
@@ -963,14 +963,14 @@ def sitemap():
     # blog_posts = Post.objects(published=True)
     # for post in blog_posts:
     #     url = {
-    #         "loc": f"{host_base}/blog/{post.category.name}/{post.url}",
-    #         "lastmod": post.date_published.strftime("%Y-%m-%dT%H:%M:%SZ")
+    #         'loc': f'{host_base}/blog/{post.category.name}/{post.url}',
+    #         'lastmod': post.date_published.strftime('%Y-%m-%dT%H:%M:%SZ')
     #         }
     #     dynamic_urls.append(url)
 
     xml_sitemap = render_template('sitemap/sitemap.xml', static_urls=static_urls, host_base=host_base) #dynamic_urls=dynamic_urls)
     response = make_response(xml_sitemap)
-    response.headers["Content-Type"] = "application/xml"
+    response.headers['Content-Type'] = 'application/xml'
 
     return response
 

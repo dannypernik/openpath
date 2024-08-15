@@ -15,60 +15,60 @@ def validate_email(self, email):
 
 
 class InquiryForm(FlaskForm):
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address")])
-    phone = StringField('Phone number (optional)', render_kw={"placeholder": "Phone number (optional)"})
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    phone = StringField('Phone number (optional)', render_kw={'placeholder': 'Phone number (optional)'})
     subject = StringField('Subject', render_kw={'placeholder': 'Subject'}, default='Message')
-    message = TextAreaField('Message', render_kw={"placeholder": "Message"}, \
+    message = TextAreaField('Message', render_kw={'placeholder': 'Message'}, \
         validators=[InputRequired()])
     submit = SubmitField('Submit')
 
 
 class EmailListForm(FlaskForm):
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
     submit = SubmitField()
 
 
 class SignupForm(FlaskForm):
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
         validators=[InputRequired()])
-    password = PasswordField('Password', render_kw={"placeholder": "Password"}, \
+    password = PasswordField('Password', render_kw={'placeholder': 'Password'}, \
         validators=[InputRequired()])
-    password2 = PasswordField('Repeat Password', render_kw={"placeholder": "Repeat Password"}, \
-        validators=[InputRequired(), EqualTo('password',message="Passwords do not match.")])
+    password2 = PasswordField('Repeat Password', render_kw={'placeholder': 'Repeat Password'}, \
+        validators=[InputRequired(), EqualTo('password',message='Passwords do not match.')])
     submit = SubmitField('Sign up')
 
 
 class LoginForm(FlaskForm):
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address")])
-    password = PasswordField('Password', render_kw={"placeholder": "Password"}, \
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    password = PasswordField('Password', render_kw={'placeholder': 'Password'}, \
         validators=[InputRequired()])
     remember_me = BooleanField('Remember me')
     submit = SubmitField('Log in')
 
 
 class RequestPasswordResetForm(FlaskForm):
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address")])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
     submit = SubmitField('Request password reset')
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', render_kw={"placeholder": "New password"}, \
+    password = PasswordField('Password', render_kw={'placeholder': 'New password'}, \
         validators=[DataRequired()])
-    password2 = PasswordField('Repeat Password', render_kw={"placeholder": "Verify password"}, \
+    password2 = PasswordField('Repeat Password', render_kw={'placeholder': 'Verify password'}, \
         validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset password')
 
@@ -80,20 +80,20 @@ class ResetPasswordForm(FlaskForm):
 #     return User.query.filter_by(role='parent')
 
 # def full_name(User):
-#     return User.first_name + " " + User.last_name
+#     return User.first_name + ' ' + User.last_name
 
 
 class UserForm(FlaskForm):
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={"placeholder": "Last name"})
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address")])
-    phone = StringField('Phone', render_kw={"placeholder": "Phone"})
-    secondary_email = StringField('Secondary email', render_kw={"placeholder": "Secondary email"})
-    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'})
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    phone = StringField('Phone', render_kw={'placeholder': 'Phone'})
+    secondary_email = StringField('Secondary email', render_kw={'placeholder': 'Secondary email'})
+    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
-    location = StringField('Location', render_kw={"placeholder": "Location"})
+    location = StringField('Location', render_kw={'placeholder': 'Location'})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
         ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
@@ -120,25 +120,25 @@ class UserForm(FlaskForm):
 
 
 class StudentForm(FlaskForm):
-    student_name = StringField('Student first name', render_kw={"placeholder": "Student first name"}, \
+    student_name = StringField('Student first name', render_kw={'placeholder': 'Student first name'}, \
         validators=[InputRequired()])
-    student_last_name = StringField('Student last name', render_kw={"placeholder": "Student last name"})
-    student_email = EmailField('Student Email address', render_kw={"placeholder": "Student Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+    student_last_name = StringField('Student last name', render_kw={'placeholder': 'Student last name'})
+    student_email = EmailField('Student Email address', render_kw={'placeholder': 'Student Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
-    student_phone = StringField('Student phone', render_kw={"placeholder": "Student phone"})
+    student_phone = StringField('Student phone', render_kw={'placeholder': 'Student phone'})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
         ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
     parent_id = SelectField('Parent', coerce=int)
-    parent_name = StringField('Parent first name', render_kw={"placeholder": "Parent first name"})
-    parent_last_name = StringField('Parent last name', render_kw={"placeholder": "Parent last name"})
-    parent_email = EmailField('Parent Email address', render_kw={"placeholder": "Parent Email address"})
-    secondary_email = EmailField('Parent email 2', render_kw={"placeholder": "Parent email 2"})
-    parent_phone = StringField('Parent phone', render_kw={"placeholder": "Parent phone"})
-    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    parent_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'})
+    parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Parent last name'})
+    parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Parent Email address'})
+    secondary_email = EmailField('Parent email 2', render_kw={'placeholder': 'Parent email 2'})
+    parent_phone = StringField('Parent phone', render_kw={'placeholder': 'Parent phone'})
+    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
-    location = StringField('Location', render_kw={"placeholder": "Location"})
+    location = StringField('Location', render_kw={'placeholder': 'Location'})
     status = SelectField('Status', choices=[('active', 'Active'),('prospective','Prospective'), \
         ('paused','Paused'),('inactive','Inactive')])
     tutor_id = SelectField('Tutor', coerce=int)
@@ -146,15 +146,15 @@ class StudentForm(FlaskForm):
 
 
 class TutorForm(FlaskForm):
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
-    phone = StringField('Phone', render_kw={"placeholder": "Phone"})
-    timezone = StringField('Timezone', render_kw={"placeholder": "Timezone"}, \
+    phone = StringField('Phone', render_kw={'placeholder': 'Phone'})
+    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
     session_reminders = BooleanField('Session reminders')
     test_reminders = BooleanField('Test reminders')
@@ -177,35 +177,35 @@ class TestDateForm(FlaskForm):
 class RecapForm(FlaskForm):
     students = SelectField('Student name', coerce=int, validators=[InputRequired()])
     date = DateField('Session date', format='%Y-%m-%d', default=datetime.today, validators=[InputRequired()])
-    homework = TextAreaField('Homework', render_kw={"placeholder": "Homework", 'rows': '3'}, \
+    homework = TextAreaField('Homework', render_kw={'placeholder': 'Homework', 'rows': '3'}, \
         validators=[InputRequired()])
     audio = StringField('Audio recap link', render_kw={'placeholder': 'Audio recap link'})
     submit = SubmitField('Send')
 
 
 class NtpaForm(FlaskForm):
-    first_name = StringField('First name', render_kw={"placeholder": "First name"}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={"placeholder": "Last name"}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
         validators=[InputRequired()])
-    biz_name = StringField('Business name', render_kw={"placeholder": "Business name (optional)"})
-    email = EmailField('Email address', render_kw={"placeholder": "Email address"}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address"), \
+    biz_name = StringField('Business name', render_kw={'placeholder': 'Business name (optional)'})
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
-    submit = SubmitField('Submit')    
+    submit = SubmitField('Submit')
 
 
 class TestStrategiesForm(FlaskForm):
     first_name = StringField('Your first name', render_kw={'placeholder': 'Your first name'}, \
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
-        validators=[InputRequired(), Email(message="Please enter a valid email address")])
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
     relation = RadioField('I am a:', choices=[('parent','Parent'),('student','Student')], \
         validators=[InputRequired()])
     parent_name = StringField('Parent\'s name', render_kw={'placeholder': 'Parent\'s name'})
     parent_email = EmailField('Parent\'s email', render_kw={'placeholder': 'Parent\'s email'})
     student_name = StringField('Student\'s name', render_kw={'placeholder': 'Student\'s name'})
-    #pronouns = RadioField('Student\'s preferred pronouns:', choices=[("he","He/him"),("she","She/her"),("they","They/them")], \
+    #pronouns = RadioField('Student\'s preferred pronouns:', choices=[('he','He/him'),('she','She/her'),('they','They/them')], \
     #    validators=[InputRequired()])
     submit = SubmitField('Send me 10 Strategies to Master the SAT & ACT')
 

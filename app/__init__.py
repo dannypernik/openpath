@@ -22,10 +22,10 @@ bootstrap = Bootstrap(app)
 hcaptcha = hCaptcha(app)
 
 def full_name(user):
-    if user.last_name == "" or user.last_name is None:
+    if user.last_name == '' or user.last_name is None:
         name = user.first_name
     else:
-        name = user.first_name + " " + user.last_name
+        name = user.first_name + ' ' + user.last_name
     return name
 
 from app import routes, models, errors

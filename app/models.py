@@ -10,8 +10,8 @@ class UserTestDate(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
     is_registered = db.Column(db.Boolean, default=False)
-    users = db.relationship("User", backref=db.backref('planned_tests', lazy='dynamic'))
-    test_dates = db.relationship("TestDate", backref=db.backref('users_interested', lazy='dynamic'))
+    users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'))
+    test_dates = db.relationship('TestDate', backref=db.backref('users_interested', lazy='dynamic'))
 
 
 class User(UserMixin, db.Model):
@@ -25,10 +25,10 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     timezone = db.Column(db.String(32))
     location = db.Column(db.String(128))
-    status = db.Column(db.String(24), default = "active", index=True)
+    status = db.Column(db.String(24), default = 'active', index=True)
     tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     students = db.relationship('User',
-        backref=db.backref('tutor', lazy='joined', remote_side=[id]), 
+        backref=db.backref('tutor', lazy='joined', remote_side=[id]),
         primaryjoin=(id==tutor_id),
         foreign_keys=[tutor_id])
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -58,12 +58,12 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
+
     def get_email_verification_token(self, expires_in=3600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
             app.config['SECRET_KEY'], algorithm='HS256')
-    
+
     def interested_test_date(self, test_date):
         if self.is_testing(test_date):
             t = self.test_dates.filter_by(test_date_id=test_date.id).first()
@@ -77,7 +77,7 @@ class User(UserMixin, db.Model):
         f = self.test_dates.filter_by(test_date_id=test_date.id).first()
         if f:
             db.session.delete(f)
-    
+
     def register_test_date(self, test_date):
         if self.is_testing(test_date):
             t = self.test_dates.filter_by(test_date_id=test_date.id).first()
@@ -91,17 +91,17 @@ class User(UserMixin, db.Model):
     def is_testing(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).count() > 0
-    
+
     def not_registered(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).filter(
             UserTestDate.is_registered).count() == 0
-    
+
     def is_registered(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).filter(
             UserTestDate.is_registered).count() > 0
-    
+
     def get_dates(self):
         return TestDate.query.join(
                 UserTestDate, (UserTestDate.test_date_id == TestDate.id)
@@ -121,12 +121,12 @@ class TestDate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     test = db.Column(db.String(24))
-    status = db.Column(db.String(24), default = "confirmed")
+    status = db.Column(db.String(24), default = 'confirmed')
     reg_date = db.Column(db.Date)
     late_date = db.Column(db.Date)
     other_date = db.Column(db.Date)
     score_date = db.Column(db.Date)
-    students = db.relationship('User', secondary="user_test_date", backref=db.backref('dates_interested'), lazy='dynamic')
+    students = db.relationship('User', secondary='user_test_date', backref=db.backref('dates_interested'), lazy='dynamic')
 
     def __repr__(self):
         return '<TestDate {}>'.format(self.date)

@@ -27,10 +27,10 @@ now = datetime.datetime.utcnow()
 now_str = now.isoformat() + 'Z'
 now_tz_aware = pytz.utc.localize(now)
 upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
-upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format="%A, %b %-d")
+upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
 upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
 today = datetime.date.today()
-day_of_week = datetime.datetime.strftime(now, format="%A")
+day_of_week = datetime.datetime.strftime(now, format='%A')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -51,8 +51,8 @@ calendars = [
 
 
 def get_events_and_data():
-    """
-    """
+    '''
+    '''
     flow = Flow.from_client_secrets_file(os.path.join(basedir, 'credentials.json'), SCOPES)
 
     authorization_url, state = flow.authorization_url(
@@ -177,7 +177,7 @@ def main():
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
 
-        msg = "\nSession reminders for " + upcoming_start_formatted + ":"
+        msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
         print(msg)
         messages.append(msg)
 
@@ -193,7 +193,7 @@ def main():
                     messages.append(msg)
 
         if reminder_count == 0:
-            msg = "No reminders sent."
+            msg = 'No reminders sent.'
             print(msg)
             messages.append(msg)
 
@@ -363,7 +363,7 @@ def main():
                 paused_students, tutors_attention, weekly_data, now)
 
         message, author, header = get_quote()
-        msg = '\n' + message + " - " + author
+        msg = '\n' + message + ' - ' + author
         print(msg)
         messages.append(msg)
         print('Script succeeded')
