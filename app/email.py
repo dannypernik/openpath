@@ -17,7 +17,7 @@ def get_quote():
         author = quote.json()[0]['a']
         header = 'Random inspirational quote of the day'
     except requests.exceptions.RequestException:
-        message = 'We don't have to do all of it alone. We were never meant to.'
+        message = 'We don\'t have to do all of it alone. We were never meant to.'
         author = 'Brene Brown'
         header = ''
     return message, author, header
