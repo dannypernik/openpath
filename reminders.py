@@ -319,7 +319,7 @@ def main():
 
 
         ### send weekly reports
-        if day_of_week == 'Monday':
+        if day_of_week == 'Sunday':
             my_session_count = 0
             my_student_count = 0
             my_tutoring_hours = 0
