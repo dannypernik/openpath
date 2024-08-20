@@ -24,11 +24,12 @@ from pprint import pprint
 session = db.session
 
 now = datetime.datetime.utcnow()
-now_str = now.isoformat() + 'Z'
-now_tz_aware = pytz.utc.localize(now)
-upcoming_start = now_tz_aware + datetime.timedelta(hours=42)
+bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
+bimonth_start_str = bimonth_start.isoformat() + 'Z'
+bimonth_start_tz_aware = pytz.utc.localize(bimonth_start)
+upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
-upcoming_end = now_tz_aware + datetime.timedelta(hours=66)
+upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=72)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
 
@@ -88,7 +89,7 @@ def get_events_and_data():
 
     # Collect next 2 months of events for all calendars
     for cal in calendars:
-        bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=now_str,
+        bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
             timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
         bimonth_events_result = bimonth_cal_events.get('items', [])
 
@@ -112,11 +113,11 @@ def get_events_and_data():
         messages.append(msg)
         return
 
-    return bimonth_events, summary_data, now_tz_aware
+    return bimonth_events, summary_data, bimonth_start_tz_aware
 
 
 def get_upcoming_events():
-    bimonth_events, summary_data, now_tz_aware = get_events_and_data()
+    bimonth_events, summary_data, bimonth_start_tz_aware = get_events_and_data()
 
     events_by_week = []
     upcoming_events = []
@@ -136,7 +137,7 @@ def get_upcoming_events():
         else:
             time_group = 'evening_hours'
 
-        week_num = max(1, math.ceil(((e_start - now_tz_aware).days + 1) / 7)) - 1
+        week_num = max(1, math.ceil(((e_start - bimonth_start_tz_aware).days + 1) / 7)) - 1
 
         events_by_week.append({
             'name': e['event'].get('summary'),
@@ -242,6 +243,7 @@ def main():
                     ss_hours = float(row[3])
                     ss_tutors = row[6].split(', ')
                     ss_pay_type = row[5]
+                    ss_last_session = datetime.datetime.strptime(row[12], '%m/%d/%Y')
                     break
 
             if ss_status in {'Active', 'Prospective'}:
@@ -259,8 +261,9 @@ def main():
                                 hours_this_week += e['hours']
                             if next_session is None:
                                 next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
-                                next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
-                                next_tutor = e['tutor']
+                                if next_date.date() != ss_last_session.date():
+                                    next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
+                                    next_tutor = e['tutor']
                             if ss_hours < 0:
                                 repurchase_deadline = 'ASAP'
                             elif bimonth_hours > ss_hours and repurchase_deadline is None:
