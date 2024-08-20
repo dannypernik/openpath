@@ -42,7 +42,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
-SUMMARY_RANGE = 'Student summary!A1:S'
+SUMMARY_RANGE = 'Student summary!A1:Z'
 calendars = [
     { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
@@ -241,9 +241,9 @@ def main():
 
                     ss_status = row[1]
                     ss_hours = float(row[3])
-                    ss_tutors = row[6].split(', ')
-                    ss_pay_type = row[5]
-                    ss_last_session = datetime.datetime.strptime(row[12], '%m/%d/%Y')
+                    ss_tutors = row[8].split(', ')
+                    ss_pay_type = row[7]
+                    ss_last_session = datetime.datetime.strptime(row[14], '%m/%d/%Y')
                     break
 
             if ss_status in {'Active', 'Prospective'}:
