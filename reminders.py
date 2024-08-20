@@ -110,7 +110,7 @@ def get_events_and_data():
     if not summary_data:
         msg = 'No summary data found.'
         print(msg)
-        messages.append(msg)
+        messages.extend([msg, ''])
         return
 
     return bimonth_events, summary_data, bimonth_start_tz_aware
@@ -180,7 +180,7 @@ def main():
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
         print(msg)
-        messages.append(msg)
+        messages.extend([msg, ''])
 
         # Send reminder email to students ~2 days in advance
         reminder_count = 0
@@ -366,9 +366,9 @@ def main():
                 paused_students, tutors_attention, weekly_data, now)
 
         message, author, header = get_quote()
-        msg = '\n' + message + ' - ' + author
+        msg = message + ' - ' + author
         print(msg)
-        messages.append(msg)
+        messages.extend(['', msg])
         print('Script succeeded')
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
 
