@@ -186,7 +186,7 @@ def main():
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
         print(msg)
-        messages.extend([msg, ''])
+        messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
         reminder_count = 0
@@ -203,8 +203,6 @@ def main():
             msg = 'No reminders sent.'
             print(msg)
             messages.append(msg)
-
-        messages.append('')
 
         bimonth_hours = 0
         for s in students:
@@ -226,6 +224,11 @@ def main():
                     break
 
                 if row[0] == name:
+                    initial_status = s.status
+                    # update DB status based on spreadsheet status
+                    if row[1] != s.status.title():
+                        s.status = row[1].lower()
+
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
                         sheet.update_cell(i+1, 2, 'Active')
@@ -233,20 +236,17 @@ def main():
                         msg = name + ' is scheduled soon. Status changed to Active.'
                         print(msg)
                         status_updates.append(msg)
-
-                    # Otherwise, update DB status based on spreadsheet status
-                    elif row[1] != s.status.title():
-                        s.status = row[1].lower()
-                    try:
-                        db.session.merge(s)
-                        db.session.commit()
-                        msg = name + ' DB status = ' + s.status
-                        print(msg)
-                        status_updates.append(msg)
-                    except Exception:
-                        err_msg = name + ' DB status update failed: ' + traceback.format_exc()
-                        print(err_msg)
-                        messages.append(err_msg)
+                    if initial_status != s.status:
+                        try:
+                            db.session.merge(s)
+                            db.session.commit()
+                            msg = name + ' DB status = ' + s.status
+                            print(msg)
+                            status_updates.append(msg)
+                        except Exception:
+                            err_msg = name + ' DB status update failed: ' + traceback.format_exc()
+                            print(err_msg)
+                            messages.append(err_msg)
 
                     ss_status = row[1]
                     ss_hours = float(row[3])
@@ -271,7 +271,7 @@ def main():
                             if next_session == '':
                                 next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                                 if next_date.date() != ss_last_session.date():
-                                    next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
+                                    next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
                             if ss_hours < 0:
                                 repurchase_deadline = 'ASAP'
