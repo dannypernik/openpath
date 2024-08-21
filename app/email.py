@@ -850,26 +850,26 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     my_low_students = []
+    action_str = None
     for s in low_scheduled_students:
         if full_name(tutor) in s['tutors']:
             my_low_students.append(s)
+            if action_str is None:
+                action_str = ' - Add hours by ' + s['deadline']
 
     my_unscheduled_students = []
     for s in unscheduled_students:
         if full_name(tutor) in s['tutors']:
             my_unscheduled_students.append(s)
+            if action_str is None:
+                action_str = ' - Action required'
 
     my_scheduled_students = []
     for s in other_scheduled_students:
         if full_name(tutor) in s['tutors']:
             my_scheduled_students.append(s)
-
-    if my_low_students:
-        action_str = ' - Action required'
-    elif my_unscheduled_students:
-        action_str = ' - Action requested'
-    else:
-        action_str = ''
+            if action_str is None:
+                action_str = ' - No action required'
 
     with app.app_context():
         data = {
@@ -961,6 +961,8 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
+    quote, author, header = get_quote()
+
     with app.app_context():
         data = {
             'Messages': [
@@ -979,7 +981,8 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                         messages=messages, low_scheduled_students=low_scheduled_students,
                         unscheduled_students=unscheduled_students, other_scheduled_students=other_scheduled_students,
                         status_updates=status_updates, tutors_attention=tutors_attention,
-                        add_students_to_db=add_students_to_db, exception=exception)
+                        add_students_to_db=add_students_to_db, exception=exception,
+                        quote=quote, author=author)
                 }
             ]
         }

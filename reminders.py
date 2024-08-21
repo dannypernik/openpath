@@ -52,6 +52,11 @@ calendars = [
     { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' }
 ]
 
+# gspread to write to spreadsheet
+service_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'service_account_key.json'), scopes=SCOPES)
+file = gspread.authorize(service_creds)
+workbook = file.open_by_key(SPREADSHEET_ID)
+sheet = workbook.sheet1
 
 def get_events_and_data():
     '''
@@ -176,7 +181,6 @@ def main():
         add_students_to_db = []
         messages = []
 
-
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
 
@@ -211,6 +215,7 @@ def main():
             next_session = ''
             hours_this_week = 0
             next_tutor = None
+            rep_date = None
             repurchase_deadline = None
 
             name = full_name(s)
@@ -221,27 +226,28 @@ def main():
                     break
 
                 if row[0] == name:
-                    # Update DB status based on spreadsheet status
-                    if row[1] != s.status.title():
-                        s.status = row[1].lower()
-                        try:
-                            db.session.merge(s)
-                            db.session.commit()
-                            msg = name + ' DB status = ' + s.status
-                            print(msg)
-                            status_updates.append(msg)
-                        except Exception:
-                            err_msg = name + ' DB status update failed: ' + traceback.format_exc()
-                            print(err_msg)
-                            messages.append(err_msg)
-
                     # check for students who should be listed as active
-                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] == 0 for event in events_by_week):
-                        msg = name + ' is scheduled next week. Change status to active.'
+                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
+                        sheet.update_cell(i+1, 2, 'Active')
+                        s.status = 'active'
+                        msg = name + ' is scheduled soon. Status changed to Active.'
                         print(msg)
                         status_updates.append(msg)
 
-                    ss_row = i
+                    # Otherwise, update DB status based on spreadsheet status
+                    elif row[1] != s.status.title():
+                        s.status = row[1].lower()
+                    try:
+                        db.session.merge(s)
+                        db.session.commit()
+                        msg = name + ' DB status = ' + s.status
+                        print(msg)
+                        status_updates.append(msg)
+                    except Exception:
+                        err_msg = name + ' DB status update failed: ' + traceback.format_exc()
+                        print(err_msg)
+                        messages.append(err_msg)
+
                     ss_status = row[1]
                     ss_hours = float(row[3])
                     ss_tutors = row[8].split(', ')
@@ -269,13 +275,14 @@ def main():
                                     next_tutor = e['tutor']
                             if ss_hours < 0:
                                 repurchase_deadline = 'ASAP'
-                            elif bimonth_hours > ss_hours and repurchase_deadline is None:
-                                rep_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                            elif bimonth_hours > ss_hours: #and repurchase_deadline is None:
+                                rep_date = next_date
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
+                                break
 
                 s_data = {
                     'name': name,
-                    'row': ss_row,
+                    'row': i+1,
                     'hours': ss_hours,
                     'status': ss_status,
                     'tutors': ss_tutors,
@@ -283,30 +290,24 @@ def main():
                     'next_session': next_session,
                     'next_tutor': next_tutor,
                     'hours_this_week' : hours_this_week,
+                    'rep_date': rep_date,
                     'deadline': repurchase_deadline
                 }
 
-                print(s_data['row'])
-
                 student_data.append(s_data)
 
-        # gspread to write to spreadsheet
-        service_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'service_account_key.json'), scopes=SCOPES)
-        file = gspread.authorize(service_creds)
-        workbook = file.open_by_key(SPREADSHEET_ID)
-        sheet = workbook.sheet1
-
         for s in student_data:
-            sheet.update_cell(int(s['row'])+1, 10, s['next_session'])
+            sheet.update_cell(s['row'], 10, s['next_session'])
+            tutors_attention.update(s['tutors'])
 
             if s['next_session'] == '':
                 unscheduled_students.append(s)
-                tutors_attention.update(s['tutors'])
             elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['pay_type'] == 'Package' :
                 low_scheduled_students.append(s)
-                tutors_attention.update(s['tutors'])
             else:
                 other_scheduled_students.append(s)
+
+        low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
 
         ### mark test dates as past
         for d in test_dates:
@@ -379,10 +380,6 @@ def main():
                 other_tutoring_hours, low_scheduled_students, unscheduled_students,
                 paused_students, tutors_attention, weekly_data, now)
 
-        message, author, header = get_quote()
-        msg = message + ' - ' + author
-        print(msg)
-        messages.extend(['', msg])
         print('Script succeeded')
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
 
