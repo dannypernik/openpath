@@ -5,6 +5,8 @@ from dateutil import tz
 import pytz
 import os.path
 import math
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.auth.transport.requests import Request
@@ -206,7 +208,7 @@ def main():
             ss_hours = None
             ss_tutors = []
             ss_pay_type = None
-            next_session = None
+            next_session = ''
             hours_this_week = 0
             next_tutor = None
             repurchase_deadline = None
@@ -239,6 +241,7 @@ def main():
                         print(msg)
                         status_updates.append(msg)
 
+                    ss_row = i
                     ss_status = row[1]
                     ss_hours = float(row[3])
                     ss_tutors = row[8].split(', ')
@@ -259,7 +262,7 @@ def main():
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
                                 hours_this_week += e['hours']
-                            if next_session is None:
+                            if next_session == '':
                                 next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                                 if next_date.date() != ss_last_session.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %-d')
@@ -272,6 +275,7 @@ def main():
 
                 s_data = {
                     'name': name,
+                    'row': ss_row,
                     'hours': ss_hours,
                     'status': ss_status,
                     'tutors': ss_tutors,
@@ -282,10 +286,20 @@ def main():
                     'deadline': repurchase_deadline
                 }
 
+                print(s_data['row'])
+
                 student_data.append(s_data)
 
+        # gspread to write to spreadsheet
+        service_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'service_account_key.json'), scopes=SCOPES)
+        file = gspread.authorize(service_creds)
+        workbook = file.open_by_key(SPREADSHEET_ID)
+        sheet = workbook.sheet1
+
         for s in student_data:
-            if s['next_session'] is None:
+            sheet.update_cell(int(s['row'])+1, 10, s['next_session'])
+
+            if s['next_session'] == '':
                 unscheduled_students.append(s)
                 tutors_attention.update(s['tutors'])
             elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['pay_type'] == 'Package' :
