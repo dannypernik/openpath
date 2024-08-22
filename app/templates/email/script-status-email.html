@@ -30,7 +30,7 @@
           {% endif %}
 
           <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on <strong>{{ s['deadline'] }}</strong>)
           </li>
         {% endif %}
       {% endfor %}
