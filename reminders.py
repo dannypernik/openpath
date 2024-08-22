@@ -249,7 +249,7 @@ def main():
                             messages.append(err_msg)
 
                     ss_status = row[1]
-                    ss_hours = float(row[3].replace('(','-').replace('(',''))
+                    ss_hours = float(row[3].replace('(','-').replace(')',''))
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
                     ss_last_session = datetime.datetime.strptime(row[14], '%m/%d/%Y')
