@@ -107,6 +107,8 @@ def get_events_and_data():
                     'tutor': cal['tutor']
                 })
 
+    bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
+
     # Call the Sheets API
     service_sheets = build('sheets', 'v4', credentials=creds)
     sheet = service_sheets.spreadsheets()
@@ -167,7 +169,7 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).order_by(User.first_name).filter(
-            User.test_dates).filter(User.test_reminders) #.options(joinedload('parent'), joinedload('tutor'))
+            User.test_dates).filter(User.test_reminders)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
         unscheduled_students = []
@@ -204,7 +206,6 @@ def main():
             print(msg)
             messages.append(msg)
 
-        bimonth_hours = 0
         for s in students:
             ss_status = None
             ss_hours = None
@@ -212,9 +213,10 @@ def main():
             ss_pay_type = None
             next_session = ''
             hours_this_week = 0
+            bimonth_hours = 0
             next_tutor = None
             rep_date = None
-            repurchase_deadline = None
+            repurchase_deadline = ''
 
             name = full_name(s)
 
@@ -252,7 +254,7 @@ def main():
                     ss_hours = float(row[3].replace('(','-').replace(')',''))
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
-                    ss_last_session = datetime.datetime.strptime(row[14], '%m/%d/%Y')
+                    ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
                     break
 
             if ss_status in {'Active', 'Prospective'}:
@@ -264,19 +266,20 @@ def main():
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
+                        e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                         if name in e['name']:
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
                                 hours_this_week += e['hours']
                             if next_session == '':
-                                next_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                                next_date = e_date
                                 if next_date.date() != ss_last_session.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
                             if ss_hours < 0:
                                 repurchase_deadline = 'ASAP'
                             elif bimonth_hours > ss_hours: #and repurchase_deadline is None:
-                                rep_date = next_date
+                                rep_date = e_date
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
                                 break
 
@@ -298,6 +301,7 @@ def main():
 
         for s in student_data:
             sheet.update_cell(s['row'], 10, s['next_session'])
+            sheet.update_cell(s['row'], 11, s['deadline'])
             tutors_attention.update(s['tutors'])
 
             if s['next_session'] == '':
