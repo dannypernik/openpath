@@ -854,22 +854,21 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     for s in low_scheduled_students:
         if full_name(tutor) in s['tutors']:
             my_low_students.append(s)
-            if action_str is None:
-                action_str = ' - Add hours by ' + s['deadline']
 
     my_unscheduled_students = []
     for s in unscheduled_students:
         if full_name(tutor) in s['tutors']:
             my_unscheduled_students.append(s)
-            if action_str is None:
-                action_str = ' - Action required'
 
     my_scheduled_students = []
     for s in other_scheduled_students:
         if full_name(tutor) in s['tutors']:
             my_scheduled_students.append(s)
-            if action_str is None:
-                action_str = ' - No action required'
+
+    if len(my_low_students) + len(unscheduled_students) > 0:
+        action_str = ' - Action requested'
+    else:
+        action_str = ' - No action required'
 
     with app.app_context():
         data = {

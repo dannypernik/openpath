@@ -6,13 +6,14 @@
   </p>
 
   {% if my_low_students %}
-    <strong>These students need hours added before your next session</strong><br>
-    <span>(or Danny just needs to pay you)</span>
+    <strong>Students needing hours</strong><br>
+    <span>Let Danny know any relevant details to assist the repurchase request, especially
+    if a practice test has yet to be completed for the current package:</span>
     <ul style="margin-top: 5px; padding-left: 15px">
       {% for s in my_low_students %}
         {% if full_name(tutor) in s['tutors'] %}
           <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on {{ s['deadline'] }})
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on <strong>{{ s['deadline'] }}</strong>)
           </li>
         {% endif %}
       {% endfor %}
@@ -41,7 +42,7 @@
     <ul>
       {% for s in my_scheduled_students %}
         {% if full_name(tutor) in s['tutors'] %}
-          <li style="margin-left: -15px">
+          <li>
             {{ s['name'] }}
             {% if s['next_tutor'] != full_name(tutor) %}
               (with {{ s['next_tutor'] }})
