@@ -276,7 +276,7 @@ def main():
                                 hours_this_week += e['hours']
                             if next_session == '':
                                 next_date = e_date
-                                if next_date.date() != ss_last_session.date():
+                                if ss_last_session and next_date.date() != ss_last_session.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
                             if ss_hours < 0:
