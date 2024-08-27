@@ -279,7 +279,9 @@ def main():
                                 if ss_last_session and next_date.date() != ss_last_session.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
-                            if ss_hours < 0:
+                            if ss_pay_type == 'Monthly':
+                                repurchase_deadline = ''
+                            elif ss_hours < 0:
                                 repurchase_deadline = 'ASAP'
                             elif bimonth_hours > ss_hours: #and repurchase_deadline is None:
                                 rep_date = e_date
@@ -342,47 +344,46 @@ def main():
                     print(msg)
                     messages.append(msg)
 
+        my_session_count = 0
+        my_student_count = 0
+        my_tutoring_hours = 0
+        other_session_count = 0
+        other_student_count = 0
+        other_tutoring_hours = 0
+        next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
+        weekly_data = {
+            'dates': [0,0,0,0,0,0,0,0,0,0],
+            'sessions': [0,0,0,0,0,0,0,0,0,0],
+            'day_hours': [0,0,0,0,0,0,0,0,0,0],
+            'evening_hours': [0,0,0,0,0,0,0,0,0,0],
+            'projected_hours': [0,0,0,0,0,0,0,0,0,0]
+        }
 
-        ### send weekly reports
-        if day_of_week == 'Sunday':
-            my_session_count = 0
-            my_student_count = 0
-            my_tutoring_hours = 0
-            other_session_count = 0
-            other_student_count = 0
-            other_tutoring_hours = 0
-            next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
-            weekly_data = {
-                'dates': [0,0,0,0,0,0,0,0,0,0],
-                'sessions': [0,0,0,0,0,0,0,0,0,0],
-                'day_hours': [0,0,0,0,0,0,0,0,0,0],
-                'evening_hours': [0,0,0,0,0,0,0,0,0,0],
-                'projected_hours': [0,0,0,0,0,0,0,0,0,0]
-            }
+        for e in tutoring_events:
+            if e['week_num'] == 0:
+                if e['tutor'] == 'Danny Pernik':
+                    my_session_count += 1
+                    my_tutoring_hours += e['hours']
+                else:
+                    other_session_count += 1
+                    other_tutoring_hours += e['hours']
 
-            for e in tutoring_events:
-                if e['week_num'] == 0:
-                    if e['tutor'] == 'Danny Pernik':
-                        my_session_count += 1
-                        my_tutoring_hours += e['hours']
-                    else:
-                        other_session_count += 1
-                        other_tutoring_hours += e['hours']
+        ### Generate admin report
+        for i in range(10):
+            s = next_sunday + datetime.timedelta(days=(i * 7))
+            s_str = s.strftime('%b %-d')
+            weekly_data['dates'][i] = s_str
 
-            ### Generate admin report
-            for i in range(10):
-                s = next_sunday + datetime.timedelta(days=(i * 7))
-                s_str = s.strftime('%b %-d')
-                weekly_data['dates'][i] = s_str
+        for e in my_tutoring_events:
+            weekly_data[e['time_group']][e['week_num']] += e['hours']
+            weekly_data['sessions'][e['week_num']] += 1
 
-            for e in my_tutoring_events:
-                weekly_data[e['time_group']][e['week_num']] += e['hours']
-                weekly_data['sessions'][e['week_num']] += 1
-
+        if day_of_week == 'Monday':
             for tutor in tutors:
                 if full_name(tutor) in tutors_attention:
                     send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
 
+        if day_of_week == 'Sunday':
             send_weekly_report_email(my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students,
                 paused_students, tutors_attention, weekly_data, now)
