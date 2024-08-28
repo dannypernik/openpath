@@ -282,6 +282,7 @@ def main():
                             if ss_pay_type == 'Monthly':
                                 repurchase_deadline = ''
                             elif ss_hours < 0:
+                                rep_date = now
                                 repurchase_deadline = 'ASAP'
                             elif bimonth_hours > ss_hours: #and repurchase_deadline is None:
                                 rep_date = e_date
