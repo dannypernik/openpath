@@ -47,7 +47,7 @@
       {% endif %}
 
       {% for t in main_tests %}
-        <h1 class="mt-4 mb-2">{{ t[0].upper() }}<sup class="h4">&#174;</sup> dates</h1>
+        <h1 class="mt-4 mb-2">{{ t.upper() }}<sup class="h4">&#174;</sup> dates</h1>
 
         <div class="table-container mb-3">
           <table class="table m-0">
@@ -64,7 +64,7 @@
             </thead>
             <tbody>
               {% for d in upcoming_weekend_dates %}
-                {% if d.test == t[0] %}
+                {% if d.test == t %}
                   <tr>
                     <td>
                       {% if current_user.is_admin %}

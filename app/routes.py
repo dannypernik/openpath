@@ -492,7 +492,7 @@ def test_dates():
     today = datetime.today().date()
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= today)
     upcoming_date_ids = {date.id for date in upcoming_dates}
-    upcoming_weekend_filter = (TestDate.status in main_tests) & (TestDate.date >= today)
+    upcoming_weekend_filter = ((TestDate.test != 'psat') | (TestDate.status != 'school')) & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_weekend_filter)
     other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_weekend_filter)
     upcoming_students = User.query.filter(
