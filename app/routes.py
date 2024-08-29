@@ -488,11 +488,11 @@ def tutors():
 @app.route('/test-dates', methods=['GET', 'POST'])
 def test_dates():
     form = TestDateForm()
-    tests = TestDate.query.with_entities(TestDate.test).order_by(TestDate.test.desc()).distinct()
+    main_tests = ['sat', 'act']
     today = datetime.today().date()
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= today)
     upcoming_date_ids = {date.id for date in upcoming_dates}
-    upcoming_weekend_filter = (TestDate.status != 'school') & (TestDate.date >= today)
+    upcoming_weekend_filter = (TestDate.status in main_tests) & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_weekend_filter)
     other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_weekend_filter)
     upcoming_students = User.query.filter(
@@ -511,7 +511,7 @@ def test_dates():
             flash(date.date.strftime('%b %-d') + date.test.upper() + ' could not be added', 'error')
             return redirect(url_for('test_dates'))
         return redirect(url_for('test_dates'))
-    return render_template('test-dates.html', title='Test dates', form=form, tests=tests,
+    return render_template('test-dates.html', title='Test dates', form=form, main_tests=main_tests,
         upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates,
         upcoming_students=upcoming_students, undecided_students=undecided_students)
 
