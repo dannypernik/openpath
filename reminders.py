@@ -312,7 +312,7 @@ def main():
 
             if s['next_session'] == '':
                 unscheduled_students.append(s)
-            elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['pay_type'] == 'Package' :
+            elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['rep_date'] <= (now + datetime.timedelta(days=7)) and s['pay_type'] == 'Package' :
                 low_scheduled_students.append(s)
             else:
                 other_scheduled_students.append(s)
