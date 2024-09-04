@@ -494,7 +494,7 @@ def test_dates():
     upcoming_date_ids = {date.id for date in upcoming_dates}
     upcoming_weekend_filter = (TestDate.test != 'psat') & (TestDate.status != 'school') & (TestDate.date >= today)
     upcoming_weekend_dates = TestDate.query.order_by(TestDate.date).filter(upcoming_weekend_filter)
-    other_dates = TestDate.query.order_by(~TestDate.date).filter(~upcoming_weekend_filter)
+    other_dates = TestDate.query.order_by(TestDate.date.desc()).filter(~upcoming_weekend_filter)
     upcoming_students = User.query.filter(
         (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
     undecided_students = User.query.filter(~User.test_dates.any(TestDate.id.in_(upcoming_date_ids)) & (User.role=='student') & (User.status=='active') | (User.status=='prospective'))
