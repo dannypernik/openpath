@@ -206,8 +206,6 @@ def main():
         #     print(msg)
         #     messages.append(msg)
 
-        print(summary_data)
-
         for s in students:
             ss_status = None
             ss_hours = None
