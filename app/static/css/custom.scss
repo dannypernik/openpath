@@ -682,6 +682,11 @@ div.alert {
   margin: 0 auto 3rem;
   width: 155px;
   max-width: 100%;
+
+  &.wide {
+    width: 250px;
+    margin-bottom: 0;
+  }
 }
 
 .profile-pic {

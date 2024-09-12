@@ -746,7 +746,7 @@ def huntington_surrey():
             return render_template('score-analysis-submitted.html', email=form.parent_email.data)
         else:
             flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('score-analysis-request.html', form=form, school=school, test=test,
+    return render_template('huntington-surrey.html', form=form, school=school, test=test,
         submit_text=submit_text)
 
 

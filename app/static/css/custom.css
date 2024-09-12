@@ -6522,6 +6522,10 @@ div.alert {
   width: 155px;
   max-width: 100%;
 }
+.profile-pic.wide, .school-logo.wide {
+  width: 250px;
+  margin-bottom: 0;
+}
 
 .profile-pic {
   border-radius: 100%;
