@@ -814,10 +814,10 @@ def send_score_analysis_email(student, parent, school):
     }
 
     new_contact = {
-        'first_name': user.first_name, 'last_name': 'OPT score analysis form', \
-        'emails': [{ 'type': 'home', 'value': user.email}], \
-        'phones': [{ 'type': 'mobile', 'value': user.phone}], \
-        'tags': ['Website']
+        'first_name': parent.first_name, 'last_name': 'OPT score analysis form', \
+        'emails': [{ 'type': 'home', 'value': parent.email}]
+        # 'lead_source_id': 'practice_test', \
+        # 'lead_source': 'Practice test'
     }
 
     crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
