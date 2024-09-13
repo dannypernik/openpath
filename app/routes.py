@@ -731,7 +731,7 @@ def huntington_surrey():
     form = ScoreAnalysisForm()
     school='Huntington-Surrey School'
     test='SAT'
-    submit_text='Send me the score analysis'
+    submit_text='Send score analysis'
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
