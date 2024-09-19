@@ -16,56 +16,44 @@
     </p>
   {% endif %}
 
-  {% for t in tutors_attention %}
-    <strong>{{ t }}</strong>
-
-    <ul>
-      {% set low = namespace(first=true) %}
+  {% if low_scheduled_students %}
+    <p style="margin-bottom: 10px">
+      <strong>Scheduled students with low hours</strong>
+    </p>
+    <ul style="margin-top:10px; padding-left:15px">
       {% for s in low_scheduled_students %}
-        {% if t in s['tutors'] %}
-          {% if low.first %}
-            <li>Students with low hours:</li>
-            <ul>
-            {% set low.first = false %}
-          {% endif %}
-
-          <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining. Payment due on <strong>{{ s['deadline'] }}</strong>)
-          </li>
-        {% endif %}
+        <li>
+          {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
+        </li>
       {% endfor %}
-
-      {% if not low.first %}
-        </ul>
-      {% endif %}
     </ul>
+  {% endif %}
 
-    <ul>
-      {% set unscheduled = namespace(first=true) %}
-      {% for s in unscheduled_students %}
-        {% if t in s['tutors'] %}
-          {% if unscheduled.first %}
-            <li>Unscheduled students:</li>
-            <ul>
-            {% set unscheduled.first = false %}
-          {% endif %}
-
-          <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
-          </li>
+  {% for tutor in tutors_attention %}
+    {% set unscheduled = namespace(first=true) %}
+    {% for s in unscheduled_students %}
+      {% if tutor in s['tutors'] %}
+        {% if unscheduled.first %}
+          <p style="margin-bottom: 10px">
+            <strong>{{ tutor }}'s unscheduled students</strong>
+          </p>
+          <ul style="margin-top:10px; padding-left:15px">
+          {% set unscheduled.first = false %}
         {% endif %}
-      {% endfor %}
-      {% if not unscheduled.first %}
-        </ul>
+        <li>
+          {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
+        </li>
       {% endif %}
-    </ul>
+    {% endfor %}
+    {% if not unscheduled.first %}
+      </ul>
+    {% endif %}
   {% endfor %}
 
-  {% if add_students_to_db %}
+  {% if add_students_to_data %}
     <p>
-      Add students to database:<br>
-      {% for a in add_students_to_db %}
-        {{ a }}<br>
+      {% for a in add_students_to_data %}
+        Add {{ a['name'] }} to {{ a['add_to'] }}<br>
       {% endfor %}
     </p>
   {% endif %}

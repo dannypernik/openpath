@@ -2,7 +2,7 @@
 
 {% block content %}
   <p>
-    Hi {{ tutor.first_name }}, here's your weekly tutoring report:
+    Hi {{ tutor.first_name }}, here's your weekly tutoring report.
   </p>
 
   {% if my_low_students %}
@@ -23,8 +23,8 @@
   {% if my_unscheduled_students %}
     <strong>Unscheduled students</strong><br>
     <span>
-      Please reach out to parents and students, or reply here to let Danny know why
-      a student should be marked as Paused or Inactive.
+      Please reach out to parents and students with Danny copied, or reply here
+      if a student should be marked as Paused or Inactive:
     </span>
     <ul>
       {% for s in my_unscheduled_students %}
@@ -37,17 +37,23 @@
     </ul>
   {% endif %}
 
+  {% if paused_student_list %}
+    <strong>Paused students</strong><br>
+    <span>Let Danny know if any of these students should be marked as Active or Inactive:</span>
+    <ul>
+      <li>
+        {{ paused_student_list }}
+      </li>
+    </ul>
+  {% endif %}
+
   {% if my_scheduled_students %}
     <strong>Scheduled students, no action required:</strong>
     <ul>
       {% for s in my_scheduled_students %}
-        {% if full_name(tutor) in s['tutors'] %}
+        {% if full_name(tutor) == s['next_tutor'] %}
           <li>
-            {{ s['name'] }}
-            {% if s['next_tutor'] != full_name(tutor) %}
-              (with {{ s['next_tutor'] }})
-            {% endif %}
-            - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
+            {{ s['name'] }} - {{ s['next_session'] }} ({{ s['hours'] }} hrs remaining)
           </li>
         {% endif %}
       {% endfor %}

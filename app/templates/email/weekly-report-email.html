@@ -10,24 +10,27 @@
     are scheduled with other tutors for {{ other_student_count }} students.
   </p>
 
+  {% if low_scheduled_students %}
+    <p style="margin-bottom: 10px">
+      <strong>Scheduled students with low hours</strong>
+    </p>
+    <ul style="margin-top:10px; padding-left:15px">
+      <li>
+        {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
+      </li>
+    </ul>
+  {% endif %}
+
   {% for tutor in tutors_attention %}
     <p style="margin-bottom: 10px">
-      <strong>{{ tutor }}'s students requiring attention</strong>
+      <strong>{{ tutor }}'s unscheduled students</strong>
     </p>
 
     <ul style="margin-top:10px; padding-left:15px">
-      {% for s in low_scheduled_students %}
-        {% if tutor in s['tutors'] %}
-          <li>
-            {{ s['name'] }} ({{ s['hours'] }} hrs, repurchase deadline is {{ s['deadline'] }}.)
-          </li>
-        {% endif %}
-      {% endfor %}
-
       {% for s in unscheduled_students %}
         {% if tutor in s['tutors'] %}
           <li>
-            {{ s['name'] }} (Unscheduled, {{ s['hours'] }} hrs remaining)
+            {{ s['name'] }} ({{ s['hours'] }} hrs remaining)
           </li>
         {% endif %}
       {% endfor %}
@@ -36,6 +39,13 @@
   <p>
     Paused students: {{ paused_str }}
   </p>
+  {% if add_students_to_data %}
+    <p>
+      {% for a in add_students_to_data %}
+        Add {{ a['name'] }} to {{ a['add_to'] }}<br>
+      {% endfor %}
+    </p>
+  {% endif %}
 
   <table>
     <thead style="font-weight: bold">
@@ -67,6 +77,21 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <p>
+    {% for m in messages %}
+      {{ m }}<br>
+    {% endfor %}
+  </p>
+
+  {% if status_updates %}
+    <p>
+      Status updates:<br>
+      {% for u in status_updates %}
+        {{ u }}<br>
+      {% endfor %}
+    </p>
+  {% endif %}
 
   <p>
     <strong>Random inspirational quote of the day</strong><br/>

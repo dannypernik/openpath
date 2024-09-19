@@ -180,7 +180,7 @@ def main():
         tutors_attention = set()
         tutoring_events = []
         my_tutoring_events = []
-        add_students_to_db = []
+        add_students_to_data = []
         messages = []
 
         events_by_week, upcoming_events, bimonth_events, \
@@ -206,6 +206,12 @@ def main():
             print(msg)
             messages.append(msg)
 
+        for row in summary_data:
+            if row[0] not in [full_name(s) for s in upcoming_students]:
+                add_students_to_data.append({'name': row[0], 'add_to': 'database'})
+            elif row[0] == '':
+                break
+
         for s in students:
             ss_status = None
             ss_hours = None
@@ -221,10 +227,6 @@ def main():
             name = full_name(s)
 
             for i, row in enumerate(summary_data):
-                if row[0] == '':
-                    add_students_to_db.append(name)
-                    break
-
                 if row[0] == name:
                     initial_status = s.status
                     # update DB status based on spreadsheet status
@@ -258,6 +260,10 @@ def main():
                         ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
                     else:
                         ss_last_session = None
+                    break
+                elif row == summary_data[-1]:
+                    print('did not find ' + name)
+                    add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
                     break
 
             if ss_status in {'Active', 'Prospective'}:
@@ -380,20 +386,25 @@ def main():
 
         if day_of_week == 'Monday':
             for tutor in tutors:
-                if full_name(tutor) in tutors_attention:
-                    send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students)
+                if full_name(tutor) in tutors_attention and tutor.id != 1:
+                    msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
+                        other_scheduled_students, paused_students)
+                    print(msg)
+                    messages.append(msg)
 
         if day_of_week == 'Sunday':
-            send_weekly_report_email(my_session_count, my_tutoring_hours, other_session_count,
-                other_tutoring_hours, low_scheduled_students, unscheduled_students,
-                paused_students, tutors_attention, weekly_data, now)
-
+            send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
+                other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
+                weekly_data, add_students_to_data, now)
+        else:
+            send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
+                other_scheduled_students, tutors_attention, add_students_to_data, 'succeeded')
         print('Script succeeded')
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'succeeded')
 
     except Exception:
         print('Script failed:', traceback.format_exc() )
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_db, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
+            other_scheduled_students, tutors_attention, add_students_to_data, 'failed', traceback.format_exc())
 
     finally:
         session.close()
