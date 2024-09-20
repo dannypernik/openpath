@@ -207,10 +207,8 @@ def main():
             messages.append(msg)
 
         for row in summary_data:
-            if row[0] not in [full_name(s) for s in upcoming_students]:
+            if row[0] not in [full_name(s) for s in upcoming_students] and row[1] != 'Inactive':
                 add_students_to_data.append({'name': row[0], 'add_to': 'database'})
-            elif row[0] == '':
-                break
 
         for s in students:
             ss_status = None
