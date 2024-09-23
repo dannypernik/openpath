@@ -207,7 +207,7 @@ def main():
             messages.append(msg)
 
         for row in summary_data:
-            if row[0] not in [full_name(s) for s in upcoming_students] and row[1] != 'Inactive':
+            if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
                 add_students_to_data.append({'name': row[0], 'add_to': 'database'})
 
         for s in students:
@@ -371,6 +371,8 @@ def main():
                 else:
                     other_session_count += 1
                     other_tutoring_hours += e['hours']
+        my_tutoring_hours = round(my_tutoring_hours, 2)
+        other_tutoring_hours = round(other_tutoring_hours, 2)
 
         ### Generate admin report
         for i in range(10):
