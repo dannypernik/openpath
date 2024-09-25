@@ -33,7 +33,7 @@ def create_sat_score_report(score_data):
       flow = InstalledAppFlow.from_client_secrets_file(
           "credentials2.json", SCOPES
       )
-      creds = flow.run_local_server(port=0)
+      creds = flow.run_console()
     # Save the credentials for the next run
     with open("token2.json", "w") as token:
       token.write(creds.to_json())
