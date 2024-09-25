@@ -23,7 +23,7 @@ from score_reports import create_sat_score_report
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename=os.path.join('..', 'logs/app.log'), level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='/logs/app.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.before_request
 def before_request():
