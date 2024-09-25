@@ -14,6 +14,18 @@ class UserTestDate(db.Model):
     test_dates = db.relationship('TestDate', backref=db.backref('users_interested', lazy='dynamic'))
 
 
+class TestScore(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String(16))
+    test_code = db.Column(db.String(8))
+    rw_score = db.Column(db.Integer)
+    m_score = db.Column(db.Integer)
+    total_score = db.Column(db.Integer)
+    type = db.Column(db.String(24))
+    json_path = db.Column(db.String(128))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(32), index=True)
@@ -46,6 +58,11 @@ class User(UserMixin, db.Model):
     test_reminders = db.Column(db.Boolean, default=True)
     test_dates = db.relationship('UserTestDate',
         foreign_keys=[UserTestDate.user_id],
+        backref=db.backref('user', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    test_scores = db.relationship('TestScore',
+        foreign_keys=[TestScore.user_id],
         backref=db.backref('user', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')

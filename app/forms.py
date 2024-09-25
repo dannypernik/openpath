@@ -2,9 +2,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
     SubmitField, IntegerField, RadioField, SelectField, validators
 from wtforms.fields.html5 import DateField, EmailField
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
-from app.models import User, TestDate, UserTestDate
+from app.models import User, TestDate, UserTestDate, TestScore
 from datetime import datetime
 
 
@@ -224,4 +225,22 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     parent_email = EmailField('Parent\'s email address', render_kw={'placeholder': 'Parent\'s email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    submit = SubmitField()
+
+class ScoreReportForm(FlaskForm):
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+        validators=[InputRequired()])
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
+        validators=[InputRequired()])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    # test_code = SelectField('Bluebook test number', choices=[(None, 'Bluebook test number'), ('sat1','SAT 1'),
+    #     ('sat2','SAT 2'), ('sat3','SAT 3'), ('sat4','SAT 4'), ('sat5','SAT 5'), ('sat6','SAT 6'), \
+    #     ('psat1','PSAT 1'), ('psat2','PSAT 2')], validators=[InputRequired()])
+    rw_score = IntegerField('Reading & Writing score', render_kw={'placeholder': 'Reading & Writing score'}, \
+        validators=[InputRequired()])
+    m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
+        validators=[InputRequired()])
+    score_details_file = FileField('Score details file', render_kw={'placeholder': 'Score details file'}, \
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     submit = SubmitField()

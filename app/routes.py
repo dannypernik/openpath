@@ -4,10 +4,11 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-        ResetPasswordForm, TutorForm, RecapForm, NtpaForm
+    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
-from app.models import User, TestDate, UserTestDate
+from app.models import User, TestDate, UserTestDate, TestScore
 from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
@@ -17,6 +18,8 @@ from functools import wraps
 import requests
 import json
 from reminders import get_student_events
+from score_reader import get_student_answers, mod_difficulty_check
+from score_reports import create_sat_score_report
 
 @app.before_request
 def before_request():
@@ -200,7 +203,6 @@ def start_page():
         return redirect(url_for('test_reminders'))
     else:
         return redirect(url_for('set_password'))
-
 
 
 @app.route('/verify-email/<token>', methods=['GET', 'POST'])
@@ -387,7 +389,7 @@ def edit_user(id):
         form.is_admin.data=user.is_admin
         form.test_reminders.data=user.test_reminders
 
-##  Determine which option to select in template for each test date
+        ##  Determine which option to select in template for each test date
         test_selections = user.get_dates().all()
         for d in upcoming_dates:
             if d in test_selections:
@@ -911,6 +913,70 @@ def cal_check():
     if 1 == 0:
         send_schedule_conflict_email(request.json)
     return ('', 200, None)
+
+
+@app.route('/score-report', methods=['GET', 'POST'])
+def score_report():
+    form = ScoreReportForm()
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('A computer has questioned your humanity. Please try again.', 'error')
+            return redirect(url_for('score_report'))
+
+        user = User.query.filter_by(email=form.email.data.lower()).first()
+        if user:
+            user.email = form.email.data.lower()
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+        else:
+            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
+
+        db.session.add(user)
+        db.session.flush()
+
+        pdf_folder_path = 'app/static/files/scores/pdf'
+        json_folder_path = 'app/static/files/scores/json'
+        full_name = user.first_name + ' ' + user.last_name
+
+        score_details_file = request.files['score_details_file']
+        score_details_file_path = os.path.join(pdf_folder_path, full_name + '.pdf')
+        score_details_file.save(score_details_file_path)
+        score_data = get_student_answers(score_details_file_path)
+        score_data['student_name'] = full_name
+        score_data['email'] = user.email
+        score_data['rw_score'] = form.rw_score.data
+        score_data['m_score'] = form.m_score.data
+
+        if not os.path.exists(pdf_folder_path):
+            os.makedirs(pdf_folder_path)
+
+        if not os.path.exists(json_folder_path):
+            os.makedirs(json_folder_path)
+
+        filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_code']
+        os.rename(score_details_file_path, os.path.join(pdf_folder_path, filename + '.pdf'))
+        with open(os.path.join(json_folder_path, filename + '.json'), "w") as json_file:
+            json.dump(score_data, json_file, indent=2)
+
+        test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=form.rw_score.data,
+            m_score=form.m_score.data, total_score=form.rw_score.data + form.m_score.data,
+            json_path=os.path.join('app/static/files/scores/json', filename + '.json'),
+            type='practice', user_id=user.id)
+
+        db.session.add(test)
+        db.session.commit()
+
+        score_data['is_rw_hard'], score_data['is_m_hard'] = mod_difficulty_check(score_data)
+
+        try:
+            create_sat_score_report(score_data)
+        except:
+            flash('Score report could not be generated', 'error')
+            return redirect(url_for('score_report'))
+        flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
+    return render_template('score-report.html', form=form)
 
 
 @app.route('/pay')

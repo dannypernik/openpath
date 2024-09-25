@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <form action="" method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {{ form.first_name }}
+    {{ form.last_name }}
+    {{ form.email }}
+    {{ form.rw_score }}
+    {{ form.m_score }}
+    {{ form.score_details_file }}
+    {{ hcaptcha }}
+    {{ form.submit }}
+  </form>
+{% endblock content %}
