@@ -83,5 +83,12 @@ def create_sat_score_report(score_data):
 
   except HttpError as error:
     # The API encountered a problem before the script started executing.
+    logger.error(f"HTTP error occurred: {error}", exc_info=True)
+    raise  # This will allow the outer try/except block to catch it
     print(f"An error occurred: {error}")
     print(error.content)
+  except Exception as e:
+    logger.error(f"An error occurred while calling the API: {e}", exc_info=True)
+    print(f"An error occurred: {e}")
+    print(e.content)
+    raise

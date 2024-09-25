@@ -20,6 +20,10 @@ import json
 from reminders import get_student_events
 from score_reader import get_student_answers, mod_difficulty_check
 from score_reports import create_sat_score_report
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=os.path.join('..', 'logs/app.log'), level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.before_request
 def before_request():
@@ -971,9 +975,19 @@ def score_report():
         score_data['is_rw_hard'], score_data['is_m_hard'] = mod_difficulty_check(score_data)
 
         try:
+            logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             create_sat_score_report(score_data)
-        except:
-            flash('Score report could not be generated', 'error')
+        except ValueError as ve:
+            logger.error(f"Error generating score report: {ve}", exc_info=True)
+            flash(f'Score report could not be generated: {ve}', 'error')
+            return redirect(url_for('score_report'))
+        except HttpError as he:
+            logger.error(f"Error generating score report: {he}", exc_info=True)
+            flash(f'API error: {he}', 'error')
+            return redirect(url_for('score_report'))
+        except Exception as e:
+            logger.error(f"Error generating score report: {e}", exc_info=True)
+            flash(f'An unexpected error occurred: {e}', 'error')
             return redirect(url_for('score_report'))
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('score-report.html', form=form)
