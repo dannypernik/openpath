@@ -803,6 +803,7 @@ def send_score_analysis_email(student, parent, school):
                     'Email': parent.email
                     }
                 ],
+                'ReplyTo': { 'Email': parent.email },
                 'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
                 'Subject': 'Score analysis request received',
                 'TextPart': render_template('email/score-analysis-email.txt',
