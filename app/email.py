@@ -845,7 +845,8 @@ def send_score_analysis_email(student, parent, school):
     return result.status_code
 
 
-def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students, paused_students):
+def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students,
+    paused_students, unregistered_students, undecided_students):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -869,7 +870,7 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     my_paused_students = []
     for s in paused_students:
         if tutor.id == s.tutor_id:
-            my_paused_students.append(s)
+            my_paused_students.append(full_name(s))
 
     paused_student_list = ', '.join(my_paused_students)
 
@@ -910,7 +911,8 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 
 def send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours,
     other_session_count, other_tutoring_hours, low_scheduled_students, unscheduled_students,
-    paused_students, tutors_attention, weekly_data, add_students_to_data, now):
+    paused_students, tutors_attention, weekly_data, add_students_to_data, unregistered_students,
+    undecided_students, now):
 
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -959,12 +961,24 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     return result.status_code
 
 
-def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data, result, exception=''):
+def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
+    other_scheduled_students, tutors_attention, add_students_to_data, unregistered_students, undecided_students,
+    result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     quote, author, header = get_quote()
+
+    unregistered = []
+    for s in unregistered_students:
+        unregistered.append(full_name(s))
+    unregistered_str = (', ').join(unregistered)
+
+    undecided = []
+    for s in undecided_students:
+        undecided.append(full_name(s))
+    undecided_str = (', ').join(undecided)
 
     with app.app_context():
         data = {
@@ -984,6 +998,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                         messages=messages, status_updates=status_updates,
                         low_scheduled_students=low_scheduled_students, unscheduled_students=unscheduled_students,
                         tutors_attention=tutors_attention, add_students_to_data=add_students_to_data,
+                        unregistered_str=unregistered_str, undecided_str=undecided_str,
                         exception=exception, quote=quote, author=author)
                 }
             ]

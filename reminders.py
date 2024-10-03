@@ -21,6 +21,11 @@ from sqlalchemy.orm import joinedload, sessionmaker
 import requests
 import traceback
 from pprint import pprint
+import logging
+import time
+
+# Configure logging
+logging.basicConfig()
 
 # Create a new session
 session = db.session
@@ -172,6 +177,8 @@ def main():
             User.test_dates).filter(User.test_reminders)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
+        unregistered_active_students = students.filter(User.status == 'active').filter(User.test_dates.any(UserTestDate.is_registered == False))
+        undecided_active_students = students.filter(User.status == 'active').filter(~User.test_dates.any())
         unscheduled_students = []
         low_scheduled_students = []
         other_scheduled_students = []
@@ -308,9 +315,25 @@ def main():
 
                 student_data.append(s_data)
 
+        retries = 3
         for s in student_data:
-            sheet.update_cell(s['row'], 10, s['next_session'])
-            sheet.update_cell(s['row'], 11, s['deadline'])
+            for attempt in range(retries):
+                try:
+                    sheet.update_cell(s['row'], 10, s['next_session'])
+                    sheet.update_cell(s['row'], 11, s['deadline'])
+                    logging.info(f"Successfully updated {s['name']} in the spreadsheet")
+                    return
+                except gspread.exceptions.APIError as e:
+                    logging.error(f"APIError: {e.response.text}")
+                    if attempt < retries - 1:
+                        logging.info(f"Attempt {attempt + 1} in {delay} seconds...")
+                        time.sleep(2)
+                    else:
+                        raise
+                except Exception as e:
+                    logging.error(f"Unexpected error: {str(e)}")
+                    raise
+
             tutors_attention.update(s['tutors'])
 
             if s['next_session'] == '':
@@ -385,20 +408,22 @@ def main():
             weekly_data['sessions'][e['week_num']] += 1
 
         if day_of_week == 'Monday':
+            # TODO: implement unregistered_students and undecided_students
             for tutor in tutors:
                 if full_name(tutor) in tutors_attention and tutor.id != 1:
                     msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
-                        other_scheduled_students, paused_students)
+                        other_scheduled_students, paused_students, unregistered_students, undecided_students)
                     print(msg)
                     messages.append(msg)
 
         if day_of_week == 'Sunday':
+            # TODO: implement unregistered_students and undecided_students
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
-                weekly_data, add_students_to_data, now)
+                weekly_data, add_students_to_data, unregistered_students, undecided_students, now)
         else:
             send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-                other_scheduled_students, tutors_attention, add_students_to_data, 'succeeded')
+                other_scheduled_students, tutors_attention, add_students_to_data, unregistered_students, undecided_students, 'succeeded')
         print('Script succeeded')
 
     except Exception:

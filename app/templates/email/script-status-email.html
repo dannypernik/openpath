@@ -58,6 +58,19 @@
     </p>
   {% endif %}
 
+  {% if undecided_str %}
+    <p>
+      <strong>Students without upcoming test dates</strong><br>
+      {{ undecided_str }}
+    </p>
+  {% endif %}
+
+  {% if unregistered_str %}
+    <p>Students needing to register<br>
+      {{ unregistered_str }}
+    </p>
+  {% endif %}
+
   <p>{{ exception }}</p>
 
   <p>
