@@ -265,6 +265,10 @@ def main():
                     ss_hours = float(row[3].replace('(','-').replace(')',''))
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
+                    if ss_pay_type == 'Monthly':
+                        repurchase_deadline = ''
+                    elif ss_hours < 0:
+                        repurchase_deadline = 'ASAP'
                     if row[16] != '':
                         ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
                     else:
@@ -294,11 +298,7 @@ def main():
                                 if ss_last_session and next_date.date() != ss_last_session.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
-                            if ss_pay_type == 'Monthly':
-                                repurchase_deadline = ''
-                            elif ss_hours < 0:
-                                repurchase_deadline = 'ASAP'
-                            elif bimonth_hours > ss_hours: #and repurchase_deadline is None:
+                            if bimonth_hours > ss_hours and repurchase_deadline is None:
                                 rep_date = e_date
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
                                 break
