@@ -903,10 +903,10 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Tutor email sent to ' + full_name(tutor))
+        msg = 'Tutor email sent to ' + full_name(tutor)
     else:
-        print('Tutor email to ' + full_name(tutor) + ' failed to send with code ' + result.status_code, result.reason)
-    return result.status_code
+        msg = 'Tutor email to ' + full_name(tutor) + ' failed to send with code ' + result.status_code + ' ' + result.reason
+    return msg
 
 
 def send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours,
