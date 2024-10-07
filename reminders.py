@@ -25,7 +25,11 @@ import logging
 import time
 
 # Configure logging
-logging.basicConfig()
+error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
+logging.basicConfig(filename=error_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
+# logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Create a new session
 session = db.session
@@ -198,20 +202,20 @@ def main():
         messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
-        reminder_count = 0
-        for e in upcoming_events:
-            for student in upcoming_students:
-                name = full_name(student)
-                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
-                    reminder_count += 1
-                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
-                    print(msg)
-                    messages.append(msg)
+        # reminder_count = 0
+        # for e in upcoming_events:
+        #     for student in upcoming_students:
+        #         name = full_name(student)
+        #         if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+        #             reminder_count += 1
+        #             msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
+        #             print(msg)
+        #             messages.append(msg)
 
-        if reminder_count == 0:
-            msg = 'No reminders sent.'
-            print(msg)
-            messages.append(msg)
+        # if reminder_count == 0:
+        #     msg = 'No reminders sent.'
+        #     print(msg)
+        #     messages.append(msg)
 
         for row in summary_data:
             if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
@@ -254,7 +258,7 @@ def main():
                             status_updates.append(msg)
                         except Exception:
                             err_msg = name + ' DB status update failed: ' + traceback.format_exc()
-                            print(err_msg)
+                            logging.error(err_msg)
                             messages.append(err_msg)
 
                     ss_status = row[1]
@@ -322,7 +326,7 @@ def main():
                     sheet.update_cell(s['row'], 10, s['next_session'])
                     sheet.update_cell(s['row'], 11, s['deadline'])
                     logging.info(f"Successfully updated {s['name']} in the spreadsheet")
-                    return
+                    break
                 except gspread.exceptions.APIError as e:
                     logging.error(f"APIError: {e.response.text}")
                     if attempt < retries - 1:
