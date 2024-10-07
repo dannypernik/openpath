@@ -412,22 +412,22 @@ def main():
             weekly_data['sessions'][e['week_num']] += 1
 
         if day_of_week == 'Monday':
-            # TODO: implement unregistered_students and undecided_students
+            # TODO: implement unregistered_active_students and undecided_active_students
             for tutor in tutors:
                 if full_name(tutor) in tutors_attention and tutor.id != 1:
                     msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
-                        other_scheduled_students, paused_students, unregistered_students, undecided_students)
+                        other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
                     print(msg)
                     messages.append(msg)
 
         if day_of_week == 'Sunday':
-            # TODO: implement unregistered_students and undecided_students
+            # TODO: implement unregistered_active_students and undecided_active_students
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
-                weekly_data, add_students_to_data, unregistered_students, undecided_students, now)
+                weekly_data, add_students_to_data, unregistered_active_students, undecided_active_students, now)
         else:
             send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-                other_scheduled_students, tutors_attention, add_students_to_data, unregistered_students, undecided_students, 'succeeded')
+                other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'succeeded')
         print('Script succeeded')
 
     except Exception:
