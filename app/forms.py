@@ -246,9 +246,12 @@ class ScoreReportForm(FlaskForm):
     details_file = FileField('Score details PDF file', render_kw={'placeholder': 'Score details PDF file'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     submit = SubmitField()
-        validators=[InputRequired()])
-    m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
-        validators=[InputRequired()])
-    score_details_file = FileField('Score details file', render_kw={'placeholder': 'Score details file'}, \
-        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
-    submit = SubmitField()
+
+# class ReviewForm(FlaskForm):
+#     text = TextAreaField('Review', render_kw={'placeholder': 'Review'}, \
+#         validators=[InputRequired()])
+#     author = StringField('Author', render_kw={'placeholder': 'Author'}, \
+#         validators=[InputRequired()])
+#     photo = FileField('Photo', render_kw={'placeholder': 'Photo'}, \
+#         validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+#     submit = SubmitField()
