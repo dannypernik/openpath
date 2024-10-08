@@ -19,7 +19,7 @@ import requests
 import json
 from reminders import get_student_events
 from score_reader import get_all_data
-from create_report import create_sat_score_report, send_pdf_score_report
+from create_report import create_sat_score_report, send_pdf_score_report, delete_spreadsheet
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -995,6 +995,7 @@ def score_report():
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             ss_copy_id = create_sat_score_report(score_data)
             send_pdf_score_report(ss_copy_id, score_data)
+            delete_spreadsheet(ss_copy_id)
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             flash(f'Score report could not be generated: {ve}', 'error')

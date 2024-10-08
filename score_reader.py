@@ -18,6 +18,7 @@ def get_student_answers(score_details_file_path):
       'm_score': 100,
       'is_rw_hard': None,
       'is_m_hard': None,
+      'has_omits': False,
       'answers': {
         'rw_modules': {
           1: {},
@@ -44,7 +45,7 @@ def get_student_answers(score_details_file_path):
         date_start = line.find(' - ') + 3
         date_end = line.find('202', date_start) + 4
         date_str = line[date_start:date_end]
-        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
+        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
         score_details_data['date'] = date
 
         test_type_start = line.find('My Tests') + 11
@@ -77,6 +78,7 @@ def get_student_answers(score_details_file_path):
           is_correct = s_line[-2] == 'Correct'
           if s_line[-2] == 'Omitted':
             response = '-'
+            score_details_data['has_omits'] = True
           else:
             response = s_line[-3][:-1]
 
@@ -126,7 +128,7 @@ def get_data_from_pdf(data, pdf_path):
 
     # Extract total score and remaining values
     scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
-    scores = [int(score) for score in scores if 400 <= int(score) <= 1600]
+    scores = [int(score) for score in scores if 200 <= int(score) <= 1600]
     if scores:
       data['total_score'] = max(scores)
       remaining_values = [int(value) for value in scores if value != data['total_score']]

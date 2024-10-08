@@ -45,6 +45,8 @@ def create_sat_score_report(score_data):
                 answer_sheet_id = sheet['properties']['sheetId']
             elif sheet['properties']['title'] == 'Test analysis':
                 analysis_sheet_id = sheet['properties']['sheetId']
+            elif sheet['properties']['title'] == 'Practice test data':
+                data_sheet_id = sheet['properties']['sheetId']
 
         requests = []
         # Set test code
@@ -82,6 +84,86 @@ def create_sat_score_report(score_data):
             }
         }
         requests.append(request)
+
+        # Add the request to the batch update request
+        batch_update_request = {
+            'requests': requests
+        }
+
+        # Update pivot table filter on the analysis sheet
+        requests.append({
+            'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': 6,
+                    'endRowIndex': 7,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'pivotTable': {
+                                    'source': {
+                                        'sheetId': data_sheet_id,
+                                        'startRowIndex': 0,
+                                        'endRowIndex': 10000,
+                                        'startColumnIndex': 0,
+                                        'endColumnIndex': 12
+                                    },
+                                    'rows': [
+                                        {
+                                            'sourceColumnOffset': 0,
+                                            'showTotals': True,
+                                            'sortOrder': 'ASCENDING'
+                                        },
+                                        {
+                                            'sourceColumnOffset': 1,
+                                            'showTotals': False,
+                                            'sortOrder': 'DESCENDING'
+                                        },
+                                        {
+                                            'sourceColumnOffset': 6,
+                                            'showTotals': True,
+                                            'sortOrder': 'DESCENDING',
+                                            "valueBucket": {}
+                                        },
+                                        {
+                                            'sourceColumnOffset': 7,
+                                            'showTotals': True,
+                                            'sortOrder': 'DESCENDING',
+                                            "valueBucket": {}
+                                        }
+                                    ],
+                                    'columns': [
+                                        {
+                                            'sourceColumnOffset': 11,
+                                            'showTotals': False,
+                                            'sortOrder': 'DESCENDING'
+                                        }
+                                    ],
+                                    'values': [
+                                        {
+                                            'summarizeFunction': 'COUNTA',
+                                            'sourceColumnOffset': 4
+                                        }
+                                    ],
+                                    'criteria': {
+                                        '0': {
+                                            'visibleValues': [
+                                                score_data['test_code'].upper()
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'pivotTable'
+            }
+        })
 
         # Add the request to the batch update request
         batch_update_request = {
@@ -207,20 +289,6 @@ def create_sat_score_report(score_data):
 
                 x += 1
 
-                #     if mod == 1:
-                #         row_data = [n, student_answer, answer_values[row_idx][2], answer_values[row_idx][3], answer_values[row_idx][4], answer_values[row_idx][5]]
-                #         answer_table_data[row_idx] = row_data
-                #     else:
-                #         answer_table_data[row_idx].extend([n, student_answer, answer_values[row_idx][8]])
-                # if sub == 'rw_modules' and mod == 1:
-                #     answer_table_data[31] = ['Total', score_data['rw_score'], '']
-                # elif sub == 'rw_modules' and mod == 2:
-
-                # elif sub == 'm_modules' and mod == 1:
-                #     answer_table_data[62] = ['Total', score_data['m_score'], '']
-                # elif sub == 'm_modules' and mod == 2:
-                #     answer_table_data[83] = ['Total', score_data['m_score'], '']
-
 
         # Set RW and Math scores
         for sub in [['rw_score', 5], ['m_score', 8]]:
@@ -284,12 +352,50 @@ def create_sat_score_report(score_data):
             'requests': requests
         }
 
-
         # Execute the batch update request
         response = service.spreadsheets().batchUpdate(
             spreadsheetId=ss_copy_id,
             body=batch_update_request
         ).execute()
+
+
+        if not score_data['has_omits']:
+            requests = []
+            requests.append({
+                'updateDimensionProperties': {
+                    "range": {
+                        "sheetId": analysis_sheet_id,
+                        "dimension": 'COLUMNS',
+                        "startIndex": 7,
+                        "endIndex": 8
+                    },
+                    "properties": {
+                        "hiddenByUser": True,
+                    },
+                    "fields": 'hiddenByUser',
+                }
+            })
+
+            requests.append({
+                'updateDimensionProperties': {
+                    "range": {
+                        "sheetId": analysis_sheet_id,
+                        "dimension": 'ROWS',
+                        "startIndex": 70,
+                        "endIndex": 76
+                    },
+                    "properties": {
+                        "hiddenByUser": True,
+                    },
+                    "fields": 'hiddenByUser',
+                }
+            })
+
+            batch_update_request = {'requests': requests}
+            response = service.spreadsheets().batchUpdate(
+                spreadsheetId=ss_copy_id,
+                body=batch_update_request
+            ).execute()
 
         print(ss_copy_id)
 
@@ -464,6 +570,24 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             print(f"PDF report sent to {score_data['email']}")
         else:
             print(f'Failed to fetch PDF: {response.content}')
+
+    except HttpError as error:
+        print(f'An error occurred: {error}')
+
+
+def delete_spreadsheet(spreadsheet_id):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+
+    try:
+        # Create the Drive API service
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        # Delete the spreadsheet
+        drive_service.files().delete(fileId=spreadsheet_id).execute()
+        print(f'Spreadsheet {spreadsheet_id} deleted')
 
     except HttpError as error:
         print(f'An error occurred: {error}')
