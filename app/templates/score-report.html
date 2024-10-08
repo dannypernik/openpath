@@ -6,9 +6,8 @@
     {{ form.first_name }}
     {{ form.last_name }}
     {{ form.email }}
-    {{ form.rw_score }}
-    {{ form.m_score }}
-    {{ form.score_details_file }}
+    {{ form.report_file(accept='.pdf') }}
+    {{ form.details_file(accept='.pdf') }}
     {{ hcaptcha }}
     {{ form.submit }}
   </form>

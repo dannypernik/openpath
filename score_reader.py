@@ -1,9 +1,10 @@
-import pdfplumber
-import pprint
 import datetime
+from bs4 import BeautifulSoup
+import pdfplumber
+import re
+import pprint
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
-
 
 def get_student_answers(score_details_file_path):
   pdf = pdfplumber.open(score_details_file_path)
@@ -29,78 +30,137 @@ def get_student_answers(score_details_file_path):
       },
   }
 
+  reading_writing_count = 0
+
   for i, p in enumerate(pages):
-    if i == 0:
-      text = p.extract_text()
+    text = p.extract_text()
+    reading_writing_count += text.count('Reading and Writing')
 
-      date_row = text.find('My Tests')
-      date_start = text.find(' - ', date_row) + 3
-      date_end = text.find('202', date_start) + 4
-      date_str = text[date_start:date_end]
-      date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
-      score_details_data['date'] = date
+    date = None
+    for line in read_text_line_by_line(text):
+      # print(line)
+      # print(list(line))
+      if date is None and line.find('My Tests') != -1:
+        date_start = line.find(' - ') + 3
+        date_end = line.find('202', date_start) + 4
+        date_str = line[date_start:date_end]
+        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
+        score_details_data['date'] = date
 
-      test_type_start = text.find('My Tests') + 11
-      test_type_end = text.find(' ', test_type_start)
-      test_type = text[test_type_start:test_type_end]
-      test_number_end = date_start - 3
-      test_number_start = text.rfind(' ', 0, test_number_end) + 1
-      test_number = text[test_number_start:test_number_end]
-      score_details_data['test_code'] = test_type.lower() + test_number
-      score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
+        test_type_start = line.find('My Tests') + 11
+        sep = {'/',' '}
+        test_type_end = next((i for i, ch  in enumerate(line[test_type_start:]) if ch in sep),None) + test_type_start
+        # test_type_end = line.find(' ', test_type_start)
+        test_type = line[test_type_start:test_type_end]
+        test_number_end = date_start - 3
+        test_number_start = line.rfind(" ", 0, test_number_end) + 1
 
-    else:
-      table = p.extract_table(table_settings={
-        'horizontal_strategy': 'text',
-        'vertical_strategy': 'text',
-      })
+        test_number = line[test_number_start:test_number_end]
+        score_details_data['test_code'] = test_type.lower() + test_number
+        score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
 
-      # pp.pprint(table)
-
-      for row in table:
-        if row[0]:
-          if row[1][:7] == 'Reading' or row[1][:4] == 'Math':
-            number = int(row[0])
-            if row[1][:7] == 'Reading':
+      if line.count(' ') >= 4:
+        if line.split()[1] == 'Reading' or line.split()[1] == 'Math':
+          number = int(line.split(' ')[0])
+          if line.split()[1] == 'Reading':
               subject = 'rw_modules'
               correct_index = 4
-              if row[1] == 'Reading and Writing':
-                correct_index = 2
-            elif row[1] == 'Math':
-              subject = 'm_modules'
-              if row[2] == '':
-                correct_index = 4
-              else:
-                correct_index = 2
-            if score_details_data['answers'][subject][1].get(number):
-              module = 2
-            else:
-              module = 1
-            correct_answer = row[correct_index]
-            response = row[correct_index + 1].split('; ')[0]
-            if response == 'Omitted':
-              response = '-'
-              is_correct = False
-            else:
-              is_correct = row[correct_index + 1].split('; ')[1] == 'Correct'
+          elif line.split()[1] == 'Math':
+            subject = 'm_modules'
+            correct_index = 2
+          if score_details_data['answers'][subject][1].get(number):
+            module = 2
+          else:
+            module = 1
+          correct_answer = line.split()[correct_index]
+          s_line = line.split(' ')
+          is_correct = s_line[-2] == 'Correct'
+          if s_line[-2] == 'Omitted':
+            response = '-'
+          else:
+            response = s_line[-3][:-1]
 
-            score_details_data['answers'][subject][module][number] = {
-              'correct_answer': correct_answer,
-              'response': response,
-              'is_correct': is_correct
-            }
-    ## print answer key
-    # for sub in score_details_data['answers']:
-    #   print(sub)
-    #   for mod in score_details_data['answers'][sub]:
-    #     print(mod)
-    #     for q in score_details_data['answers'][sub][mod]:
-    #       print(q, score_details_data['answers'][sub][mod][q]['correct_answer'])
+          score_details_data['answers'][subject][module][number] = {
+            'correct_answer': correct_answer,
+            'student_answer': response,
+            'is_correct': is_correct
+          }
+  # print answer key
+  # for sub in score_details_data['answers']:
+  #   print(sub)
+  #   for mod in score_details_data['answers'][sub]:
+  #     print(mod)
+  #     for q in score_details_data['answers'][sub][mod]:
+  #       print(q, score_details_data['answers'][sub][mod][q]['correct_answer'])
 
   return score_details_data
 
 
-def mod_difficulty_check(score_details_data):
+def read_text_line_by_line(text):
+  for line in text.split('\n'):
+    yield line
+
+
+def get_data_from_pdf(data, pdf_path):
+  pdf = pdfplumber.open(pdf_path)
+  pages = pdf.pages
+
+  data['student_name'] = None
+  data['legal_name'] = None
+  data['test_code'] = None
+  data['test_display_name'] = None
+  data['rw_score'] = None
+  data['m_score'] = None
+  data['total_score'] = None
+  data['date'] = None
+
+  for page in pages:
+    text = page.extract_text()
+
+    # # Extract student's legal name
+    if not data['legal_name']:
+      name_start = text.find('Name: ') + 6
+      name_end = text.find('\n', name_start)
+      legal_name = text[name_start:name_end].strip()
+      data['legal_name'] = legal_name
+
+    # Extract total score and remaining values
+    scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
+    scores = [int(score) for score in scores if 400 <= int(score) <= 1600]
+    if scores:
+      data['total_score'] = max(scores)
+      remaining_values = [int(value) for value in scores if value != data['total_score']]
+      if len(remaining_values) >= 2:
+        for i in range(len(remaining_values) - 1):
+          for j in range(i+1, len(remaining_values)):
+            if remaining_values[i] + remaining_values[j] == data['total_score']:
+              data['rw_score'] = remaining_values[i]
+              data['m_score'] = remaining_values[j]
+              break
+          if not data['rw_score']:
+            break
+
+    # Find lines that start with SAT or PSAT
+    sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
+    valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2024, 2100)))]
+    sat_line = valid_sat_lines[0] if valid_sat_lines else None
+    if sat_line:
+      test_type = sat_line[0:sat_line.find('SAT') + 3]
+    test_number_start = sat_line.find('Practice') + 9
+    test_number_end = sat_line.find(' ', test_number_start)
+    test_number = sat_line[test_number_start:test_number_end]
+    data['test_code'] = test_type.lower() + test_number
+    data['test_display_name'] = f'{test_type.upper()} {test_number}'
+
+    date_start = sat_line.find(' ', test_number_end) + 1
+    date_end = sat_line.find('20', date_start) + 4
+    date_str = sat_line[date_start:date_end]
+    data['date'] = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
+
+  return data
+
+
+def get_mod_difficulty(score_details_data):
   mod_diffs = {
     'sat1': {
       'rw': {
@@ -203,12 +263,67 @@ def mod_difficulty_check(score_details_data):
 
   hard_rw_diff_answer = mod_diffs[score_details_data['test_code']]['rw']['hard_answer']
   pdf_rw_diff_answer = score_details_data['answers']['rw_modules'][2][mod_diffs[score_details_data['test_code']]['rw']['diff_question']]['correct_answer']
-  print(hard_rw_diff_answer, pdf_rw_diff_answer)
-  is_rw_hard = hard_rw_diff_answer == pdf_rw_diff_answer
+  score_details_data['is_rw_hard'] = hard_rw_diff_answer == pdf_rw_diff_answer
 
   hard_m_diff_answer = mod_diffs[score_details_data['test_code']]['m']['hard_answer']
   pdf_m_diff_answer = score_details_data['answers']['m_modules'][2][mod_diffs[score_details_data['test_code']]['m']['diff_question']]['correct_answer']
-  print(hard_m_diff_answer, pdf_m_diff_answer)
-  is_m_hard = hard_m_diff_answer == pdf_m_diff_answer
+  score_details_data['is_m_hard'] = hard_m_diff_answer == pdf_m_diff_answer
 
-  return is_rw_hard, is_m_hard
+  return score_details_data
+
+
+def get_all_data(report_path, details_path):
+  data = get_student_answers(details_path)
+  data = get_data_from_pdf(data, report_path)
+  data = get_mod_difficulty(data)
+  return data
+
+
+# def get_student_answers(score_details_html_path):
+#   with open(score_details_html_path, 'r') as file:
+#     soup = BeautifulSoup(file, 'html.parser')
+
+#     score_details_data = {
+#       'student_name': None,
+#       'legal_name': None,
+#       'test_code': None,
+#       'test_display_name': None,
+#       'rw_score': 100,
+#       'm_score': 100,
+#       'total_score': 200,
+#       'is_rw_hard': None,
+#       'is_m_hard': None,
+#       'date': None,
+#       'answers': {
+#         'rw_modules': {
+#           1: {},
+#           2: {}
+#         },
+#         'm_modules': {
+#           1: {},
+#           2: {}
+#         },
+#       },
+#     }
+
+#     # Extract answers
+#     rows = soup.find_all('tr', class_=lambda cls: cls and ('table-row' in cls) and ('reading-and-writing' in cls or 'math' in cls) and ('module-1' in cls or 'module-2' in cls))
+#     for row in rows:
+#       module_number = int(row['class'][next(i for i, cls in enumerate(row['class']) if cls.startswith('module-'))].split('-')[1])
+#       subject = 'rw' if 'reading-and-writing' in row['class'] else 'm'
+#       question_number = int(row.find('th').text.strip())
+#       correct_answer = row.find('div').text.strip()
+#       student_answer_element = row.find('p')
+#       is_correct = 'Correct' in student_answer_element.text
+#       if 'Omitted' in student_answer_element.text:
+#         student_answer = '-'
+#       else:
+#         student_answer = student_answer_element.text.strip().split(';')[0]
+
+#       score_details_data['answers'][f'{subject}_modules'][module_number][question_number] = {
+#         'correct_answer': correct_answer,
+#         'student_answer': student_answer,
+#         'is_correct': is_correct,
+#       }
+
+#     return score_details_data

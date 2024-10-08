@@ -237,7 +237,15 @@ class ScoreReportForm(FlaskForm):
     # test_code = SelectField('Bluebook test number', choices=[(None, 'Bluebook test number'), ('sat1','SAT 1'),
     #     ('sat2','SAT 2'), ('sat3','SAT 3'), ('sat4','SAT 4'), ('sat5','SAT 5'), ('sat6','SAT 6'), \
     #     ('psat1','PSAT 1'), ('psat2','PSAT 2')], validators=[InputRequired()])
-    rw_score = IntegerField('Reading & Writing score', render_kw={'placeholder': 'Reading & Writing score'}, \
+    # rw_score = IntegerField('Reading & Writing score', render_kw={'placeholder': 'Reading & Writing score'}, \
+    #     validators=[InputRequired()])
+    # m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
+    #     validators=[InputRequired()])
+    report_file = FileField('Score report PDF', render_kw={'placeholder': 'Score report PDF'}, \
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
+    details_file = FileField('Score details PDF file', render_kw={'placeholder': 'Score details PDF file'}, \
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
+    submit = SubmitField()
         validators=[InputRequired()])
     m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
         validators=[InputRequired()])

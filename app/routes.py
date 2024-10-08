@@ -18,12 +18,15 @@ from functools import wraps
 import requests
 import json
 from reminders import get_student_events
-from score_reader import get_student_answers, mod_difficulty_check
-from score_reports import create_sat_score_report
+from score_reader import get_all_data
+from create_report import create_sat_score_report, send_pdf_score_report
 import logging
+from googleapiclient.errors import HttpError
+import traceback
+# from html_sanitizer import Sanitizer
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='logs/app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.before_request
 def before_request():
@@ -931,7 +934,6 @@ def score_report():
 
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
-            user.email = form.email.data.lower()
             user.first_name = form.first_name.data
             user.last_name = form.last_name.data
         else:
@@ -942,16 +944,6 @@ def score_report():
 
         pdf_folder_path = 'app/static/files/scores/pdf'
         json_folder_path = 'app/static/files/scores/json'
-        full_name = user.first_name + ' ' + user.last_name
-
-        score_details_file = request.files['score_details_file']
-        score_details_file_path = os.path.join(pdf_folder_path, full_name + '.pdf')
-        score_details_file.save(score_details_file_path)
-        score_data = get_student_answers(score_details_file_path)
-        score_data['student_name'] = full_name
-        score_data['email'] = user.email
-        score_data['rw_score'] = form.rw_score.data
-        score_data['m_score'] = form.m_score.data
 
         if not os.path.exists(pdf_folder_path):
             os.makedirs(pdf_folder_path)
@@ -959,35 +951,64 @@ def score_report():
         if not os.path.exists(json_folder_path):
             os.makedirs(json_folder_path)
 
+        # sanitizer = Sanitizer(settings={
+        #     'tags': ['th', 'tr', 'div', 'p'],
+        #     'attributes': {'th': set('class'), 'tr': set('class'), 'div': set('class'), 'p': set('class')},
+        #     'empty': set(),
+        #     'separate': set(),
+        # })
+
+        # html_file = request.files['html_file']
+        # safe_html_file = sanitizer.sanitize(html_file)
+        # pp.pprint(safe_html_file)
+        # safe_html_file.save(os.path.join(html_folder_path, full_name + '.html'))
+
+        full_name = user.first_name + ' ' + user.last_name
+        report_file = request.files['report_file']
+        details_file = request.files['details_file']
+
+        report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
+        details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
+
+        report_file.save(report_file_path)
+        details_file.save(details_file_path)
+
+        score_data = get_all_data(report_file, details_file)
+        score_data['email'] = user.email
+        score_data['student_name'] = full_name
+
         filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_code']
-        os.rename(score_details_file_path, os.path.join(pdf_folder_path, filename + '.pdf'))
-        with open(os.path.join(json_folder_path, filename + '.json'), "w") as json_file:
+        os.rename(report_file_path, os.path.join(pdf_folder_path, filename + 'CB report.pdf'))
+        os.rename(details_file_path, os.path.join(pdf_folder_path, filename + 'CB details.pdf'))
+        json_file_path = os.path.join(json_folder_path, filename + '.json')
+        with open(json_file_path, "w") as json_file:
             json.dump(score_data, json_file, indent=2)
 
-        test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=form.rw_score.data,
-            m_score=form.m_score.data, total_score=form.rw_score.data + form.m_score.data,
-            json_path=os.path.join('app/static/files/scores/json', filename + '.json'),
+        test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
+            m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
             type='practice', user_id=user.id)
 
         db.session.add(test)
         db.session.commit()
 
-        score_data['is_rw_hard'], score_data['is_m_hard'] = mod_difficulty_check(score_data)
-
         try:
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-            create_sat_score_report(score_data)
+            ss_copy_id = create_sat_score_report(score_data)
+            send_pdf_score_report(ss_copy_id, score_data)
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             flash(f'Score report could not be generated: {ve}', 'error')
+            print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except HttpError as he:
             logger.error(f"Error generating score report: {he}", exc_info=True)
             flash(f'API error: {he}', 'error')
+            print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except Exception as e:
             logger.error(f"Error generating score report: {e}", exc_info=True)
             flash(f'An unexpected error occurred: {e}', 'error')
+            print(traceback.format_exc())
             return redirect(url_for('score_report'))
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('score-report.html', form=form)
