@@ -6121,7 +6121,7 @@ a:hover {
   text-underline-offset: 6px;
   text-decoration-color: #f06d53;
   color: #00617b;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
@@ -6599,7 +6599,7 @@ td {
   width: 177px;
 }
 
-.hidden-form, #parent-info, #student-info, #inactive-students {
+.hidden-block {
   height: 0px;
   transition: height 0.5s ease-out;
   overflow: hidden;

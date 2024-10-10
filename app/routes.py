@@ -977,9 +977,9 @@ def score_report():
         score_data['email'] = user.email
         score_data['student_name'] = full_name
 
-        filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_code']
-        os.rename(report_file_path, os.path.join(pdf_folder_path, filename + 'CB report.pdf'))
-        os.rename(details_file_path, os.path.join(pdf_folder_path, filename + 'CB details.pdf'))
+        filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
+        os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
+        os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
         json_file_path = os.path.join(json_folder_path, filename + '.json')
         with open(json_file_path, "w") as json_file:
             json.dump(score_data, json_file, indent=2)

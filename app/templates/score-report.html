@@ -1,14 +1,128 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
+  <p>
+    Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
+  </p>
+
+  <button id="toggle-instructions" class="btn sec">Show instructions</button>
+
+  <div id="instructions" class="hidden-block">
+    <h3>Download score report</h3>
+    <ol>
+      <li>Log in at <strong><a href="https://mypractice.collegeboard.org" target="_blank">mypractice.collegeboard.org</a></strong></li>
+      <li>Click on the "Score Details" button for the test you want to analyze</li>
+      <li>Click "Download Score Report" at top of the page</li>
+    </ol>
+    <video src="{{ url_for('static', filename='media/report2.webm') }}" controls></video>
+    <h3 class="mt-3">Save Score Details page as PDF</h3>
+    <ol>
+      <li>Scroll down to answers table and click "All" to show all answers</li>
+      <li>Ensure that the window is wide enough that "Reading and Writing" displays on one line</li>
+      <li>Click "File > Print..." in your browser</li>
+      <li>Change the destination to "Save as PDF"</li>
+      <li>Click "Save"</li>
+    </ol>
+    <video src="{{ url_for('static', filename='media/details2.webm') }}" class="mb-3" controls></video>
+  </div>
+
+  <!-- <script>
+    var browser = bowser.getParser(window.navigator.userAgent);
+    var browserName = browser.getBrowserName().toLowerCase();
+    var isChrome = browser.isBrowser('Chrome');
+    var isFirefox = browser.isBrowser('Firefox');
+    var isSafari = browser.isBrowser('Safari');
+    var isEdge = browser.isBrowser('Microsoft Edge');
+    var isIE = browser.isBrowser('Internet Explorer');
+
+    // Use the browser variables to conditionally execute code or display messages
+    if (isChrome) {
+      document.getElementById('browserGif').src = "{{ url_for('static', filename='img/chrome.gif') }}";
+      document.getElementById('browserGif').style.display = 'block';
+    } else if (isFirefox) {
+      document.getElementById('browserGif').src = 'firefox.gif';
+      document.getElementById('browserGif').style.display = 'block';
+    } else if (isSafari) {
+      document.getElementById('browserGif').src = 'safari.gif';
+      document.getElementById('browserGif').style.display = 'block';
+    } else if (isEdge) {
+      document.getElementById('browserGif').src = 'edge.gif';
+      document.getElementById('browserGif').style.display = 'block';
+    } else if (isIE) {
+      document.getElementById('browserGif').src = 'ie.gif';
+      document.getElementById('browserGif').style.display = 'block';
+    } else {
+      document.getElementById('otherBrowsersBtn').style.display = 'block';
+    }
+  </script> -->
   <form action="" method="post" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     {{ form.first_name }}
     {{ form.last_name }}
     {{ form.email }}
+    {{ form.report_file.label(class='mt-2') }}
     {{ form.report_file(accept='.pdf') }}
+    {{ form.details_file.label(class='mt-2') }}
     {{ form.details_file(accept='.pdf') }}
     {{ hcaptcha }}
     {{ form.submit }}
   </form>
 {% endblock content %}
+
+{% block end_scripts %}
+  <script>
+    const slideDown = element => {
+      element.style.transition = "height 1.5s ease"; // Adjust the duration here
+      element.style.height = `${element.scrollHeight + 20}px`;
+      document.getElementById("toggle-instructions").innerText = "Hide instructions";
+    };
+
+    const slideUp = element => {
+      element.style.transition = "height 1s ease"; // Adjust the duration here
+      element.style.height = 0;
+      document.getElementById("toggle-instructions").innerText = "Show instructions";
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("toggle-instructions").addEventListener("click", function () {
+        const instructions = document.getElementById("instructions");
+        if (instructions.style.height === "0px" || instructions.style.height === "") {
+          slideDown(instructions);
+        } else {
+          slideUp(instructions);
+        }
+      });
+    });
+  </script>
+
+  <script src="https://unpkg.com/bowser"></script>
+  <script>
+    window.onload = function() {
+      Gifffer();
+    }
+
+    var browser = bowser.getParser(window.navigator.userAgent);
+    var browserName = browser.getBrowserName().toLowerCase();
+    var isChrome = browser.isBrowser('Chrome');
+    var isFirefox = browser.isBrowser('Firefox');
+    var isSafari = browser.isBrowser('Safari');
+    var isEdge = browser.isBrowser('Microsoft Edge');
+    var isIE = browser.isBrowser('Internet Explorer');
+
+    // Use the browser variables to conditionally execute code or display messages
+    if (isChrome) {
+      // Code for Chrome browser
+    } else if (isFirefox) {
+      // Code for Firefox browser
+    } else if (isSafari) {
+      // Code for Safari browser
+    } else if (isEdge) {
+      // Code for Microsoft Edge browser
+    } else if (isIE) {
+      // Code for Internet Explorer browser
+    } else {
+      // Code for other browsers
+    }
+  </script>
+{% endblock end_scripts %}
