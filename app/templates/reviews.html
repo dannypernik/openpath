@@ -1,11 +1,47 @@
 {% extends "base-wide.html" %}
 
 {% block content %}
+  {% if current_user.is_admin %}
+    <div>
+      <a id="add-review" class="btn d-inline-block mt-2 me-2">Add date</a>
+    </div>
+
+    <form id="add-review-form" class="hidden-block" action="" method="post">
+      <h1 class="me-2 d-inline-block">Add review</h1>
+      <a id="hide-form" href="#">Hide</a>
+
+      <div class="row mb-4">
+        <div class="col col-md-8">
+          {{ form.hidden_tag() }}
+          {{ form.text(rows='3') }}
+          {{ form.author }}
+          {{ form.photo_path }}
+          {{ form.submit }}
+        </div>
+      </div>
+    </form>
+  {% endif %}
   <div class="row justify-content-end">
     <div class="col-9 col-md-10">
       <h1 class="mb-4">Reviews</h1>
     </div>
   </div>
+
+  {% for r in reviews %}
+    <div class="row mt-3">
+      <div class="col-3 col-md-2">
+        <img class="img-fluid review-img" src="{{ url_for('static', filename=r.photo_path) }}">
+      </div>
+      <div class="col-9 col-md-10">
+        <p class="mb-2">
+          {{ r.text }}
+        </p>
+        <p>
+          <strong>&#8211; {{ r.author }}</strong>
+        </p>
+      </div>
+    </div>
+  {% endfor %}
 
   <div class="row mt-3">
     <div class="col-3 col-md-2">
@@ -243,3 +279,20 @@
     </div>
   </div>
 {% endblock content %}
+
+{% block end_scripts %}
+  <script>
+    const slideDown = element => element.style.height = `${element.scrollHeight}px`;
+    const slideUp = element => element.style.height = '0px';
+
+    document.getElementById("add-review").addEventListener("click", function () {
+      this.parentElement.style.display = "none";
+      slideDown(document.getElementById("add-review-form"));
+    });
+
+    document.getElementById("hide-form").addEventListener("click", function () {
+      slideUp(this.parentElement);
+      document.getElementById("add-review").parentElement.style.display = "block";
+    });
+  </script>
+{% endblock end_scripts %}

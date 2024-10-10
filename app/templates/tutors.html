@@ -7,7 +7,7 @@
         <button id="add-tutor" class="mb-4 btn d-inline-block mt-0 me-2">+ Add tutor</button>
       </div>
 
-      <form id="add-tutor-form" class="hidden-form" action="" method="post">
+      <form id="add-tutor-form" class="hidden-block" action="" method="post">
         <h1 class="mb-3 me-2 d-inline-block">Add tutor</h1>
         <a id="hide-form" href="#">Hide</a>
 
@@ -23,7 +23,7 @@
         {{ form.test_reminders.label(class="mt-2 ms-2") }}
         {{ form.submit(class="my-3") }}
       </form>
-      
+
       <div id="tutor-list" class="accordion">
         {% for status in statuses %}
           <div class="accordion-item">
@@ -33,7 +33,7 @@
                 {{ proper(status[0]) }} tutors
               </h2>
             </div>
-            
+
             <div id="{{ status[0] }}-list" class="accordion-collapse collapse
               {% if status != 'inactive' %} show {% endif %}">
               <div class="accordion-body">

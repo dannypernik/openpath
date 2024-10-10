@@ -5,7 +5,7 @@
     <div class="col-12 col-md-10">
       <a id="add-user" class="mb-4 btn d-inline-block me-2 mt-0">+ Add user</a>
 
-      <form id="add-user-form" class="hidden-form" action="" method="post">
+      <form id="add-user-form" class="hidden-block" action="" method="post">
         <h1 class="mb-3 me-3 d-inline-block">Add user</h1>
         <a id="hide-form" href="#">Hide</a>
 
@@ -16,7 +16,7 @@
         {{ form.phone }}
         {{ form.secondary_email }}
         {{ form.location }}
-        
+
         <div id="tz-container">
           <select id="tz-select">
             <option value="">Timezone</option>
@@ -45,7 +45,7 @@
             {{ form.tutor_id }}
           </div>
         </div>
-      
+
         {{ form.submit(class="mb-3") }}
       </form>
 
@@ -58,7 +58,7 @@
                 {{ proper(role[0]) }}s
               </h2>
             </div>
-            
+
             <div id="{{ role[0] }}-list" class="accordion-collapse collapse">
               <div class="accordion-body">
                 <div class="row mb-1 semibold">
@@ -134,12 +134,12 @@
     // Get references to the select and text field
     const selectElement = document.getElementById('tz-select');
     const timezoneText = document.getElementById('timezone');
-    
+
     // Add event listener to the select element
     selectElement.addEventListener('change', function() {
       // Get the selected value from the select element
       const selectedValue = selectElement.value;
-      
+
       // Update the value of the text field with the selected value
       timezoneText.value = selectedValue;
     });
