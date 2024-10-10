@@ -1,7 +1,7 @@
 {% extends "base-wide.html" %}
 
 {% block content %}
-  {% if current_user.is_admin %}
+  <!-- {% if current_user.is_admin %}
     <div>
       <a id="add-review" class="btn d-inline-block mt-2 me-2">Add date</a>
     </div>
@@ -20,14 +20,14 @@
         </div>
       </div>
     </form>
-  {% endif %}
+  {% endif %} -->
   <div class="row justify-content-end">
     <div class="col-9 col-md-10">
       <h1 class="mb-4">Reviews</h1>
     </div>
   </div>
 
-  {% for r in reviews %}
+  <!-- {% for r in reviews %}
     <div class="row mt-3">
       <div class="col-3 col-md-2">
         <img class="img-fluid review-img" src="{{ url_for('static', filename=r.photo_path) }}">
@@ -41,7 +41,7 @@
         </p>
       </div>
     </div>
-  {% endfor %}
+  {% endfor %} -->
 
   <div class="row mt-3">
     <div class="col-3 col-md-2">
@@ -281,7 +281,7 @@
 {% endblock content %}
 
 {% block end_scripts %}
-  <script>
+  <!-- <script>
     const slideDown = element => element.style.height = `${element.scrollHeight}px`;
     const slideUp = element => element.style.height = '0px';
 
@@ -294,5 +294,5 @@
       slideUp(this.parentElement);
       document.getElementById("add-review").parentElement.style.display = "block";
     });
-  </script>
+  </script> -->
 {% endblock end_scripts %}
