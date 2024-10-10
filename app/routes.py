@@ -116,7 +116,22 @@ def about():
 
 @app.route('/reviews')
 def reviews():
-    return render_template('reviews.html', title='Reviews')
+    form = ReviewForm()
+    reviews = Review.query.order_by(Review.timestamp.desc()).all()
+    if form.validate_on_submit():
+        photo = request.files['photo']
+        photo_path = os.path.join('img/schools/', str(user_id) + '.' + secure_filename(photo.filename).split('.')[-1])
+        photo.save(os.path.join('app/static', photo_path))
+        review = Review(text=form.text.data, author=form.author.data, photo_path=photo_path, timestamp=datetime.utcnow())
+        try:
+            db.session.add(review)
+            db.session.commit()
+            flash('Thank you for your review!')
+        except:
+            db.session.rollback()
+            flash('Review could not be added', 'error')
+        return redirect(url_for('reviews'))
+    return render_template('reviews.html', title='Reviews', reviews=reviews, form=form)
 
 
 @app.route('/signin', methods=['GET', 'POST'])
