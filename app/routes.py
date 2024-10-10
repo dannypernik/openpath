@@ -4,9 +4,9 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm
+    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm, ReviewForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
-from app.models import User, TestDate, UserTestDate, TestScore
+from app.models import User, TestDate, UserTestDate, TestScore, Review
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta

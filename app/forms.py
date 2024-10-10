@@ -247,11 +247,11 @@ class ScoreReportForm(FlaskForm):
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     submit = SubmitField()
 
-# class ReviewForm(FlaskForm):
-#     text = TextAreaField('Review', render_kw={'placeholder': 'Review'}, \
-#         validators=[InputRequired()])
-#     author = StringField('Author', render_kw={'placeholder': 'Author'}, \
-#         validators=[InputRequired()])
-#     photo = FileField('Photo', render_kw={'placeholder': 'Photo'}, \
-#         validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
-#     submit = SubmitField()
+class ReviewForm(FlaskForm):
+    text = TextAreaField('Review', render_kw={'placeholder': 'Review'}, \
+        validators=[InputRequired()])
+    author = StringField('Author', render_kw={'placeholder': 'Author'}, \
+        validators=[InputRequired()])
+    photo = FileField('Photo', render_kw={'placeholder': 'Photo'}, \
+        validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+    submit = SubmitField()

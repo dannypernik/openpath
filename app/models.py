@@ -149,6 +149,19 @@ class TestDate(db.Model):
         return '<TestDate {}>'.format(self.date)
 
 
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    review = db.Column(db.String(1024))
+    author = db.Column(db.String(64))
+    photo_path = db.Column(db.String(128))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<Review {}>'.format(self.date)
+
+
 @login.user_loader
 def load_user(id):
     return User.query.get(id)
