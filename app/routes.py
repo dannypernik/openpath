@@ -1013,6 +1013,7 @@ def score_report():
             # Enqueue the tasks to be executed in the background using RQ
             q = Queue(connection=Redis())
             q.enqueue('app.create_report.create_and_send_sat_report', score_data, retry=Retry(max=3, interval=[5, 10, 20]))
+            return render_template('score-report-sent.html')
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             flash(f'Score report could not be generated: {ve}', 'error')
