@@ -591,3 +591,9 @@ def delete_spreadsheet(spreadsheet_id):
 
     except HttpError as error:
         print(f'An error occurred: {error}')
+
+
+def create_and_send_sat_report(score_data):
+    spreadsheet_id = create_sat_score_report(score_data)
+    send_pdf_score_report(spreadsheet_id, score_data)
+    delete_spreadsheet(spreadsheet_id)

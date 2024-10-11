@@ -60,7 +60,7 @@ def get_student_answers(score_details_file_path):
         score_details_data['test_code'] = test_type.lower() + test_number
         score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
 
-      if line.count(' ') >= 4:
+      if line.count(' ') >= 3:
         if line.split()[1] == 'Reading' or line.split()[1] == 'Math':
           number = int(line.split(' ')[0])
           if line.split()[1] == 'Reading':
@@ -75,12 +75,16 @@ def get_student_answers(score_details_file_path):
             module = 1
           correct_answer = line.split()[correct_index]
           s_line = line.split(' ')
-          is_correct = s_line[-2] == 'Correct'
-          if s_line[-2] == 'Omitted':
+          if s_line[-1] == 'Review':
+            offset = 0
+          else:
+            offset = 1
+          is_correct = s_line[-2 + offset] == 'Correct'
+          if s_line[-2 + offset] == 'Omitted':
             response = '-'
             score_details_data['has_omits'] = True
           else:
-            response = s_line[-3][:-1]
+            response = s_line[-3+offset][:-1]
 
           score_details_data['answers'][subject][module][number] = {
             'correct_answer': correct_answer,
@@ -278,6 +282,7 @@ def get_all_data(report_path, details_path):
   data = get_student_answers(details_path)
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
+  # pp.pprint(data)
   return data
 
 

@@ -1085,31 +1085,32 @@ def send_score_report_email(score_data, base64_blob):
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    data = {
-        'Messages': [
-            {
-                'From': {
-                    'Email': app.config['MAIL_USERNAME'],
-                    'Name': 'Open Path Tutoring'
-                },
-                'To': [
-                    {
-                        'Email': score_data['email']
-                    }
-                ],
-                'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
-                'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
-                'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),
-                'Attachments': [
-                    {
-                        'ContentType': 'application/pdf',
-                        'Filename': f"Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf",
-                        'Base64Content': base64_blob
-                    }
-                ]
-            }
-        ]
-    }
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    'From': {
+                        'Email': app.config['MAIL_USERNAME'],
+                        'Name': 'Open Path Tutoring'
+                    },
+                    'To': [
+                        {
+                            'Email': score_data['email']
+                        }
+                    ],
+                    'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
+                    'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
+                    'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),
+                    'Attachments': [
+                        {
+                            'ContentType': 'application/pdf',
+                            'Filename': f"Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf",
+                            'Base64Content': base64_blob
+                        }
+                    ]
+                }
+            ]
+        }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
