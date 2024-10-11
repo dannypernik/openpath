@@ -323,20 +323,21 @@ def create_sat_score_report(score_data):
             }
 
         request = {
+            # NTPA design
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
                     'startRowIndex': 4,
                     'endRowIndex': 5,
-                    'startColumnIndex': 2,
-                    'endColumnIndex': 3
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
                 },
                 'rows': [
                     {
                         'values': [
                             {
                                 'userEnteredValue': {
-                                    'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
+                                    'stringValue': 'Score Analysis for ' + score_data['student_name']
                                 }
                             }
                         ]
@@ -344,6 +345,28 @@ def create_sat_score_report(score_data):
                 ],
                 'fields': 'userEnteredValue'
             }
+            # OPT design
+            # 'updateCells': {
+            #     'range': {
+            #         'sheetId': analysis_sheet_id,
+            #         'startRowIndex': 4,
+            #         'endRowIndex': 5,
+            #         'startColumnIndex': 2,
+            #         'endColumnIndex': 3
+            #     },
+            #     'rows': [
+            #         {
+            #             'values': [
+            #                 {
+            #                     'userEnteredValue': {
+            #                         'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
+            #                     }
+            #                 }
+            #             ]
+            #         }
+            #     ],
+            #     'fields': 'userEnteredValue'
+            # }
         }
         requests.append(request)
 
