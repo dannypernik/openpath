@@ -8,6 +8,10 @@ from google.auth.transport.requests import Request
 import requests
 import pprint
 import base64
+import logging
+
+info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
+logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
@@ -248,7 +252,7 @@ def create_sat_score_report(score_data):
                     row_idx = n + total_questions[sub]['prepend_rows'] - 1
                     col_idx = (mod - 1) * 6
 
-                    number = score_data['answers'][sub][mod][n]
+                    number = score_data['answers'][sub][str(mod)][str(n)]
                     if number['is_correct'] and number['student_answer'] != '-':
                         student_answer = answer_values[row_idx][col_idx + 1]
                     else:
@@ -616,7 +620,7 @@ def delete_spreadsheet(spreadsheet_id):
         print(f'An error occurred: {error}')
 
 
-def create_and_send_sat_report(score_data):
-    spreadsheet_id = create_sat_score_report(score_data)
-    send_pdf_score_report(spreadsheet_id, score_data)
-    delete_spreadsheet(spreadsheet_id)
+# def create_and_send_sat_report(score_data):
+#     spreadsheet_id = create_sat_score_report(score_data)
+#     send_pdf_score_report(spreadsheet_id, score_data)
+#     delete_spreadsheet(spreadsheet_id)

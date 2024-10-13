@@ -94,6 +94,13 @@
         }
       });
     });
+
+    // Disable submit button on form submit
+    const form = document.querySelector("form");
+    const submitButton = form.querySelector("button[type='submit']");
+    form.addEventListener("submit", function() {
+      submitButton.disabled = true;
+    });
   </script>
 
   <script src="https://unpkg.com/bowser"></script>

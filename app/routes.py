@@ -19,12 +19,12 @@ import requests
 import json
 from reminders import get_student_events
 from score_reader import get_all_data
-from app.create_report import create_and_send_sat_report
+from app.tasks import create_and_send_sat_report
 import logging
 from googleapiclient.errors import HttpError
 import traceback
 from redis import Redis
-from rq import Queue, Retry
+# from rq import Queue, Retry
 # from html_sanitizer import Sanitizer
 
 logger = logging.getLogger(__name__)
@@ -1011,8 +1011,9 @@ def score_report():
         try:
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             # Enqueue the tasks to be executed in the background using RQ
-            q = Queue(connection=Redis())
-            q.enqueue('app.create_report.create_and_send_sat_report', score_data, retry=Retry(max=3, interval=[5, 10, 20]))
+            # q = Queue(connection=Redis())
+            # q.enqueue('app.create_report.create_and_send_sat_report', score_data)
+            create_and_send_sat_report.delay(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)

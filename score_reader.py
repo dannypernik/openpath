@@ -98,7 +98,7 @@ def get_student_answers(score_details_file_path):
   #     print(mod)
   #     for q in score_details_data['answers'][sub][mod]:
   #       print(q, score_details_data['answers'][sub][mod][q]['correct_answer'])
-
+  # pp.pprint(score_details_data)
   return score_details_data
 
 

@@ -5925,6 +5925,10 @@ progress {
   --bs-btn-hover-color: white;
   --bs-btn-font-size: 1.8rem;
 }
+.btn:disabled, input[type=submit]:disabled {
+  background-color: #888;
+  cursor: default;
+}
 
 html {
   height: 100%;

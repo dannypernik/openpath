@@ -52,6 +52,11 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
   --bs-btn-hover-bg: #{$hover-color};
   --bs-btn-hover-color: white;
   --bs-btn-font-size: #{$font-size-base};
+
+  &:disabled {
+    background-color: $grey;
+    cursor: default;
+  }
 }
 
 html {
