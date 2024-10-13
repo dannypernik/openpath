@@ -25,11 +25,11 @@ import logging
 import time
 
 # Configure logging
-error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
-logging.basicConfig(filename=error_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+# error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
+# logging.basicConfig(filename=error_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-# logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
+logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Create a new session
 session = db.session
