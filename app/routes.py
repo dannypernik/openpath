@@ -185,6 +185,7 @@ def login():
         return redirect(url_for('start_page'))
     form = LoginForm()
     signup_form = SignupForm()
+    next = request.args.get('next')
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -205,7 +206,6 @@ def login():
                 flash('Please check your inbox to verify your email.')
             else:
                 flash('Verification email did not send. Please contact ' + hello, 'error')
-        next = request.args.get('next')
         if not next or url_parse(next).netloc != '':
             return redirect(url_for('start_page'))
         return redirect(next)
