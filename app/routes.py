@@ -1021,7 +1021,7 @@ def score_report():
             # q = Queue(connection=Redis())
             exec.submit('app.create_report.create_and_send_sat_report', score_data)
             # create_and_send_sat_report.delay(score_data)
-            create_and_send_sat_report(score_data)
+            # create_and_send_sat_report(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)
