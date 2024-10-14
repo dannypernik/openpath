@@ -25,6 +25,7 @@ import logging
 from googleapiclient.errors import HttpError
 import traceback
 from redis import Redis
+from flask_executor import Executor
 # from rq import Queue, Retry
 # from html_sanitizer import Sanitizer
 
@@ -67,6 +68,9 @@ def proper(name):
         return name
     except:
         return name
+
+exec = Executor(app)
+app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -1013,7 +1017,7 @@ def score_report():
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             # Enqueue the tasks to be executed in the background using RQ
             # q = Queue(connection=Redis())
-            # q.enqueue('app.create_report.create_and_send_sat_report', score_data)
+            exec.submit('app.create_report.create_and_send_sat_report', score_data)
             # create_and_send_sat_report.delay(score_data)
             create_and_send_sat_report(score_data)
             return render_template('score-report-sent.html')
