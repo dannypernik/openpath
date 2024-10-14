@@ -252,7 +252,8 @@ def create_sat_score_report(score_data):
                     row_idx = n + total_questions[sub]['prepend_rows'] - 1
                     col_idx = (mod - 1) * 6
 
-                    number = score_data['answers'][sub][str(mod)][str(n)]
+                    # Needed str(sub) and str(mod) with celery worker
+                    number = score_data['answers'][sub][mod][n]
                     if number['is_correct'] and number['student_answer'] != '-':
                         student_answer = answer_values[row_idx][col_idx + 1]
                     else:
