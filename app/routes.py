@@ -13,19 +13,19 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email
+    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
 from functools import wraps
 import requests
 import json
 from reminders import get_student_events
 from score_reader import get_all_data
-# from app.tasks import create_and_send_sat_report
-from app.create_report import create_and_send_sat_report
+from app.tasks import create_and_send_sat_report
+# from app.create_report import create_and_send_sat_report
 import logging
 from googleapiclient.errors import HttpError
 import traceback
 from redis import Redis
-from flask_executor import Executor
+# from flask_executor import Executor
 # from rq import Queue, Retry
 # from html_sanitizer import Sanitizer
 
@@ -69,8 +69,8 @@ def proper(name):
     except:
         return name
 
-exec = Executor(app)
-app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
+# exec = Executor(app)
+# app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -1019,8 +1019,8 @@ def score_report():
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             # Enqueue the tasks to be executed in the background using RQ
             # q = Queue(connection=Redis())
-            exec.submit('create_and_send_sat_report', score_data)
-            # create_and_send_sat_report.delay(score_data)
+            # exec.submit('create_and_send_sat_report', score_data)
+            create_and_send_sat_report.delay(score_data)
             # create_and_send_sat_report(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:

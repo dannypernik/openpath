@@ -627,12 +627,12 @@ def delete_spreadsheet(spreadsheet_id):
         raise
 
 
-def create_and_send_sat_report(score_data):
-    try:
-        spreadsheet_id = create_sat_score_report(score_data)
-        send_pdf_score_report(spreadsheet_id, score_data)
-        delete_spreadsheet(spreadsheet_id)
-    except Exception as e:
-        print(f'An error occurred in create_and_send_sat_report: {e}')
-        send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
-        raise
+# def create_and_send_sat_report(score_data):
+#     try:
+#         spreadsheet_id = create_sat_score_report(score_data)
+#         send_pdf_score_report(spreadsheet_id, score_data)
+#         delete_spreadsheet(spreadsheet_id)
+#     except Exception as e:
+#         print(f'An error occurred in create_and_send_sat_report: {e}')
+#         send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
+#         raise
