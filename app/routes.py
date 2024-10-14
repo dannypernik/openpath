@@ -1019,7 +1019,7 @@ def score_report():
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             # Enqueue the tasks to be executed in the background using RQ
             # q = Queue(connection=Redis())
-            exec.submit('app.create_report.create_and_send_sat_report', score_data)
+            exec.submit('create_and_send_sat_report', score_data)
             # create_and_send_sat_report.delay(score_data)
             # create_and_send_sat_report(score_data)
             return render_template('score-report-sent.html')
