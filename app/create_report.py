@@ -11,7 +11,7 @@ import base64
 import logging
 
 info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-logging.basicConfig(filename=info_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
