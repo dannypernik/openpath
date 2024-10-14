@@ -996,6 +996,7 @@ def score_report():
         details_file.save(details_file_path)
 
         score_data = get_all_data(report_file, details_file)
+        print(score_data)
         score_data['email'] = user.email
         score_data['student_name'] = full_name
 
