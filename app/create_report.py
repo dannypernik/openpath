@@ -537,7 +537,9 @@ def create_sat_score_report(score_data):
         # print(f'{test_name} Score report created for {score_data['student_name']} ({ss_copy_id})')
 
     except HttpError as error:
-        print(f'An error occurred: {error}')
+        print(f'An error occurred in create_sat_score_report: {error}')
+        send_fail_mail(score_data, 'score_data', error)
+        raise
 
     return ss_copy_id
 
@@ -601,6 +603,8 @@ def send_pdf_score_report(spreadsheet_id, score_data):
 
     except HttpError as error:
         print(f'An error occurred: {error}')
+        send_fail_mail(score_data, 'score_data', error)
+        raise
 
 
 def delete_spreadsheet(spreadsheet_id):
@@ -619,9 +623,16 @@ def delete_spreadsheet(spreadsheet_id):
 
     except HttpError as error:
         print(f'An error occurred: {error}')
+        send_fail_mail(spreadsheet_id, 'delete_spreadsheet(id)', error)
+        raise
 
 
 def create_and_send_sat_report(score_data):
-    spreadsheet_id = create_sat_score_report(score_data)
-    send_pdf_score_report(spreadsheet_id, score_data)
-    delete_spreadsheet(spreadsheet_id)
+    try:
+        spreadsheet_id = create_sat_score_report(score_data)
+        send_pdf_score_report(spreadsheet_id, score_data)
+        delete_spreadsheet(spreadsheet_id)
+    except Exception as e:
+        print(f'An error occurred in create_and_send_sat_report: {e}')
+        send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
+        raise

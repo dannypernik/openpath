@@ -1118,3 +1118,36 @@ def send_score_report_email(score_data, base64_blob):
     else:
         print('Score report email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
+
+
+def send_fail_mail(data, description, error):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    'From': {
+                        'Email': app.config['MAIL_USERNAME'],
+                        'Name': 'Open Path Tutoring'
+                    },
+                    'To': [
+                        {
+                            'Email': app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    'Subject': 'Error in ' + description,
+                    'TextPart': render_template('email/fail-mail.txt', data=data, error=error),
+                    'HTMLPart': render_template('email/fail-mail.html', data=data, error=error)
+                }
+            ]
+        }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print('Fail mail sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        print('Fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
