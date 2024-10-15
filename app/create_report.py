@@ -489,6 +489,8 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             message = f"Please find the score report for {score_data['test_code'].upper()} attached."
             send_score_report_email(score_data, base64_blob)
             print(f"PDF report sent to {score_data['email']}")
+            drive_service.files().delete(fileId=spreadsheet_id).execute()
+            print(f'Spreadsheet {spreadsheet_id} deleted')
         else:
             print(f'Failed to fetch PDF: {response.content}')
 
@@ -498,24 +500,24 @@ def send_pdf_score_report(spreadsheet_id, score_data):
         raise
 
 
-def delete_spreadsheet(spreadsheet_id):
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
-        scopes=['https://www.googleapis.com/auth/drive']
-    )
+# def delete_spreadsheet(spreadsheet_id):
+#     creds = service_account.Credentials.from_service_account_file(
+#         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+#         scopes=['https://www.googleapis.com/auth/drive']
+#     )
 
-    try:
-        # Create the Drive API service
-        drive_service = build('drive', 'v3', credentials=creds)
+#     try:
+#         # Create the Drive API service
+#         drive_service = build('drive', 'v3', credentials=creds)
 
-        # Delete the spreadsheet
-        drive_service.files().delete(fileId=spreadsheet_id).execute()
-        print(f'Spreadsheet {spreadsheet_id} deleted')
+#         # Delete the spreadsheet
+#         drive_service.files().delete(fileId=spreadsheet_id).execute()
+#         print(f'Spreadsheet {spreadsheet_id} deleted')
 
-    except HttpError as error:
-        print(f'An error occurred: {error}')
-        send_fail_mail(spreadsheet_id, 'delete_spreadsheet(id)', error)
-        raise
+#     except HttpError as error:
+#         print(f'An error occurred: {error}')
+#         send_fail_mail(spreadsheet_id, 'delete_spreadsheet(id)', error)
+#         raise
 
 
 # def create_and_send_sat_report(score_data):
