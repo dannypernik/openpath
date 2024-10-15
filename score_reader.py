@@ -21,12 +21,12 @@ def get_student_answers(score_details_file_path):
       'has_omits': False,
       'answers': {
         'rw_modules': {
-          1: {},
-          2: {}
+          '1': {},
+          '2': {}
         },
         'm_modules': {
-          1: {},
-          2: {}
+          '1': {},
+          '2': {}
         },
       },
   }
@@ -62,17 +62,17 @@ def get_student_answers(score_details_file_path):
 
       if line.count(' ') >= 3:
         if line.split()[1] == 'Reading' or line.split()[1] == 'Math':
-          number = int(line.split(' ')[0])
+          number = str(line.split(' ')[0])
           if line.split()[1] == 'Reading':
               subject = 'rw_modules'
               correct_index = 4
           elif line.split()[1] == 'Math':
             subject = 'm_modules'
             correct_index = 2
-          if score_details_data['answers'][subject][1].get(number):
-            module = 2
+          if score_details_data['answers'][subject]['1'].get(number):
+            module = '2'
           else:
-            module = 1
+            module = '1'
           correct_answer = line.split()[correct_index]
           s_line = line.split(' ')
           if s_line[-1] == 'Review':
@@ -170,12 +170,12 @@ def get_mod_difficulty(score_details_data):
   mod_diffs = {
     'sat1': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'C',
         'hard_answer': 'B',
       },
       'm': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'D',
       }
@@ -183,84 +183,84 @@ def get_mod_difficulty(score_details_data):
     },
     'sat2': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'A',
       },
       'm': {
-        'diff_question': 3,
+        'diff_question': '3',
         'easy_answer': 'B',
         'hard_answer': 'C',
       }
     },
     'sat3': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'D',
       },
       'm': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'A',
       }
     },
     'sat4': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'D',
         'hard_answer': 'B',
       },
       'm': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'A',
       }
     },
     'sat5': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'C',
         'hard_answer': 'B',
       },
       'm': {
-        'diff_question': 2,
+        'diff_question': '2',
         'easy_answer': 'C',
         'hard_answer': 'B',
       }
     },
     'sat6': {
       'rw': {
-        'diff_question': 2,
+        'diff_question': '2',
         'easy_answer': 'C',
         'hard_answer': 'B',
       },
       'm': {
-        'diff_question': 2,
+        'diff_question': '2',
         'easy_answer': 'B',
         'hard_answer': 'A',
       }
     },
     'psat1': {
       'rw': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'B',
         'hard_answer': 'C',
       },
       'm': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'C',
         'hard_answer': 'A',
       }
     },
     'psat2': {
       'rw': {
-        'diff_question': 2,
+        'diff_question': '2',
         'easy_answer': 'C',
         'hard_answer': 'D',
       },
       'm': {
-        'diff_question': 1,
+        'diff_question': '1',
         'easy_answer': 'C',
         'hard_answer': 'A',
       }
@@ -268,11 +268,11 @@ def get_mod_difficulty(score_details_data):
   }
 
   hard_rw_diff_answer = mod_diffs[score_details_data['test_code']]['rw']['hard_answer']
-  pdf_rw_diff_answer = score_details_data['answers']['rw_modules'][2][mod_diffs[score_details_data['test_code']]['rw']['diff_question']]['correct_answer']
+  pdf_rw_diff_answer = score_details_data['answers']['rw_modules']['2'][mod_diffs[score_details_data['test_code']]['rw']['diff_question']]['correct_answer']
   score_details_data['is_rw_hard'] = hard_rw_diff_answer == pdf_rw_diff_answer
 
   hard_m_diff_answer = mod_diffs[score_details_data['test_code']]['m']['hard_answer']
-  pdf_m_diff_answer = score_details_data['answers']['m_modules'][2][mod_diffs[score_details_data['test_code']]['m']['diff_question']]['correct_answer']
+  pdf_m_diff_answer = score_details_data['answers']['m_modules']['2'][mod_diffs[score_details_data['test_code']]['m']['diff_question']]['correct_answer']
   score_details_data['is_m_hard'] = hard_m_diff_answer == pdf_m_diff_answer
 
   return score_details_data
