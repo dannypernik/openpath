@@ -21,10 +21,15 @@ def create_and_send_sat_report(score_data):
     spreadsheet_id = create_sat_score_report(score_data)
     send_pdf_score_report(spreadsheet_id, score_data)
     delete_spreadsheet(spreadsheet_id)
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')
-    stats.print_stats(10)  # Print the top 10 functions by cumulative time
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
     raise e
+  finally:
+    profiler.disable()
+    profile_output_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/profile_stats.txt')
+    with open(profile_output_path, 'w') as f:
+        stats = pstats.Stats(profiler, stream=f).sort_stats('cumtime')
+        stats.print_stats(10)  # Print the top 10 functions by cumulative time
+
+
