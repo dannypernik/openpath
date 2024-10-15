@@ -235,197 +235,197 @@ def create_sat_score_report(score_data):
             body=batch_update_request
         ).execute()
 
-        # # After setting test code and difficulty, get values from the answer sheet
-        # answer_sheet_range = f'Answers!C1:AM57'  # Adjust range as needed
-        # answer_data = service.spreadsheets().values().get(spreadsheetId=ss_copy_id, range=answer_sheet_range).execute()
-        # answer_values = answer_data.get('values', [])
+        # After setting test code and difficulty, get values from the answer sheet
+        answer_sheet_range = f'Answers!C1:AM57'  # Adjust range as needed
+        answer_data = service.spreadsheets().values().get(spreadsheetId=ss_copy_id, range=answer_sheet_range).execute()
+        answer_values = answer_data.get('values', [])
 
-        # # Reset batch requests
-        # requests = []
-        # x = 0
-        # mod_answers = []
-        # for sub in ['rw_modules', 'm_modules']:
-        #     for mod in range(1, 3):
-        #         section = []
-        #         for n in range(1, total_questions[sub]['questions'] + 1):
-        #             # Update the answer sheet with the response
-        #             row_idx = n + total_questions[sub]['prepend_rows'] - 1
-        #             col_idx = (mod - 1) * 6
+        # Reset batch requests
+        requests = []
+        x = 0
+        mod_answers = []
+        for sub in ['rw_modules', 'm_modules']:
+            for mod in range(1, 3):
+                section = []
+                for n in range(1, total_questions[sub]['questions'] + 1):
+                    # Update the answer sheet with the response
+                    row_idx = n + total_questions[sub]['prepend_rows'] - 1
+                    col_idx = (mod - 1) * 6
 
-        #             # Needed str(mod) and str(n) with celery worker
-        #             number = score_data['answers'][sub][str(mod)][str(n)]
-        #             if number['is_correct'] and number['student_answer'] != '-':
-        #                 student_answer = answer_values[row_idx][col_idx + 1]
-        #             else:
-        #                 student_answer = number['student_answer']
+                    # Needed str(mod) and str(n) with celery worker
+                    number = score_data['answers'][sub][str(mod)][str(n)]
+                    if number['is_correct'] and number['student_answer'] != '-':
+                        student_answer = answer_values[row_idx][col_idx + 1]
+                    else:
+                        student_answer = number['student_answer']
 
-        #             section.append(student_answer)
-        #         mod_answers.append(section)
-        #         request = {
-        #             'updateCells': {
-        #                 'range': {
-        #                     'sheetId': answer_sheet_id,
-        #                     'startRowIndex': total_questions[sub]['prepend_rows'],
-        #                     'endRowIndex': total_questions[sub]['prepend_rows'] + total_questions[sub]['questions'],
-        #                     'startColumnIndex': col_idx + 2,
-        #                     'endColumnIndex': col_idx + 3
-        #                 },
-        #                 'rows': [
-        #                     {
-        #                         'values': [
-        #                             {
-        #                                 'userEnteredValue': {
-        #                                     'stringValue': str(mod_answers[x][row])
-        #                                 }
-        #                             }
-        #                         ]
-        #                     }
-        #                     for row in range(total_questions[sub]['questions'])
-        #                 ],
-        #                 'fields': 'userEnteredValue'
-        #             }
-        #         }
-        #         requests.append(request)
+                    section.append(student_answer)
+                mod_answers.append(section)
+                request = {
+                    'updateCells': {
+                        'range': {
+                            'sheetId': answer_sheet_id,
+                            'startRowIndex': total_questions[sub]['prepend_rows'],
+                            'endRowIndex': total_questions[sub]['prepend_rows'] + total_questions[sub]['questions'],
+                            'startColumnIndex': col_idx + 2,
+                            'endColumnIndex': col_idx + 3
+                        },
+                        'rows': [
+                            {
+                                'values': [
+                                    {
+                                        'userEnteredValue': {
+                                            'stringValue': str(mod_answers[x][row])
+                                        }
+                                    }
+                                ]
+                            }
+                            for row in range(total_questions[sub]['questions'])
+                        ],
+                        'fields': 'userEnteredValue'
+                    }
+                }
+                requests.append(request)
 
-        #         # Add the request to the batch update request
-        #         batch_update_request = {
-        #             'requests': requests
-        #         }
+                # Add the request to the batch update request
+                batch_update_request = {
+                    'requests': requests
+                }
 
-        #         x += 1
-
-
-        # # Set RW and Math scores
-        # for sub in [['rw_score', 5], ['m_score', 8]]:
-        #     request = {
-        #         'updateCells': {
-        #             'range': {
-        #                 'sheetId': answer_sheet_id,
-        #                 'startRowIndex': 0,
-        #                 'endRowIndex': 1,
-        #                 'startColumnIndex': sub[1],
-        #                 'endColumnIndex': sub[1] + 1
-        #             },
-        #             'rows': [
-        #                 {
-        #                     'values': [
-        #                         {
-        #                             'userEnteredValue': {
-        #                                 'numberValue': score_data[sub[0]]
-        #                             }
-        #                         }
-        #                     ]
-        #                 }
-        #             ],
-        #             'fields': 'userEnteredValue'
-        #         }
-        #     }
-        #     requests.append(request)
-
-        #     # Add the request to the batch update request
-        #     batch_update_request = {
-        #         'requests': requests
-        #     }
-
-        # request = {
-        #     # NTPA design
-        #     'updateCells': {
-        #         'range': {
-        #             'sheetId': analysis_sheet_id,
-        #             'startRowIndex': 4,
-        #             'endRowIndex': 5,
-        #             'startColumnIndex': 1,
-        #             'endColumnIndex': 2
-        #         },
-        #         'rows': [
-        #             {
-        #                 'values': [
-        #                     {
-        #                         'userEnteredValue': {
-        #                             'stringValue': 'Score Analysis for ' + score_data['student_name']
-        #                         }
-        #                     }
-        #                 ]
-        #             }
-        #         ],
-        #         'fields': 'userEnteredValue'
-        #     }
-        #     # OPT design
-        #     # 'updateCells': {
-        #     #     'range': {
-        #     #         'sheetId': analysis_sheet_id,
-        #     #         'startRowIndex': 4,
-        #     #         'endRowIndex': 5,
-        #     #         'startColumnIndex': 2,
-        #     #         'endColumnIndex': 3
-        #     #     },
-        #     #     'rows': [
-        #     #         {
-        #     #             'values': [
-        #     #                 {
-        #     #                     'userEnteredValue': {
-        #     #                         'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
-        #     #                     }
-        #     #                 }
-        #     #             ]
-        #     #         }
-        #     #     ],
-        #     #     'fields': 'userEnteredValue'
-        #     # }
-        # }
-        # requests.append(request)
-
-        # # Add the request to the batch update request
-        # batch_update_request = {
-        #     'requests': requests
-        # }
-
-        # # Execute the batch update request
-        # response = service.spreadsheets().batchUpdate(
-        #     spreadsheetId=ss_copy_id,
-        #     body=batch_update_request
-        # ).execute()
+                x += 1
 
 
-        # if not score_data['has_omits']:
-        #     requests = []
-        #     requests.append({
-        #         'updateDimensionProperties': {
-        #             "range": {
-        #                 "sheetId": analysis_sheet_id,
-        #                 "dimension": 'COLUMNS',
-        #                 "startIndex": 7,
-        #                 "endIndex": 8
-        #             },
-        #             "properties": {
-        #                 "hiddenByUser": True,
-        #             },
-        #             "fields": 'hiddenByUser',
-        #         }
-        #     })
+        # Set RW and Math scores
+        for sub in [['rw_score', 5], ['m_score', 8]]:
+            request = {
+                'updateCells': {
+                    'range': {
+                        'sheetId': answer_sheet_id,
+                        'startRowIndex': 0,
+                        'endRowIndex': 1,
+                        'startColumnIndex': sub[1],
+                        'endColumnIndex': sub[1] + 1
+                    },
+                    'rows': [
+                        {
+                            'values': [
+                                {
+                                    'userEnteredValue': {
+                                        'numberValue': score_data[sub[0]]
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    'fields': 'userEnteredValue'
+                }
+            }
+            requests.append(request)
 
-        #     requests.append({
-        #         'updateDimensionProperties': {
-        #             "range": {
-        #                 "sheetId": analysis_sheet_id,
-        #                 "dimension": 'ROWS',
-        #                 "startIndex": 70,
-        #                 "endIndex": 76
-        #             },
-        #             "properties": {
-        #                 "hiddenByUser": True,
-        #             },
-        #             "fields": 'hiddenByUser',
-        #         }
-        #     })
+            # Add the request to the batch update request
+            batch_update_request = {
+                'requests': requests
+            }
 
-        #     batch_update_request = {'requests': requests}
-        #     response = service.spreadsheets().batchUpdate(
-        #         spreadsheetId=ss_copy_id,
-        #         body=batch_update_request
-        #     ).execute()
+        request = {
+            # NTPA design
+            'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': 4,
+                    'endRowIndex': 5,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': 'Score Analysis for ' + score_data['student_name']
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
+            }
+            # OPT design
+            # 'updateCells': {
+            #     'range': {
+            #         'sheetId': analysis_sheet_id,
+            #         'startRowIndex': 4,
+            #         'endRowIndex': 5,
+            #         'startColumnIndex': 2,
+            #         'endColumnIndex': 3
+            #     },
+            #     'rows': [
+            #         {
+            #             'values': [
+            #                 {
+            #                     'userEnteredValue': {
+            #                         'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
+            #                     }
+            #                 }
+            #             ]
+            #         }
+            #     ],
+            #     'fields': 'userEnteredValue'
+            # }
+        }
+        requests.append(request)
 
-        # print(ss_copy_id)
+        # Add the request to the batch update request
+        batch_update_request = {
+            'requests': requests
+        }
+
+        # Execute the batch update request
+        response = service.spreadsheets().batchUpdate(
+            spreadsheetId=ss_copy_id,
+            body=batch_update_request
+        ).execute()
+
+
+        if not score_data['has_omits']:
+            requests = []
+            requests.append({
+                'updateDimensionProperties': {
+                    "range": {
+                        "sheetId": analysis_sheet_id,
+                        "dimension": 'COLUMNS',
+                        "startIndex": 7,
+                        "endIndex": 8
+                    },
+                    "properties": {
+                        "hiddenByUser": True,
+                    },
+                    "fields": 'hiddenByUser',
+                }
+            })
+
+            requests.append({
+                'updateDimensionProperties': {
+                    "range": {
+                        "sheetId": analysis_sheet_id,
+                        "dimension": 'ROWS',
+                        "startIndex": 70,
+                        "endIndex": 76
+                    },
+                    "properties": {
+                        "hiddenByUser": True,
+                    },
+                    "fields": 'hiddenByUser',
+                }
+            })
+
+            batch_update_request = {'requests': requests}
+            response = service.spreadsheets().batchUpdate(
+                spreadsheetId=ss_copy_id,
+                body=batch_update_request
+            ).execute()
+
+        print(ss_copy_id)
 
     except HttpError as error:
         print(f'An error occurred in create_sat_score_report: {error}')
