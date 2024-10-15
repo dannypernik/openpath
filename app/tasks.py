@@ -3,6 +3,8 @@ from celery import Celery
 from app.create_report import create_sat_score_report, send_pdf_score_report, delete_spreadsheet
 import logging
 from app.email import send_fail_mail
+import cProfile
+import pstats
 
 
 info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
@@ -14,9 +16,14 @@ app.conf.result_backend = 'redis://localhost:6379/0'
 @app.task
 def create_and_send_sat_report(score_data):
   try:
+    profiler = cProfile.Profile()
+    profiler.enable()
     spreadsheet_id = create_sat_score_report(score_data)
     send_pdf_score_report(spreadsheet_id, score_data)
     delete_spreadsheet(spreadsheet_id)
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats(10)  # Print the top 10 functions by cumulative time
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
