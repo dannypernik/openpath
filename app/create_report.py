@@ -387,154 +387,45 @@ def create_sat_score_report(score_data):
         # ).execute()
 
 
-        if not score_data['has_omits']:
-            requests = []
-            requests.append({
-                'updateDimensionProperties': {
-                    "range": {
-                        "sheetId": analysis_sheet_id,
-                        "dimension": 'COLUMNS',
-                        "startIndex": 7,
-                        "endIndex": 8
-                    },
-                    "properties": {
-                        "hiddenByUser": True,
-                    },
-                    "fields": 'hiddenByUser',
-                }
-            })
-
-            requests.append({
-                'updateDimensionProperties': {
-                    "range": {
-                        "sheetId": analysis_sheet_id,
-                        "dimension": 'ROWS',
-                        "startIndex": 70,
-                        "endIndex": 76
-                    },
-                    "properties": {
-                        "hiddenByUser": True,
-                    },
-                    "fields": 'hiddenByUser',
-                }
-            })
-
-            batch_update_request = {'requests': requests}
-            response = service.spreadsheets().batchUpdate(
-                spreadsheetId=ss_copy_id,
-                body=batch_update_request
-            ).execute()
-
-        print(ss_copy_id)
-
-
-        # # Set difficulty values
-        # service.spreadsheets().values().update(
-        #     spreadsheetId=ss_copy_id,
-        #     range=f'{answer_sheet_id}!M5',
-        #     valueInputOption='RAW',
-        #     body={'values': [[3 if score_data['is_rw_hard'] else 2]]}
-        # ).execute()
-
-        # service.spreadsheets().values().update(
-        #     spreadsheetId=ss_copy_id,
-        #     range=f'{answer_sheet_id}!M36',
-        #     valueInputOption='RAW',
-        #     body={'values': [[3 if score_data['is_m_hard'] else 2]]}
-        # ).execute()
-
-        # # Set additional info
-        # test_name = score_data['test_code'].upper()
-        # test_display_name = f'{test_name[:test_name.index('SAT') + 3]} {test_name[test_name.index('SAT') + 3:]}'
-        # service.spreadsheets().values().update(
-        #     spreadsheetId=ss_copy_id,
-        #     range=f'{answer_sheet_id}!B1',
-        #     valueInputOption='RAW',
-        #     body={'values': [[f'Bluebook Practice {test_display_name}']]}
-        # ).execute()
-
-        # # Update analysis sheet
-        # analysis_range = f'{analysis_sheet_id}!C5'
-        # service.spreadsheets().values().update(
-        #     spreadsheetId=ss_copy_id,
-        #     range=analysis_range,
-        #     valueInputOption='RAW',
-        #     body={'values': [[f'SAT Score Analysis for {score_data['student_name']}']]}
-        # ).execute()
-
-        # # Update pivot table
-        # # Define the spreadsheet ID and the sheet ID where the pivot table is located
-        # spreadsheet_id = ss_copy_id
-        # pivot_sheet_name = 'Test analysis'  # Replace with your sheet ID containing the pivot table
-
-        # # Define the field to filter (index of the column in your data)
-        # filter_criteria = {
-        #     'visibleValues': [test_name],  # Add the values to filter for
-        # }
-
-        # # Define the request to update the pivot table
-        # # Get the sheet ID of the sheet named 'Test analysis'
-        # sheets = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
-        # sheet_id = None
-        # for sheet in sheets['sheets']:
-        #     if sheet['properties']['title'] == 'Test analysis':
-        #         sheet_id = sheet['properties']['sheetId']
-        #     break
-
-        # if sheet_id is None:
-        #     print('Sheet 'Test analysis' not found')
-        #     return
-
-        # # Define the request to update the pivot table
-        # request = {
-        #     'updateCells': {
-        #     'range': {
-        #         'sheetId': sheet_id,
-        #         'startRowIndex': 6,  # Assuming the pivot table starts at row 0
-        #         'startColumnIndex': 1,  # Assuming the pivot table starts at column 0
-        #     },
-        #     'rows': [
-        #         {
-        #         'values': [
-        #             {
-        #             'pivotTable': {
-        #                 'source': {
-        #                 'sheetId': sheet_id,
-        #                 'startRowIndex': 1,  # Data range starts from row 1
-        #                 'startColumnIndex': 0,  # Data range starts from column 0
-        #                 'endRowIndex': 100,  # Adjust according to your data
-        #                 'endColumnIndex': 10  # Adjust according to your data
-        #                 },
-        #                 'criteria': {  # Add your filter criteria here
-        #                 '1': {  # Column index 1 is being filtered
-        #                     'visibleValues': [testName]
-        #                 }
-        #                 }
-        #             }
-        #             }
-        #         ]
+        # if not score_data['has_omits']:
+        #     requests = []
+        #     requests.append({
+        #         'updateDimensionProperties': {
+        #             "range": {
+        #                 "sheetId": analysis_sheet_id,
+        #                 "dimension": 'COLUMNS',
+        #                 "startIndex": 7,
+        #                 "endIndex": 8
+        #             },
+        #             "properties": {
+        #                 "hiddenByUser": True,
+        #             },
+        #             "fields": 'hiddenByUser',
         #         }
-        #     ],
-        #     'fields': 'pivotTable.criteria'  # Specify that you are updating the filter criteria
-        #     }
-        # }
+        #     })
 
-        # # Make the request to update the pivot table
-        # batch_update_request = {
-        #     'requests': [request]
-        # }
+        #     requests.append({
+        #         'updateDimensionProperties': {
+        #             "range": {
+        #                 "sheetId": analysis_sheet_id,
+        #                 "dimension": 'ROWS',
+        #                 "startIndex": 70,
+        #                 "endIndex": 76
+        #             },
+        #             "properties": {
+        #                 "hiddenByUser": True,
+        #             },
+        #             "fields": 'hiddenByUser',
+        #         }
+        #     })
 
-        # response = service.spreadsheets().batchUpdate(
-        #     spreadsheetId=spreadsheet_id,
-        #     body=batch_update_request
-        # ).execute()
+        #     batch_update_request = {'requests': requests}
+        #     response = service.spreadsheets().batchUpdate(
+        #         spreadsheetId=ss_copy_id,
+        #         body=batch_update_request
+        #     ).execute()
 
-        # print(response)
-
-        # # Generate and send the PDF score report
-        # send_pdf_score_report(ss_copy_id, score_data)
-
-        # print(f'{test_name} Score report created for {score_data['student_name']} ({ss_copy_id})')
+        # print(ss_copy_id)
 
     except HttpError as error:
         print(f'An error occurred in create_sat_score_report: {error}')
