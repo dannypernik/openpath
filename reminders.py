@@ -38,9 +38,9 @@ now = datetime.datetime.utcnow()
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat() + 'Z'
 bimonth_start_tz_aware = pytz.utc.localize(bimonth_start)
-upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
+upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
-upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=48)
+upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=72)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
 
@@ -58,7 +58,8 @@ calendars = [
     { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
     { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
-    { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' }
+    { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' },
+    { 'tutor': 'Elizabeth Walker', 'id': '2f96dd1a476fb24970a6307a96fb718867066c1b8ff0c9de865a440e874cb329@group.calendar.google.com' }
 ]
 
 # gspread to write to spreadsheet
