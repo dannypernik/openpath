@@ -19,8 +19,8 @@ import requests
 import json
 from reminders import get_student_events
 from score_reader import get_all_data
-from app.tasks import create_sat_report_task, send_sat_report_task
-# from app.create_report import create_and_send_sat_report
+# from app.tasks import create_sat_report_task, send_sat_report_task
+from app.tasks import create_and_send_sat_report
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -1015,30 +1015,31 @@ def score_report():
         db.session.add(test)
         db.session.commit()
 
-        # try:
-        #     logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-        #     # Enqueue the tasks to be executed in the background using RQ
-        #     # q = Queue(connection=Redis())
-        #     # exec.submit('create_and_send_sat_report', score_data)
-        #     create_and_send_sat_report.delay(score_data)
-        #     # create_and_send_sat_report(score_data)
-        #     return render_template('score-report-sent.html')
-        # except ValueError as ve:
-        #     logger.error(f"Error generating score report: {ve}", exc_info=True)
-        #     flash(f'Score report could not be generated: {ve}', 'error')
-        #     print(traceback.format_exc())
-        #     return redirect(url_for('score_report'))
-        # except HttpError as he:
-        #     logger.error(f"Error generating score report: {he}", exc_info=True)
-        #     flash(f'API error: {he}', 'error')
-        #     print(traceback.format_exc())
-        #     return redirect(url_for('score_report'))
-        # except Exception as e:
-        #     logger.error(f"Error generating score report: {e}", exc_info=True)
-        #     flash(f'An unexpected error occurred: {e}', 'error')
-        #     print(traceback.format_exc())
-        #     return redirect(url_for('score_report'))
-        # flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
+        try:
+            logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
+            # Enqueue the tasks to be executed in the background using RQ
+            # q = Queue(connection=Redis())
+            # exec.submit('create_and_send_sat_report', score_data)
+            # result = create_sat_report_task.delay(score_data)
+            # send_sat_report_task.delay(result.id, score_data)
+            create_and_send_sat_report.delay(score_data)
+            return render_template('score-report-sent.html')
+        except ValueError as ve:
+            logger.error(f"Error generating score report: {ve}", exc_info=True)
+            flash(f'Score report could not be generated: {ve}', 'error')
+            print(traceback.format_exc())
+            return redirect(url_for('score_report'))
+        except HttpError as he:
+            logger.error(f"Error generating score report: {he}", exc_info=True)
+            flash(f'API error: {he}', 'error')
+            print(traceback.format_exc())
+            return redirect(url_for('score_report'))
+        except Exception as e:
+            logger.error(f"Error generating score report: {e}", exc_info=True)
+            flash(f'An unexpected error occurred: {e}', 'error')
+            print(traceback.format_exc())
+            return redirect(url_for('score_report'))
+        flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('score-report.html', form=form)
 
 

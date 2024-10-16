@@ -13,13 +13,14 @@ import logging
 # app = Celery('tasks', broker='redis://localhost:6379/0')
 # app.conf.result_backend = 'redis://localhost:6379/0'
 
-@celery.task(name='app.tasks.create_sat_report_task')
-def create_sat_report_task(score_data):
+@celery.task(name='app.tasks.create_and_send_sat_report')
+def create_and_send_sat_report(score_data):
   try:
     # profiler = cProfile.Profile()
     # profiler.enable()
     spreadsheet_id = create_sat_score_report(score_data)
-    return {'spreadsheet_id': spreadsheet_id}
+    send_pdf_score_report(spreadsheet_id, score_data)
+    print('SAT report created and sent')
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
@@ -31,20 +32,20 @@ def create_sat_report_task(score_data):
     #     stats = pstats.Stats(profiler, stream=f).sort_stats('cumtime')
     #     stats.print_stats(10)  # Print the top 10 functions by cumulative time
 
-@celery.task(name='app.tasks.send_sat_report_task')
-def send_sat_report_task(spreadsheet_id, score_data):
-  try:
-    # profiler = cProfile.Profile()
-    # profiler.enable()
-    send_pdf_score_report(spreadsheet_id, score_data)
-  except Exception as e:
-    logging.error(f'Error creating and sending SAT report: {e}')
-    send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
-    raise e
-  # finally:
-  #   profiler.disable()
-  #   profile_output_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/profile_stats.txt')
-  #   with open(profile_output_path, 'w') as f:
-  #       stats = pstats.Stats(profiler, stream=f).sort_stats('cumtime')
-  #       stats.print_stats(10)  # Print the top 10 functions by cumulative time
+# @celery.task(name='app.tasks.send_sat_report_task')
+# def send_sat_report_task(spreadsheet_id, score_data):
+#   try:
+#     # profiler = cProfile.Profile()
+#     # profiler.enable()
+#     send_pdf_score_report(spreadsheet_id, score_data)
+#   except Exception as e:
+#     logging.error(f'Error creating and sending SAT report: {e}')
+#     send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
+#     raise e
+#   # finally:
+#   #   profiler.disable()
+#   #   profile_output_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/profile_stats.txt')
+#   #   with open(profile_output_path, 'w') as f:
+#   #       stats = pstats.Stats(profiler, stream=f).sort_stats('cumtime')
+#   #       stats.print_stats(10)  # Print the top 10 functions by cumulative time
 
