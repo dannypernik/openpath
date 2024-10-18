@@ -109,6 +109,7 @@ def get_events_and_data():
         # Collect next 2 months of events for all calendars
         for cal in calendars:
             try:
+                logging.info(f"Fetching events for {cal['tutor']}")
                 bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
                     timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
                 bimonth_events_result = bimonth_cal_events.get('items', [])
