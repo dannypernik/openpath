@@ -127,6 +127,7 @@ def get_events_and_data():
         bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
 
         try:
+            logging.info('Calling Sheets API')
             # Call the Sheets API
             service_sheets = build('sheets', 'v4', credentials=creds)
             sheet = service_sheets.spreadsheets()
