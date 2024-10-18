@@ -107,8 +107,8 @@ def get_events_and_data():
         bimonth_events = []
 
         # Collect next 2 months of events for all calendars
-        for cal in calendars:
-            try:
+        try:
+            for cal in calendars:
                 bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
                     timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
                 bimonth_events_result = bimonth_cal_events.get('items', [])
@@ -120,13 +120,14 @@ def get_events_and_data():
                             'tutor': cal['tutor']
                         })
                 logging.info(f"Events fetched for {cal['tutor']}")
-            except Exception as e:
-                logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
-                raise
 
-        bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
+            bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
+        except Exception as e:
+            logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
+            raise
 
         try:
+            logging.info('Calling Sheets API')
             # Call the Sheets API
             service_sheets = build('sheets', 'v4', credentials=creds)
             sheet = service_sheets.spreadsheets()
