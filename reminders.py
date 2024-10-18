@@ -108,31 +108,34 @@ def get_events_and_data():
 
         # Collect next 2 months of events for all calendars
         for cal in calendars:
-            bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
-                timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
-            bimonth_events_result = bimonth_cal_events.get('items', [])
+            try:
+                bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
+                    timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
+                bimonth_events_result = bimonth_cal_events.get('items', [])
 
-            for e in bimonth_events_result:
-                if e['start'].get('dateTime'):
-                    bimonth_events.append({
-                        'event': e,
-                        'tutor': cal['tutor']
-                    })
+                for e in bimonth_events_result:
+                    if e['start'].get('dateTime'):
+                        bimonth_events.append({
+                            'event': e,
+                            'tutor': cal['tutor']
+                        })
+            except Exception as e:
+                logging.error(f"Error fetching events for {cal['tutor']}: {e}", traceback.format_exc())
+                raise
 
         bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
 
-        # Call the Sheets API
-        service_sheets = build('sheets', 'v4', credentials=creds)
-        sheet = service_sheets.spreadsheets()
-        result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                    range=SUMMARY_RANGE).execute()
-        summary_data = result.get('values', [])
+        try:
+            # Call the Sheets API
+            service_sheets = build('sheets', 'v4', credentials=creds)
+            sheet = service_sheets.spreadsheets()
+            result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
+                                        range=SUMMARY_RANGE).execute()
+            summary_data = result.get('values', [])
 
-        if not summary_data:
-            msg = 'No summary data found.'
-            logging.info(msg)
-            messages.extend([msg, ''])
-            return
+        except Exception as e:
+            logging.error(f"Error fetching summary data: {e}", traceback.format_exc())
+            raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
         return bimonth_events, summary_data, bimonth_start_tz_aware
