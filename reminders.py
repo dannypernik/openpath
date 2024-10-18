@@ -99,7 +99,7 @@ def get_events_and_data():
             token.write(creds.to_json())
 
     try:
-
+        logging.info('Calling Calendar API')
         # Call the Calendar API
         service_cal = build('calendar', 'v3', credentials=creds)
         bimonth_end = now + datetime.timedelta(days=70)
