@@ -175,6 +175,7 @@ def get_upcoming_events():
 
 def main():
     try:
+        logging.info('reminders.py started')
         students = session.query(User).order_by(User.first_name).filter(User.role == 'student')
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
@@ -195,11 +196,12 @@ def main():
         add_students_to_data = []
         messages = []
 
+        logging.info('Fetching upcoming events')
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
-        print(msg)
+        logging.info(msg)
         messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
@@ -429,10 +431,10 @@ def main():
         else:
             send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
                 other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'succeeded')
-        print('Script succeeded')
+        logging.info('reminders.py succeeded')
 
     except Exception:
-        print('Script failed:', traceback.format_exc() )
+        logging.info('reminders.py failed:', traceback.format_exc() )
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
             other_scheduled_students, tutors_attention, add_students_to_data, 'failed', traceback.format_exc())
 
