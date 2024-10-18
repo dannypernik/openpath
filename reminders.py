@@ -127,7 +127,6 @@ def get_events_and_data():
         bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
 
         try:
-            logging.info('Calling Sheets API')
             # Call the Sheets API
             service_sheets = build('sheets', 'v4', credentials=creds)
             sheet = service_sheets.spreadsheets()
@@ -135,6 +134,7 @@ def get_events_and_data():
                                         range=SUMMARY_RANGE).execute()
             summary_data = result.get('values', [])
 
+            logging.info('summary data fetched')
         except Exception as e:
             logging.error(f"Error fetching summary data: {e}", traceback.format_exc())
             raise
