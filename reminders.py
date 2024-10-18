@@ -98,42 +98,48 @@ def get_events_and_data():
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
-    # Call the Calendar API
-    service_cal = build('calendar', 'v3', credentials=creds)
-    bimonth_end = now + datetime.timedelta(days=70)
-    bimonth_end_str = bimonth_end.isoformat() + 'Z'
-    bimonth_events = []
+    try:
 
-    # Collect next 2 months of events for all calendars
-    for cal in calendars:
-        bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
-            timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
-        bimonth_events_result = bimonth_cal_events.get('items', [])
+        # Call the Calendar API
+        service_cal = build('calendar', 'v3', credentials=creds)
+        bimonth_end = now + datetime.timedelta(days=70)
+        bimonth_end_str = bimonth_end.isoformat() + 'Z'
+        bimonth_events = []
 
-        for e in bimonth_events_result:
-            if e['start'].get('dateTime'):
-                bimonth_events.append({
-                    'event': e,
-                    'tutor': cal['tutor']
-                })
+        # Collect next 2 months of events for all calendars
+        for cal in calendars:
+            bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
+                timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
+            bimonth_events_result = bimonth_cal_events.get('items', [])
 
-    bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
+            for e in bimonth_events_result:
+                if e['start'].get('dateTime'):
+                    bimonth_events.append({
+                        'event': e,
+                        'tutor': cal['tutor']
+                    })
 
-    # Call the Sheets API
-    service_sheets = build('sheets', 'v4', credentials=creds)
-    sheet = service_sheets.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                range=SUMMARY_RANGE).execute()
-    summary_data = result.get('values', [])
+        bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
 
-    if not summary_data:
-        msg = 'No summary data found.'
-        logging.info(msg)
-        messages.extend([msg, ''])
-        return
+        # Call the Sheets API
+        service_sheets = build('sheets', 'v4', credentials=creds)
+        sheet = service_sheets.spreadsheets()
+        result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
+                                    range=SUMMARY_RANGE).execute()
+        summary_data = result.get('values', [])
 
-    return bimonth_events, summary_data, bimonth_start_tz_aware
+        if not summary_data:
+            msg = 'No summary data found.'
+            logging.info(msg)
+            messages.extend([msg, ''])
+            return
 
+        logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
+        return bimonth_events, summary_data, bimonth_start_tz_aware
+
+    except Exception as e:
+        logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
+        raise
 
 def get_upcoming_events():
     bimonth_events, summary_data, bimonth_start_tz_aware = get_events_and_data()
