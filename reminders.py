@@ -128,7 +128,7 @@ def get_events_and_data():
 
     if not summary_data:
         msg = 'No summary data found.'
-        print(msg)
+        logging.info(msg)
         messages.extend([msg, ''])
         return
 
@@ -196,9 +196,10 @@ def main():
         add_students_to_data = []
         messages = []
 
-        logging.info('Fetching upcoming events')
+        logging.info('Getting upcoming events')
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
+        logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
         logging.info(msg)
@@ -212,12 +213,12 @@ def main():
                 if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
                     reminder_count += 1
                     msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
-                    print(msg)
+                    logging.info(msg)
                     messages.append(msg)
 
         if reminder_count == 0:
             msg = 'No reminders sent.'
-            print(msg)
+            logging.info(msg)
             messages.append(msg)
 
         for row in summary_data:
@@ -250,14 +251,14 @@ def main():
                         sheet.update_cell(i+1, 2, 'Active')
                         s.status = 'active'
                         msg = name + ' is scheduled soon. Status changed to Active.'
-                        print(msg)
+                        logging.info(msg)
                         status_updates.append(msg)
                     if initial_status != s.status:
                         try:
                             db.session.merge(s)
                             db.session.commit()
                             msg = name + ' DB status = ' + s.status
-                            print(msg)
+                            logging.info(msg)
                             status_updates.append(msg)
                         except Exception:
                             err_msg = name + ' DB status update failed: ' + traceback.format_exc()
@@ -278,7 +279,7 @@ def main():
                         ss_last_session = None
                     break
                 elif row == summary_data[-1]:
-                    print('did not find ' + name)
+                    logging.info('did not find ' + name)
                     add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
                     break
 
@@ -359,7 +360,7 @@ def main():
                 db.session.add(d)
                 db.session.commit()
                 msg = 'Test date ' + str(d.date) + ' marked as past'
-                print(msg)
+                logging.info(msg)
                 messages.append(msg)
 
         ### send registration and test reminder emails
@@ -367,15 +368,15 @@ def main():
             for d in u.get_dates():
                 if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                     msg = send_registration_reminder_email(u, d)
-                    print(msg)
+                    logging.info(msg)
                     messages.append(msg)
                 elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                     msg = send_late_registration_reminder_email(u, d)
-                    print(msg)
+                    logging.info(msg)
                     messages.append(msg)
                 elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
                     msg = send_test_reminder_email(u, d)
-                    print(msg)
+                    logging.info(msg)
                     messages.append(msg)
 
         my_session_count = 0
@@ -420,7 +421,7 @@ def main():
                 if full_name(tutor) in tutors_attention and tutor.id != 1:
                     msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
                         other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
-                    print(msg)
+                    logging.info(msg)
                     messages.append(msg)
 
         if day_of_week == 'Sunday':
@@ -434,7 +435,7 @@ def main():
         logging.info('reminders.py succeeded')
 
     except Exception:
-        logging.info('reminders.py failed:', traceback.format_exc() )
+        logging.error('reminders.py failed:', traceback.format_exc() )
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
             other_scheduled_students, tutors_attention, add_students_to_data, 'failed', traceback.format_exc())
 
