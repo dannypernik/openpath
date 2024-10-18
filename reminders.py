@@ -141,36 +141,40 @@ def get_upcoming_events():
     events_by_week = []
     upcoming_events = []
 
-    # Collect necessary event information
-    for e in bimonth_events:
-        e_start = isoparse(e['event']['start'].get('dateTime'))
-        e_end = isoparse(e['event']['end'].get('dateTime'))
-        duration = str(e_end - e_start)
-        (h, m, s) = duration.split(':')
-        hours = int(h) + int(m) / 60 + int(s) / 3600
+    try:
+        # Collect necessary event information
+        for e in bimonth_events:
+            e_start = isoparse(e['event']['start'].get('dateTime'))
+            e_end = isoparse(e['event']['end'].get('dateTime'))
+            duration = str(e_end - e_start)
+            (h, m, s) = duration.split(':')
+            hours = int(h) + int(m) / 60 + int(s) / 3600
 
-        if 'projected' in e['event'].get('summary').lower():
-            time_group = 'projected_hours'
-        elif e_end.hour + (e_end.minute / 60) <= 16.25:
-            time_group = 'day_hours'
-        else:
-            time_group = 'evening_hours'
+            if 'projected' in e['event'].get('summary').lower():
+                time_group = 'projected_hours'
+            elif e_end.hour + (e_end.minute / 60) <= 16.25:
+                time_group = 'day_hours'
+            else:
+                time_group = 'evening_hours'
 
-        week_num = max(1, math.ceil(((e_start - bimonth_start_tz_aware).days + 1) / 7)) - 1
+            week_num = max(1, math.ceil(((e_start - bimonth_start_tz_aware).days + 1) / 7)) - 1
 
-        events_by_week.append({
-            'name': e['event'].get('summary'),
-            'date': e['event']['start'].get('dateTime'),
-            'hours': hours,
-            'tutor': e['tutor'],
-            'time_group': time_group,
-            'week_num': week_num
-        })
+            events_by_week.append({
+                'name': e['event'].get('summary'),
+                'date': e['event']['start'].get('dateTime'),
+                'hours': hours,
+                'tutor': e['tutor'],
+                'time_group': time_group,
+                'week_num': week_num
+            })
 
-        if upcoming_start < e_start <= upcoming_end:
-            upcoming_events.append(e)
+            if upcoming_start < e_start <= upcoming_end:
+                upcoming_events.append(e)
 
-    return events_by_week, upcoming_events, bimonth_events, summary_data
+        return events_by_week, upcoming_events, bimonth_events, summary_data
+    except Exception as e:
+        logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
+        raise
 
 
 def main():
