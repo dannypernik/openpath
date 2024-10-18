@@ -142,6 +142,7 @@ def get_events_and_data():
         raise
 
 def get_upcoming_events():
+    logging.info('Getting upcoming events')
     bimonth_events, summary_data, bimonth_start_tz_aware = get_events_and_data()
 
     events_by_week = []
@@ -206,7 +207,6 @@ def main():
         add_students_to_data = []
         messages = []
 
-        logging.info('Getting upcoming events')
         events_by_week, upcoming_events, bimonth_events, \
             summary_data = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
