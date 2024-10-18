@@ -121,7 +121,7 @@ def get_events_and_data():
                         })
                 logging.info(f"Events fetched for {cal['tutor']}")
             except Exception as e:
-                logging.error(f"Error fetching events for {cal['tutor']}: {e}", traceback.format_exc())
+                logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
                 raise
 
         bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
@@ -136,7 +136,7 @@ def get_events_and_data():
 
             logging.info('summary data fetched')
         except Exception as e:
-            logging.error(f"Error fetching summary data: {e}", traceback.format_exc())
+            logging.error(f"Error fetching summary data: {e}", traceback.format_exc(), exc_info=True)
             raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
