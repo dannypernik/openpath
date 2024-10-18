@@ -130,14 +130,16 @@ def get_events_and_data():
             logging.info('Calling Sheets API')
             # Call the Sheets API
             service_sheets = build('sheets', 'v4', credentials=creds)
+            logging.info('Sheets API called')
             sheet = service_sheets.spreadsheets()
+            logging.info('Sheet service created')
             result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
                                         range=SUMMARY_RANGE).execute()
+            logging.info('Sheet values fetched')
             summary_data = result.get('values', [])
-
             logging.info('summary data fetched')
         except Exception as e:
-            logging.error(f"Error fetching summary data: {e}", traceback.format_exc(), exc_info=True)
+            logging.error(f"Error fetching summary data: {e}", exc_info=True)
             raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
