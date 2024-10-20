@@ -18,7 +18,7 @@ from functools import wraps
 import requests
 import json
 from reminders import get_student_events
-from score_reader import get_all_data
+from app.score_reader import get_all_data
 # from app.tasks import create_sat_report_task, send_sat_report_task
 from app.tasks import create_and_send_sat_report
 import logging
@@ -986,6 +986,13 @@ def score_report():
         # safe_html_file.save(os.path.join(html_folder_path, full_name + '.html'))
 
         full_name = user.first_name + ' ' + user.last_name
+        if form.spreadsheet_url.data:
+            student_ss_full_url = form.spreadsheet_url.data
+            student_ss_base_url = student_ss_url.split('?')[0]
+            student_ss_id = student_ss_full_url.split('/')[-2]
+        else:
+            student_ss_id = None
+        logging.info(f"Student SS ID: {student_ss_id}")
         report_file = request.files['report_file']
         details_file = request.files['details_file']
 
@@ -995,27 +1002,28 @@ def score_report():
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
-        score_data = get_all_data(report_file, details_file)
-        print(score_data)
-        logging.info(f"Score data: {score_data}")
-        score_data['email'] = user.email
-        score_data['student_name'] = full_name
-
-        filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
-        os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
-        os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
-        json_file_path = os.path.join(json_folder_path, filename + '.json')
-        with open(json_file_path, "w") as json_file:
-            json.dump(score_data, json_file, indent=2)
-
-        test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
-            m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
-            type='practice', user_id=user.id)
-
-        db.session.add(test)
-        db.session.commit()
-
         try:
+            score_data = get_all_data(report_file, details_file)
+            print(score_data)
+            logging.info(f"Score data: {score_data}")
+            score_data['email'] = user.email
+            score_data['student_name'] = full_name
+            score_data['student_ss_id'] = student_ss_id
+
+            filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
+            os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
+            os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
+            json_file_path = os.path.join(json_folder_path, filename + '.json')
+            with open(json_file_path, "w") as json_file:
+                json.dump(score_data, json_file, indent=2)
+
+            test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
+                m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
+                type='practice', user_id=user.id)
+
+            db.session.add(test)
+            db.session.commit()
+
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             # Enqueue the tasks to be executed in the background using RQ
             # q = Queue(connection=Redis())
@@ -1026,7 +1034,6 @@ def score_report():
             return render_template('score-report-sent.html')
         except ValueError as ve:
             logger.error(f"Error generating score report: {ve}", exc_info=True)
-            flash(f'Score report could not be generated: {ve}', 'error')
             print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except HttpError as he:

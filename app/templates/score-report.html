@@ -6,7 +6,7 @@
     Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
   </p>
 
-  <button id="toggle-instructions" class="btn sec">Show instructions</button>
+  <button id="toggle-instructions" class="btn">Show instructions</button>
 
   <div id="instructions" class="hidden-block">
     <h3>Download score report</h3>
@@ -65,8 +65,9 @@
     {{ form.report_file(accept='.pdf') }}
     {{ form.details_file.label(class='mt-2') }}
     {{ form.details_file(accept='.pdf') }}
+    {{ form.spreadsheet_url }}
     {{ hcaptcha }}
-    {{ form.submit }}
+    {{ form.submit(class="sec") }}
   </form>
 {% endblock content %}
 
