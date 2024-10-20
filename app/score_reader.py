@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pdfplumber
 import re
 import pprint
+from flask import flash
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
@@ -31,13 +32,17 @@ def get_student_answers(score_details_file_path):
       },
   }
 
+  date = None
   reading_writing_count = 0
+  subject_totals = {
+    'rw_modules': 0,
+    'm_modules': 0
+  }
 
   for i, p in enumerate(pages):
     text = p.extract_text()
     reading_writing_count += text.count('Reading and Writing')
 
-    date = None
     for line in read_text_line_by_line(text):
       # print(line)
       # print(list(line))
@@ -86,11 +91,14 @@ def get_student_answers(score_details_file_path):
           else:
             response = s_line[-3+offset][:-1]
 
+          subject_totals[subject] += 1
+
           score_details_data['answers'][subject][module][number] = {
             'correct_answer': correct_answer,
             'student_answer': response,
             'is_correct': is_correct
           }
+
   # print answer key
   # for sub in score_details_data['answers']:
   #   print(sub)
@@ -99,6 +107,17 @@ def get_student_answers(score_details_file_path):
   #     for q in score_details_data['answers'][sub][mod]:
   #       print(q, score_details_data['answers'][sub][mod][q]['correct_answer'])
   # pp.pprint(score_details_data)
+
+  if date is None:
+    print(score_details_data)
+    return "invalid"
+  elif reading_writing_count < 30:
+    flash('Error reading Score Details page. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table.')
+    raise ValueError('Error: reading_writing_count < 30')
+  elif subject_totals['rw_modules'] != 54 or subject_totals['m_modules'] != 44:
+    flash('Error reading Score Details page. Make sure you click "All" above the answer table before saving the page as a PDF.')
+    raise ValueError('Error reading Score Details: subject_totals["rw_modules"] != 54 or subject_totals["m_modules"] != 44')
+
   return score_details_data
 
 
@@ -120,50 +139,62 @@ def get_data_from_pdf(data, pdf_path):
   data['total_score'] = None
   data['date'] = None
 
-  for page in pages:
-    text = page.extract_text()
+  reportConfirmed = False
+  if pages[0].extract_text().find('This practice score report is provided by') != -1:
+    reportConfirmed = True
 
-    # # Extract student's legal name
-    if not data['legal_name']:
-      name_start = text.find('Name: ') + 6
-      name_end = text.find('\n', name_start)
-      legal_name = text[name_start:name_end].strip()
-      data['legal_name'] = legal_name
+  if reportConfirmed:
+    for page in pages:
+      text = page.extract_text()
+      # # Extract student's legal name
+      if not data['legal_name']:
+        name_start = text.find('Name: ') + 6
+        name_end = text.find('\n', name_start)
+        legal_name = text[name_start:name_end].strip()
+        data['legal_name'] = legal_name
 
-    # Extract total score and remaining values
-    scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
-    scores = [int(score) for score in scores if 200 <= int(score) <= 1600]
-    if scores:
-      data['total_score'] = max(scores)
-      remaining_values = [int(value) for value in scores if value != data['total_score']]
-      if len(remaining_values) >= 2:
-        for i in range(len(remaining_values) - 1):
-          for j in range(i+1, len(remaining_values)):
-            if remaining_values[i] + remaining_values[j] == data['total_score']:
-              data['rw_score'] = remaining_values[i]
-              data['m_score'] = remaining_values[j]
+      # Extract total score and remaining values
+      scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
+      scores = [int(score) for score in scores if 200 <= int(score) <= 1600]
+      if scores:
+        data['total_score'] = max(scores)
+        remaining_values = [int(value) for value in scores if value != data['total_score']]
+        if len(remaining_values) >= 2:
+          for i in range(len(remaining_values) - 1):
+            for j in range(i+1, len(remaining_values)):
+              if remaining_values[i] + remaining_values[j] == data['total_score']:
+                data['rw_score'] = remaining_values[i]
+                data['m_score'] = remaining_values[j]
+                break
+            if not data['rw_score']:
               break
-          if not data['rw_score']:
-            break
 
-    # Find lines that start with SAT or PSAT
-    sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
-    valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2024, 2100)))]
-    sat_line = valid_sat_lines[0] if valid_sat_lines else None
-    if sat_line:
-      test_type = sat_line[0:sat_line.find('SAT') + 3]
-    test_number_start = sat_line.find('Practice') + 9
-    test_number_end = sat_line.find(' ', test_number_start)
-    test_number = sat_line[test_number_start:test_number_end]
-    data['test_code'] = test_type.lower() + test_number
-    data['test_display_name'] = f'{test_type.upper()} {test_number}'
+      # Find lines that start with SAT or PSAT
+      sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
+      valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2024, 2100)))]
+      sat_line = valid_sat_lines[0] if valid_sat_lines else None
+      if sat_line:
+        test_type = sat_line[0:sat_line.find('SAT') + 3]
+      test_number_start = sat_line.find('Practice') + 9
+      test_number_end = sat_line.find(' ', test_number_start)
+      test_number = sat_line[test_number_start:test_number_end]
+      test_code = test_type.lower() + test_number
 
-    date_start = sat_line.find(' ', test_number_end) + 1
-    date_end = sat_line.find('20', date_start) + 4
-    date_str = sat_line[date_start:date_end]
-    data['date'] = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y-%m-%d')
+      date_start = sat_line.find(' ', test_number_end) + 1
+      date_end = sat_line.find('20', date_start) + 4
+      date_str = sat_line[date_start:date_end]
+      date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
 
-  return data
+      if date != data['date'] or test_code != data['test_code']:
+        flash('The test code and/or testing date listed in the Score Report PDF does not match those of the Score Details PDF.', 'error')
+        raise ValueError('Score report error: date or test code mismatch')
+      if not data['rw_score'] or not data['m_score']:
+        flash('Error reading Score Report PDF. The score report should say "Your Practice Score Report" at the top.', 'error')
+        raise ValueError('Score report error: rw_score or m_score not found')
+      return data
+  else:
+    flash('Score Report PDF not found. Please follow the instructions carefully or email hello@openpathtutoring.com if you\'re stuck.', 'error')
+    raise FileNotFoundError('Score report error: top line not found')
 
 
 def get_mod_difficulty(score_details_data):
@@ -280,6 +311,11 @@ def get_mod_difficulty(score_details_data):
 
 def get_all_data(report_path, details_path):
   data = get_student_answers(details_path)
+  if data == "invalid":
+    data = get_student_answers(report_path)
+    report_path, details_path = details_path, report_path
+    if data == "invalid":
+      raise FileNotFoundError("Score details PDF not found. Please follow the instructions carefully or email hello@openpathtutoring.com if you're stuck.")
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
   # pp.pprint(data)

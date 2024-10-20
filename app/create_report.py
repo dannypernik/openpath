@@ -31,8 +31,8 @@ def create_sat_score_report(score_data):
 
     try:
         # Create the Sheets API service
-        service = build('sheets', 'v4', credentials=creds)
-        drive_service = build('drive', 'v3', credentials=creds)
+        service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+        drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the file
         ss_copy = drive_service.files().copy(fileId=SHEET_ID, body={'parents': [SCORE_REPORT_FOLDER_ID]}).execute()
@@ -498,34 +498,3 @@ def send_pdf_score_report(spreadsheet_id, score_data):
         print(f'An error occurred: {error}')
         send_fail_mail(score_data, 'score_data', error)
         raise
-
-
-# def delete_spreadsheet(spreadsheet_id):
-#     creds = service_account.Credentials.from_service_account_file(
-#         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
-#         scopes=['https://www.googleapis.com/auth/drive']
-#     )
-
-#     try:
-#         # Create the Drive API service
-#         drive_service = build('drive', 'v3', credentials=creds)
-
-#         # Delete the spreadsheet
-#         drive_service.files().delete(fileId=spreadsheet_id).execute()
-#         print(f'Spreadsheet {spreadsheet_id} deleted')
-
-#     except HttpError as error:
-#         print(f'An error occurred: {error}')
-#         send_fail_mail(spreadsheet_id, 'delete_spreadsheet(id)', error)
-#         raise
-
-
-# def create_and_send_sat_report(score_data):
-#     try:
-#         spreadsheet_id = create_sat_score_report(score_data)
-#         send_pdf_score_report(spreadsheet_id, score_data)
-#         delete_spreadsheet(spreadsheet_id)
-#     except Exception as e:
-#         print(f'An error occurred in create_and_send_sat_report: {e}')
-#         send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
-#         raise
