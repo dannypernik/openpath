@@ -65,7 +65,7 @@
     {{ form.report_file(accept='.pdf') }}
     {{ form.details_file.label(class='mt-2') }}
     {{ form.details_file(accept='.pdf') }}
-    {{ form.spreadsheet_url }}
+    <!-- {{ form.spreadsheet_url }} -->
     {{ hcaptcha }}
     {{ form.submit(class="sec") }}
   </form>
@@ -98,7 +98,7 @@
 
     // Disable submit button on form submit
     const form = document.querySelector("form");
-    const submitButton = form.querySelector("button[type='submit']");
+    const submitButton = form.querySelector("input[type='submit']");
     form.addEventListener("submit", function() {
       submitButton.disabled = true;
     });
@@ -106,10 +106,6 @@
 
   <script src="https://unpkg.com/bowser"></script>
   <script>
-    window.onload = function() {
-      Gifffer();
-    }
-
     var browser = bowser.getParser(window.navigator.userAgent);
     var browserName = browser.getBrowserName().toLowerCase();
     var isChrome = browser.isBrowser('Chrome');
