@@ -38,9 +38,9 @@ now = datetime.datetime.utcnow()
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat() + 'Z'
 bimonth_start_tz_aware = pytz.utc.localize(bimonth_start)
-upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
+upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
-upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=48)
+upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=72)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
 
