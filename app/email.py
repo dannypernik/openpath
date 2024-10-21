@@ -1151,3 +1151,36 @@ def send_fail_mail(data, description, error):
     else:
         print('Fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
+
+
+def send_task_fail_mail(exc, task_id, args, kwargs, einfo):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    'From': {
+                        'Email': app.config['MAIL_USERNAME'],
+                        'Name': 'Open Path Tutoring'
+                    },
+                    'To': [
+                        {
+                            'Email': app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    'Subject': 'Error in ' + description,
+                    'HTMLPart': render_template('email/task-fail-mail.html', exc=exc, \
+                        task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
+                }
+            ]
+        }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print('Task fail mail sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        print('Task fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code

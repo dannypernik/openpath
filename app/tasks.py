@@ -1,7 +1,7 @@
 import os
 from app import celery
 from app.create_report import create_sat_score_report, send_pdf_score_report
-from app.email import send_fail_mail
+from app.email import send_fail_mail, send_task_fail_mail
 import logging
 # import cProfile
 # import pstats
@@ -13,7 +13,14 @@ import logging
 # app = Celery('tasks', broker='redis://localhost:6379/0')
 # app.conf.result_backend = 'redis://localhost:6379/0'
 
-@celery.task(name='app.tasks.create_and_send_sat_report')
+class MyTaskBaseClass(celery.Task):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        # exc (Exception) - The exception raised by the task.
+        # args (Tuple) - Original arguments for the task that failed.
+        # kwargs (Dict) - Original keyword arguments for the task that failed.
+        send_task_fail_mail(exc, task_id, args, kwargs, einfo)
+
+@celery.task(name='app.tasks.create_and_send_sat_report', base=MyTaskBaseClass)
 def create_and_send_sat_report(score_data):
   try:
     # profiler = cProfile.Profile()
