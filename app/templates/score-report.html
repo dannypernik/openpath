@@ -67,7 +67,7 @@
     {{ form.details_file(accept='.pdf') }}
     <!-- {{ form.spreadsheet_url }} -->
     {{ hcaptcha }}
-    {{ form.submit(class="sec") }}
+    {{ form.submit(class="sec", onclick="spinner()") }}
   </form>
 {% endblock content %}
 
@@ -96,11 +96,41 @@
       });
     });
 
-    // Disable submit button on form submit
+    // Disable submit button on form submit and show loading screen
     const form = document.querySelector("form");
     const submitButton = form.querySelector("input[type='submit']");
     form.addEventListener("submit", function() {
-      submitButton.disabled = true;
+      window.setTimeout('this.disabled=true',0);
+
+      // Create loading screen elements
+      const loadingScreen = document.createElement("div");
+      loadingScreen.style.position = "fixed";
+      loadingScreen.style.top = "0";
+      loadingScreen.style.left = "0";
+      loadingScreen.style.width = "100%";
+      loadingScreen.style.height = "100%";
+      loadingScreen.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+      loadingScreen.style.display = "flex";
+      loadingScreen.style.justifyContent = "center";
+      loadingScreen.style.alignItems = "center";
+      loadingScreen.style.zIndex = "1000";
+
+      /*const loadingMessage = document.createElement("div");
+      loadingMessage.style.color = "white";
+      loadingMessage.style.fontSize = "1.5em";
+      loadingMessage.style.textAlign = "center";
+
+      const loadingWheel = document.createElement("div");
+      loadingWheel.classList.add("spinner-border");
+      loadingWheel.style.width = "3rem";
+      loadingWheel.style.height = "3rem";
+      loadingWheel.style.marginBottom = "1rem";
+
+      loadingMessage.appendChild(loadingWheel);
+      loadingMessage.appendChild(document.createTextNode("Checking your uploaded files"));*/
+
+      //loadingScreen.appendChild(loadingMessage);
+      document.body.appendChild(loadingScreen);
     });
   </script>
 
