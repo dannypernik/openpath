@@ -13,7 +13,8 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
+    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail, \
+    send_report_submitted_email
 from functools import wraps
 import requests
 import json
@@ -1009,6 +1010,7 @@ def score_report():
             score_data['email'] = user.email
             score_data['student_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
+            send_report_submitted_email(score_data)
 
             filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))

@@ -1080,6 +1080,40 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
     return result.status_code
 
 
+def send_report_submitted_email(score_data):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    'From': {
+                        'Email': app.config['MAIL_USERNAME'],
+                        'Name': 'Open Path Tutoring'
+                    },
+                    'To': [
+                        {
+                            'Email': app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    'ReplyTo': { 'Email': score_data['email'] },
+                    'Subject': 'Score report submitted for ' + score_data['student_name'],
+                    'TextPart': render_template('email/report-submitted-email.txt', score_data=score_data),
+                    'HTMLPart': render_template('email/report-submitted-email.html', score_data=score_data),
+                }
+            ]
+        }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        print('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
+
+
 def send_score_report_email(score_data, base64_blob):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -1098,6 +1132,7 @@ def send_score_report_email(score_data, base64_blob):
                             'Email': score_data['email']
                         }
                     ],
+                    'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
                     'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
                     'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
                     'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),

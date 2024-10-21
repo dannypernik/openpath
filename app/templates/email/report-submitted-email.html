@@ -1,0 +1,6 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  Score report submitted for {{ score_data['student_name'] }} (<a href="mailto:{{ score_data['email'] }}">{{ score_data['email'] }}</a>)
+{% endblock content %}
+
