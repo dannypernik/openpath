@@ -1038,12 +1038,10 @@ def score_report():
             return redirect(url_for('score_report'))
         except HttpError as he:
             logger.error(f"Error generating score report: {he}", exc_info=True)
-            flash(f'API error: {he}', 'error')
             print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except Exception as e:
             logger.error(f"Error generating score report: {e}", exc_info=True)
-            flash(f'An unexpected error occurred: {e}', 'error')
             print(traceback.format_exc())
             return redirect(url_for('score_report'))
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')

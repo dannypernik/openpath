@@ -130,14 +130,10 @@ def get_data_from_pdf(data, pdf_path):
   pdf = pdfplumber.open(pdf_path)
   pages = pdf.pages
 
-  data['student_name'] = None
   data['legal_name'] = None
-  data['test_code'] = None
-  data['test_display_name'] = None
   data['rw_score'] = None
   data['m_score'] = None
   data['total_score'] = None
-  data['date'] = None
 
   reportConfirmed = False
   if pages[0].extract_text().find('This practice score report is provided by') != -1:
@@ -187,7 +183,7 @@ def get_data_from_pdf(data, pdf_path):
 
       if date != data['date'] or test_code != data['test_code']:
         flash('The test code and/or testing date listed in the Score Report PDF does not match those of the Score Details PDF.', 'error')
-        raise ValueError('Score report error: date or test code mismatch')
+        raise ValueError(f'Score report error: date or test code mismatch. {date} != {data["date"]} or {test_code} != {data["test_code"]}')
       if not data['rw_score'] or not data['m_score']:
         flash('Error reading Score Report PDF. The score report should say "Your Practice Score Report" at the top.', 'error')
         raise ValueError('Score report error: rw_score or m_score not found')
