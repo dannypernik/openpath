@@ -20,7 +20,7 @@ class MyTaskBaseClass(celery.Task):
         # kwargs (Dict) - Original keyword arguments for the task that failed.
         send_task_fail_mail(exc, task_id, args, kwargs, einfo)
 
-@celery.task(name='app.tasks.create_and_send_sat_report', base=MyTaskBaseClass)
+@celery.task(name='app.tasks.create_and_send_sat_report')
 def create_and_send_sat_report(score_data):
   try:
     # profiler = cProfile.Profile()
