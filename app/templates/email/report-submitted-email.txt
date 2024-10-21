@@ -1,1 +1,1 @@
-The score report for {{ score_data['test_display_name'] }} is attached. This tool is in Beta, so please compare the report to your Score Details page and reply to this email if you find any discrepancies. Thank you for giving it a shot!
+Score report submitted for {{ score_data['student_name'] }} ({{ score_data['email'] }})
