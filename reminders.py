@@ -126,25 +126,25 @@ def get_events_and_data():
             logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
             raise
 
-        # try:
-        #     logging.info('Calling Sheets API')
-        #     # Call the Sheets API
-        #     service_sheets = build('sheets', 'v4', credentials=creds)
-        #     logging.info('Sheets API called')
-        #     sheet = service_sheets.spreadsheets()
-        #     logging.info('Sheet service created')
-        #     result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-        #                                 range=SUMMARY_RANGE).execute()
-        #     logging.info('Sheet values fetched')
-        #     summary_data = result.get('values', [])
-        #     logging.info('summary data fetched')
-        # except Exception as e:
-        #     err = json.loads(e.content.decode("utf-8"))
-        #     logging.error(f"Error fetching summary data: {err}", exc_info=True)
-        #     raise
+        try:
+            logging.info('Calling Sheets API')
+            # Call the Sheets API
+            service_sheets = build('sheets', 'v4', credentials=creds)
+            logging.info('Sheets API called')
+            sheet = service_sheets.spreadsheets()
+            logging.info('Sheet service created')
+            result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
+                                        range=SUMMARY_RANGE).execute()
+            logging.info('Sheet values fetched')
+            summary_data = result.get('values', [])
+            logging.info('summary data fetched')
+        except Exception as e:
+            err = json.loads(e.content.decode("utf-8"))
+            logging.error(f"Error fetching summary data: {err}", exc_info=True)
+            raise
 
-        # logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
-        return bimonth_events, bimonth_start_tz_aware # summary_data
+        logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
+        return bimonth_events, summary_data, bimonth_start_tz_aware
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
@@ -152,7 +152,7 @@ def get_events_and_data():
 
 def get_upcoming_events():
     logging.info('Getting upcoming events')
-    bimonth_events, bimonth_start_tz_aware = get_events_and_data() # summary_data
+    bimonth_events, summary_data, bimonth_start_tz_aware = get_events_and_data()
 
     events_by_week = []
     upcoming_events = []
@@ -187,7 +187,7 @@ def get_upcoming_events():
             if upcoming_start < e_start <= upcoming_end:
                 upcoming_events.append(e)
 
-        return events_by_week, upcoming_events, bimonth_events #, summary_data
+        return events_by_week, upcoming_events, bimonth_events, summary_data
     except Exception as e:
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
@@ -216,8 +216,8 @@ def main():
         add_students_to_data = []
         messages = []
 
-        events_by_week, upcoming_events, bimonth_events = get_upcoming_events() # summary_data
-
+        events_by_week, upcoming_events, bimonth_events, \
+            summary_data = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -240,137 +240,137 @@ def main():
             logging.info(msg)
             messages.append(msg)
 
-        # for row in summary_data:
-        #     if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
-        #         add_students_to_data.append({'name': row[0], 'add_to': 'database'})
+        for row in summary_data:
+            if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
+                add_students_to_data.append({'name': row[0], 'add_to': 'database'})
 
-        # for s in students:
-        #     ss_status = None
-        #     ss_hours = None
-        #     ss_tutors = []
-        #     ss_pay_type = None
-        #     next_session = ''
-        #     hours_this_week = 0
-        #     bimonth_hours = 0
-        #     next_tutor = None
-        #     rep_date = now
-        #     repurchase_deadline = ''
+        for s in students:
+            ss_status = None
+            ss_hours = None
+            ss_tutors = []
+            ss_pay_type = None
+            next_session = ''
+            hours_this_week = 0
+            bimonth_hours = 0
+            next_tutor = None
+            rep_date = now
+            repurchase_deadline = ''
 
-        #     name = full_name(s)
+            name = full_name(s)
 
-        #     for i, row in enumerate(summary_data):
-        #         if row[0] == name:
-        #             initial_status = s.status
-        #             # update DB status based on spreadsheet status
-        #             if row[1] != s.status.title():
-        #                 s.status = row[1].lower()
+            for i, row in enumerate(summary_data):
+                if row[0] == name:
+                    initial_status = s.status
+                    # update DB status based on spreadsheet status
+                    if row[1] != s.status.title():
+                        s.status = row[1].lower()
 
-        #             # check for students who should be listed as active
-        #             if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
-        #                 sheet.update_cell(i+1, 2, 'Active')
-        #                 s.status = 'active'
-        #                 msg = name + ' is scheduled soon. Status changed to Active.'
-        #                 logging.info(msg)
-        #                 status_updates.append(msg)
-        #             if initial_status != s.status:
-        #                 try:
-        #                     db.session.merge(s)
-        #                     db.session.commit()
-        #                     msg = name + ' DB status = ' + s.status
-        #                     logging.info(msg)
-        #                     status_updates.append(msg)
-        #                 except Exception:
-        #                     err_msg = name + ' DB status update failed: ' + traceback.format_exc()
-        #                     logging.error(err_msg)
-        #                     messages.append(err_msg)
+                    # check for students who should be listed as active
+                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
+                        sheet.update_cell(i+1, 2, 'Active')
+                        s.status = 'active'
+                        msg = name + ' is scheduled soon. Status changed to Active.'
+                        logging.info(msg)
+                        status_updates.append(msg)
+                    if initial_status != s.status:
+                        try:
+                            db.session.merge(s)
+                            db.session.commit()
+                            msg = name + ' DB status = ' + s.status
+                            logging.info(msg)
+                            status_updates.append(msg)
+                        except Exception:
+                            err_msg = name + ' DB status update failed: ' + traceback.format_exc()
+                            logging.error(err_msg)
+                            messages.append(err_msg)
 
-        #             ss_status = row[1]
-        #             ss_hours = float(row[3].replace('(','-').replace(')',''))
-        #             ss_tutors = row[8].split(', ')
-        #             ss_pay_type = row[7]
-        #             if ss_pay_type == 'Monthly':
-        #                 repurchase_deadline = ''
-        #             elif ss_hours < 0:
-        #                 repurchase_deadline = 'ASAP'
-        #             if row[16] != '':
-        #                 ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
-        #             else:
-        #                 ss_last_session = None
-        #             break
-        #         elif row == summary_data[-1]:
-        #             logging.info('did not find ' + name)
-        #             add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
-        #             break
+                    ss_status = row[1]
+                    ss_hours = float(row[3].replace('(','-').replace(')',''))
+                    ss_tutors = row[8].split(', ')
+                    ss_pay_type = row[7]
+                    if ss_pay_type == 'Monthly':
+                        repurchase_deadline = ''
+                    elif ss_hours < 0:
+                        repurchase_deadline = 'ASAP'
+                    if row[16] != '':
+                        ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
+                    else:
+                        ss_last_session = None
+                    break
+                elif row == summary_data[-1]:
+                    logging.info('did not find ' + name)
+                    add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
+                    break
 
-        #     if ss_status in {'Active', 'Prospective'}:
-        #         for e in events_by_week:
-        #             if name in e['name']:
-        #                 tutoring_events.append(e)
-        #                 if s.tutor_id == 1:
-        #                     my_tutoring_events.append(e)
+            if ss_status in {'Active', 'Prospective'}:
+                for e in events_by_week:
+                    if name in e['name']:
+                        tutoring_events.append(e)
+                        if s.tutor_id == 1:
+                            my_tutoring_events.append(e)
 
-        #         if any(name in e['name'] for e in tutoring_events):
-        #             for e in tutoring_events:
-        #                 e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
-        #                 if name in e['name']:
-        #                     bimonth_hours += e['hours']
-        #                     if e['week_num'] == 0:
-        #                         hours_this_week += e['hours']
-        #                     if next_session == '':
-        #                         next_date = e_date
-        #                         if ss_last_session and next_date.date() != ss_last_session.date():
-        #                             next_session = datetime.datetime.strftime(next_date, '%a %b %d')
-        #                             next_tutor = e['tutor']
-        #                     if bimonth_hours > ss_hours and repurchase_deadline == '':
-        #                         rep_date = e_date
-        #                         repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
-        #                         break
+                if any(name in e['name'] for e in tutoring_events):
+                    for e in tutoring_events:
+                        e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                        if name in e['name']:
+                            bimonth_hours += e['hours']
+                            if e['week_num'] == 0:
+                                hours_this_week += e['hours']
+                            if next_session == '':
+                                next_date = e_date
+                                if ss_last_session and next_date.date() != ss_last_session.date():
+                                    next_session = datetime.datetime.strftime(next_date, '%a %b %d')
+                                    next_tutor = e['tutor']
+                            if bimonth_hours > ss_hours and repurchase_deadline == '':
+                                rep_date = e_date
+                                repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
+                                break
 
-        #         s_data = {
-        #             'name': name,
-        #             'row': i+1,
-        #             'hours': ss_hours,
-        #             'status': ss_status,
-        #             'tutors': ss_tutors,
-        #             'pay_type': ss_pay_type,
-        #             'next_session': next_session,
-        #             'next_tutor': next_tutor,
-        #             'hours_this_week' : hours_this_week,
-        #             'rep_date': rep_date,
-        #             'deadline': repurchase_deadline
-        #         }
+                s_data = {
+                    'name': name,
+                    'row': i+1,
+                    'hours': ss_hours,
+                    'status': ss_status,
+                    'tutors': ss_tutors,
+                    'pay_type': ss_pay_type,
+                    'next_session': next_session,
+                    'next_tutor': next_tutor,
+                    'hours_this_week' : hours_this_week,
+                    'rep_date': rep_date,
+                    'deadline': repurchase_deadline
+                }
 
-        #         student_data.append(s_data)
+                student_data.append(s_data)
 
-        # retries = 3
-        # for s in student_data:
-        #     for attempt in range(retries):
-        #         try:
-        #             sheet.update_cell(s['row'], 10, s['next_session'])
-        #             sheet.update_cell(s['row'], 11, s['deadline'])
-        #             logging.info(f"Successfully updated {s['name']} in the spreadsheet")
-        #             break
-        #         except gspread.exceptions.APIError as e:
-        #             logging.error(f"APIError: {e.response.text}")
-        #             if attempt < retries - 1:
-        #                 logging.info(f"Attempt {attempt + 1} in {delay} seconds...")
-        #                 time.sleep(2)
-        #             else:
-        #                 raise
-        #         except Exception as e:
-        #             logging.error(f"Unexpected error: {str(e)}")
-        #             raise
+        retries = 3
+        for s in student_data:
+            for attempt in range(retries):
+                try:
+                    sheet.update_cell(s['row'], 10, s['next_session'])
+                    sheet.update_cell(s['row'], 11, s['deadline'])
+                    logging.info(f"Successfully updated {s['name']} in the spreadsheet")
+                    break
+                except gspread.exceptions.APIError as e:
+                    logging.error(f"APIError: {e.response.text}")
+                    if attempt < retries - 1:
+                        logging.info(f"Attempt {attempt + 1} in {delay} seconds...")
+                        time.sleep(2)
+                    else:
+                        raise
+                except Exception as e:
+                    logging.error(f"Unexpected error: {str(e)}")
+                    raise
 
-        #     tutors_attention.update(s['tutors'])
+            tutors_attention.update(s['tutors'])
 
-        #     if s['next_session'] == '':
-        #         unscheduled_students.append(s)
-        #     elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['rep_date'] <= (now + datetime.timedelta(days=7)) and s['pay_type'] == 'Package' :
-        #         low_scheduled_students.append(s)
-        #     else:
-        #         other_scheduled_students.append(s)
+            if s['next_session'] == '':
+                unscheduled_students.append(s)
+            elif (s['hours'] < s['hours_this_week'] or s['hours'] <= 0) and s['rep_date'] <= (now + datetime.timedelta(days=7)) and s['pay_type'] == 'Package' :
+                low_scheduled_students.append(s)
+            else:
+                other_scheduled_students.append(s)
 
-        # low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
+        low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
 
         ### mark test dates as past
         for d in test_dates:
@@ -434,14 +434,14 @@ def main():
             weekly_data[e['time_group']][e['week_num']] += e['hours']
             weekly_data['sessions'][e['week_num']] += 1
 
-        # if day_of_week == 'Monday':
-        #     # TODO: implement unregistered_active_students and undecided_active_students
-        #     for tutor in tutors:
-        #         if full_name(tutor) in tutors_attention and tutor.id != 1:
-        #             msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
-        #                 other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
-        #             logging.info(msg)
-        #             messages.append(msg)
+        if day_of_week == 'Monday':
+            # TODO: implement unregistered_active_students and undecided_active_students
+            for tutor in tutors:
+                if full_name(tutor) in tutors_attention and tutor.id != 1:
+                    msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
+                        other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
+                    logging.info(msg)
+                    messages.append(msg)
 
         if day_of_week == 'Sunday':
             # TODO: implement unregistered_active_students and undecided_active_students
