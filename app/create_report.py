@@ -425,10 +425,10 @@ def create_sat_score_report(score_data):
                 body=batch_update_request
             ).execute()
 
-        print(ss_copy_id)
+        logging.info('ss_copy_id: ' + ss_copy_id)
 
     except HttpError as error:
-        print(f'An error occurred in create_sat_score_report: {error}')
+        logging.error(f'An error occurred in create_sat_score_report: {error}')
         send_fail_mail(score_data, 'score_data', error)
         raise
 
@@ -488,13 +488,13 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             # Send email with PDF attachment
             message = f"Please find the score report for {score_data['test_code'].upper()} attached."
             send_score_report_email(score_data, base64_blob)
-            print(f"PDF report sent to {score_data['email']}")
+            logging.info(f"PDF report sent to {score_data['email']}")
             drive_service.files().delete(fileId=spreadsheet_id).execute()
-            print(f'Spreadsheet {spreadsheet_id} deleted')
+            logging.info(f'Spreadsheet {spreadsheet_id} deleted')
         else:
-            print(f'Failed to fetch PDF: {response.content}')
+            logging.error(f'Failed to fetch PDF: {response.content}')
 
     except HttpError as error:
-        print(f'An error occurred: {error}')
+        logging.error(f'An error occurred: {error}')
         send_fail_mail(score_data, 'score_data', error)
         raise
