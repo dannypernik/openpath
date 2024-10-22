@@ -1010,7 +1010,7 @@ def score_report():
             score_data['email'] = user.email
             score_data['student_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
-            send_report_submitted_email(score_data)
+            #send_report_submitted_email(score_data)
 
             filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
