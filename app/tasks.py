@@ -19,7 +19,6 @@ def create_and_send_sat_report(score_data):
     print('SAT report created and sent')
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
-    send_fail_mail(score_data, 'create_and_send_sat_report(score_data)', e)
     raise e
 
 @celery.task(name='app.tasks.send_report_submitted_email')
@@ -29,5 +28,4 @@ def send_report_submitted_email(score_data):
     logging.info('Report submitted email sent')
   except Exception as e:
     logging.error(f'Error sending report submitted email: {e}')
-    send_fail_mail(score_data, 'send_report_submitted_email(score_data)', e)
     raise e
