@@ -27,35 +27,6 @@
     <video src="{{ url_for('static', filename='media/details.webm') }}" class="mb-3" controls></video>
   </div>
 
-  <!-- <script>
-    var browser = bowser.getParser(window.navigator.userAgent);
-    var browserName = browser.getBrowserName().toLowerCase();
-    var isChrome = browser.isBrowser('Chrome');
-    var isFirefox = browser.isBrowser('Firefox');
-    var isSafari = browser.isBrowser('Safari');
-    var isEdge = browser.isBrowser('Microsoft Edge');
-    var isIE = browser.isBrowser('Internet Explorer');
-
-    // Use the browser variables to conditionally execute code or display messages
-    if (isChrome) {
-      document.getElementById('browserGif').src = "{{ url_for('static', filename='img/chrome.gif') }}";
-      document.getElementById('browserGif').style.display = 'block';
-    } else if (isFirefox) {
-      document.getElementById('browserGif').src = 'firefox.gif';
-      document.getElementById('browserGif').style.display = 'block';
-    } else if (isSafari) {
-      document.getElementById('browserGif').src = 'safari.gif';
-      document.getElementById('browserGif').style.display = 'block';
-    } else if (isEdge) {
-      document.getElementById('browserGif').src = 'edge.gif';
-      document.getElementById('browserGif').style.display = 'block';
-    } else if (isIE) {
-      document.getElementById('browserGif').src = 'ie.gif';
-      document.getElementById('browserGif').style.display = 'block';
-    } else {
-      document.getElementById('otherBrowsersBtn').style.display = 'block';
-    }
-  </script> -->
   <form action="" method="post" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     {{ form.first_name }}
@@ -107,26 +78,8 @@
     const form = document.querySelector('form');
     const submitButton = form.querySelector('input[type=submit]');
     form.addEventListener('submit', function() {
-    window.setTimeout('this.disabled=true',0);
-    document.querySelector('.loading-screen').style.display = 'block';
-
-
-      /*const loadingMessage = document.createElement("div");
-      loadingMessage.style.color = "white";
-      loadingMessage.style.fontSize = "1.5em";
-      loadingMessage.style.textAlign = "center";
-
-      const loadingWheel = document.createElement("div");
-      loadingWheel.classList.add("spinner-border");
-      loadingWheel.style.width = "3rem";
-      loadingWheel.style.height = "3rem";
-      loadingWheel.style.marginBottom = "1rem";
-
-      loadingMessage.appendChild(loadingWheel);
-      loadingMessage.appendChild(document.createTextNode("Checking your uploaded files"));*/
-
-      //loadingScreen.appendChild(loadingMessage);
-
+      window.setTimeout('this.disabled=true',0);
+      document.querySelector('.loading-screen').style.display = 'block';
     });
   </script>
 
