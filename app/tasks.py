@@ -21,7 +21,7 @@ def create_and_send_sat_report(score_data):
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
 
-@celery.task(name='app.tasks.send_report_submitted_email')
+@celery.task(name='app.tasks.send_report_submitted_task')
 def send_report_submitted_email(score_data):
   try:
     send_report_submitted_email(score_data)

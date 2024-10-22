@@ -13,15 +13,14 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail, \
-    send_report_submitted_email
+    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
 from functools import wraps
 import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
 # from app.tasks import create_sat_report_task, send_sat_report_task
-from app.tasks import create_and_send_sat_report, send_report_submitted_email
+from app.tasks import create_and_send_sat_report, send_report_submitted_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -1010,7 +1009,7 @@ def score_report():
             score_data['email'] = user.email
             score_data['student_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
-            send_report_submitted_email.delay(score_data)
+            send_report_submitted_task.delay(score_data)
 
             filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
