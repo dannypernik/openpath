@@ -136,7 +136,7 @@ def get_events_and_data():
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
                 result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                range=SUMMARY_RANGE).execute()
+                        range=SUMMARY_RANGE).execute()
                 logging.info('Sheet values fetched')
                 summary_data = result.get('values', [])
 
@@ -148,8 +148,9 @@ def get_events_and_data():
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
                 if attempt < retries - 1:
-                    logging.info(f"Retrying in 2 seconds...")
-                    time.sleep(2)
+                    delay = [5, 10, 30][attempt]
+                    logging.info(f"Retrying in {delay} seconds...")
+                    time.sleep(delay)
                 else:
                     raise
 
