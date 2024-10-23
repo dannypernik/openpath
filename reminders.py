@@ -137,13 +137,12 @@ def get_events_and_data():
                 logging.info('Sheet service created')
                 result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
                         range=SUMMARY_RANGE).execute()
-                logging.info('Sheet values fetched')
                 summary_data = result.get('values', [])
 
                 if not summary_data:
-                    logging.info('summary_data failed.')
+                    logging.info('summary_data failed')
                 else:
-                    logging.info('summary data fetched')
+                    logging.info('summary_data fetched')
                     break
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
@@ -467,7 +466,7 @@ def main():
     except Exception:
         logging.error('reminders.py failed:', traceback.format_exc() )
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-            other_scheduled_students, tutors_attention, add_students_to_data, 'failed', traceback.format_exc())
+            other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'failed', traceback.format_exc())
 
     finally:
         session.close()
