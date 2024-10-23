@@ -126,22 +126,32 @@ def get_events_and_data():
             logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
             raise
 
-        try:
-            logging.info('Calling Sheets API')
-            # Call the Sheets API
-            service_sheets = build('sheets', 'v4', credentials=creds)
-            logging.info('Sheets API called')
-            sheet = service_sheets.spreadsheets()
-            logging.info('Sheet service created')
-            result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                        range=SUMMARY_RANGE).execute()
-            logging.info('Sheet values fetched')
-            summary_data = result.get('values', [])
-            logging.info('summary data fetched')
-        except Exception as e:
-            err = json.loads(e.content.decode("utf-8"))
-            logging.error(f"Error fetching summary data: {err}", exc_info=True)
-            raise
+        retries = 3
+        for attempt in range(retries):
+            try:
+                logging.info('Calling Sheets API #' + str(attempt + 1))
+                # Call the Sheets API
+                service_sheets = build('sheets', 'v4', credentials=creds)
+                logging.info('Sheets API called')
+                sheet = service_sheets.spreadsheets()
+                logging.info('Sheet service created')
+                result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
+                                range=SUMMARY_RANGE).execute()
+                logging.info('Sheet values fetched')
+                summary_data = result.get('values', [])
+
+                if not summary_data:
+                    logging.info('summary_data failed.')
+                else:
+                    logging.info('summary data fetched')
+                    break
+            except Exception as e:
+                logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
+                if attempt < retries - 1:
+                    logging.info(f"Retrying in 2 seconds...")
+                    time.sleep(2)
+                else:
+                    raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
         return bimonth_events, summary_data, bimonth_start_tz_aware
