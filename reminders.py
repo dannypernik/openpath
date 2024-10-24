@@ -20,7 +20,7 @@ from app.email import get_quote, send_reminder_email, send_test_reminder_email, 
 from sqlalchemy.orm import joinedload, sessionmaker
 import requests
 import traceback
-from pprint import pprint
+import pprint
 import logging
 import time
 
