@@ -30,7 +30,7 @@ import time
 
 info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
 logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+pp = pprint.PrettyPrinter(indent=2)
 # Create a new session
 session = db.session
 
@@ -38,9 +38,9 @@ now = datetime.datetime.utcnow()
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat() + 'Z'
 bimonth_start_tz_aware = pytz.utc.localize(bimonth_start)
-upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
+upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
-upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=72)
+upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=48)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
 
@@ -53,7 +53,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
-SUMMARY_RANGE = 'Student summary!A1:Z'
+SUMMARY_RANGE = 'Student summary!A2:Z'
 calendars = [
     { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
@@ -143,6 +143,7 @@ def get_events_and_data():
                     logging.info('summary_data failed')
                 else:
                     logging.info('summary_data fetched')
+                    pp.pprint(summary_data)
                     break
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
