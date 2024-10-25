@@ -19,7 +19,6 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-# from app.tasks import create_sat_report_task, send_sat_report_task
 from app.tasks import create_and_send_sat_report, send_report_submitted_task
 import logging
 from googleapiclient.errors import HttpError
@@ -30,7 +29,7 @@ from redis import Redis
 # from html_sanitizer import Sanitizer
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='logs/app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.before_request
 def before_request():
@@ -988,11 +987,10 @@ def score_report():
         full_name = user.first_name + ' ' + user.last_name
         if form.spreadsheet_url.data:
             student_ss_full_url = form.spreadsheet_url.data
-            student_ss_base_url = student_ss_url.split('?')[0]
-            student_ss_id = student_ss_full_url.split('/')[-2]
+            student_ss_base_url = student_ss_full_url.split('?')[0]
+            student_ss_id = student_ss_base_url.split('/')[-2]
         else:
             student_ss_id = None
-        logging.info(f"Student SS ID: {student_ss_id}")
         report_file = request.files['report_file']
         details_file = request.files['details_file']
 
@@ -1026,20 +1024,27 @@ def score_report():
             db.session.commit()
 
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-            # Enqueue the tasks to be executed in the background using RQ
-            # q = Queue(connection=Redis())
-            # exec.submit('create_and_send_sat_report', score_data)
-            # result = create_sat_report_task.delay(score_data)
-            # send_sat_report_task.delay(result.id, score_data)
             create_and_send_sat_report.delay(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
+            if 'reading_writing_count < 30' in str(ve):
+                flash(Markup('Error reading Score Details page. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'))
+            elif 'subject_totals["rw_modules"] != 54 or subject_totals["m_modules"] != 44' in str(ve):
+                flash(Markup('Error reading Score Details page. Make sure you click "All" above the answer table before saving the page as a PDF. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'), 'error')
+            elif 'date or test code mismatch' in str(ve):
+                flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except HttpError as he:
             logger.error(f"Error generating score report: {he}", exc_info=True)
             print(traceback.format_exc())
+            return redirect(url_for('score_report'))
+        except FileNotFoundError as fe:
+            if 'top line not found' in str(fe):
+                flash(Markup('Score Report PDF not found. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.'), 'error')
+            elif 'score details file not found' in str(fe):
+                flash(Markup('Score Details PDF not found. Please check the instructions and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if this message seems to be an error.'), 'error')
             return redirect(url_for('score_report'))
         except Exception as e:
             logger.error(f"Error generating score report: {e}", exc_info=True)

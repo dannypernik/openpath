@@ -112,10 +112,8 @@ def get_student_answers(score_details_file_path):
     print(score_details_data)
     return "invalid"
   elif reading_writing_count < 30:
-    flash(Markup('Error reading Score Details page. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'))
-    raise ValueError('Error: reading_writing_count < 30')
+    raise ValueError('reading_writing_count < 30')
   elif subject_totals['rw_modules'] != 54 or subject_totals['m_modules'] != 44:
-    flash(Markup('Error reading Score Details page. Make sure you click "All" above the answer table before saving the page as a PDF. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'), 'error')
     raise ValueError('Error reading Score Details: subject_totals["rw_modules"] != 54 or subject_totals["m_modules"] != 44')
 
   return score_details_data
@@ -182,14 +180,11 @@ def get_data_from_pdf(data, pdf_path):
       date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
 
       if date != data['date'] or test_code != data['test_code']:
-        flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.', 'error'))
         raise ValueError(f'Score report error: date or test code mismatch. {date} != {data["date"]} or {test_code} != {data["test_code"]}')
       if not data['rw_score'] or not data['m_score']:
-        flash(Markup('Please confirm your Score Report PDF says "Your Practice Score Report" at the top and <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'), 'error')
         raise ValueError('Score report error: rw_score or m_score not found')
       return data
   else:
-    flash(Markup('Score Report PDF not found. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.'), 'error')
     raise FileNotFoundError('Score report error: top line not found')
 
 
@@ -311,7 +306,7 @@ def get_all_data(report_path, details_path):
     data = get_student_answers(report_path)
     report_path, details_path = details_path, report_path
     if data == "invalid":
-      raise FileNotFoundError(Markup('Score details PDF not found. Please check the instructions and <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if this message seems to be an error.'), 'error')
+      raise FileNotFoundError('score details file not found')
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
   # pp.pprint(data)
