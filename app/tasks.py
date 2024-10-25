@@ -11,7 +11,7 @@ class MyTaskBaseClass(celery.Task):
         # kwargs (Dict) - Original keyword arguments for the task that failed.
         send_task_fail_mail(exc, task_id, args, kwargs, einfo)
 
-@celery.task(name='app.tasks.create_and_send_sat_report')
+@celery.task(name='app.tasks.create_and_send_sat_report', bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 7})
 def create_and_send_sat_report(score_data):
   try:
     spreadsheet_id = create_sat_score_report(score_data)
@@ -21,7 +21,7 @@ def create_and_send_sat_report(score_data):
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
 
-@celery.task(name='app.tasks.send_report_submitted_task')
+@celery.task(name='app.tasks.send_report_submitted_task', bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 7})
 def send_report_submitted_task(score_data):
   try:
     send_report_submitted_email(score_data)
