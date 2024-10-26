@@ -9,7 +9,7 @@
   <button id="toggle-instructions" class="btn">Show instructions</button>
 
   <div id="instructions" class="hidden-block">
-    <h3>Download score report</h3>
+    <h3>Download Score Report PDF</h3>
     <ol>
       <li>Log in at <strong><a href="https://mypractice.collegeboard.org" target="_blank">mypractice.collegeboard.org</a></strong></li>
       <li>Click on the "Score Details" button for the test you want to analyze</li>
@@ -28,17 +28,33 @@
   </div>
 
   <form action="" method="post" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    {{ form.first_name }}
-    {{ form.last_name }}
-    {{ form.email }}
-    {{ form.report_file.label(class='mt-2') }}
-    {{ form.report_file(accept='.pdf') }}
-    {{ form.details_file.label(class='mt-2') }}
-    {{ form.details_file(accept='.pdf') }}
-    {{ form.spreadsheet_url }}
-    {{ hcaptcha }}
-    {{ form.submit(class="sec") }}
+    <div class="row justify-content-center mt-3">
+      <div class="col-12 col-lg-6">
+        {{ form.hidden_tag() }}
+        {{ form.first_name }}
+      </div>
+      <div class="col-12 col-lg-6">
+        {{ form.last_name }}
+      </div>
+      <div class="col-12 col-lg-6">
+        {{ form.email }}
+      </div>
+      <div class="col-12 col-lg-6">
+        {{ form.spreadsheet_url }}
+      </div>
+      <div class="col-12 col-lg-6">
+        {{ form.report_file.label(class='mt-2') }}
+        {{ form.report_file(accept='.pdf') }}
+      </div>
+      <div class="col-12 col-lg-6">
+        {{ form.details_file.label(class='mt-2') }}
+        {{ form.details_file(accept='.pdf') }}
+      </div>
+      <div class="col-12 text-center mt-2">
+        {{ hcaptcha }}
+        {{ form.submit(class="sec") }}
+      </div>
+    </div>
   </form>
   <div class="loading-screen">
     <div class="loader">

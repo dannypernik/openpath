@@ -293,7 +293,7 @@ a:before {
 button, .btn, input[type="submit"] {
   @include fill-color();
   display: block;
-  margin: 1rem auto 2rem;
+  margin: 1rem auto;
   padding: 1rem 2rem;
   border-width: 2px;
   transition: 0.3s;
