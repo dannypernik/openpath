@@ -12,7 +12,7 @@ class MyTaskBaseClass(celery.Task):
         logging.error(f'Task {task_id} raised exception: {exc}')
         send_task_fail_mail(exc, task_id, args, kwargs, einfo)
 
-@celery.task(name='app.tasks.create_and_send_sat_report', bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 7}, base=MyTaskBaseClass)
+@celery.task(name='app.tasks.create_and_send_sat_report', bind=True, autoretry_for=(Exception,), retry_backoff=10, retry_kwargs={'max_retries': 7}, base=MyTaskBaseClass)
 def create_and_send_sat_report(self, score_data):
   try:
     spreadsheet_id = create_sat_score_report(score_data)
@@ -22,7 +22,7 @@ def create_and_send_sat_report(self, score_data):
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
 
-@celery.task(name='app.tasks.send_report_submitted_task', bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 7}, base=MyTaskBaseClass)
+@celery.task(name='app.tasks.send_report_submitted_task', bind=True, autoretry_for=(Exception,), retry_backoff=10, retry_kwargs={'max_retries': 7}, base=MyTaskBaseClass)
 def send_report_submitted_task(self, score_data):
   try:
     send_report_submitted_email(score_data)
