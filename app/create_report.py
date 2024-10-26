@@ -22,7 +22,6 @@ SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service accou
 
 # Function to create SAT score report
 def create_sat_score_report(score_data):
-    logging.info(score_data)
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/spreadsheets',
@@ -38,6 +37,7 @@ def create_sat_score_report(score_data):
         # Create a copy of the file
         ss_copy = drive_service.files().copy(fileId=SHEET_ID, body={'parents': [SCORE_REPORT_FOLDER_ID]}).execute()
         ss_copy_id = ss_copy.get('id')
+        logging.info(f'Created copy of {SHEET_ID} as {ss_copy_id}')
 
         ss = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
         sheets = ss.get('sheets', [])
@@ -382,10 +382,12 @@ def create_sat_score_report(score_data):
         }
 
         # Execute the batch update request
+        logging.info('Starting batch update')
         response = service.spreadsheets().batchUpdate(
             spreadsheetId=ss_copy_id,
             body=batch_update_request
         ).execute()
+        logging.info('Batch update complete')
 
 
         if not score_data['has_omits']:
