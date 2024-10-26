@@ -1002,7 +1002,6 @@ def score_report():
 
         try:
             score_data = get_all_data(report_file, details_file)
-            print(score_data)
             logging.info(f"Score data: {score_data}")
             score_data['email'] = user.email
             score_data['student_name'] = full_name
