@@ -1,7 +1,7 @@
-Hi {{ parent.first_name }}, thank you for requesting the score report for your student's practice test. If you've submitted the request by Monday, Jan 29th, I should be able to get it to you by Wednesday. I will be out of town from Thurs Feb 1st to Weds Feb 7th, so I will process the remaining score reports and send them out when I return. Feel free to reply to this address with any questions in the meantime.
+Hi {{ parent.first_name }}, thank you for requesting the score report for your student's practice test. We aim to send it to you within 48 hours. Feel free to reply to this email with any questions in the meantime.
 
 Thank you,
-Danny
+Open Path Tutoring
 
 
 Student name: {{ student.first_name }} {{ student.last_name }}
