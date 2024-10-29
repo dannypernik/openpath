@@ -942,7 +942,7 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
                             'Email': app.config['MAIL_USERNAME']
                         },
                     ],
-                    'Subject': 'Admin tutoring report for ' + start_date + ' to ' + end_date,
+                    'Subject': 'reminders.py succeeded - Admin tutoring report',
                     'HTMLPart': render_template('email/weekly-report-email.html',
                         messages=messages, status_updates=status_updates, my_tutoring_hours=my_tutoring_hours,
                         my_session_count=my_session_count, other_tutoring_hours=other_tutoring_hours,

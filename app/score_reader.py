@@ -140,6 +140,7 @@ def get_data_from_pdf(data, pdf_path):
   if reportConfirmed:
     for page in pages:
       text = page.extract_text()
+      # print(text)
       # # Extract student's legal name
       if not data['legal_name']:
         name_start = text.find('Name: ') + 6
@@ -165,7 +166,7 @@ def get_data_from_pdf(data, pdf_path):
 
       # Find lines that start with SAT or PSAT
       sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
-      valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2024, 2100)))]
+      valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2020, 2100)))]
       sat_line = valid_sat_lines[0] if valid_sat_lines else None
       if sat_line:
         test_type = sat_line[0:sat_line.find('SAT') + 3]
