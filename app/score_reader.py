@@ -46,9 +46,11 @@ def get_student_answers(score_details_file_path):
       # print(line)
       # print(list(line))
       if date is None and line.find('My Tests') != -1:
-        date_start = line.find(' - ') + 3
-        date_end = line.find('202', date_start) + 4
-        date_str = line[date_start:date_end]
+        trimmed_line = line.rstrip() # ensures no trailing whitespace
+        print(trimmed_line)
+        date_start = trimmed_line.find(' - ') + 3
+        date_str = trimmed_line[date_start:]
+        print(date_str)
         date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
         score_details_data['date'] = date
 
@@ -139,53 +141,56 @@ def get_data_from_pdf(data, pdf_path):
     reportConfirmed = True
 
   if reportConfirmed:
-    for page in pages:
-      text = page.extract_text()
-      # print(text)
-      # # Extract student's legal name
-      if not data['legal_name']:
-        name_start = text.find('Name: ') + 6
-        name_end = text.find('\n', name_start)
-        legal_name = text[name_start:name_end].strip()
-        data['legal_name'] = legal_name
+    try:
+      for page in pages:
+        text = page.extract_text()
+        # print(text)
+        # # Extract student's legal name
+        if not data['legal_name']:
+          name_start = text.find('Name: ') + 6
+          name_end = text.find('\n', name_start)
+          legal_name = text[name_start:name_end].strip()
+          data['legal_name'] = legal_name
 
-      # Extract total score and remaining values
-      scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
-      scores = [int(score) for score in scores if 200 <= int(score) <= 1600]
-      if scores:
-        data['total_score'] = max(scores)
-        remaining_values = [int(value) for value in scores if value != data['total_score']]
-        if len(remaining_values) >= 2:
-          for i in range(len(remaining_values) - 1):
-            for j in range(i+1, len(remaining_values)):
-              if remaining_values[i] + remaining_values[j] == data['total_score']:
-                data['rw_score'] = remaining_values[i]
-                data['m_score'] = remaining_values[j]
+        # Extract total score and remaining values
+        scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
+        scores = [int(score) for score in scores if 200 <= int(score) <= 1600]
+        if scores:
+          data['total_score'] = max(scores)
+          remaining_values = [int(value) for value in scores if value != data['total_score']]
+          if len(remaining_values) >= 2:
+            for i in range(len(remaining_values) - 1):
+              for j in range(i+1, len(remaining_values)):
+                if remaining_values[i] + remaining_values[j] == data['total_score']:
+                  data['rw_score'] = remaining_values[i]
+                  data['m_score'] = remaining_values[j]
+                  break
+              if not data['rw_score']:
                 break
-            if not data['rw_score']:
-              break
 
-      # Find lines that start with SAT or PSAT
-      sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
-      valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2020, 2100)))]
-      sat_line = valid_sat_lines[0] if valid_sat_lines else None
-      if sat_line:
-        test_type = sat_line[0:sat_line.find('SAT') + 3]
-      test_number_start = sat_line.find('Practice') + 9
-      test_number_end = sat_line.find(' ', test_number_start)
-      test_number = sat_line[test_number_start:test_number_end]
-      test_code = test_type.lower() + test_number
+        # Find lines that start with SAT or PSAT
+        sat_lines = [line for line in text.split('\n') if line.startswith('SAT') or line.startswith('PSAT')]
+        valid_sat_lines = [line for line in sat_lines if line.endswith(tuple(str(year) for year in range(2020, 2100)))]
+        sat_line = valid_sat_lines[0] if valid_sat_lines else None
+        title_line = sat_line.rstrip() if sat_line else None # ensures no trailing whitespace
+        if title_line:
+          test_type = sat_line[0:sat_line.find('SAT') + 3]
+        test_number_start = sat_line.find('Practice') + 9
+        test_number_end = sat_line.find(' ', test_number_start)
+        test_number = sat_line[test_number_start:test_number_end]
+        test_code = test_type.lower() + test_number
 
-      date_start = sat_line.find(' ', test_number_end) + 1
-      date_end = sat_line.find('20', date_start) + 4
-      date_str = sat_line[date_start:date_end]
-      date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
-
+        date_start = sat_line.find(' ', test_number_end) + 1
+        date_str = sat_line[date_start:]
+        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
       if date != data['date'] or test_code != data['test_code']:
         raise ValueError(f'Score report error: date or test code mismatch. {date} != {data["date"]} or {test_code} != {data["test_code"]}')
       if not data['rw_score'] or not data['m_score']:
         raise ValueError('Score report error: rw_score or m_score not found')
       return data
+    except Exception:
+      logging.error(f'Error reading score report: {e}')
+      raise
   else:
     raise FileNotFoundError('Score Report PDF does not match expected format')
 
