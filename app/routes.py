@@ -1026,28 +1026,29 @@ def score_report():
             create_and_send_sat_report.delay(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
-            if 'reading_writing_count < 30' in str(ve):
-                flash(Markup('Error reading Score Details page. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'))
-            elif 'subject_totals["rw_modules"] != 54 or subject_totals["m_modules"] != 44' in str(ve):
-                flash(Markup('Error reading Score Details page. Make sure you click "All" above the answer table before saving the page as a PDF. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you still need assistance.'), 'error')
+            if 'Missing math modules' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
+            elif 'subject_totals["rw_modules"] != 54' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
+            elif 'subject_totals["m_modules"] != 44' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
             elif 'date or test code mismatch' in str(ve):
-                flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.'), 'error')
+                flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
-            print(traceback.format_exc())
-            return redirect(url_for('score_report'))
-        except HttpError as he:
-            logger.error(f"Error generating score report: {he}", exc_info=True)
-            print(traceback.format_exc())
             return redirect(url_for('score_report'))
         except FileNotFoundError as fe:
-            if 'top line not found' in str(fe):
-                flash(Markup('Score Report PDF not found. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you still need assistance.'), 'error')
-            elif 'score details file not found' in str(fe):
-                flash(Markup('Score Details PDF not found. Please check the instructions and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if this message seems to be an error.'), 'error')
+            if 'Score Report PDF does not match expected format' in str(fe):
+                flash(Markup('Score Report PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+            elif 'Score Details PDF does not match expected format' in str(fe):
+                flash(Markup('Score Details PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             return redirect(url_for('score_report'))
         except Exception as e:
-            logger.error(f"Error generating score report: {e}", exc_info=True)
-            print(traceback.format_exc())
+            logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
+            email = send_fail_mail([user.first_name, user.last_name, user.email], 'generating score report', traceback.format_exc())
+            if email == 200:
+                flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
+            else:
+                flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
             return redirect(url_for('score_report'))
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('score-report.html', form=form)

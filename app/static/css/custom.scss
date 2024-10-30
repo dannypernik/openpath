@@ -386,26 +386,25 @@ button:hover, .btn:hover, input[type="submit"]:hover {
 }
 
 div.alert {
-  position: absolute;
-  width: 100%;
   padding: 0.5rem 0;
   text-align: center;
+  width: 100%;
   font-size: 1.5rem;
   margin-bottom: 0;
   color: #004085;
   background-color: #cce5ff;
-  border-color: #b8daff;
-}
+  border-color: #cce5ff;
 
-.alert.error {
-  color: $alert-color;
-  background-color: #ffd4db;
-  border-color: #ffd4db;
-}
+  &.error {
+    color: $alert-color;
+    background-color: #ffd4db;
+    border-color: #ffd4db;
+  }
 
-.alert a {
-  text-decoration: underline;
-  white-space: nowrap;
+  a {
+    text-decoration: underline;
+    white-space: nowrap;
+  }
 }
 
 .section-margin {

@@ -4,6 +4,7 @@ import pdfplumber
 import re
 import pprint
 from flask import flash, Markup
+import logging
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
@@ -33,7 +34,6 @@ def get_student_answers(score_details_file_path):
   }
 
   date = None
-  reading_writing_count = 0
   subject_totals = {
     'rw_modules': 0,
     'm_modules': 0
@@ -41,7 +41,6 @@ def get_student_answers(score_details_file_path):
 
   for i, p in enumerate(pages):
     text = p.extract_text()
-    reading_writing_count += text.count('Reading and Writing')
 
     for line in read_text_line_by_line(text):
       # print(line)
@@ -111,10 +110,12 @@ def get_student_answers(score_details_file_path):
   if date is None:
     print(score_details_data)
     return "invalid"
-  elif reading_writing_count < 30:
-    raise ValueError('reading_writing_count < 30')
-  elif subject_totals['rw_modules'] != 54 or subject_totals['m_modules'] != 44:
-    raise ValueError('Error reading Score Details: subject_totals["rw_modules"] != 54 or subject_totals["m_modules"] != 44')
+  elif subject_totals['m_modules'] < 5:
+    raise ValueError('Missing math modules')
+  elif subject_totals['rw_modules'] != 54:
+    raise ValueError('Error reading score details: subject_totals["rw_modules"] != 54')
+  elif subject_totals['m_modules'] != 44:
+    raise ValueError('Error reading score details: subject_totals["m_modules"] != 44')
 
   return score_details_data
 
@@ -186,7 +187,7 @@ def get_data_from_pdf(data, pdf_path):
         raise ValueError('Score report error: rw_score or m_score not found')
       return data
   else:
-    raise FileNotFoundError('Score report error: top line not found')
+    raise FileNotFoundError('Score Report PDF does not match expected format')
 
 
 def get_mod_difficulty(score_details_data):
@@ -307,7 +308,7 @@ def get_all_data(report_path, details_path):
     data = get_student_answers(report_path)
     report_path, details_path = details_path, report_path
     if data == "invalid":
-      raise FileNotFoundError('score details file not found')
+      raise FileNotFoundError('Score Details PDF does not match expected format')
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
   # pp.pprint(data)
