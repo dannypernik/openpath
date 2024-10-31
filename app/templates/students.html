@@ -21,7 +21,7 @@
         <div id="tz-container">
           <select id="tz-select">
             <option value="">Timezone</option>
-            <option value="America/Los_Angeles">Pacific time</option>
+            <option value="America/Los_Angeles">Pacific</option>
             <option value="America/Denver">Mountain</option>
             <option value="America/Chicago">Central</option>
             <option value="America/New_York">Eastern</option>
@@ -49,7 +49,7 @@
                     <label for="td-{{ d.id }}" class="text-nowrap">
                       {{ d.date.strftime('%B %-d') }}
                     </label>
-                    <select type="checkbox" id="td-{{ d.id }}" name="test_dates">
+                    <select id="td-{{ d.id }}" name="test_dates">
                       <option value="{{ d.id }}-none">--</option>
                       <option value="{{ d.id }}-interested">Interested</option>
                       <option value="{{ d.id }}-registered">Registered</option>
