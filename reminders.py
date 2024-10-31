@@ -339,7 +339,7 @@ def main():
 
                 s_data = {
                     'name': name,
-                    'row': i+1,
+                    'row': i+2,
                     'hours': ss_hours,
                     'status': ss_status,
                     'tutors': ss_tutors,
