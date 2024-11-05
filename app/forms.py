@@ -241,9 +241,9 @@ class ScoreReportForm(FlaskForm):
     #     validators=[InputRequired()])
     # m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
     #     validators=[InputRequired()])
-    report_file = FileField('Score Report PDF:', render_kw={'placeholder': 'Score Report PDF'}, \
+    report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
-    details_file = FileField('Score Details PDF:', render_kw={'placeholder': 'Score Details PDF'}, \
+    details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     spreadsheet_url = StringField('Spreadsheet URL', render_kw={'placeholder': 'Student spreadsheet URL (optional)'})
     submit = SubmitField()

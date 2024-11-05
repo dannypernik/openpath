@@ -6624,6 +6624,43 @@ td {
   width: fit-content;
 }
 
+a.info-icon {
+  fill: #f06d53;
+  text-decoration: none;
+}
+a.info-icon svg {
+  vertical-align: text-top;
+  margin-left: 0.5rem;
+}
+a.info-icon span {
+  display: none;
+}
+a.info-icon:hover span {
+  display: inline-block;
+  text-decoration: none;
+  color: #f06d53;
+  font-weight: 400;
+}
+
+.modal-header {
+  padding: 1rem;
+}
+
+.modal-dialog {
+  max-width: 75rem;
+}
+
+.btn-close {
+  --bs-btn-close-bg: none;
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  background: none;
+}
+.btn-close:hover {
+  color: #f06d53;
+}
+
 .loading-screen {
   display: none;
   position: fixed;

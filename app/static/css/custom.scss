@@ -794,6 +794,48 @@ td {
 
 // Score report //
 
+a.info-icon {
+  fill: $secondary-color;
+  text-decoration: none;
+
+  svg {
+    vertical-align: text-top;
+    margin-left: 0.5rem;
+  }
+
+  span {
+    display: none;
+  }
+
+  &:hover span {
+    display: inline-block;
+    text-decoration: none;
+    color: $secondary-color;
+    font-weight: 400;
+  }
+}
+
+.modal-header {
+  padding: 1rem;
+}
+
+.modal-dialog {
+  max-width: 75rem;
+}
+
+.btn-close {
+  --bs-btn-close-bg: none;
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  background: none;
+
+  &:hover {
+    color: $secondary-color;
+  }
+}
+
+
 // Spinner //
 .loading-screen {
   display: none;
