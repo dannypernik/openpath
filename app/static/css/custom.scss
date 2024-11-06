@@ -319,12 +319,12 @@ button, .btn, input[type="submit"] {
   }
 
   &:disabled {
-    background-color: $grey;
+    background-color: #999999;
     border: 0;
     cursor: default;
 
     &:hover {
-      background-color: $grey;
+      background-color: #999999;
       border: 0;
     }
   }

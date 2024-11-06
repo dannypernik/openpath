@@ -6177,12 +6177,12 @@ button.clr:hover, .btn.clr:hover, input[type=submit].clr:hover {
   color: white;
 }
 button:disabled, .btn:disabled, input[type=submit]:disabled {
-  background-color: #888;
+  background-color: #999999;
   border: 0;
   cursor: default;
 }
 button:disabled:hover, .btn:disabled:hover, input[type=submit]:disabled:hover {
-  background-color: #888;
+  background-color: #999999;
   border: 0;
 }
 
