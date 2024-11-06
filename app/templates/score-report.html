@@ -1,12 +1,18 @@
 {% extends 'base.html' %}
 
+{% block head %}
+  {{ super() }}
+
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+{% endblock head %}
+
 {% block content %}
   <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
   <p>
     Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
   </p>
 
-  <form action="" method="post" enctype="multipart/form-data">
+  <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
     <div class="row justify-content-center mt-3">
       <div class="col-12 col-lg-6">
         {{ form.hidden_tag() }}
@@ -65,8 +71,8 @@
         {{ form.details_file(accept='.pdf') }}
       </div>
       <div class="col-12 text-center mt-2">
-        {{ hcaptcha }}
-        {{ form.submit(class="sec") }}
+        <div class="h-captcha" data-sitekey="{{ hcaptcha_key }}" data-callback="captchaPassed"></div>
+        <input id="submit" disabled name="submit" type="submit" value="Submit">
       </div>
     </div>
   </form>
@@ -131,32 +137,43 @@
   </div>
 {% endblock content %}
 
+{% block footnote %}
+  {% include "_disclaimer.html" %}
+{% endblock footnote %}
+
 {% block end_scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
 
   <script>
-    const slideDown = element => {
-      element.style.transition = "height 1.5s ease"; // Adjust the duration here
-      element.style.height = `${element.scrollHeight + 20}px`;
-      document.getElementById("toggle-instructions").innerText = "Hide instructions";
-    };
-
-    const slideUp = element => {
-      element.style.transition = "height 1s ease"; // Adjust the duration here
-      element.style.height = 0;
-      document.getElementById("toggle-instructions").innerText = "Show instructions";
-    };
-
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("toggle-instructions").addEventListener("click", function () {
-        const instructions = document.getElementById("instructions");
-        if (instructions.style.height === "0px" || instructions.style.height === "") {
-          slideDown(instructions);
-        } else {
-          slideUp(instructions);
+    function checkFormCompletion() {
+      var form = document.querySelector('form');
+      var isFormComplete = true;
+      console.log('checking form completion')
+      form.querySelectorAll('input').forEach(function(input) {
+        if (input.hasAttribute('required') && (input.value === '' || (input.type === 'file' && input.files.length === 0))) {
+          isFormComplete = false;
+          console.log(input.name + ' is empty');
         }
       });
+
+      if (isFormComplete && isCaptchaPassed) {
+        form.querySelector('input[type=submit]').disabled = false;
+      } else {
+        form.querySelector('input[type=submit]').disabled = true;
+      }
+    }
+
+    document.querySelectorAll('input').forEach(function(input) {
+      input.addEventListener('input', checkFormCompletion);
     });
+
+    var isCaptchaPassed = false;
+    function captchaPassed(response) {
+      isCaptchaPassed = true;
+      checkFormCompletion();
+      console.log(response)
+      return response
+    }
 
     // Disable submit button on form submit and show loading screen
     const form = document.querySelector('form');

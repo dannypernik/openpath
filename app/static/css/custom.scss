@@ -52,11 +52,6 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
   --bs-btn-hover-bg: #{$hover-color};
   --bs-btn-hover-color: white;
   --bs-btn-font-size: #{$font-size-base};
-
-  &:disabled {
-    background-color: $grey;
-    cursor: default;
-  }
 }
 
 html {
@@ -302,6 +297,29 @@ button, .btn, input[type="submit"] {
   &.sec {
     @include fill-color($primary-color);
   }
+
+  &.clr {
+    color: $primary-color;
+    border-color: $primary-color;
+    background-color: transparent;
+    font-weight: 400;
+    width: fit-content;
+
+    &:hover {
+      @include fill-color($primary-color);
+    }
+  }
+
+  &:disabled {
+    background-color: $grey;
+    border: 0;
+    cursor: default;
+
+    &:hover {
+      background-color: $grey;
+      border: 0;
+    }
+  }
 }
 
 .lead {
@@ -322,18 +340,6 @@ a.btn {
 
 .grey {
   color: $grey;
-}
-
-.btn.clr {
-  color: $primary-color;
-  border-color: $primary-color;
-  background-color: transparent;
-  font-weight: 400;
-  width: fit-content;
-
-  &:hover {
-    @include fill-color($primary-color);
-  }
 }
 
 .inverse .btn.clr {

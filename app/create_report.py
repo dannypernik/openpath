@@ -388,7 +388,7 @@ def create_sat_score_report(score_data):
         ).execute()
         logging.info('Batch update complete')
 
-
+        # Hide rows and columns if there are no omissions
         if not score_data['has_omits']:
             requests = []
             requests.append({
@@ -441,17 +441,11 @@ def create_sat_score_report(score_data):
             # pp.pprint(ss)
 
             student_answer_sheet_id = None
-            # student_analysis_sheet_id = None
             for sheet in student_sheets:
                 if sheet['properties']['title'] == score_data['test_code'].upper():
                     student_answer_sheet_id = sheet['properties']['sheetId']
                     break
             logging.info('student_answer_sheet_id: ' + str(student_answer_sheet_id))
-                # elif sheet['properties']['title'] == score_data['test_display_name'] + ' analysis':
-                #     student_analysis_sheet_id = sheet['properties']['sheetId']
-                # elif sheet['properties']['title'] == 'Practice test data':
-                #     data_sheet_id = sheet['properties']['sheetId']
-
 
             # Process score data
             if score_data['is_rw_hard']:
@@ -485,10 +479,11 @@ def create_sat_score_report(score_data):
 
                         # Needed str(mod) and str(n) with celery worker
                         number = score_data['answers'][sub][str(mod)][str(n)]
-                        if number['is_correct'] and number['student_answer'] != '-':
-                            student_answer = student_answer_values[row_idx][col_idx + 1]
-                        else:
-                            student_answer = number['student_answer']
+                        # if number['is_correct'] and number['student_answer'] != '-':
+                        #     student_answer = student_answer_values[row_idx][col_idx + 1]
+                        # else:
+                        # Answers are not modified based on answer key
+                        student_answer = number['student_answer']
 
                         section.append(student_answer)
                     mod_answers.append(section)

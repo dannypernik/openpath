@@ -946,6 +946,7 @@ def cal_check():
 @app.route('/score-report', methods=['GET', 'POST'])
 def score_report():
     form = ScoreReportForm()
+    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -1051,7 +1052,7 @@ def score_report():
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
             return redirect(url_for('score_report'))
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
-    return render_template('score-report.html', form=form)
+    return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
 
 
 @app.route('/pay')
