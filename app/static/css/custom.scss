@@ -859,6 +859,10 @@ a.info-icon {
   }
 }
 
+#service-email:hover svg {
+  fill: $secondary-color;
+}
+
 
 // Spinner //
 .loading-screen {

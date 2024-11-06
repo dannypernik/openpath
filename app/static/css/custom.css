@@ -6681,6 +6681,10 @@ a.info-icon:hover span {
   left: 3rem;
 }
 
+#service-email:hover svg {
+  fill: #f06d53;
+}
+
 .loading-screen {
   display: none;
   position: fixed;
