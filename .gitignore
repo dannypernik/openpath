@@ -12,6 +12,7 @@ credentials*
 service_account_key*
 app/static/img/favicons/favicon.svg
 app/static/img/favicons/favicon.ico
+app/static/files/scores/
 request.py
 get-pip.py
 dump.rdb
