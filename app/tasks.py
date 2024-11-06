@@ -1,7 +1,7 @@
 import os
 from app import celery
 from app.create_report import create_sat_score_report, send_pdf_score_report
-from app.email import send_fail_mail, send_task_fail_mail, send_report_submitted_email
+from app.email import send_task_fail_mail, send_report_submitted_email
 import logging
 
 class MyTaskBaseClass(celery.Task):

@@ -1206,7 +1206,7 @@ def send_task_fail_mail(exc, task_id, args, kwargs, einfo):
                             'Email': app.config['MAIL_USERNAME']
                         }
                     ],
-                    'Subject': 'Error in ' + description,
+                    'Subject': 'Error with task ' + task_id,
                     'HTMLPart': render_template('email/task-fail-mail.html', exc=exc, \
                         task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
                 }

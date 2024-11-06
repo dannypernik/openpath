@@ -20,6 +20,23 @@ SHEET_ID = '104w631_Qo1667eBO_FdAOYHf4xqnpk7BgQOD_rdm37o'  # Your spreadsheet ID
 SCORE_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
+def check_service_account_access(spreadsheet_id):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    try:
+        # Create the Sheets API service
+        service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+
+        # Try to get the spreadsheet
+        service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+        logging.info(f'Service account has access to edit spreadsheet {spreadsheet_id}')
+        return True
+    except HttpError as error:
+        logging.error(f'Service account does not have access to edit spreadsheet {spreadsheet_id}: {error}')
+        return False
+
 # Function to create SAT score report
 def create_sat_score_report(score_data):
     creds = service_account.Credentials.from_service_account_file(

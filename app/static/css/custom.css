@@ -6107,6 +6107,13 @@ select.select-header {
   font-size: 1.8rem;
 }
 
+ol, ul {
+  margin-left: 2.5rem;
+}
+ol li::marker, ul li::marker {
+  font-weight: 600;
+}
+
 .semibold {
   font-weight: 600;
 }
@@ -6115,13 +6122,13 @@ a {
   display: inline-block;
   color: #00617b;
   text-decoration: none;
+  font-weight: 600;
 }
 a:hover {
   text-decoration: underline;
   text-underline-offset: 6px;
   text-decoration-color: #f06d53;
   color: #00617b;
-  font-weight: 700;
 }
 
 .inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
@@ -6663,6 +6670,15 @@ a.info-icon:hover span {
 }
 .btn-close:hover {
   color: #f06d53;
+}
+
+#ss-icon {
+  top: 1.25rem;
+  left: 34.25rem;
+}
+#ss-icon span {
+  position: absolute;
+  left: 3rem;
 }
 
 .loading-screen {

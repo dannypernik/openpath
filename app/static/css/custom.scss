@@ -252,6 +252,14 @@ select {
   }
 }
 
+ol, ul {
+  margin-left: 2.5rem;
+
+  li::marker {
+    font-weight: 600;
+  }
+}
+
 .semibold {
   font-weight: 600;
 }
@@ -260,11 +268,11 @@ a {
   display: inline-block;
   color: $text-color;
   text-decoration: none;
+  font-weight: 600;
 
   &:hover {
     @include underline-hover();
     color: $text-color;
-    font-weight: 700;
   }
 }
 
@@ -838,6 +846,16 @@ a.info-icon {
 
   &:hover {
     color: $secondary-color;
+  }
+}
+
+#ss-icon {
+  top: 1.25rem;
+  left: 34.25rem;
+
+  span {
+    position: absolute;
+    left: 3rem;
   }
 }
 

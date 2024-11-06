@@ -19,14 +19,12 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
+from app.create_report import check_service_account_access
 from app.tasks import create_and_send_sat_report, send_report_submitted_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
 from redis import Redis
-# from flask_executor import Executor
-# from rq import Queue, Retry
-# from html_sanitizer import Sanitizer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -987,20 +985,28 @@ def score_report():
 
         full_name = user.first_name + ' ' + user.last_name
         if form.spreadsheet_url.data:
-            student_ss_full_url = form.spreadsheet_url.data
-            student_ss_base_url = student_ss_full_url.split('?')[0]
-            student_ss_id = student_ss_base_url.split('/')[-2]
+            try:
+                student_ss_full_url = form.spreadsheet_url.data
+                student_ss_base_url = student_ss_full_url.split('?')[0]
+                student_ss_id = student_ss_base_url.split('/')[-2]
+            except:
+                flash('Invalid Google Sheet URL')
+                return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         else:
             student_ss_id = None
+
         report_file = request.files['report_file']
         details_file = request.files['details_file']
-
         report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
         details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
-
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
+        if student_ss_id:
+            has_ss_access = check_service_account_access(student_ss_id)
+            if not has_ss_access:
+                flash(Markup('Error reading Google Sheet. See <a href="#" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal">instructions</a> for granting access.'), 'error')
+                return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         try:
             score_data = get_all_data(report_file, details_file)
             logging.info(f"Score data: {score_data}")
@@ -1036,13 +1042,13 @@ def score_report():
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
-            return redirect(url_for('score_report'))
+            return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except FileNotFoundError as fe:
             if 'Score Report PDF does not match expected format' in str(fe):
                 flash(Markup('Score Report PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             elif 'Score Details PDF does not match expected format' in str(fe):
                 flash(Markup('Score Details PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
-            return redirect(url_for('score_report'))
+            return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except Exception as e:
             logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
             email = send_fail_mail([user.first_name, user.last_name, user.email], 'generating score report', traceback.format_exc())
@@ -1050,7 +1056,7 @@ def score_report():
                 flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
             else:
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
-            return redirect(url_for('score_report'))
+            return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
 
