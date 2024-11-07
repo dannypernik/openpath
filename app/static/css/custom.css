@@ -6115,7 +6115,7 @@ ol li::marker, ul li::marker {
 }
 
 .semibold {
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 a {
@@ -6129,6 +6129,7 @@ a:hover {
   text-underline-offset: 6px;
   text-decoration-color: #f06d53;
   color: #00617b;
+  font-weight: 600;
 }
 
 .inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
@@ -6309,6 +6310,9 @@ div.alert a {
 .footer .sm {
   font-size: 1.3rem;
 }
+.footer a {
+  font-weight: 400;
+}
 
 #ntpa-logo {
   width: 200px;
@@ -6465,6 +6469,7 @@ div.alert a {
 .home-nav a {
   color: white;
   font-size: 2rem;
+  font-weight: 400;
   padding: calc(3rem + 2vw) 0;
   text-transform: capitalize;
 }

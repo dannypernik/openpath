@@ -261,7 +261,7 @@ ol, ul {
 }
 
 .semibold {
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 a {
@@ -273,6 +273,7 @@ a {
   &:hover {
     @include underline-hover();
     color: $text-color;
+    font-weight: 600;
   }
 }
 
@@ -449,6 +450,10 @@ div.alert {
   .sm {
     font-size: 1.3rem;
   }
+
+  a {
+    font-weight: 400;
+  }
 }
 
 #ntpa-logo {
@@ -623,6 +628,7 @@ div.alert {
   a {
     color: white;
     font-size: 2rem;
+    font-weight: 400;
     padding: calc(3rem + 2vw) 0;
     text-transform: capitalize;
 
