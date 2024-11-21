@@ -54,7 +54,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
-SUMMARY_RANGE = 'Student summary!A4:Z'
+SUMMARY_RANGE = 'Summary!A4:Z'
 calendars = [
     { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
