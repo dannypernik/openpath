@@ -8,11 +8,14 @@
 
 {% block container %}
   <div class="row section-margin justify-content-center">
-    <div class="col-12 col-sm-10 text-center">
+    <div class="col-12 col-sm-11 text-center">
       <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
       <p>
         Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
       </p>
+    </div>
+    <div class="d-block d-md-none col-md-5">
+      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
     </div>
     <div class="col-12 col-sm-10 col-md-6">
       <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
@@ -88,7 +91,7 @@
         </div>
       </form>
     </div>
-    <div class="col-12 col-sm-10 col-md-5 mt-3">
+    <div class="d-none d-md-block col-md-5 mt-3">
       <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
     </div>
   </div>
@@ -178,7 +181,7 @@
                       </svg>
                       <svg id="copy-check" class="d-none" width="18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 256 256" enable-background="new 0 0 256 256" xml:space="preserve">
                         <g><g><path fill="#f06d53" d="M95.8,224.6L10,138.7l42.9-42.9l42.9,42.9L203.1,31.4L246,74.4L95.8,224.6z"/></g></g>
-                        </svg>
+                      </svg>
                     </a>
                     as an Editor
                   </li>
