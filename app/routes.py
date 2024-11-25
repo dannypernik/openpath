@@ -942,7 +942,8 @@ def cal_check():
 
 
 @app.route('/score-report', methods=['GET', 'POST'])
-def score_report():
+@app.route('/sat-report', methods=['GET', 'POST'])
+def sat_report():
     form = ScoreReportForm()
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
     if form.validate_on_submit():
@@ -970,18 +971,6 @@ def score_report():
 
         if not os.path.exists(json_folder_path):
             os.makedirs(json_folder_path)
-
-        # sanitizer = Sanitizer(settings={
-        #     'tags': ['th', 'tr', 'div', 'p'],
-        #     'attributes': {'th': set('class'), 'tr': set('class'), 'div': set('class'), 'p': set('class')},
-        #     'empty': set(),
-        #     'separate': set(),
-        # })
-
-        # html_file = request.files['html_file']
-        # safe_html_file = sanitizer.sanitize(html_file)
-        # pp.pprint(safe_html_file)
-        # safe_html_file.save(os.path.join(html_folder_path, full_name + '.html'))
 
         full_name = user.first_name + ' ' + user.last_name
         if form.spreadsheet_url.data:
@@ -1058,7 +1047,7 @@ def score_report():
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
             return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
-    return render_template('score-report.html', form=form, hcaptcha_key=hcaptcha_key)
+    return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
 
 
 @app.route('/pay')

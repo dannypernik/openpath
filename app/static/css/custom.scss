@@ -4,7 +4,7 @@ $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
-$primary-color: rgb(0, 69, 87);//#01496d;//#1C4D65;
+$primary-color: rgb(0, 69, 87);//#004557;#01496d;//#1C4D65;
 $secondary-color: #f06d53;//#d35137;//e97435;
 $text-color: lighten($primary-color, 7%);
 $hover-color: #e45b39;
@@ -321,6 +321,7 @@ button, .btn, input[type="submit"] {
   &:disabled {
     background-color: #999999;
     border: 0;
+    color: white;
     cursor: default;
 
     &:hover {
@@ -359,7 +360,6 @@ a.btn {
   font-size: $font-size-sm;
   font-weight: 400;
   border-width: 1px;
-  margin: 0;
   padding: 0.5rem 2rem;
 }
 

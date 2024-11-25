@@ -6179,6 +6179,7 @@ button.clr:hover, .btn.clr:hover, input[type=submit].clr:hover {
 button:disabled, .btn:disabled, input[type=submit]:disabled {
   background-color: #999999;
   border: 0;
+  color: white;
   cursor: default;
 }
 button:disabled:hover, .btn:disabled:hover, input[type=submit]:disabled:hover {
@@ -6215,7 +6216,6 @@ a.btn {
   font-size: 1.6rem;
   font-weight: 400;
   border-width: 1px;
-  margin: 0;
   padding: 0.5rem 2rem;
 }
 
