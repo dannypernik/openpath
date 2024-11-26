@@ -951,7 +951,7 @@ def sat_report():
             pass
         else:
             flash('A computer has questioned your humanity. Please try again.', 'error')
-            return redirect(url_for('score_report'))
+            return redirect(url_for('sat_report'))
 
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
