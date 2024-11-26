@@ -245,7 +245,7 @@ class ScoreReportForm(FlaskForm):
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
-    spreadsheet_url = StringField('Spreadsheet URL', render_kw={'placeholder': 'Student spreadsheet URL (optional)'})
+    spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Student spreadsheet URL (optional)'})
     submit = SubmitField()
 
 class ReviewForm(FlaskForm):

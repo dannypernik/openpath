@@ -359,7 +359,7 @@ def create_sat_score_report(score_data):
                         'values': [
                             {
                                 'userEnteredValue': {
-                                    'stringValue': 'Score Analysis for ' + score_data['student_name']
+                                    'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
                                 }
                             }
                         ]

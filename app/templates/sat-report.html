@@ -7,17 +7,20 @@
 {% endblock head %}
 
 {% block container %}
-  <div class="row section-margin justify-content-center">
+  <div class="row gx-5 section-margin justify-content-center">
     <div class="col-12 col-sm-11 text-center">
       <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
       <p>
         Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
       </p>
     </div>
-    <div class="d-block d-md-none col-md-5">
+    <div class="d-block d-lg-none col-10">
       <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
     </div>
-    <div class="col-12 col-sm-10 col-md-6">
+    <div class="d-none d-lg-block col-lg-5 col-xl-6 mt-3">
+      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
+    </div>
+    <div class="col-12 col-sm-10 col-lg-6 col-xl-4">
       <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
         <div class="row justify-content-center mt-3">
           <div class="col-12">
@@ -77,7 +80,7 @@
             {{ form.spreadsheet_url }}
           </div>
           <div id="connect-ss-div" class="col-12">
-            <button id="link-ss-instructions" class="sm sec d-inline-block me-2" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal" type="button">
+            <button id="link-ss-instructions" class="sm sec d-inline-block me-1" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal" type="button">
               Connect answer analysis spreadsheet
             </button>
             <span class="sm grey">Optional</span>
@@ -90,9 +93,6 @@
           </div>
         </div>
       </form>
-    </div>
-    <div class="d-none d-md-block col-md-5 mt-3">
-      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
     </div>
   </div>
 
@@ -169,8 +169,8 @@
                   <li>
                     Click "Share" on your copy of the
                     <a class="semibold" href="https://docs.google.com/spreadsheets/d/1PmQWn8DWvjC7R7YfvU8EgeMbXj6P6_X27awzWByJRKs/edit?usp=sharing" target="_blank">
-                      SAT Answer Analysis Google Sheet (or make a copy from the File menu)
-                    </a>
+                      SAT Answer Analysis Google Sheet
+                    </a> (or make a copy from the File menu)
                   </li>
                   <li>
                     Add
@@ -185,7 +185,7 @@
                     </a>
                     as an Editor
                   </li>
-                  <li>Copy + paste the Google Sheet URL</li>
+                  <li>Copy your Google Sheet URL and paste it below</li>
                 </ol>
                 <button id="ss-url-confirm" class="btn sm my-3">I have shared my spreadsheet with the email address above</button>
                 <div id="ss-url-div" class="d-none">
