@@ -16,3 +16,4 @@ app/static/files/scores/
 request.py
 get-pip.py
 dump.rdb
+app/static/test/
