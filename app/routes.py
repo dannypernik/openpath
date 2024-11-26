@@ -78,7 +78,7 @@ def index():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('index', _anchor='home'))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
@@ -157,7 +157,7 @@ def signup():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('signin', next=next))
         email_exists = User.query.filter_by(email=signup_form.email.data.lower()).first()
         if email_exists:
@@ -192,7 +192,7 @@ def login():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('signin', next=next))
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user and not user.password_hash:
@@ -257,7 +257,7 @@ def request_password_reset():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('request_password_reset'))
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
@@ -639,7 +639,7 @@ def test_reminders():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('test_reminders'))
         selected_date_ids = request.form.getlist('test_dates')
         if not current_user.is_authenticated:
@@ -683,7 +683,7 @@ def sat():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('sat'))
         email_exists = User.query.filter_by(email=form.email.data.lower()).first()
         if email_exists:
@@ -716,7 +716,7 @@ def griffin():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('griffin'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -740,7 +740,7 @@ def appamada():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('appamada'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -764,7 +764,7 @@ def huntington_surrey():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('huntington_surrey'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -788,7 +788,7 @@ def ati_austin():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('ati_austin'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -812,7 +812,7 @@ def kaps():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('kaps'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -839,7 +839,7 @@ def centerville():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('centerville'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -868,7 +868,7 @@ def spartans():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('spartans'))
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
@@ -895,7 +895,7 @@ def test_strategies():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('test_strategies'))
         relation = form.relation.data
         if relation == 'student':
@@ -924,7 +924,7 @@ def ntpa():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('ntpa'))
         email_status = send_ntpa_email(first_name, last_name, biz_name, email)
         if email_status == 200:
@@ -950,7 +950,7 @@ def sat_report():
         if hcaptcha.verify():
             pass
         else:
-            flash('A computer has questioned your humanity. Please try again.', 'error')
+            flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('sat_report'))
 
         user = User.query.filter_by(email=form.email.data.lower()).first()
