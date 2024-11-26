@@ -47,10 +47,8 @@ def get_student_answers(score_details_file_path):
       # print(list(line))
       if date is None and line.find('My Tests') != -1:
         trimmed_line = line.rstrip() # ensures no trailing whitespace
-        print(trimmed_line)
         date_start = trimmed_line.find(' - ') + 3
         date_str = trimmed_line[date_start:]
-        print(date_str)
         date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
         score_details_data['date'] = date
 

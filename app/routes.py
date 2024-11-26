@@ -20,7 +20,7 @@ import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
 from app.create_report import check_service_account_access
-from app.tasks import create_and_send_sat_report, send_report_submitted_task
+from app.tasks import create_and_send_sat_report, send_report_submitted_task, send_answers_to_student_ss_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -991,11 +991,6 @@ def sat_report():
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
-        if student_ss_id:
-            has_ss_access = check_service_account_access(student_ss_id)
-            if not has_ss_access:
-                flash(Markup('Error reading Google Sheet. See <a href="#" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal">instructions</a> for granting access.'), 'error')
-                return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         try:
             score_data = get_all_data(report_file, details_file)
             logging.info(f"Score data: {score_data}")
@@ -1020,6 +1015,14 @@ def sat_report():
 
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
             create_and_send_sat_report.delay(score_data)
+
+            if student_ss_id:
+                has_access = check_service_account_access(student_ss_id)
+                if has_access:
+                    send_answers_to_student_ss_task.delay(score_data)
+                else:
+                    flash(Markup('Score report processing, but error editing Google Sheet. See <a href="#" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal">instructions</a> for granting edit access.'))
+                    return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
             return render_template('score-report-sent.html')
         except ValueError as ve:
             if 'Missing math modules' in str(ve):
