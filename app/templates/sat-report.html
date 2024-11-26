@@ -17,10 +17,10 @@
     <div class="d-block d-lg-none col-10">
       <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
     </div>
-    <div class="d-none d-lg-block col-lg-5 col-xl-6 mt-3">
+    <div class="d-none d-lg-block col-lg-6 mt-3">
       <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
     </div>
-    <div class="col-12 col-sm-10 col-lg-6 col-xl-4">
+    <div class="col-12 col-sm-10 col-lg-5 col-xl-4">
       <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
         <div class="row justify-content-center mt-3">
           <div class="col-12">
@@ -79,7 +79,7 @@
             {{ form.spreadsheet_url.label(class='mt-2') }}
             {{ form.spreadsheet_url }}
           </div>
-          <div id="connect-ss-div" class="col-12">
+          <div id="connect-ss-div" class="col-12 text-nowrap">
             <button id="link-ss-instructions" class="sm sec d-inline-block me-1" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal" type="button">
               Connect answer analysis spreadsheet
             </button>
