@@ -29,12 +29,8 @@ def create_and_send_sat_report(self, score_data):
 @celery.task(name='app.tasks.send_answers_to_student_ss_task', bind=True, base=MyTaskBaseClass)
 def send_answers_to_student_ss_task(self, score_data):
   try:
-    if check_service_account_access(score_data['student_ss_id']):
       send_answers_to_student_ss(score_data)
       logging.info('SAT answers sent to student spreadsheet')
-    else:
-      logging.error('Service account does not have access to student spreadsheet')
-      raise Exception('Service account does not have access to student spreadsheet')
   except Exception as e:
     logging.error(f'Error sending SAT answers to spreadsheet: {e}')
     raise e

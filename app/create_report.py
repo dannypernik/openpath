@@ -525,7 +525,6 @@ def send_answers_to_student_ss(score_data):
     )
 
     try:
-
         student_ss_id = score_data['student_ss_id']
 
         ss = service.spreadsheets().get(spreadsheetId=student_ss_id).execute()
