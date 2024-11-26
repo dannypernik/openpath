@@ -517,82 +517,123 @@ def send_pdf_score_report(spreadsheet_id, score_data):
 
 
 def send_answers_to_student_ss(score_data):
-    student_ss_id = score_data['student_ss_id']
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+        scopes=['https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive',
+                'https://www.googleapis.com/auth/script.external_request']
+    )
 
-    if not check_service_account_access(student_ss_id):
-        raise Exception('Edit access denied for student spreadsheet. See instructions for connecting your spreadsheet.')
+    try:
 
-    ss = service.spreadsheets().get(spreadsheetId=student_ss_id).execute()
-    student_sheets = ss.get('sheets', [])
-    # pp.pprint(ss)
+        student_ss_id = score_data['student_ss_id']
 
-    student_answer_sheet_id = None
-    for sheet in student_sheets:
-        if sheet['properties']['title'] == score_data['test_code'].upper():
-            student_answer_sheet_id = sheet['properties']['sheetId']
-            break
-    logging.info('student_answer_sheet_id: ' + str(student_answer_sheet_id))
+        ss = service.spreadsheets().get(spreadsheetId=student_ss_id).execute()
+        student_sheets = ss.get('sheets', [])
+        # pp.pprint(ss)
 
-    # Process score data
-    if score_data['is_rw_hard']:
-        rw_difficulty = 3
-    else:
-        rw_difficulty = 2
-    if score_data['is_m_hard']:
-        m_difficulty = 3
-    else:
-        m_difficulty = 2
+        student_answer_sheet_id = None
+        for sheet in student_sheets:
+            if sheet['properties']['title'] == score_data['test_code'].upper():
+                student_answer_sheet_id = sheet['properties']['sheetId']
+                break
+        logging.info('student_answer_sheet_id: ' + str(student_answer_sheet_id))
 
-    # After setting test code and difficulty, get values from the answer sheet
-    student_answer_sheet_range = f'{score_data["test_code"].upper()}!A1:L57'  # Adjust range as needed
-    student_answer_data = service.spreadsheets().values().get(spreadsheetId=student_ss_id, range=student_answer_sheet_range).execute()
-    student_answer_values = student_answer_data.get('values', [])
+        # Process score data
+        if score_data['is_rw_hard']:
+            rw_difficulty = 3
+        else:
+            rw_difficulty = 2
+        if score_data['is_m_hard']:
+            m_difficulty = 3
+        else:
+            m_difficulty = 2
 
-    # Reset batch requests
-    x = 0
-    requests = []
-    mod_answers = []
-    for sub in ['rw_modules', 'm_modules']:
-        for mod in range(1, 3):
-            section = []
-            for n in range(1, total_questions[sub]['questions'] + 1):
-                # Update the answer sheet with the response
-                row_idx = n + total_questions[sub]['prepend_rows'] - 1
-                if sub == 'rw_modules':
-                    col_idx = (mod - 1) * 4 * (rw_difficulty - 1) + 2
-                elif sub == 'm_modules':
-                    col_idx = (mod - 1) * 4 * (m_difficulty - 1) + 2
+        # After setting test code and difficulty, get values from the answer sheet
+        student_answer_sheet_range = f'{score_data["test_code"].upper()}!A1:L57'  # Adjust range as needed
+        student_answer_data = service.spreadsheets().values().get(spreadsheetId=student_ss_id, range=student_answer_sheet_range).execute()
+        student_answer_values = student_answer_data.get('values', [])
 
-                # Needed str(mod) and str(n) with celery worker
-                number = score_data['answers'][sub][str(mod)][str(n)]
-                # if number['is_correct'] and number['student_answer'] != '-':
-                #     student_answer = student_answer_values[row_idx][col_idx + 1]
-                # else:
-                # Answers are not modified based on answer key
-                student_answer = number['student_answer']
+        # Reset batch requests
+        x = 0
+        requests = []
+        mod_answers = []
+        for sub in ['rw_modules', 'm_modules']:
+            for mod in range(1, 3):
+                section = []
+                for n in range(1, total_questions[sub]['questions'] + 1):
+                    # Update the answer sheet with the response
+                    row_idx = n + total_questions[sub]['prepend_rows'] - 1
+                    if sub == 'rw_modules':
+                        col_idx = (mod - 1) * 4 * (rw_difficulty - 1) + 2
+                    elif sub == 'm_modules':
+                        col_idx = (mod - 1) * 4 * (m_difficulty - 1) + 2
 
-                section.append(student_answer)
-            mod_answers.append(section)
+                    # Needed str(mod) and str(n) with celery worker
+                    number = score_data['answers'][sub][str(mod)][str(n)]
+                    # if number['is_correct'] and number['student_answer'] != '-':
+                    #     student_answer = student_answer_values[row_idx][col_idx + 1]
+                    # else:
+                    # Answers are not modified based on answer key
+                    student_answer = number['student_answer']
+
+                    section.append(student_answer)
+                mod_answers.append(section)
+                request = {
+                    'updateCells': {
+                        'range': {
+                            'sheetId': student_answer_sheet_id,
+                            'startRowIndex': total_questions[sub]['prepend_rows'],
+                            'endRowIndex': total_questions[sub]['prepend_rows'] + total_questions[sub]['questions'],
+                            'startColumnIndex': col_idx,
+                            'endColumnIndex': col_idx + 1
+                        },
+                        'rows': [
+                            {
+                                'values': [
+                                    {
+                                        'userEnteredValue': {
+                                            'stringValue': str(mod_answers[x][row])
+                                        }
+                                    }
+                                ]
+                            }
+                            for row in range(total_questions[sub]['questions'])
+                        ],
+                        'fields': 'userEnteredValue'
+                    }
+                }
+                requests.append(request)
+
+                # Add the request to the batch update request
+                batch_update_request = {
+                    'requests': requests
+                }
+
+                x += 1
+
+
+        # Set RW and Math scores
+        for sub in [['rw_score', 6], ['m_score', 8]]:
             request = {
                 'updateCells': {
                     'range': {
                         'sheetId': student_answer_sheet_id,
-                        'startRowIndex': total_questions[sub]['prepend_rows'],
-                        'endRowIndex': total_questions[sub]['prepend_rows'] + total_questions[sub]['questions'],
-                        'startColumnIndex': col_idx,
-                        'endColumnIndex': col_idx + 1
+                        'startRowIndex': 0,
+                        'endRowIndex': 1,
+                        'startColumnIndex': sub[1],
+                        'endColumnIndex': sub[1] + 1
                     },
                     'rows': [
                         {
                             'values': [
                                 {
                                     'userEnteredValue': {
-                                        'stringValue': str(mod_answers[x][row])
+                                        'numberValue': score_data[sub[0]]
                                     }
                                 }
                             ]
                         }
-                        for row in range(total_questions[sub]['questions'])
                     ],
                     'fields': 'userEnteredValue'
                 }
@@ -604,46 +645,14 @@ def send_answers_to_student_ss(score_data):
                 'requests': requests
             }
 
-            x += 1
+        logging.info('Starting student sheet batch update')
+        batch_update_request = {'requests': requests}
+        response = service.spreadsheets().batchUpdate(
+            spreadsheetId=student_ss_id,
+            body=batch_update_request
+        ).execute()
 
-
-    # Set RW and Math scores
-    for sub in [['rw_score', 6], ['m_score', 8]]:
-        request = {
-            'updateCells': {
-                'range': {
-                    'sheetId': student_answer_sheet_id,
-                    'startRowIndex': 0,
-                    'endRowIndex': 1,
-                    'startColumnIndex': sub[1],
-                    'endColumnIndex': sub[1] + 1
-                },
-                'rows': [
-                    {
-                        'values': [
-                            {
-                                'userEnteredValue': {
-                                    'numberValue': score_data[sub[0]]
-                                }
-                            }
-                        ]
-                    }
-                ],
-                'fields': 'userEnteredValue'
-            }
-        }
-        requests.append(request)
-
-        # Add the request to the batch update request
-        batch_update_request = {
-            'requests': requests
-        }
-
-    logging.info('Starting student sheet batch update')
-    batch_update_request = {'requests': requests}
-    response = service.spreadsheets().batchUpdate(
-        spreadsheetId=student_ss_id,
-        body=batch_update_request
-    ).execute()
-
-    logging.info('student_ss_id: ' + student_ss_id)
+        logging.info('student_ss_id: ' + student_ss_id)
+    except Exception:
+        logging.error(f'Error in send_answers_to_student_ss: {Exception}')
+        raise
