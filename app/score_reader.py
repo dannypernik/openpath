@@ -162,9 +162,10 @@ def get_data_from_pdf(data, pdf_path):
         # Extract student name
         if not data['student_name']:
           name_start = text.find('Name: ') + 6
-          name_end = text.find('\n', name_start)
-          student_name = text[name_start:name_end].strip()
-          data['student_name'] = student_name
+          if name_start != -1:
+            name_end = text.find('\n', name_start)
+            student_name = text[name_start:name_end].strip()
+            data['student_name'] = student_name
 
         # Extract total score and remaining values
         scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)

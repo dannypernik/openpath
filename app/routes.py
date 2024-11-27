@@ -994,6 +994,8 @@ def sat_report():
         try:
             score_data = get_all_data(report_file, details_file)
             logging.info(f"Score data: {score_data}")
+            if score_data.get('student_name') is None:
+                score_data['student_name'] = full_name
             score_data['email'] = form.email.data.lower()
             score_data['submitter_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
