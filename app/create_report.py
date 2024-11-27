@@ -527,6 +527,9 @@ def send_answers_to_student_ss(score_data):
     try:
         student_ss_id = score_data['student_ss_id']
 
+        # Create the Sheets API service
+        service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+
         ss = service.spreadsheets().get(spreadsheetId=student_ss_id).execute()
         student_sheets = ss.get('sheets', [])
         # pp.pprint(ss)
