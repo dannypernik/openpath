@@ -202,7 +202,7 @@ def get_data_from_pdf(data, pdf_path):
       if not data['rw_score'] or not data['m_score']:
         raise ValueError('Score report error: rw_score or m_score not found')
       return data
-    except Exception:
+    except Exception as e:
       logging.error(f'Error reading score report: {e}')
       raise
   else:
