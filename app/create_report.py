@@ -112,9 +112,9 @@ def create_sat_score_report(score_data):
         requests.append(request)
 
         # Add the request to the batch update request
-        # batch_update_request = {
-        #     'requests': requests
-        # }
+        batch_update_request = {
+            'requests': requests
+        }
 
         # Update pivot table filter on the analysis sheet
         requests.append({
@@ -736,10 +736,10 @@ def send_answers_to_student_ss(score_data):
             }
             requests.append(request)
 
-        # Add the request to the batch update request
-        batch_update_request = {
-            'requests': requests
-        }
+        # # Add the request to the batch update request
+        # batch_update_request = {
+        #     'requests': requests
+        # }
 
         logging.info('Starting student sheet batch update')
         batch_update_request = {'requests': requests}
