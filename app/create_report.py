@@ -20,6 +20,11 @@ SHEET_ID = '104w631_Qo1667eBO_FdAOYHf4xqnpk7BgQOD_rdm37o'  # Your spreadsheet ID
 SCORE_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
+total_questions = {
+    'rw_modules': {'questions': 27, 'prepend_rows': 4},
+    'm_modules': {'questions': 22, 'prepend_rows': 35}
+}
+
 def check_service_account_access(spreadsheet_id):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
@@ -37,7 +42,7 @@ def check_service_account_access(spreadsheet_id):
         logging.error(f'Service account does not have access to edit spreadsheet {spreadsheet_id}: {e}')
         return False
 
-# Function to create SAT score report
+
 def create_sat_score_report(score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
@@ -107,9 +112,9 @@ def create_sat_score_report(score_data):
         requests.append(request)
 
         # Add the request to the batch update request
-        batch_update_request = {
-            'requests': requests
-        }
+        # batch_update_request = {
+        #     'requests': requests
+        # }
 
         # Update pivot table filter on the analysis sheet
         requests.append({
@@ -187,15 +192,9 @@ def create_sat_score_report(score_data):
         })
 
         # Add the request to the batch update request
-        batch_update_request = {
-            'requests': requests
-        }
-
-        # Process score data
-        total_questions = {
-            'rw_modules': {'questions': 27, 'prepend_rows': 4},
-            'm_modules': {'questions': 22, 'prepend_rows': 35}
-        }
+        # batch_update_request = {
+        #     'requests': requests
+        # }
 
         if score_data['is_rw_hard']:
             rw_difficulty = 3
@@ -242,9 +241,9 @@ def create_sat_score_report(score_data):
             requests.append(request)
 
             # Add the request to the batch update request
-            batch_update_request = {
-                'requests': requests
-            }
+            # batch_update_request = {
+            #     'requests': requests
+            # }
 
         # Execute first batch update request
         response = service.spreadsheets().batchUpdate(
@@ -304,9 +303,9 @@ def create_sat_score_report(score_data):
                 requests.append(request)
 
                 # Add the request to the batch update request
-                batch_update_request = {
-                    'requests': requests
-                }
+                # batch_update_request = {
+                #     'requests': requests
+                # }
 
                 x += 1
 
@@ -339,9 +338,40 @@ def create_sat_score_report(score_data):
             requests.append(request)
 
             # Add the request to the batch update request
-            batch_update_request = {
-                'requests': requests
+            # batch_update_request = {
+            #     'requests': requests
+            # }
+
+        # Set test completion date
+        request = {
+            'updateCells': {
+                'range': {
+                    'sheetId': answer_sheet_id,
+                    'startRowIndex': 75,
+                    'endRowIndex': 76,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': 'Test completed on ' + score_data['date']
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
             }
+        }
+        requests.append(request)
+
+        # # Add the request to the batch update request
+        # batch_update_request = {
+        #     'requests': requests
+        # }
 
         request = {
             # NTPA design
@@ -452,7 +482,7 @@ def create_sat_score_report(score_data):
         logging.error(f'Error in create_sat_score_report: {Exception}')
         raise
 
-# Function to send PDF score report
+
 def send_pdf_score_report(spreadsheet_id, score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
@@ -479,7 +509,7 @@ def send_pdf_score_report(spreadsheet_id, score_data):
 
         # Handle response
         if response.status_code == 200:
-            pdf_name = f"Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf"
+            pdf_name = f"SAT Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf"
             file_path = f'app/static/files/scores/pdf/{pdf_name}'
 
             # Save the PDF content to a file
@@ -608,9 +638,9 @@ def send_answers_to_student_ss(score_data):
                 requests.append(request)
 
                 # Add the request to the batch update request
-                batch_update_request = {
-                    'requests': requests
-                }
+                # batch_update_request = {
+                #     'requests': requests
+                # }
 
                 x += 1
 
@@ -642,10 +672,74 @@ def send_answers_to_student_ss(score_data):
             }
             requests.append(request)
 
-            # Add the request to the batch update request
-            batch_update_request = {
-                'requests': requests
+        # If RW score > 200, set RW completion date
+        if score_data['rw_score'] > 200:
+            request = {
+                'updateCells': {
+                    'range': {
+                        'sheetId': student_answer_sheet_id,
+                        'startRowIndex': 1,
+                        'endRowIndex': 2,
+                        'startColumnIndex': 2,
+                        'endColumnIndex': 4
+                    },
+                    'rows': [
+                        {
+                            'values': [
+                                {
+                                    'userEnteredValue': {
+                                        'stringValue': 'Completed on:'
+                                    }
+                                },
+                                {
+                                    'userEnteredValue': {
+                                        'stringValue': score_data['date']
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    'fields': 'userEnteredValue'
+                }
             }
+            requests.append(request)
+
+        # If Math score > 200, set Math completion date
+        if score_data['m_score'] > 200:
+            request = {
+                'updateCells': {
+                    'range': {
+                        'sheetId': student_answer_sheet_id,
+                        'startRowIndex': 32,
+                        'endRowIndex': 33,
+                        'startColumnIndex': 2,
+                        'endColumnIndex': 4
+                    },
+                    'rows': [
+                        {
+                            'values': [
+                                {
+                                    'userEnteredValue': {
+                                        'stringValue': 'Completed on:'
+                                    }
+                                },
+                                {
+                                    'userEnteredValue': {
+                                        'stringValue': score_data['date']
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    'fields': 'userEnteredValue'
+                }
+            }
+            requests.append(request)
+
+        # Add the request to the batch update request
+        batch_update_request = {
+            'requests': requests
+        }
 
         logging.info('Starting student sheet batch update')
         batch_update_request = {'requests': requests}

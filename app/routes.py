@@ -955,13 +955,13 @@ def sat_report():
 
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
-            user.first_name = form.first_name.data
-            user.last_name = form.last_name.data
+          user.first_name = form.first_name.data
+          user.last_name = form.last_name.data
         else:
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
         db.session.add(user)
-        db.session.flush()
+        db.session.commit()
 
         pdf_folder_path = 'app/static/files/scores/pdf'
         json_folder_path = 'app/static/files/scores/json'
@@ -972,14 +972,14 @@ def sat_report():
         if not os.path.exists(json_folder_path):
             os.makedirs(json_folder_path)
 
-        full_name = user.first_name + ' ' + user.last_name
+        full_name = form.first_name.data + ' ' + form.last_name.data
         if form.spreadsheet_url.data:
             try:
                 student_ss_full_url = form.spreadsheet_url.data
                 student_ss_base_url = student_ss_full_url.split('?')[0]
                 student_ss_id = student_ss_base_url.split('/')[-2]
             except:
-                flash('Invalid Google Sheet URL')
+                flash('Invalid Google Sheet URL', 'error')
                 return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         else:
             student_ss_id = None
@@ -994,12 +994,12 @@ def sat_report():
         try:
             score_data = get_all_data(report_file, details_file)
             logging.info(f"Score data: {score_data}")
-            score_data['email'] = user.email
-            score_data['student_name'] = full_name
+            score_data['email'] = form.email.data.lower()
+            score_data['submitter_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
-            send_report_submitted_task.delay(score_data)
+            # send_report_submitted_task.delay(score_data)
 
-            filename = full_name + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
+            filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
             os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
             json_file_path = os.path.join(json_folder_path, filename + '.json')
@@ -1026,20 +1026,20 @@ def sat_report():
             return render_template('score-report-sent.html')
         except ValueError as ve:
             if 'Missing math modules' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
-            elif 'subject_totals["rw_modules"] != 54' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
-            elif 'subject_totals["m_modules"] != 44' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. <a href="https://www.openpathtutoring.com#contact" target="_blank">Contact us</a> if you need assistance.'), 'error')
+                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'missing RW questions' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'missing Math questions' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'date or test code mismatch' in str(ve):
-                flash(Markup('Please confirm that the test date matches on both PDFs and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+                flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except FileNotFoundError as fe:
             if 'Score Report PDF does not match expected format' in str(fe):
-                flash(Markup('Score Report PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+                flash(Markup('Score Report PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             elif 'Score Details PDF does not match expected format' in str(fe):
-                flash(Markup('Score Details PDF does not match expected format. Please follow the instructions carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+                flash(Markup('Score Details PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except Exception as e:
             logger.error(f"Unexpected error generating score report: {e}", exc_info=True)

@@ -9,6 +9,11 @@ import logging
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
 def get_student_answers(score_details_file_path):
+  total_questions = {
+    'rw_modules': {'questions': 27},
+    'm_modules': {'questions': 22}
+  }
+
   pdf = pdfplumber.open(score_details_file_path)
   pages = pdf.pages
 
@@ -98,6 +103,17 @@ def get_student_answers(score_details_file_path):
             'is_correct': is_correct
           }
 
+  missing_questions = 0
+  for sub in ['rw_modules', 'm_modules']:
+    for mod in range(1, 3):
+      for q in range(1, total_questions[sub]['questions'] + 1):
+        if score_details_data['answers'][sub][str(mod)].get(str(q)) is None:
+          score_details_data['answers'][sub][str(mod)][str(q)] = {
+            'correct_answer': 'not found',
+            'student_answer': 'not found',
+            'is_correct': False
+          }
+
   # print answer key
   # for sub in score_details_data['answers']:
   #   print(sub)
@@ -112,10 +128,10 @@ def get_student_answers(score_details_file_path):
     return "invalid"
   elif subject_totals['m_modules'] < 5:
     raise ValueError('Missing math modules')
-  elif subject_totals['rw_modules'] != 54:
-    raise ValueError('Error reading score details: subject_totals["rw_modules"] != 54')
-  elif subject_totals['m_modules'] != 44:
-    raise ValueError('Error reading score details: subject_totals["m_modules"] != 44')
+  elif subject_totals['rw_modules'] < 44:
+    raise ValueError('Error reading score details: missing RW questions')
+  elif subject_totals['m_modules'] < 34:
+    raise ValueError('Error reading score details: missing Math questions')
 
   return score_details_data
 
@@ -129,7 +145,7 @@ def get_data_from_pdf(data, pdf_path):
   pdf = pdfplumber.open(pdf_path)
   pages = pdf.pages
 
-  data['legal_name'] = None
+  data['student_name'] = None
   data['rw_score'] = None
   data['m_score'] = None
   data['total_score'] = None
@@ -143,12 +159,12 @@ def get_data_from_pdf(data, pdf_path):
       for page in pages:
         text = page.extract_text()
         # print(text)
-        # # Extract student's legal name
-        if not data['legal_name']:
+        # Extract student name
+        if not data['student_name']:
           name_start = text.find('Name: ') + 6
           name_end = text.find('\n', name_start)
-          legal_name = text[name_start:name_end].strip()
-          data['legal_name'] = legal_name
+          student_name = text[name_start:name_end].strip()
+          data['student_name'] = student_name
 
         # Extract total score and remaining values
         scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
