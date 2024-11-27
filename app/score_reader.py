@@ -162,7 +162,7 @@ def get_data_from_pdf(data, pdf_path):
         # Extract student name
         if not data['student_name']:
           name_start = text.find('Name: ') + 6
-          if name_start != -1:
+          if name_start != 5: # -1 + 6
             name_end = text.find('\n', name_start)
             student_name = text[name_start:name_end].strip()
             data['student_name'] = student_name
