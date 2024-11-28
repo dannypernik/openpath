@@ -812,7 +812,7 @@ def check_answer_key(score_details_data):
           '19': 'D',
           '20': 'D',
           '21': 'B',
-          '22': 'A'ß
+          '22': 'A'
         },
         '3': {
           '1': 'A',
