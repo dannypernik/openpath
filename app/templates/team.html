@@ -4,7 +4,7 @@
   <h1 class="text-center">Meet the Team</h1>
 
   <p class="mb-4">
-    We are a small but mighty team of tutors who have extensive experience in the subjects
+    We are a small but mighty team of tutors who have an wealth of experience in the subjects
     in which we specialize. We believe in fostering a growth mindset not only for our students, but also for ourselves. Click below to learn more about each member of our team.
   </p>
 
@@ -20,5 +20,11 @@
         </div>
       </div>
     {% endfor %}
+  </div>
+
+  <div class="row mt-3">
+    <div class="col text-center">
+      <a href="{{ url_for('index', _anchor='contact') }}" class="btn">Get in touch</a>
+    </div>
   </div>
 {% endblock content %}
