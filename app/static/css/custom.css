@@ -6574,9 +6574,6 @@ div.alert a {
 .profile-pic,
 .school-logo {
   display: block;
-  margin: 1rem auto 2rem;
-  width: 155px;
-  max-width: 100%;
 }
 .profile-pic.wide,
 .school-logo.wide {
@@ -6584,13 +6581,36 @@ div.alert a {
   margin-bottom: 0;
 }
 
-.profile-pic {
-  border-radius: 100%;
+.school-logo {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 155px;
 }
 
-.team-member a:hover {
+.profile-pic-container {
+  border-radius: 100%;
+  overflow: hidden;
+  margin: 1rem 2rem 2rem;
+  width: 155px;
+}
+
+.profile-pic {
+  border-radius: 100%;
+  transition: all 0.3s ease-in-out;
+  filter: brightness(0.8);
+  filter: contrast(0.9);
+}
+
+a:hover {
   text-decoration: none;
   font-weight: inherit;
+}
+a:hover .profile-pic {
+  transform: scale(1.06);
+  filter: brightness(1);
+  filter: contrast(1);
 }
 
 .double-arrow {

@@ -1,30 +1,39 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <h1 class="text-center">Meet the Team</h1>
-
-  <p class="mb-4">
-    We are a small but mighty team of tutors who have an wealth of experience in the subjects
-    in which we specialize. We believe in fostering a growth mindset not only for our students, but also for ourselves. Click below to learn more about each member of our team.
-  </p>
-
-  <div class="row justify-content-center text-center">
-    {% for member in team_members %}
-      <div class="col-6 col-md-4">
-        <div class="team-member">
-          <a href="{{ url_for(member.first_name.lower()) }}">
-            <img class="profile-pic" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
-            <h4 class="text-center semibold mb-1">{{ member.first_name }} {{ member.last_name }}</h4>
-            <p class="text-center mb-4">{{ member.title }}</p>
-          </a>
+{% block container %}
+  <div class="row justify-content-center section-margin">
+    <div class="col-11 col-sm-10 col-lg-9">
+      <div class="row justify-content-center">
+        <div class="col-10">
+          <h1 class="text-center">Meet the Team</h1>
+          <p class="mb-4">
+            We are a small but mighty team of tutors who have an wealth of experience in the subjects
+            in which we specialize. We believe in fostering a growth mindset not only for our students, but also for ourselves. Click below to learn more about each member of our team.
+          </p>
         </div>
       </div>
-    {% endfor %}
-  </div>
 
-  <div class="row mt-3">
-    <div class="col text-center">
-      <a href="{{ url_for('index', _anchor='contact') }}" class="btn">Get in touch</a>
+      <div class="row justify-content-center text-center">
+        {% for member in team_members %}
+          <div class="col-6 col-md-4">
+            <div class="team-member">
+              <a href="{{ url_for(member.first_name.lower()) }}">
+                <div class="profile-pic-container">
+                  <img class="profile-pic img-fluid" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
+                </div>
+                <h4 class="text-center semibold mb-1">{{ member.first_name }} {{ member.last_name }}</h4>
+                <p class="text-center mb-4">{{ member.title }}</p>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="row mt-3">
+        <div class="col text-center">
+          <a href="{{ url_for('index', _anchor='contact') }}" class="btn">Get in touch</a>
+        </div>
+      </div>
     </div>
   </div>
-{% endblock content %}
+{% endblock container %}
