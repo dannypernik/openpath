@@ -6594,7 +6594,7 @@ div.alert a {
 .profile-pic-container {
   border-radius: 100%;
   overflow: hidden;
-  margin: 1rem 2rem 2rem;
+  margin: 1rem auto 2rem;
   width: 155px;
 }
 
