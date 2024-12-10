@@ -746,6 +746,11 @@ div.alert {
   border-radius: 100%;
 }
 
+.team-member a:hover {
+  text-decoration: none;
+  font-weight: inherit;
+}
+
 .double-arrow {
   @include xy-center();
   width: 55px;

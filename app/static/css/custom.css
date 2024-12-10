@@ -6588,6 +6588,11 @@ div.alert a {
   border-radius: 100%;
 }
 
+.team-member a:hover {
+  text-decoration: none;
+  font-weight: inherit;
+}
+
 .double-arrow {
   position: relative;
   top: 50%;
