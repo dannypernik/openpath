@@ -5920,7 +5920,8 @@ progress {
   }
 }
 
-.btn, input[type=submit] {
+.btn,
+input[type=submit] {
   --bs-btn-hover-bg: #e45b39;
   --bs-btn-hover-color: white;
   --bs-btn-font-size: 1.8rem;
@@ -5950,35 +5951,52 @@ p {
   margin-bottom: 2rem;
 }
 
-h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
   margin-bottom: 1rem;
   font-weight: 400;
   line-height: 1.2;
 }
 
-h1, .h1 {
+h1,
+.h1 {
   font-family: "Montserrat Alternates", "Helvetica", sans-serif;
   font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
 }
 
-h2, .h2 {
+h2,
+.h2 {
   font-size: calc(2.2rem + 0.5vw);
 }
 
-h3, .h3 {
+h3,
+.h3 {
   font-size: calc(2rem + 0.5vw);
 }
 
-h4, .h4 {
+h4,
+.h4 {
   font-size: calc(1.8rem + 0.25vw);
 }
 
-h5, .h5 {
+h5,
+.h5 {
   font-size: calc(1.6rem + 0.25vw);
 }
 
-h6, .h6 {
+h6,
+.h6 {
   font-size: calc(1.4rem + 0.25vw);
 }
 
@@ -5987,7 +6005,8 @@ h6, .h6 {
   margin-right: 0;
 }
 
-input, textarea {
+input,
+textarea {
   font-size: var(--bs-btn-font-size);
   margin-bottom: 1rem;
   padding: 1rem;
@@ -5998,7 +6017,8 @@ input, textarea {
   color: rgb(0, 69, 87);
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   border-bottom: 1px solid rgb(0, 69, 87);
 }
 
@@ -6057,7 +6077,8 @@ input[type=radio] + label::before {
   content: "";
   position: absolute;
   display: inline-block;
-  left: -2.2rem; /* This will be adjusted */
+  left: -2.2rem;
+  /* This will be adjusted */
   top: 0.1rem;
   width: 2rem;
   height: 2rem;
@@ -6107,10 +6128,12 @@ select.select-header {
   font-size: 1.8rem;
 }
 
-ol, ul {
+ol,
+ul {
   margin-left: 2.5rem;
 }
-ol li::marker, ul li::marker {
+ol li::marker,
+ul li::marker {
   font-weight: 600;
 }
 
@@ -6131,7 +6154,9 @@ a:hover {
   font-weight: 600;
 }
 
-.inverse a:hover, .inverse a:hover h4, .inverse a:hover .h4 {
+.inverse a:hover,
+.inverse a:hover h4,
+.inverse a:hover .h4 {
   color: white;
 }
 
@@ -6148,7 +6173,9 @@ a:before {
   visibility: hidden;
 }
 
-button, .btn, input[type=submit] {
+button,
+.btn,
+input[type=submit] {
   background-color: #f06d53;
   border-color: #f06d53;
   color: white;
@@ -6159,30 +6186,40 @@ button, .btn, input[type=submit] {
   transition: 0.3s;
   font-weight: 600;
 }
-button.sec, .btn.sec, input[type=submit].sec {
+button.sec,
+.btn.sec,
+input[type=submit].sec {
   background-color: rgb(0, 69, 87);
   border-color: rgb(0, 69, 87);
   color: white;
 }
-button.clr, .btn.clr, input[type=submit].clr {
+button.clr,
+.btn.clr,
+input[type=submit].clr {
   color: rgb(0, 69, 87);
   border-color: rgb(0, 69, 87);
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
 }
-button.clr:hover, .btn.clr:hover, input[type=submit].clr:hover {
+button.clr:hover,
+.btn.clr:hover,
+input[type=submit].clr:hover {
   background-color: rgb(0, 69, 87);
   border-color: rgb(0, 69, 87);
   color: white;
 }
-button:disabled, .btn:disabled, input[type=submit]:disabled {
+button:disabled,
+.btn:disabled,
+input[type=submit]:disabled {
   background-color: #999999;
   border: 0;
   color: white;
   cursor: default;
 }
-button:disabled:hover, .btn:disabled:hover, input[type=submit]:disabled:hover {
+button:disabled:hover,
+.btn:disabled:hover,
+input[type=submit]:disabled:hover {
   background-color: #999999;
   border: 0;
 }
@@ -6240,7 +6277,9 @@ a.btn {
   color: white;
 }
 
-button:hover, .btn:hover, input[type=submit]:hover {
+button:hover,
+.btn:hover,
+input[type=submit]:hover {
   background-color: #e45b39;
   border-color: #e45b39;
   color: white;
@@ -6532,13 +6571,15 @@ div.alert a {
   margin-bottom: 2rem;
 }
 
-.profile-pic, .school-logo {
+.profile-pic,
+.school-logo {
   display: block;
-  margin: 0 auto 3rem;
+  margin: 0 auto 2rem;
   width: 155px;
   max-width: 100%;
 }
-.profile-pic.wide, .school-logo.wide {
+.profile-pic.wide,
+.school-logo.wide {
   width: 250px;
   margin-bottom: 0;
 }
@@ -6561,7 +6602,8 @@ div.alert a {
   margin-bottom: 2rem;
 }
 
-.student-list, .user-list {
+.student-list,
+.user-list {
   transition: height 0.2s ease-out;
   overflow: hidden;
 }
@@ -6570,12 +6612,14 @@ div.alert a {
   padding: 1.5rem;
 }
 
-.accordion-button.collapsed, .accordion-button:not(.collapsed) {
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
   background-color: #8b8787;
   color: white;
   margin-bottom: 0rem;
 }
-.accordion-button.collapsed::after, .accordion-button:not(.collapsed)::after {
+.accordion-button.collapsed::after,
+.accordion-button:not(.collapsed)::after {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
 }
 
@@ -6602,7 +6646,8 @@ thead {
   color: white;
 }
 
-th, td {
+th,
+td {
   white-space: nowrap;
   width: 1%;
 }

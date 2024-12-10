@@ -4,8 +4,8 @@ $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
 $spacer: 2rem;
-$primary-color: rgb(0, 69, 87);//#004557;#01496d;//#1C4D65;
-$secondary-color: #f06d53;//#d35137;//e97435;
+$primary-color: rgb(0, 69, 87); //#004557;#01496d;//#1C4D65;
+$secondary-color: #f06d53; //#d35137;//e97435;
 $text-color: lighten($primary-color, 7%);
 $hover-color: #e45b39;
 $alert-color: #850017;
@@ -48,7 +48,8 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
 }
 
 // Sitewide stylings //
-.btn, input[type='submit'] {
+.btn,
+input[type='submit'] {
   --bs-btn-hover-bg: #{$hover-color};
   --bs-btn-hover-color: white;
   --bs-btn-font-size: #{$font-size-base};
@@ -65,7 +66,7 @@ body {
   color: $text-color;
   font-size: $font-size-base;
   display: flex;
-  flex-direction:  column;
+  flex-direction: column;
   -ms-overflow-style: none;
   --bs-body-line-height: 1.6;
 }
@@ -78,35 +79,52 @@ p {
   margin-bottom: 2rem;
 }
 
-h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
   margin-bottom: 1rem;
   font-weight: 400;
   line-height: 1.2;
 }
 
-h1, .h1 {
+h1,
+.h1 {
   font-family: $title-font;
   font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
 }
 
-h2, .h2 {
+h2,
+.h2 {
   font-size: calc(2.2rem + 0.5vw);
 }
 
-h3, .h3 {
+h3,
+.h3 {
   font-size: calc(2rem + 0.5vw);
 }
 
-h4, .h4 {
+h4,
+.h4 {
   font-size: calc(1.8rem + 0.25vw);
 }
 
-h5, .h5 {
+h5,
+.h5 {
   font-size: calc(1.6rem + 0.25vw);
 }
 
-h6, .h6 {
+h6,
+.h6 {
   font-size: calc(1.4rem + 0.25vw);
 }
 
@@ -115,7 +133,8 @@ h6, .h6 {
   margin-right: 0;
 }
 
-input, textarea {
+input,
+textarea {
   font-size: var(--bs-btn-font-size);
   margin-bottom: 1rem;
   padding: 1rem;
@@ -126,7 +145,8 @@ input, textarea {
   color: $primary-color;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   border-bottom: 1px solid $primary-color;
 }
 
@@ -135,7 +155,7 @@ input[type='checkbox'] {
   opacity: 0;
   width: 0;
 
-  + label {
+  +label {
     display: block;
     position: relative;
     line-height: 2rem;
@@ -156,11 +176,11 @@ input[type='checkbox'] {
   }
 
   &:checked {
-    + label::before {
+    +label::before {
       background-color: $primary-color;
     }
 
-    + label::after {
+    +label::after {
       content: '';
       position: absolute;
       top: 4px;
@@ -173,7 +193,7 @@ input[type='checkbox'] {
     }
   }
 
-  &:focus + label::before {
+  &:focus+label::before {
     box-shadow: 0 0px 8px $primary-color;
   }
 }
@@ -183,7 +203,7 @@ input[type='radio'] {
   opacity: 0;
   width: 0;
 
-  + label {
+  +label {
     position: relative;
     display: inline-block;
     padding-left: 0.5rem;
@@ -193,7 +213,8 @@ input[type='radio'] {
       content: '';
       position: absolute;
       display: inline-block;
-      left: -2.2rem; /* This will be adjusted */
+      left: -2.2rem;
+      /* This will be adjusted */
       top: 0.1rem;
       width: 2rem;
       height: 2rem;
@@ -215,13 +236,13 @@ input[type='radio'] {
   }
 
   &:checked {
-    + label::after {
+    +label::after {
       background: $primary-color;
     }
   }
 
   &:focus {
-    + label::before {
+    +label::before {
       box-shadow: 0 0px 8px $primary-color;
     }
   }
@@ -246,13 +267,15 @@ select {
   padding: 0.5rem;
   font-size: 1.6rem;
   height: 4rem;
+
   &.select-header {
     display: inline-block;
     font-size: 1.8rem;
   }
 }
 
-ol, ul {
+ol,
+ul {
   margin-left: 2.5rem;
 
   li::marker {
@@ -276,7 +299,8 @@ a {
   }
 }
 
-.inverse a:hover, .inverse a:hover h4 {
+.inverse a:hover,
+.inverse a:hover h4 {
   color: white;
 }
 
@@ -293,7 +317,9 @@ a:before {
   visibility: hidden;
 }
 
-button, .btn, input[type="submit"] {
+button,
+.btn,
+input[type="submit"] {
   @include fill-color();
   display: block;
   margin: 1rem auto;
@@ -368,7 +394,7 @@ a.btn {
   font-size: $font-size-lead;
 }
 
-.row:hover > div > .btn.edit {
+.row:hover>div>.btn.edit {
   display: inline-block;
 }
 
@@ -382,7 +408,9 @@ a.btn {
   @include fill-color($alert-color);
 }
 
-button:hover, .btn:hover, input[type="submit"]:hover {
+button:hover,
+.btn:hover,
+input[type="submit"]:hover {
   @include fill-color($hover-color);
 }
 
@@ -631,7 +659,8 @@ div.alert {
     padding: calc(3rem + 2vw) 0;
     text-transform: capitalize;
 
-    &:focus, &:hover {
+    &:focus,
+    &:hover {
       font-weight: 600;
     }
   }
@@ -699,10 +728,11 @@ div.alert {
 
 // About & School pages //
 
-.profile-pic, .school-logo {
+.profile-pic,
+.school-logo {
   // @include xy-center();
   display: block;
-  margin: 0 auto 3rem;
+  margin: 0 auto 2rem;
   width: 155px;
   max-width: 100%;
 
@@ -730,7 +760,8 @@ div.alert {
 }
 
 
-.student-list, .user-list {
+.student-list,
+.user-list {
   transition: height 0.2s ease-out;
   overflow: hidden;
 }
@@ -739,7 +770,8 @@ div.alert {
   padding: 1.5rem;
 }
 
-.accordion-button.collapsed, .accordion-button:not(.collapsed)  {
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
   background-color: #8b8787;
   color: white;
   margin-bottom: 0rem;
@@ -753,7 +785,7 @@ div.alert {
   color: $text-color;
 }
 
-div.row.student > * {
+div.row.student>* {
   overflow: hidden;
 }
 
@@ -763,7 +795,7 @@ div.row.student > * {
   border-radius: 5px;
 }
 
-.table > :not(caption) > * > * {
+.table> :not(caption)>*>* {
   padding: 1rem;
 }
 
@@ -772,7 +804,8 @@ thead {
   color: white;
 }
 
-th, td {
+th,
+td {
   white-space: nowrap;
   width: 1%;
 }
@@ -795,12 +828,12 @@ td {
 
 #tz-container {
   width: 100%;
-  display:flex;
+  display: flex;
 }
 
 #tz-select {
   margin: 0.5rem 1rem 0 0;
-  box-sizing:border-box;
+  box-sizing: border-box;
 }
 
 .slide-toggle {

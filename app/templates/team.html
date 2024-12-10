@@ -13,8 +13,8 @@
       <div class="col-6 col-md-4">
         <div class="team-member">
           <img class="profile-pic" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
-          <h4 class="text-center semibold">{{ member.first_name }} {{ member.last_name }}</h4>
-          <p class="text-center">{{ member.title }}</p>
+          <h4 class="text-center semibold mb-1">{{ member.first_name }} {{ member.last_name }}</h4>
+          <p class="text-center mb-4">{{ member.title }}</p>
         </div>
       </div>
     {% endfor %}
