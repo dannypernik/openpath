@@ -6573,6 +6573,8 @@ div.alert a {
 
 .profile-pic,
 .school-logo {
+  max-width: 100%;
+  height: auto;
   display: block;
 }
 .profile-pic.wide,

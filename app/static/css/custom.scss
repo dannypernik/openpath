@@ -47,6 +47,11 @@ $title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
   transform: translateX(-50%) translateY(-50%);
 }
 
+@mixin img-fluid() {
+  max-width: 100%;
+  height: auto;
+}
+
 // Sitewide stylings //
 .btn,
 input[type='submit'] {
@@ -419,8 +424,7 @@ input[type="submit"]:hover {
 }
 
 .img-fluid {
-  max-width: 100%;
-  height: auto;
+  @include img-fluid();
 }
 
 #home-alert {
@@ -731,6 +735,7 @@ div.alert {
 .profile-pic,
 .school-logo {
   // @include xy-center();
+  @include img-fluid();
   display: block;
 
   &.wide {
