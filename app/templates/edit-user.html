@@ -30,13 +30,13 @@
               </select>
               {{ form.timezone }}
             </div>
-  
+
             <div class="d-sm-flex mt-3 justify-content-between">
               <div class="mb-2">
                 <h3 class="mb-1">Role:</h3>
                 {{ form.role }}
               </div>
-              
+
               <div id="grad-year-div" class="mb-2">
                 <h3 class="mb-1">Grad year:</h3>
                 {{ form.grad_year }}
@@ -50,7 +50,11 @@
                 {{ form.tutor_id }}
               </div>
             </div>
-            
+
+            <div id="title-div" class="mb-2">
+              {{ form.title }}
+            </div>
+
             {% for t in tests %}
               <div class="row mt-4 g-0">
                 <h3 class="mb-1">{{ t.upper() }} dates:</h3>
@@ -92,13 +96,13 @@
             {{ form.is_admin.label }}
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-8">
             <input type="submit" name="save" value="Save">
           </div>
           <div class="col-4">
-            <button type="button" class="btn clr alert w-100" data-bs-toggle="modal" 
+            <button type="button" class="btn clr alert w-100" data-bs-toggle="modal"
                 data-bs-target="#delete-modal" data-text="delete">
               Delete
             </button>
@@ -152,12 +156,12 @@
     // Get references to the select and text field
     const selectElement = document.getElementById('tz-select');
     const timezoneText = document.getElementById('timezone');
-    
+
     // Add event listener to the select element
     selectElement.addEventListener('change', function() {
       // Get the selected value from the select element
       const selectedValue = selectElement.value;
-      
+
       // Update the value of the text field with the selected value
       timezoneText.value = selectedValue;
     });

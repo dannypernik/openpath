@@ -66,8 +66,11 @@ def proper(name):
     except:
         return name
 
-# exec = Executor(app)
-# app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'pdf'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -113,6 +116,11 @@ def index():
         flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
 
+
+@app.route('/team', methods=['GET', 'POST'])
+def team():
+    team_members = User.query.order_by(User.id.desc() ).filter(User.role.in_(['tutor', 'admin'])).filter_by(status='active')
+    return render_template('team.html', title='Our team', full_name=full_name, team_members=team_members)
 
 @app.route('/about')
 def about():
@@ -356,6 +364,7 @@ def edit_user(id):
             user.location=form.location.data
             user.status=form.status.data
             user.role=form.role.data
+            user.title=form.title.data
             user.grad_year=form.grad_year.data
             user.is_admin=form.is_admin.data
             user.session_reminders=form.session_reminders.data
@@ -409,6 +418,7 @@ def edit_user(id):
         form.location.data=user.location
         form.status.data=user.status
         form.role.data=user.role
+        form.title.data=user.title
         form.grad_year.data=user.grad_year
         form.tutor_id.data=user.tutor_id
         form.parent_id.data=user.parent_id
@@ -510,7 +520,7 @@ def tutors():
             return redirect(url_for('tutors'))
         return redirect(url_for('tutors'))
     return render_template('tutors.html', title='Tutors', form=form, tutors=tutors, \
-        statuses=statuses, full_name=full_name, proper=proper, )
+        statuses=statuses, full_name=full_name, proper=proper)
 
 
 @app.route('/test-dates', methods=['GET', 'POST'])
@@ -986,6 +996,11 @@ def sat_report():
 
         report_file = request.files['report_file']
         details_file = request.files['details_file']
+
+        if not (allowed_file(report_file.filename) and allowed_file(details_file.filename)):
+            flash('Only PDF files are allowed', 'error')
+            return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
+
         report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
         details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
         report_file.save(report_file_path)

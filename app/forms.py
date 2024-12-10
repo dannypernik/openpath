@@ -102,6 +102,7 @@ class UserForm(FlaskForm):
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
     role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'), \
         ('tutor','Tutor'),('admin','Admin')])
+    title = StringField('Title', render_kw={'placeholder': 'Title'})
     tutor_id = SelectField('Tutor', coerce=int)
     parent_id = SelectField('Parent', coerce=int)
     is_admin = BooleanField('Admin')

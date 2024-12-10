@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1 class="text-center">Meet the Team</h1>
+
+  <p>
+    We are a small but mighty team of tutors who have extensive experience in the subjects
+    in which we specialize. We believe in fostering a growth mindset not only for our students, but also for ourselves. Click below to learn more about each member of our team.
+  </p>
+
+  <div class="row">
+    {% for member in team_members %}
+      <div class="col-6 col-md-4">
+        <div class="team-member">
+          <img class="profile-pic" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
+          <h4 class="text-center semibold">{{ member.first_name }} {{ member.last_name }}</h4>
+          <p class="text-center">{{ member.title }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock content %}
