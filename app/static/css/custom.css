@@ -6600,19 +6600,17 @@ div.alert a {
 
 .profile-pic {
   border-radius: 100%;
-  transition: all 0.3s ease-in-out;
-  filter: brightness(0.8);
-  filter: contrast(0.9);
+  transition: all 0.4s ease-in-out;
+  filter: brightness(0.93);
 }
 
-a:hover {
+.team-member a:hover {
   text-decoration: none;
   font-weight: inherit;
 }
-a:hover .profile-pic {
-  transform: scale(1.06);
+.team-member a:hover .profile-pic {
+  transform: scale(1.03);
   filter: brightness(1);
-  filter: contrast(1);
 }
 
 .double-arrow {
