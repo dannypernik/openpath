@@ -760,8 +760,7 @@ div.alert {
 .profile-pic {
   border-radius: 100%;
   transition: all 0.4s ease-in-out;
-  filter: brightness(0.93);
-  // filter: contrast(0.9);
+  filter: brightness(0.9);
 }
 
 .team-member a:hover {
@@ -771,7 +770,6 @@ div.alert {
   .profile-pic {
     transform: scale(1.03);
     filter: brightness(1);
-    // filter: contrast(1);
   }
 }
 
