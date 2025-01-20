@@ -1,6 +1,13 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
-  Score report submitted for {{ score_data['student_name'] }} (<a href="mailto:{{ score_data['email'] }}">{{ score_data['email'] }}</a>)
+  <p>
+    Score report submitted for {{ score_data['student_name'] }} (<a href="mailto:{{ score_data['email'] }}">{{ score_data['email'] }}</a>)
+  </p>
+  {% if score_data['submitter_name'] != score_data['student_name'] %}
+    <p>
+      Submitted by {{ score_data['submitter_name'] }}
+    </p>
+  {% endif %}
 {% endblock content %}
 

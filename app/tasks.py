@@ -21,7 +21,7 @@ def create_and_send_sat_report(self, score_data):
   try:
     spreadsheet_id = create_sat_score_report(score_data)
     send_pdf_score_report(spreadsheet_id, score_data)
-    print('SAT report created and sent')
+    logging.info('SAT report created and sent')
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e

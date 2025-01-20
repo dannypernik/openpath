@@ -874,10 +874,15 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 
     paused_student_list = ', '.join(my_paused_students)
 
-    if len(my_low_students) + len(unscheduled_students) + len(my_paused_students) > 0:
+    if len(my_low_students) > 0:
+        action_str = ' - One or more scheduled students need hours'
+        if my_low_students[0]['rep_date'] <= (now + datetime.timedelta(days=))
+    else if + len(unscheduled_students) > 0:
+        action_str = ' - One or more active students not scheduled'
+    else if len(my_paused_students) > 0:
         action_str = ' - Action requested'
     else:
-        action_str = ' - No action required'
+        action_str = ''
 
     with app.app_context():
         data = {

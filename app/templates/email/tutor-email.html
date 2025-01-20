@@ -7,8 +7,7 @@
 
   {% if my_low_students %}
     <strong>Students needing hours</strong><br>
-    <span>Let Danny know any relevant details to assist the repurchase request, especially
-    if a practice test has yet to be completed for the current package:</span>
+    <span>Ask Danny to request repurchase for the following students:</span>
     <ul style="margin-top: 5px; padding-left: 15px">
       {% for s in my_low_students %}
         {% if full_name(tutor) in s['tutors'] %}
@@ -23,7 +22,7 @@
   {% if my_unscheduled_students %}
     <strong>Unscheduled students</strong><br>
     <span>
-      Please reach out to parents and students with Danny copied, or reply here
+      Please reach out to parents and students with Danny in CC or BCC, or reply here
       if a student should be marked as Paused or Inactive:
     </span>
     <ul>
