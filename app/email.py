@@ -876,7 +876,6 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 
     if len(my_low_students) > 0:
         action_str = ' - One or more scheduled students need hours'
-        if my_low_students[0]['rep_date'] <= (now + datetime.timedelta(days=))
     else if + len(unscheduled_students) > 0:
         action_str = ' - One or more active students not scheduled'
     else if len(my_paused_students) > 0:
