@@ -19,7 +19,7 @@
             <div class="team-member">
               <a href="{{ url_for(member.first_name.lower()) }}">
                 <div class="profile-pic-container">
-                  <img class="profile-pic img-fluid" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
+                  <img class="profile-pic dim img-fluid" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
                 </div>
                 <h4 class="text-center semibold mb-1">{{ member.first_name }} {{ member.last_name }}</h4>
                 <p class="text-center mb-4">{{ member.title }}</p>

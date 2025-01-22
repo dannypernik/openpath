@@ -6601,6 +6601,8 @@ div.alert a {
 .profile-pic {
   border-radius: 100%;
   transition: all 0.4s ease-in-out;
+}
+.profile-pic.dim {
   filter: brightness(0.9);
 }
 
