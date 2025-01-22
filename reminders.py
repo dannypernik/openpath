@@ -282,6 +282,7 @@ def main():
                         # sheet.update_cell(s_row, 2, 'Active')
                         s.status = 'active'
                         msg = name + ' is scheduled soon. Status changed to Active.'
+                    if s.status != initial_status:
                         try:
                             db.session.merge(s)
                             db.session.commit()
@@ -296,7 +297,7 @@ def main():
                     ss_hours = float(row[3].replace('(','-').replace(')',''))
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
-                    if ss_pay_type == 'Monthly':
+                    if ss_pay_type != 'Package':
                         repurchase_deadline = ''
                     elif ss_hours < 0:
                         repurchase_deadline = 'ASAP'
