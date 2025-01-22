@@ -270,6 +270,7 @@ def main():
             name = full_name(s)
 
             for i, row in enumerate(summary_data):
+                s_row = i + 5
                 if row[0] == name:
                     print(name + ": " + str(i))
                     initial_status = s.status
@@ -279,7 +280,7 @@ def main():
 
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
-                        sheet.update_cell(i+1, 2, 'Active')
+                        sheet.update_cell(s_row, 2, 'Active')
                         s.status = 'active'
                         msg = name + ' is scheduled soon. Status changed to Active.'
                         logging.info(msg)
@@ -340,7 +341,7 @@ def main():
 
                 s_data = {
                     'name': name,
-                    'row': i+5,         # summary_data starts from A5
+                    'row': s_row,         # summary_data starts from A5
                     'hours': ss_hours,
                     'status': ss_status,
                     'tutors': ss_tutors,
@@ -358,8 +359,9 @@ def main():
         for s in student_data:
             for attempt in range(retries):
                 try:
-                    sheet.update_cell(s['row'], 10, s['next_session'])
-                    sheet.update_cell(s['row'], 11, s['deadline'])
+                    s_range = sheet.range(s['row'], 10, s['row'] + 1, 11)
+                    sheet.update_cells(s_range, [s['next_session'], s['deadline']])
+                    # sheet.update_cell(s['row'], 11, s['deadline'])
                     logging.info(f"Successfully updated {s['name']} in the spreadsheet")
                     break
                 except gspread.exceptions.APIError as e:
