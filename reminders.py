@@ -340,7 +340,7 @@ def main():
 
                 s_data = {
                     'name': name,
-                    'row': i+6,         # summary_data starts from A5
+                    'row': i+5,         # summary_data starts from A5
                     'hours': ss_hours,
                     'status': ss_status,
                     'tutors': ss_tutors,
