@@ -271,7 +271,7 @@ def main():
 
             for i, row in enumerate(summary_data):
                 if row[0] == name:
-                    print(name + ": " + i)
+                    print(name + ": " + str(i))
                     initial_status = s.status
                     # update DB status based on spreadsheet status
                     if row[1] != s.status.title():
