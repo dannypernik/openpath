@@ -155,7 +155,7 @@ def get_events_and_data():
                     raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
-        return bimonth_events, summary_data, bimonth_start_tz_aware
+        return bimonth_events, summary_data, bimonth_start_tz_aware, sheet
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
@@ -163,7 +163,7 @@ def get_events_and_data():
 
 def get_upcoming_events():
     logging.info('Getting upcoming events')
-    bimonth_events, summary_data, bimonth_start_tz_aware = get_events_and_data()
+    bimonth_events, summary_data, bimonth_start_tz_aware, sheet = get_events_and_data()
 
     events_by_week = []
     upcoming_events = []
@@ -198,7 +198,7 @@ def get_upcoming_events():
             if upcoming_start < e_start <= upcoming_end:
                 upcoming_events.append(e)
 
-        return events_by_week, upcoming_events, bimonth_events, summary_data
+        return events_by_week, upcoming_events, bimonth_events, summary_data, sheet
     except Exception as e:
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
@@ -228,7 +228,7 @@ def main():
         messages = []
 
         events_by_week, upcoming_events, bimonth_events, \
-            summary_data = get_upcoming_events()
+            summary_data, sheet = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -256,7 +256,6 @@ def main():
                 add_students_to_data.append({'name': row[0], 'add_to': 'database'})
 
         for s in students:
-            ss_status = None
             ss_hours = None
             ss_tutors = []
             ss_pay_type = None
@@ -272,7 +271,7 @@ def main():
             for i, row in enumerate(summary_data):
                 s_row = i + 5
                 if row[0] == name:
-                    print(name + ": " + str(i))
+                    # print(name + ": " + str(i))
                     initial_status = s.status
                     # update DB status based on spreadsheet status
                     if row[1] != s.status.title():
@@ -280,12 +279,9 @@ def main():
 
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
-                        sheet.update_cell(s_row, 2, 'Active')
+                        # sheet.update_cell(s_row, 2, 'Active')
                         s.status = 'active'
                         msg = name + ' is scheduled soon. Status changed to Active.'
-                        logging.info(msg)
-                        status_updates.append(msg)
-                    if initial_status != s.status:
                         try:
                             db.session.merge(s)
                             db.session.commit()
@@ -297,7 +293,6 @@ def main():
                             logging.error(err_msg)
                             messages.append(err_msg)
 
-                    ss_status = row[1]
                     ss_hours = float(row[3].replace('(','-').replace(')',''))
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
@@ -315,7 +310,7 @@ def main():
                     add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
                     break
 
-            if ss_status in {'Active', 'Prospective'}:
+            if s.status in {'active', 'prospective'}:
                 for e in events_by_week:
                     if name in e['name']:
                         tutoring_events.append(e)
@@ -343,7 +338,7 @@ def main():
                     'name': name,
                     'row': s_row,         # summary_data starts from A5
                     'hours': ss_hours,
-                    'status': ss_status,
+                    'status': s.status.title(),
                     'tutors': ss_tutors,
                     'pay_type': ss_pay_type,
                     'next_session': next_session,
@@ -356,13 +351,17 @@ def main():
                 student_data.append(s_data)
 
         retries = 3
+        batch_updates = []
         for s in student_data:
             for attempt in range(retries):
                 try:
-                    s_range = sheet.range(s['row'], 10, s['row'] + 1, 11)
-                    sheet.update_cells(s_range, [s['next_session'], s['deadline']])
-                    # sheet.update_cell(s['row'], 11, s['deadline'])
-                    logging.info(f"Successfully updated {s['name']} in the spreadsheet")
+                    cell_updates = [
+                        {'range': f'B{s["row"]}', 'values': [[s['status']]]},
+                        {'range': f'J{s["row"]}', 'values': [[s['next_session']]]},
+                        {'range': f'K{s["row"]}', 'values': [[s['deadline']]]}
+                    ]
+                    batch_updates.extend(cell_updates)
+                    logging.info(f"Prepared update for {s['name']} in the spreadsheet")
                     break
                 except gspread.exceptions.APIError as e:
                     logging.error(f"APIError: {e.response.text}")
@@ -383,6 +382,14 @@ def main():
                 low_scheduled_students.append(s)
             else:
                 other_scheduled_students.append(s)
+        print('batch_updates: ', batch_updates)
+        if batch_updates:
+            body = {
+                'valueInputOption': 'RAW',
+                'data': batch_updates
+            }
+            sheet.values().batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
+            logging.info("Successfully executed batch update")
 
         low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
 
@@ -467,8 +474,8 @@ def main():
                 other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'succeeded')
         logging.info('reminders.py succeeded')
 
-    except Exception:
-        logging.error('reminders.py failed:', traceback.format_exc() )
+    except Exception as e:
+        logging.error('reminders.py failed: %s', traceback.format_exc())
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
             other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'failed', traceback.format_exc())
 
