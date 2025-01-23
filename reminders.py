@@ -44,6 +44,8 @@ upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A
 upcoming_end = bimonth_start_tz_aware + datetime.timedelta(hours=72)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
+tomorrow_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
+tomorrow_end = upcoming_start
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -137,7 +139,7 @@ def get_events_and_data():
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
                 result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                        range=SUMMARY_RANGE).execute()
+                        range=SUMMARY_RANGE, valueRenderOption='UNFORMATTED_VALUE').execute()
                 summary_data = result.get('values', [])
 
                 if not summary_data:
@@ -195,10 +197,10 @@ def get_upcoming_events():
                 'week_num': week_num
             })
 
-            if upcoming_start < e_start <= upcoming_end:
+            if tomorrow_end < e_start <= upcoming_end:
                 upcoming_events.append(e)
 
-        return events_by_week, upcoming_events, bimonth_events, summary_data, sheet
+        return bimonth_events, events_by_week, upcoming_events, summary_data, sheet
     except Exception as e:
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
@@ -224,10 +226,11 @@ def main():
         tutors_attention = set()
         tutoring_events = []
         my_tutoring_events = []
+        cc_sessions = []
         add_students_to_data = []
         messages = []
 
-        events_by_week, upcoming_events, bimonth_events, \
+        bimonth_events, events_by_week, upcoming_events, \
             summary_data, sheet = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
 
@@ -257,6 +260,7 @@ def main():
 
         for s in students:
             ss_hours = None
+            ss_rate = None
             ss_tutors = []
             ss_pay_type = None
             next_session = ''
@@ -269,9 +273,7 @@ def main():
             name = full_name(s)
 
             for i, row in enumerate(summary_data):
-                s_row = i + 5
                 if row[0] == name:
-                    # print(name + ": " + str(i))
                     initial_status = s.status
                     # update DB status based on spreadsheet status
                     if row[1] != s.status.title():
@@ -279,7 +281,6 @@ def main():
 
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
-                        # sheet.update_cell(s_row, 2, 'Active')
                         s.status = 'active'
                         msg = name + ' is scheduled soon. Status changed to Active.'
                     if s.status != initial_status:
@@ -294,7 +295,8 @@ def main():
                             logging.error(err_msg)
                             messages.append(err_msg)
 
-                    ss_hours = float(row[3].replace('(','-').replace(')',''))
+                    ss_hours = row[3]
+                    ss_rate = row[4]
                     ss_tutors = row[8].split(', ')
                     ss_pay_type = row[7]
                     if ss_pay_type != 'Package':
@@ -302,7 +304,8 @@ def main():
                     elif ss_hours < 0:
                         repurchase_deadline = 'ASAP'
                     if row[16] != '':
-                        ss_last_session = datetime.datetime.strptime(row[16], '%m/%d/%Y')
+                        ss_last_session_epoch = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=row[16])
+                        ss_last_session = ss_last_session_epoch.strftime('%m/%d/%Y')
                     else:
                         ss_last_session = None
                     break
@@ -322,12 +325,22 @@ def main():
                     for e in tutoring_events:
                         e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                         if name in e['name']:
+                            if ss_pay_type == 'Credit card' and (tomorrow_start <= pytz.utc.localize(e_date) < tomorrow_end):
+                                hours_due = e['hours'] - ss_hours
+                                payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
+                                if ss_hours != 0:
+                                    payment = str(payment) + ' (check hours)'
+                                cc_sessions.append({
+                                    'name': name,
+                                    'payment': payment
+                                })
+
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
                                 hours_this_week += e['hours']
                             if next_session == '':
                                 next_date = e_date
-                                if ss_last_session and next_date.date() != ss_last_session.date():
+                                if ss_last_session and next_date.date() != ss_last_session_epoch.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
                             if bimonth_hours > ss_hours and repurchase_deadline == '':
@@ -337,8 +350,9 @@ def main():
 
                 s_data = {
                     'name': name,
-                    'row': s_row,         # summary_data starts from A5
+                    'row': i + 5,         # summary_data starts from A5
                     'hours': ss_hours,
+                    'rate': ss_rate,
                     'status': s.status.title(),
                     'tutors': ss_tutors,
                     'pay_type': ss_pay_type,
@@ -383,7 +397,6 @@ def main():
                 low_scheduled_students.append(s)
             else:
                 other_scheduled_students.append(s)
-        print('batch_updates: ', batch_updates)
         if batch_updates:
             body = {
                 'valueInputOption': 'RAW',
@@ -469,10 +482,11 @@ def main():
             # TODO: implement unregistered_active_students and undecided_active_students
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
-                weekly_data, add_students_to_data, unregistered_active_students, undecided_active_students, now)
+                weekly_data, add_students_to_data, cc_sessions, unregistered_active_students, undecided_active_students, now)
         else:
-            send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-                other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'succeeded')
+            send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students,
+                unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data,
+                cc_sessions, unregistered_active_students, undecided_active_students, 'succeeded')
         logging.info('reminders.py succeeded')
 
     except Exception as e:

@@ -1,6 +1,14 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
+  {% if cc_sessions %}
+    <p>
+      Sessions to charge tomorrow
+      {% for s in cc_sessions %}
+        {{ s['name'] }} - ${{ s['payment'] }}
+      {% endfor %}
+    </p>
+  {% endif %}
   <p>
     {% for m in messages %}
       {{ m }}<br>
