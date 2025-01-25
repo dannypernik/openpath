@@ -477,6 +477,10 @@ def main():
                         other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
                     logging.info(msg)
                     messages.append(msg)
+        if (today - datetime.date(2025, 1, 24)).days % 14 == 0:
+            msg = 'Credit card payments due'
+            logging.info(msg)
+            messages.insert(0, msg)
 
         if day_of_week == 'Sunday':
             # TODO: implement unregistered_active_students and undecided_active_students
