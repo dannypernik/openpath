@@ -327,13 +327,14 @@ def main():
                         if name in e['name']:
                             if ss_pay_type == 'Credit card' and (tomorrow_start <= pytz.utc.localize(e_date) < tomorrow_end):
                                 hours_due = e['hours'] - ss_hours
-                                payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
-                                if ss_hours != 0:
-                                    payment = str(payment) + ' (check hours)'
-                                cc_sessions.append({
-                                    'name': name,
-                                    'payment': payment
-                                })
+                                if hours_due > 0:
+                                    payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
+                                    if ss_hours != 0:
+                                        payment = str(payment) + ' (check hours)'
+                                    cc_sessions.append({
+                                        'name': name,
+                                        'payment': payment
+                                    })
 
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
