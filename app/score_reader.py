@@ -275,6 +275,54 @@ def get_mod_difficulty(score_details_data):
         'hard_answer': 'A',
       }
     },
+    'sat7': {
+      'rw': {
+        'diff_question': '1',
+        'easy_answer': 'A',
+        'hard_answer': 'B',
+      },
+      'm': {
+        'diff_question': '1',
+        'easy_answer': 'A',
+        'hard_answer': 'D',
+      }
+    },
+    'sat8': {
+      'rw': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      },
+      'm': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      }
+    },
+    'sat9': {
+      'rw': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      },
+      'm': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      }
+    },
+    'sat10': {
+      'rw': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      },
+      'm': {
+        'diff_question': '',
+        'easy_answer': '',
+        'hard_answer': '',
+      }
+    },
     'psat1': {
       'rw': {
         'diff_question': '1',
