@@ -5,7 +5,7 @@
     <p>
       Sessions to charge for tomorrow<br>
       {% for s in cc_sessions %}
-        {{ s['name'] }}: ${{ s['payment'] }}
+        {{ s['name'] }}: ${{ s['payment'] }}<br>
       {% endfor %}
     </p>
   {% endif %}
