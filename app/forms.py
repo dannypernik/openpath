@@ -97,7 +97,7 @@ class UserForm(FlaskForm):
     location = StringField('Location', render_kw={'placeholder': 'Location'})
     grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
         ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
-        ('college', 'College'), ('school', 'Grade school')])
+        ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
     role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'), \
