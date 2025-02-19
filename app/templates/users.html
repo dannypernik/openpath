@@ -44,6 +44,10 @@
             <h3 class="mb-1">Tutor:</h3>
             {{ form.tutor_id }}
           </div>
+          <div class="mb-2">
+            <h3 class="mb-1">Grad year:</h3>
+            {{ form.grad_year }}
+          </div>
         </div>
 
         {{ form.submit(class="mb-3") }}
@@ -121,7 +125,7 @@
 
     document.getElementById("hide-form").addEventListener("click", function () {
       slideUp(this.parentElement);
-      document.getElementById("add-user").parentElement.style.display = "block";
+      document.getElementById("add-user").style.display = "block";
     });
 
     document.getElementById('phone').addEventListener('input', function (e) {
