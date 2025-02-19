@@ -970,9 +970,6 @@ def sat_report():
         else:
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
-        db.session.add(user)
-        db.session.commit()
-
         pdf_folder_path = 'app/static/files/scores/pdf'
         json_folder_path = 'app/static/files/scores/json'
 
