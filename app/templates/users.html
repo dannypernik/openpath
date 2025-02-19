@@ -3,7 +3,7 @@
 {% block container %}
   <div class="mt-4 row justify-content-center">
     <div class="col-12 col-md-10">
-      <a id="add-user" class="mb-4 btn d-inline-block me-2 mt-0">+ Add user</a>
+      <a id="add-user" class="mb-4 btn me-2 mt-0">+ Add user</a>
 
       <form id="add-user-form" class="hidden-block" action="" method="post">
         <h1 class="mb-3 me-3 d-inline-block">Add user</h1>
@@ -115,7 +115,7 @@
     const slideUp = element => element.style.height = '0px';
 
     document.getElementById("add-user").addEventListener("click", function () {
-      this.parentElement.style.display = "none";
+      this.style.display = "none";
       slideDown(document.getElementById("add-user-form"));
     });
 
