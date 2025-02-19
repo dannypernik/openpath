@@ -160,7 +160,7 @@ def send_reminder_email(event, student, tutor):
     elif 'test prep class' in event['event'].get('summary').lower():
         event_type = 'test prep class'
     else:
-        event_type = 'tutoring session'
+        event_type = 'session'
 
     location = event['event'].get('location')
     warnings = []
