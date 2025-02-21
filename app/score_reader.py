@@ -2401,7 +2401,7 @@ def get_all_data(report_path, details_path):
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
   # check_answer_key(data)
-  print_answer_key(data)
+  # print_answer_key(data)
   # pp.pprint(data)
   return data
 
