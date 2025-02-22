@@ -116,8 +116,8 @@ def get_student_answers(score_details_file_path):
   if date is None:
     print(score_details_data)
     return "invalid"
-  elif int(test_number) > 6:
-        raise ValueError('Test unavailable')
+  # elif int(test_number) > 6:
+  #       raise ValueError('Test unavailable')
   elif subject_totals['m_modules'] < 5:
     raise ValueError('Missing math modules')
   elif subject_totals['rw_modules'] < 44:
