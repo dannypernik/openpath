@@ -71,9 +71,21 @@
           </a>
       {% endif %}
 
+      <a href="{{ url_for('team') }}">
+        <div class="menu-link">
+          <p>Our Team</p>
+        </div>
+      </a>
+
+      <a href="{{ url_for('reviews') }}">
+        <div class="menu-link">
+          <p>Reviews</p>
+        </div>
+      </a>
+
       <a href="{{ url_for('sat_report') }}">
         <div class="menu-link">
-          <p>Score a practice test</p>
+            <p>Score a practice SAT<sup>&reg;</sup></p>
         </div>
       </a>
       <a href="{{ url_for('test_dates') }}">
@@ -81,16 +93,7 @@
           <p>Test dates</p>
         </div>
       </a>
-      <a href="{{ url_for('reviews') }}">
-        <div class="menu-link">
-          <p>Reviews</p>
-        </div>
-      </a>
-      <a href="{{ url_for('about') }}">
-        <div class="menu-link">
-          <p>About</p>
-        </div>
-      </a>
+
 
       {% block contact_link %}
         <a href="{{ url_for('index', _anchor='contact') }}">
