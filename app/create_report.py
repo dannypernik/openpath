@@ -1,4 +1,5 @@
 import os
+from app import app
 from app.email import send_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -11,12 +12,15 @@ import base64
 import logging
 
 info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[
+        logging.FileHandler('logs/info.log'),
+        logging.StreamHandler()
+    ])
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
 # Constants
-SHEET_ID = '104w631_Qo1667eBO_FdAOYHf4xqnpk7BgQOD_rdm37o'  # Your spreadsheet ID
+SHEET_ID = app.config['SCORE_REPORT_SS_ID'] # Your spreadsheet ID
 SCORE_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
@@ -57,6 +61,7 @@ def create_sat_score_report(score_data):
 
         # Create a copy of the file
         ss_copy = drive_service.files().copy(fileId=SHEET_ID, body={'parents': [SCORE_REPORT_FOLDER_ID]}).execute()
+        logging.info(SHEET_ID)
         ss_copy_id = ss_copy.get('id')
         logging.info(f'Created copy of {SHEET_ID} as {ss_copy_id}')
 
@@ -71,7 +76,7 @@ def create_sat_score_report(score_data):
                 answer_sheet_id = sheet['properties']['sheetId']
             elif sheet['properties']['title'] == 'Test analysis':
                 analysis_sheet_id = sheet['properties']['sheetId']
-            elif sheet['properties']['title'] == 'Practice test data':
+            elif sheet['properties']['title'] == 'Data':
                 data_sheet_id = sheet['properties']['sheetId']
 
         requests = []
@@ -121,8 +126,8 @@ def create_sat_score_report(score_data):
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
-                    'startRowIndex': 6,
-                    'endRowIndex': 7,
+                    'startRowIndex': 4,
+                    'endRowIndex': 5,
                     'startColumnIndex': 1,
                     'endColumnIndex': 2
                 },
@@ -166,7 +171,7 @@ def create_sat_score_report(score_data):
                                         {
                                             'sourceColumnOffset': 11,
                                             'showTotals': False,
-                                            'sortOrder': 'DESCENDING'
+                                            'sortOrder': 'ASCENDING'
                                         }
                                     ],
                                     'values': [
@@ -180,6 +185,20 @@ def create_sat_score_report(score_data):
                                             'visibleValues': [
                                                 score_data['test_code'].upper()
                                             ]
+                                        },
+                                        '1': {
+                                            'visibleValues': [
+                                                'Reading & Writing',
+                                                'Math'
+                                            ],
+                                            'condition': {
+                                            'type': 'CUSTOM_FORMULA',
+                                            'values': [
+                                                {
+                                                'userEnteredValue': '=or(Subject=A11,Subject=A12)'
+                                                }
+                                            ]
+                                            }
                                         }
                                     }
                                 }
@@ -312,35 +331,92 @@ def create_sat_score_report(score_data):
 
         # Set RW and Math scores
         for sub in [['rw_score', 5], ['m_score', 8]]:
+            if (sub[0] == 'rw_score' and score_data['rw_questions_answered'] >= 5) or (sub[0] == 'm_score' and score_data['m_questions_answered'] >= 5):
+                request = {
+                    'updateCells': {
+                        'range': {
+                            'sheetId': answer_sheet_id,
+                            'startRowIndex': 0,
+                            'endRowIndex': 1,
+                            'startColumnIndex': sub[1],
+                            'endColumnIndex': sub[1] + 1
+                        },
+                        'rows': [
+                            {
+                                'values': [
+                                    {
+                                        'userEnteredValue': {
+                                            'numberValue': score_data[sub[0]]
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        'fields': 'userEnteredValue'
+                    }
+                }
+                requests.append(request)
+            else:
+                request = {
+                    'updateCells': {
+                        'range': {
+                            'sheetId': answer_sheet_id,
+                            'startRowIndex': 0,
+                            'endRowIndex': 1,
+                            'startColumnIndex': sub[1],
+                            'endColumnIndex': sub[1] + 1
+                        },
+                        'rows': [
+                            {
+                                'values': [
+                                    {
+                                        'userEnteredValue': {
+                                            'stringValue': 'Omitted'
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        'fields': 'userEnteredValue'
+                    }
+                }
+                requests.append(request)
+
+        # Hide RW rows if omitted
+        if score_data['rw_questions_answered'] < 5:
             request = {
-                'updateCells': {
+                'updateDimensionProperties': {
                     'range': {
                         'sheetId': answer_sheet_id,
-                        'startRowIndex': 0,
-                        'endRowIndex': 1,
-                        'startColumnIndex': sub[1],
-                        'endColumnIndex': sub[1] + 1
+                        'dimension': 'ROWS',
+                        'startIndex': 1,
+                        'endIndex': 32
                     },
-                    'rows': [
-                        {
-                            'values': [
-                                {
-                                    'userEnteredValue': {
-                                        'numberValue': score_data[sub[0]]
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    'fields': 'userEnteredValue'
+                    'properties': {
+                        'hiddenByUser': True
+                    },
+                    'fields': 'hiddenByUser'
                 }
             }
             requests.append(request)
 
-            # Add the request to the batch update request
-            # batch_update_request = {
-            #     'requests': requests
-            # }
+        # Hide Math rows if omitted
+        if score_data['m_questions_answered'] < 5:
+            request = {
+                'updateDimensionProperties': {
+                    'range': {
+                        'sheetId': answer_sheet_id,
+                        'dimension': 'ROWS',
+                        'startIndex': 32,
+                        'endIndex': 57
+                    },
+                    'properties': {
+                        'hiddenByUser': True
+                    },
+                    'fields': 'hiddenByUser'
+                }
+            }
+            requests.append(request)
 
         # Set test completion date
         request = {
@@ -378,10 +454,10 @@ def create_sat_score_report(score_data):
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
-                    'startRowIndex': 4,
-                    'endRowIndex': 5,
+                    'startRowIndex': 1,
+                    'endRowIndex': 4,
                     'startColumnIndex': 1,
-                    'endColumnIndex': 2
+                    'endColumnIndex': 4
                 },
                 'rows': [
                     {
@@ -402,7 +478,7 @@ def create_sat_score_report(score_data):
             #         'sheetId': analysis_sheet_id,
             #         'startRowIndex': 4,
             #         'endRowIndex': 5,
-            #         'startColumnIndex': 2,
+            #         'startC3lumnIndex': 2,
             #         'endColumnIndex': 3
             #     },
             #     'rows': [
@@ -434,44 +510,22 @@ def create_sat_score_report(score_data):
         ).execute()
         logging.info('Batch update complete')
 
-        # Hide rows and columns if there are no omissions
-        if not score_data['has_omits']:
-            requests = []
-            requests.append({
-                'updateDimensionProperties': {
-                    "range": {
-                        "sheetId": analysis_sheet_id,
-                        "dimension": 'COLUMNS',
-                        "startIndex": 7,
-                        "endIndex": 8
-                    },
-                    "properties": {
-                        "hiddenByUser": True,
-                    },
-                    "fields": 'hiddenByUser',
-                }
-            })
+        # Hide 'Data' sheet
+        requests.append({
+            'updateSheetProperties': {
+            'properties': {
+                'sheetId': data_sheet_id,
+                'hidden': True
+            },
+            'fields': 'hidden'
+            }
+        })
 
-            requests.append({
-                'updateDimensionProperties': {
-                    "range": {
-                        "sheetId": analysis_sheet_id,
-                        "dimension": 'ROWS',
-                        "startIndex": 70,
-                        "endIndex": 76
-                    },
-                    "properties": {
-                        "hiddenByUser": True,
-                    },
-                    "fields": 'hiddenByUser',
-                }
-            })
-
-            batch_update_request = {'requests': requests}
-            response = service.spreadsheets().batchUpdate(
-                spreadsheetId=ss_copy_id,
-                body=batch_update_request
-            ).execute()
+        batch_update_request = {'requests': requests}
+        response = service.spreadsheets().batchUpdate(
+            spreadsheetId=ss_copy_id,
+            body=batch_update_request
+        ).execute()
 
         logging.info('ss_copy_id: ' + ss_copy_id)
         print('ss_copy_id: ' + ss_copy_id)
@@ -537,8 +591,10 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             message = f"Please find the score report for {score_data['test_code'].upper()} attached."
             send_score_report_email(score_data, base64_blob)
             logging.info(f"PDF report sent to {score_data['email']}")
-            drive_service.files().delete(fileId=spreadsheet_id).execute()
-            logging.info(f'Spreadsheet {spreadsheet_id} deleted')
+            # drive_service.files().update(fileId=spreadsheet_id, body={'trashed': True}).execute()
+            # drive_service.files().update(fileId=file.get('id'), body={'trashed': True}).execute()
+            # logging.info(f'Spreadsheet {spreadsheet_id} and PDF moved to trash')
+
         else:
             logging.error(f'Failed to fetch PDF: {response.content}')
     except Exception:
@@ -586,11 +642,17 @@ def send_answers_to_student_ss(score_data):
         student_answer_data = service.spreadsheets().values().get(spreadsheetId=student_ss_id, range=student_answer_sheet_range).execute()
         student_answer_values = student_answer_data.get('values', [])
 
+        completed_subjects = []
+        if score_data['rw_questions_answered'] >= 5:
+            completed_subjects.append('rw_modules')
+        if score_data['m_questions_answered'] >= 5:
+            completed_subjects.append('m_modules')
+
         # Reset batch requests
         x = 0
         requests = []
         mod_answers = []
-        for sub in ['rw_modules', 'm_modules']:
+        for sub in completed_subjects:
             for mod in range(1, 3):
                 section = []
                 for n in range(1, total_questions[sub]['questions'] + 1):
@@ -672,8 +734,9 @@ def send_answers_to_student_ss(score_data):
             }
             requests.append(request)
 
-        # If RW score > 200, set RW completion date
-        if score_data['rw_score'] > 200:
+
+        # If RW completed, set RW completion date
+        if 'rw_modules' in completed_subjects:
             request = {
                 'updateCells': {
                     'range': {
@@ -704,8 +767,9 @@ def send_answers_to_student_ss(score_data):
             }
             requests.append(request)
 
-        # If Math score > 200, set Math completion date
-        if score_data['m_score'] > 200:
+
+        # If Math completed, set Math completion date
+        if 'm_modules' in completed_subjects:
             request = {
                 'updateCells': {
                     'range': {
@@ -735,11 +799,6 @@ def send_answers_to_student_ss(score_data):
                 }
             }
             requests.append(request)
-
-        # # Add the request to the batch update request
-        # batch_update_request = {
-        #     'requests': requests
-        # }
 
         logging.info('Starting student sheet batch update')
         batch_update_request = {'requests': requests}

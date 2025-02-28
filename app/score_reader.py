@@ -103,6 +103,9 @@ def get_student_answers(score_details_file_path):
             'is_correct': is_correct
           }
 
+  rw_questions_answered = 0
+  m_questions_answered = 0
+
   for sub in ['rw_modules', 'm_modules']:
     for mod in range(1, 3):
       for q in range(1, total_questions[sub]['questions'] + 1):
@@ -112,6 +115,16 @@ def get_student_answers(score_details_file_path):
             'student_answer': 'not found',
             'is_correct': False
           }
+        elif sub == 'rw_modules' and score_details_data['answers'][sub][str(mod)][str(q)][
+          'student_answer'] != '-':
+          rw_questions_answered += 1
+        elif sub == 'm_modules' and score_details_data['answers'][sub][str(mod)][str(q)][
+          'student_answer'] != '-':
+          m_questions_answered += 1
+
+  score_details_data['rw_questions_answered'] = rw_questions_answered
+  score_details_data['m_questions_answered'] = m_questions_answered
+
 
   if date is None:
     print(score_details_data)
