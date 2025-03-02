@@ -20,7 +20,7 @@ import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
 from app.create_report import check_service_account_access
-from app.tasks import create_and_send_sat_report, send_report_submitted_task, send_answers_to_student_ss_task
+from app.tasks import create_and_send_sat_report_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -1028,14 +1028,13 @@ def sat_report():
             db.session.commit()
 
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-            create_and_send_sat_report.delay(score_data)
+            create_and_send_sat_report_task.delay(score_data)
 
             if student_ss_id:
                 has_access = check_service_account_access(student_ss_id)
-                if has_access:
-                    send_answers_to_student_ss_task.delay(score_data)
-                else:
-                    flash(Markup('Score report processing, but error editing Google Sheet. See <a href="#" data-bs-toggle="modal" data-bs-target="#spreadsheet-modal">instructions</a> for granting edit access.'))
+                if not has_access:
+                    flash(Markup('Score report processing, but <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> needs to be shared with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
+                    logging.error('Service account does not have access to student spreadsheet')
                     return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
             return render_template('score-report-sent.html')
         except ValueError as ve:
@@ -1049,6 +1048,8 @@ def sat_report():
                 flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
+            elif 'insufficient questions answered' in str(ve):
+                flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except FileNotFoundError as fe:

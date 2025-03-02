@@ -137,6 +137,8 @@ def get_student_answers(score_details_file_path):
     raise ValueError('Error reading score details: missing RW questions')
   elif subject_totals['m_modules'] < 34:
     raise ValueError('Error reading score details: missing Math questions')
+  elif rw_questions_answered < 5 and m_questions_answered < 5:
+    raise ValueError('Error reading score details: insufficient questions answered')
 
   return score_details_data
 

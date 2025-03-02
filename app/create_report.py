@@ -288,8 +288,10 @@ def create_sat_score_report(score_data):
 
                     # Needed str(mod) and str(n) with celery worker
                     number = score_data['answers'][sub][str(mod)][str(n)]
+                    # Update answers in score_data to match spreadsheet key
                     if number['is_correct'] and number['student_answer'] != '-':
                         student_answer = answer_values[row_idx][col_idx + 1]
+                        number['student_answer'] = student_answer
                     else:
                         student_answer = number['student_answer']
 
@@ -531,7 +533,7 @@ def create_sat_score_report(score_data):
         print('ss_copy_id: ' + ss_copy_id)
         # logging.info(score_data)
 
-        return ss_copy_id
+        return ss_copy_id, score_data
     except Exception:
         logging.error(f'Error in create_sat_score_report: {Exception}')
         raise
