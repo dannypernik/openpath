@@ -461,6 +461,10 @@ div.alert {
   flex: 1 0 auto;
 }
 
+.modal {
+  padding: 0.5rem;
+}
+
 .modal-content {
   border: 0;
 }
@@ -671,6 +675,7 @@ div.alert {
 
   li {
     list-style: none;
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -902,7 +907,7 @@ a.info-icon {
 }
 
 .modal-dialog {
-  max-width: 75rem;
+  max-width: 90rem;
 }
 
 .btn-close {
@@ -981,3 +986,26 @@ a.info-icon {
     transform: rotate(360deg);
   }
 }
+
+// .drop-area {
+//   border: 2px dashed $primary-color;
+//   border-radius: 10px;
+//   padding: 2rem;
+//   text-align: center;
+//   cursor: pointer;
+//   transition: background-color 0.3s ease;
+// }
+
+// .drop-area.dragover {
+//   background-color: lighten($primary-color, 40%);
+// }
+
+// .drop-area p {
+//   margin: 0;
+//   font-size: $font-size-base;
+//   color: $primary-color;
+// }
+
+// .drop-area button {
+//   margin-top: 1rem;
+// }

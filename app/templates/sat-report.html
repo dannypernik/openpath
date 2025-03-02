@@ -210,11 +210,12 @@
                     as an Editor.
                   </li>
                   <li>Copy your Google Sheet URL, and paste it here:</li>
+                  <div id="ss-url-div" class="d-flex mt-1">
+                    <input class="flex-grow-1" id="ss-url-entry" placeholder="Student spreadsheet URL" type="text" value="">
+                    <button id="save-url" class="d-inline-block btn sm ms-2" data-bs-dismiss="modal">Save</button>
+                  </div>
                 </ol>
-                <div id="ss-url-div" class="d-flex">
-                  <input class="flex-grow-1" id="ss-url-entry" placeholder="Student spreadsheet URL" type="text" value="">
-                  <button id="save-url" class="d-inline-block btn sm ms-2" data-bs-dismiss="modal">Save</button>
-                </div>
+
                 <!-- <video class="img-fluid" src="{{ url_for('static', filename='media/spreadsheet.mp4') }}" controls autoplay muted></video> -->
               </div>
             </div>

@@ -6328,6 +6328,10 @@ div.alert a {
   flex: 1 0 auto;
 }
 
+.modal {
+  padding: 0.5rem;
+}
+
 .modal-content {
   border: 0;
 }
@@ -6516,6 +6520,7 @@ div.alert a {
 }
 .home-nav li {
   list-style: none;
+  margin-bottom: 0.5rem;
 }
 
 .home-section {
@@ -6734,7 +6739,7 @@ a.info-icon:hover span {
 }
 
 .modal-dialog {
-  max-width: 75rem;
+  max-width: 90rem;
 }
 
 .btn-close {
