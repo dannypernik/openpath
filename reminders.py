@@ -58,7 +58,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Summary!A5:Z'
 calendars = [
-    { 'tutor': 'Danny Pernik', 'id': 'danny@openpathtutoring.com' },
+    { 'tutor': 'Danny Pernik', 'id': 'danny.pernik@openpathtutoring.com'},
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
     { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
     { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' },
