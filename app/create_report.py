@@ -60,7 +60,13 @@ def create_sat_score_report(score_data):
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the file
-        ss_copy = drive_service.files().copy(fileId=SHEET_ID, body={'parents': [SCORE_REPORT_FOLDER_ID]}).execute()
+        ss_copy = drive_service.files().copy(
+            fileId=SHEET_ID,
+            body={
+            'parents': [SCORE_REPORT_FOLDER_ID],
+            'name': f"SAT Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')} - {score_data['test_code'].upper()}.pdf"
+            }
+        ).execute()
         logging.info(SHEET_ID)
         ss_copy_id = ss_copy.get('id')
         logging.info(f'Created copy of {SHEET_ID} as {ss_copy_id}')
@@ -195,7 +201,7 @@ def create_sat_score_report(score_data):
                                             'type': 'CUSTOM_FORMULA',
                                             'values': [
                                                 {
-                                                'userEnteredValue': '=or(Subject=A11,Subject=A12)'
+                                                'userEnteredValue': '=or(Subject=A10,Subject=A11)'
                                                 }
                                             ]
                                             }
