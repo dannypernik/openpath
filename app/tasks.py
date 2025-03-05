@@ -27,8 +27,17 @@ def create_and_send_sat_report_task(self, score_data):
     if student_ss_id:
       has_access = check_service_account_access(student_ss_id)
       if has_access:
-        send_answers_to_student_ss.delay(score_data_updated)
+        send_answers_to_student_ss_task.delay(score_data_updated)
 
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
+
+@celery.task(name='app.tasks.send_answers_to_student_ss_task', bind=True, base=MyTaskBaseClass)
+def send_answers_to_student_ss_task(self, score_data):
+    try:
+        send_answers_to_student_ss(score_data)
+        logging.info('SAT answers sent to student spreadsheet')
+    except Exception as e:
+        logging.error(f'Error sending SAT answers to spreadsheet: {e}')
+        raise e
