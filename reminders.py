@@ -418,6 +418,11 @@ def main():
                 logging.info(msg)
                 messages.append(msg)
 
+        if (today - datetime.date(2025, 3, 7)).days % 14 == 0:
+            msg = 'Biweekly payments due'
+            logging.info(msg)
+            messages.insert(0, msg)
+
         ### send registration and test reminder emails
         for u in test_reminder_users:
             for d in u.get_dates():
