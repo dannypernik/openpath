@@ -717,8 +717,9 @@ def send_answers_to_student_ss(score_data):
 
         # Set RW and Math scores
         for sub in [['rw_score', 6], ['m_score', 8]]:
-            request = {
-                'updateCells': {
+            if (sub[0] == 'rw_score' and 'rw_modules' in completed_subjects) or (sub[0] == 'm_score' and 'm_modules' in completed_subjects):
+                request = {
+                    'updateCells': {
                     'range': {
                         'sheetId': student_answer_sheet_id,
                         'startRowIndex': 0,
@@ -728,13 +729,13 @@ def send_answers_to_student_ss(score_data):
                     },
                     'rows': [
                         {
-                            'values': [
-                                {
-                                    'userEnteredValue': {
-                                        'numberValue': score_data[sub[0]]
-                                    }
-                                }
-                            ]
+                        'values': [
+                            {
+                            'userEnteredValue': {
+                                'numberValue': score_data[sub[0]]
+                            }
+                            }
+                        ]
                         }
                     ],
                     'fields': 'userEnteredValue'
