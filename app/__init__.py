@@ -29,6 +29,8 @@ def make_celery(app):
         broker='redis://localhost:6379/0'
     )
     celery.conf.update(app.config)
+    celery.conf.task_acks_late = True  # Acknowledge tasks only after execution
+
     return celery
 
 celery = make_celery(app)
