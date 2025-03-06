@@ -1137,7 +1137,6 @@ def send_score_report_email(score_data, base64_blob):
                             'Email': score_data['email']
                         }
                     ],
-                    'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
                     'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
                     'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
                     'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),
