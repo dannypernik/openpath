@@ -7,11 +7,11 @@ from app.email import send_report_submitted_email, send_task_fail_mail, send_fai
 import logging
 
 # Set up logging to capture logs in memory
-log_stream = StringIO()
-handler = logging.StreamHandler(log_stream)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logging.getLogger().addHandler(handler)
+# log_stream = StringIO()
+# handler = logging.StreamHandler(log_stream)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# handler.setFormatter(formatter)
+# logging.getLogger().addHandler(handler)
 
 
 class MyTaskBaseClass(celery.Task):
