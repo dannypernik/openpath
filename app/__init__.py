@@ -29,7 +29,7 @@ def make_celery(app):
         broker='redis://localhost:6379/0'
     )
     celery.conf.update(app.config)
-    # celery.conf.worker_max_tasks_per_child = 1
+    celery.conf.worker_max_tasks_per_child = 1
     celery.conf.task_acks_late = True  # Acknowledge tasks only after execution
 
     return celery
