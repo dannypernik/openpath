@@ -1159,7 +1159,7 @@ def send_score_report_email(score_data, base64_blob):
     return result.status_code
 
 
-def send_fail_mail(subject, data=None, error='unknown error'):
+def send_fail_mail(subject, error='unknown error', data=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
