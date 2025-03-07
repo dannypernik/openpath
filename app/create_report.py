@@ -505,6 +505,19 @@ def create_sat_score_report(score_data):
         }
         requests.append(request)
 
+        # Hide 'Data' sheet
+        request = {
+            'updateSheetProperties': {
+            'properties': {
+                'sheetId': data_sheet_id,
+                'hidden': True
+            },
+            'fields': 'hidden'
+            }
+        }
+
+        requests.append(request)
+
         # Add the request to the batch update request
         batch_update_request = {
             'requests': requests
@@ -517,23 +530,6 @@ def create_sat_score_report(score_data):
             body=batch_update_request
         ).execute()
         logging.info('Batch update complete')
-
-        # Hide 'Data' sheet
-        requests.append({
-            'updateSheetProperties': {
-            'properties': {
-                'sheetId': data_sheet_id,
-                'hidden': True
-            },
-            'fields': 'hidden'
-            }
-        })
-
-        batch_update_request = {'requests': requests}
-        response = service.spreadsheets().batchUpdate(
-            spreadsheetId=ss_copy_id,
-            body=batch_update_request
-        ).execute()
 
         logging.info('ss_copy_id: ' + ss_copy_id)
         print('ss_copy_id: ' + ss_copy_id)
