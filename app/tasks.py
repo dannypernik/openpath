@@ -1,8 +1,18 @@
 import os
 from app import celery
+from celery.signals import worker_shutdown
 from app.create_report import create_sat_score_report, send_pdf_score_report, send_answers_to_student_ss, check_service_account_access
 from app.email import send_task_fail_mail, send_report_submitted_email
+from io import StringIO
 import logging
+
+# Set up logging to capture logs in memory
+log_stream = StringIO()
+handler = logging.StreamHandler(log_stream)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logging.getLogger().addHandler(handler)
+
 
 class MyTaskBaseClass(celery.Task):
     autoretry_for = (Exception,)
@@ -41,3 +51,8 @@ def send_answers_to_student_ss_task(self, score_data):
     except Exception as e:
         logging.error(f'Error sending SAT answers to spreadsheet: {e}')
         raise e
+
+@worker_shutdown.connect
+def worker_shutdown_handler(sender=None, **kwargs):
+    logging.error('Worker is shutting down')
+    send_fail_mail('Celery worker shutdown')

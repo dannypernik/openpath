@@ -1060,7 +1060,7 @@ def sat_report():
             return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
         except Exception as e:
             logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
-            email = send_fail_mail([user.first_name, user.last_name, user.email], 'generating score report', traceback.format_exc())
+            email = send_fail_mail('Cannot generate score report', [user.first_name, user.last_name, user.email], traceback.format_exc())
             if email == 200:
                 flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
             else:
