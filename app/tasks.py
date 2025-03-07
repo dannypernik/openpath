@@ -1,6 +1,6 @@
 import os
 from app import celery
-from celery.signals import worker_shutdown
+from celery.signals import worker_process_shutdown
 from app.create_report import create_sat_score_report, send_pdf_score_report, send_answers_to_student_ss, check_service_account_access
 from app.email import send_report_submitted_email, send_task_fail_mail, send_fail_mail
 from io import StringIO
@@ -52,10 +52,10 @@ def send_answers_to_student_ss_task(self, score_data):
         logging.error(f'Error sending SAT answers to spreadsheet: {e}')
         raise e
 
-@worker_shutdown.connect
-def worker_shutdown_handler(sender=None, **kwargs):
-    logging.error('Worker is shutting down')
+@worker_process_shutdown.connect
+def worker_process_shutdown_handler(sender=None, **kwargs):
+    logging.error('Worker process is shutting down')
     log_stream.seek(0)
     recent_logs = log_stream.read()
-    error = f"A Celery worker is shutting down unexpectedly.\n\nRecent logs:\n{recent_logs}"
-    send_fail_mail('Celery worker shutdown', error)
+    error = f"A Celery worker process is shutting down unexpectedly.\n\nRecent logs:\n{recent_logs}"
+    send_fail_mail('Celery worker process shutdown', error)
