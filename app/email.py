@@ -1158,6 +1158,37 @@ def send_score_report_email(score_data, base64_blob):
         print('Score report email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
+def send_changed_answers_email(changed_answers, score_data):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    with app.app_context():
+        data = {
+            'Messages': [
+                {
+                    'From': {
+                        'Email': app.config['MAIL_USERNAME'],
+                        'Name': 'Open Path Tutoring'
+                    },
+                    'To': [
+                        {
+                            'Email': app.config['MAIL_USERNAME']
+                        }
+                    ],
+                    'Subject': 'Changed answers for ' + score_data['student_name'],
+                    'HTMLPart': render_template('email/changed-answers-email.html', changed_answers=changed_answers, score_data=score_data)
+                }
+            ]
+        }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        print('Changed answer email sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        print('Changed answer email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
+
 
 def send_fail_mail(subject, error='unknown error', data=None):
     api_key = app.config['MAILJET_KEY']

@@ -1039,7 +1039,7 @@ def sat_report():
             return render_template('score-report-sent.html')
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
-                flash('Tests 7-10 are not yet available. We are working to add them soon.', 'error')
+                flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
             elif 'Missing math modules' in str(ve):
                 flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'missing RW questions' in str(ve):

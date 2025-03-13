@@ -5,6 +5,7 @@ import re
 import pprint
 from flask import flash, Markup
 import logging
+from app.email import send_changed_answers_email
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
@@ -129,8 +130,8 @@ def get_student_answers(score_details_file_path):
   if date is None:
     print(score_details_data)
     return "invalid"
-  # elif int(test_number) > 6:
-  #       raise ValueError('Test unavailable')
+  elif int(test_number) > 10:
+        raise ValueError('Test unavailable')
   elif subject_totals['m_modules'] < 5:
     raise ValueError('Missing math modules')
   elif subject_totals['rw_modules'] < 44:
@@ -2404,6 +2405,9 @@ def check_answer_key(score_details_data):
             'answer_key': answer_key[score_details_data['test_code']][sub][mod][q],
             'student': score_details_data['answers'][sub][mod][q]
           })
+
+  if len(changed_answers) > 0:
+    send_changed_answers_email(changed_answers, score_details_data)
 
   return changed_answers
 
