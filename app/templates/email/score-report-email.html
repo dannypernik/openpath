@@ -44,8 +44,9 @@
 
   {% if score_data['student_ss_id'] %}
     <p>
-      Your test answers should have been added to the <a
-      href="https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id'] }}/edit?gid={{ score_data['test_sheet_id'] }}"
+      Your{% if rw_questions_answered < 5 %} Math {% elif m_questions_answered < 5 %}
+      Reading & Writing {% else %} test {% endif %}answers should have been added to the
+      <a href="https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id']}}/edit?gid={{ score_data['test_sheet_id'] }}"
       target="_blank">{{score_data['test_code'].upper() }} tab of your answer spreadsheet</a>.
       If not, please reply here for assistance. This tool is in beta, so please let us
       know if you find any mistakes or have any questions or suggestions. Thank you for
