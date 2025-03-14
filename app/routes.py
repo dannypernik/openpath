@@ -984,7 +984,10 @@ def sat_report():
             try:
                 student_ss_full_url = form.spreadsheet_url.data
                 student_ss_base_url = student_ss_full_url.split('?')[0]
-                student_ss_id = student_ss_base_url.split('/')[-2]
+                if '/d/' in student_ss_base_url:
+                    student_ss_id = student_ss_base_url.split('/d/')[1].split('/')[0]
+                else:
+                    student_ss_id = student_ss_base_url
             except:
                 flash('Invalid Google Sheet URL', 'error')
                 return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
@@ -1028,14 +1031,15 @@ def sat_report():
             db.session.commit()
 
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-            create_and_send_sat_report_task.delay(score_data)
 
             if student_ss_id:
                 has_access = check_service_account_access(student_ss_id)
                 if not has_access:
-                    flash(Markup('Score report processing, but <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> needs to be shared with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
+                    flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
                     logging.error('Service account does not have access to student spreadsheet')
                     return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
+
+            create_and_send_sat_report_task.delay(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
@@ -1066,6 +1070,8 @@ def sat_report():
             else:
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
             return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
+        if len(score_data['answer_key_mismatches']) > 0:
+            flash('Creating score report, but it appears that the College Board has changed the answer key for ' + score_data['test_display_name'] + '. Check your inbox for more details.', 'error')
         flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
 

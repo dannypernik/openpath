@@ -1137,7 +1137,8 @@ def send_score_report_email(score_data, base64_blob):
                             'Email': score_data['email']
                         }
                     ],
-                    'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
+                    'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
+                    'Subject': score_data['test_display_name'] + ' Score Report for ' + score_data['student_name'],
                     'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
                     'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),
                     'Attachments': [
@@ -1158,7 +1159,7 @@ def send_score_report_email(score_data, base64_blob):
         print('Score report email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
-def send_changed_answers_email(changed_answers, score_data):
+def send_changed_answers_email(score_data):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -1176,8 +1177,8 @@ def send_changed_answers_email(changed_answers, score_data):
                             'Email': app.config['MAIL_USERNAME']
                         }
                     ],
-                    'Subject': 'Changed answers for ' + score_data['student_name'],
-                    'HTMLPart': render_template('email/changed-answers-email.html', changed_answers=changed_answers, score_data=score_data)
+                    'Subject': 'Changed answers for ' + score_data['test_display_name'],
+                    'HTMLPart': render_template('email/changed-answers-email.html', score_data=score_data)
                 }
             ]
         }

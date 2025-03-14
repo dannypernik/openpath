@@ -629,7 +629,9 @@ def send_answers_to_student_ss(score_data):
             if sheet['properties']['title'] == score_data['test_code'].upper():
                 student_answer_sheet_id = sheet['properties']['sheetId']
                 break
-        logging.info('student_answer_sheet_id: ' + str(student_answer_sheet_id))
+
+        score_data['test_sheet_id'] = str(student_answer_sheet_id)
+        logging.info('student_answer_sheet_id: ' + score_data['test_sheet_id'])
 
         # Process score data
         if score_data['is_rw_hard']:
@@ -813,6 +815,9 @@ def send_answers_to_student_ss(score_data):
         ).execute()
 
         logging.info('student_ss_id: ' + student_ss_id)
+
+        return score_data
+
     except Exception:
         logging.error(f'Error in send_answers_to_student_ss: {Exception}')
         raise

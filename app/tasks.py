@@ -1,7 +1,7 @@
 import os
 from app import celery
 # from celery.signals import worker_process_shutdown, worker_shutdown
-from app.create_report import create_sat_score_report, send_pdf_score_report, send_answers_to_student_ss, check_service_account_access
+from app.create_report import create_sat_score_report, send_pdf_score_report, send_answers_to_student_ss
 from app.email import send_report_submitted_email, send_task_fail_mail, send_fail_mail
 # from io import StringIO
 import logging
@@ -30,27 +30,24 @@ class MyTaskBaseClass(celery.Task):
 def create_and_send_sat_report_task(self, score_data):
   try:
     spreadsheet_id, score_data_updated = create_sat_score_report(score_data)
-    send_pdf_score_report(spreadsheet_id, score_data)
+    if score_data_updated['student_ss_id']:
+      score_data_updated = send_answers_to_student_ss(score_data_updated)
+    send_pdf_score_report(spreadsheet_id, score_data_updated)
     logging.info('SAT report created and sent')
 
-    student_ss_id = score_data['student_ss_id']
-    if student_ss_id:
-      has_access = check_service_account_access(student_ss_id)
-      if has_access:
-        send_answers_to_student_ss_task.delay(score_data_updated)
+    logging.info('SAT answers sent to student spreadsheet')
 
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
 
-@celery.task(name='app.tasks.send_answers_to_student_ss_task', bind=True, base=MyTaskBaseClass)
-def send_answers_to_student_ss_task(self, score_data):
-    try:
-        send_answers_to_student_ss(score_data)
-        logging.info('SAT answers sent to student spreadsheet')
-    except Exception as e:
-        logging.error(f'Error sending SAT answers to spreadsheet: {e}')
-        raise e
+# @celery.task(name='app.tasks.send_answers_to_student_ss_task', bind=True, base=MyTaskBaseClass)
+# def send_answers_to_student_ss_task(self, score_data):
+#     try:
+#         logging.info('SAT answers sent to student spreadsheet')
+#     except Exception as e:
+#         logging.error(f'Error sending SAT answers to spreadsheet: {e}')
+#         raise e
 
 # @worker_shutdown.connect
 # def worker_shutdown_handler(sender=None, **kwargs):

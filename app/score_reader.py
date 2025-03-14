@@ -27,6 +27,7 @@ def get_student_answers(score_details_file_path):
       'is_rw_hard': None,
       'is_m_hard': None,
       'has_omits': False,
+      'answer_key_mismatches': [],
       'answers': {
         'rw_modules': {
           '1': {},
@@ -83,7 +84,7 @@ def get_student_answers(score_details_file_path):
             module = '2'
           else:
             module = '1'
-          correct_answer = line.split()[correct_index]
+          correct_answer = line.split()[correct_index].rstrip(',')
           s_line = line.split(' ')
           if s_line[-1] == 'Review':
             offset = 0
@@ -406,7 +407,8 @@ def print_answer_key(score_details_data):
   for sub in score_details_data['answers']:
     for mod in score_details_data['answers'][sub]:
       for q in score_details_data['answers'][sub][mod]:
-        answer_key[sub][mod][q] = score_details_data['answers'][sub][mod][q]['correct_answer']
+        correct_answer = score_details_data['answers'][sub][mod][q]['correct_answer'].rstrip(',')
+        answer_key[sub][mod][q] = correct_answer
   pp.pprint(answer_key)
 
 def check_answer_key(score_details_data):
@@ -2393,23 +2395,25 @@ def check_answer_key(score_details_data):
     }
   }
 
-  changed_answers = []
   for sub in score_details_data['answers']:
     for mod in score_details_data['answers'][sub]:
+      key_mod = mod
+      if mod == '2' and ((sub == 'rw_modules' and score_details_data['is_rw_hard']) or (sub == 'm_modules' and score_details_data['is_m_hard'])):
+        key_mod = '3'
       for q in score_details_data['answers'][sub][mod]:
-        if score_details_data['answers'][sub][mod][q] != answer_key[score_details_data['test_code']][sub][mod][q]:
-          changed_answers.append({
+        if score_details_data['answers'][sub][mod][q]['correct_answer'] != answer_key[score_details_data['test_code']][sub][key_mod][q]:
+          score_details_data['answer_key_mismatches'].append({
             'sub': sub,
             'mod': mod,
             'q': q,
-            'answer_key': answer_key[score_details_data['test_code']][sub][mod][q],
-            'student': score_details_data['answers'][sub][mod][q]
+            'previous_key': answer_key[score_details_data['test_code']][sub][key_mod][q],
+            'new_key': score_details_data['answers'][sub][mod][q]['correct_answer']
           })
 
-  if len(changed_answers) > 0:
-    send_changed_answers_email(changed_answers, score_details_data)
+  if len(score_details_data['answer_key_mismatches']) > 0:
+    send_changed_answers_email(score_details_data)
 
-  return changed_answers
+  return score_details_data
 
 
 def get_all_data(report_path, details_path):
@@ -2421,7 +2425,7 @@ def get_all_data(report_path, details_path):
       raise FileNotFoundError('Score Details PDF does not match expected format')
   data = get_data_from_pdf(data, report_path)
   data = get_mod_difficulty(data)
-  # check_answer_key(data)
+  data = check_answer_key(data)
   # print_answer_key(data)
   # pp.pprint(data)
   return data
