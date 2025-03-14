@@ -1,8 +1,8 @@
 Please find the {{ score_data['test_display_name'] }} score report for {{ score_data['student_name'] }} attached.
 {% if score_data['answer_key_mismatches'] %}
 It appears that the College Board has changed the answer key for practice {{ score_data['test_display_name'] }}. The following questions may display incorrectly on your score report:
-
-{% for obj in score_data['answer_key_mismatches'] %}{% if obj['sub'] == 'rw_modules' %}R&W module {{ obj['mod'] }}{% if score_data['is_rw_hard'] %}H{% else %}E{% endif %}{% else %}Math module {{ obj['mod'] }}{% if score_data['is_m_hard'] %}H{% else %}E{% endif %}{% endif %}#{{ obj['q'] }}  Expected correct answer: {{ obj['previous_key'] }}  New correct answer: {{ obj['new_key'] }}{% endfor %}
+{% for obj in score_data['answer_key_mismatches'] %}
+{% if obj['sub'] == 'rw_modules' %}R&W module {{ obj['mod'] }}{% if int(obj['mod']) > 1 %}{% if score_data['is_rw_hard'] %}H{% else %}E{% endif %}{% endif %}{% else %}Math module {{ obj['mod'] }}{% if int(obj['mod']) > 1 %}{% if score_data['is_m_hard'] %}H{% else %}E{% endif %}{% endif %}{% endif %} #{{ obj['q'] }}  Expected correct answer: {{ obj['previous_key'] }}  New correct answer: {{ obj['new_key'] }}{% endfor %}
 
 Note that the scores displayed on the report are not affected by errors in the answer key.
 {% endif %}

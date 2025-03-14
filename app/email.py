@@ -1139,8 +1139,8 @@ def send_score_report_email(score_data, base64_blob):
                     ],
                     'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
                     'Subject': score_data['test_display_name'] + ' Score Report for ' + score_data['student_name'],
-                    'TextPart': render_template('email/score-report-email.txt', score_data=score_data),
-                    'HTMLPart': render_template('email/score-report-email.html', score_data=score_data),
+                    'TextPart': render_template('email/score-report-email.txt', score_data=score_data, int=int),
+                    'HTMLPart': render_template('email/score-report-email.html', score_data=score_data, int=int),
                     'Attachments': [
                         {
                             'ContentType': 'application/pdf',
@@ -1178,7 +1178,7 @@ def send_changed_answers_email(score_data):
                         }
                     ],
                     'Subject': 'Changed answers for ' + score_data['test_display_name'],
-                    'HTMLPart': render_template('email/changed-answers-email.html', score_data=score_data)
+                    'HTMLPart': render_template('email/changed-answers-email.html', score_data=score_data, int=int)
                 }
             ]
         }

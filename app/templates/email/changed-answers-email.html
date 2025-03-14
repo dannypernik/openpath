@@ -1,6 +1,9 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
+  <h3>Changed answers:</h3>
+  {% include 'email/_changed_answer_table.html' %}
+
   <h3>Score data:</h3>
   <p>{{ score_data }}</p>
 {% endblock content %}

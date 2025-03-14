@@ -11,31 +11,9 @@
       score_data['test_display_name'] }}. The following questions may display incorrectly
       on your score report:
     </p>
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align: left; padding: 0 5px">Question #</th>
-            <th style="padding: 0 10px">Expected correct answer</th>
-            <th>New correct answer</th>
-          </tr>
-        </thead>
-        <tbody style="text-align: center;">
-          {% for obj in score_data['answer_key_mismatches'] %}
-            <tr>
-              <td style="text-align: left">
-                {% if obj['sub'] == 'rw_modules' %}
-                  R&W module {{ obj['mod'] }}{% if score_data['is_rw_hard'] %}H{% else %}E{% endif %}
-                {% else %}
-                  Math module {{ obj['mod'] }}{% if score_data['is_m_hard'] %}H{% else %}E{% endif %}
-                {% endif %}
-                #{{ obj['q'] }}
-              </td>
-              <td>{{ obj['previous_key'] }}</td>
-              <td>{{ obj['new_key'] }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    {% include 'email/_changed_answer_table.html' %}
+
     <p>
       Note that the scores displayed on the report are not affected by errors in the
       answer key.
