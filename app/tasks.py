@@ -6,14 +6,6 @@ from app.email import send_report_submitted_email, send_task_fail_mail, send_fai
 # from io import StringIO
 import logging
 
-# Set up logging to capture logs in memory
-# log_stream = StringIO()
-# handler = logging.StreamHandler(log_stream)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
-# logging.getLogger().addHandler(handler)
-
-
 class MyTaskBaseClass(celery.Task):
     autoretry_for = (Exception,)
     retry_backoff = 10
@@ -33,9 +25,6 @@ def create_and_send_sat_report_task(self, score_data):
     if score_data_updated['student_ss_id']:
       score_data_updated = send_answers_to_student_ss(score_data_updated)
     send_pdf_score_report(spreadsheet_id, score_data_updated)
-    logging.info('SAT report created and sent')
-
-    logging.info('SAT answers sent to student spreadsheet')
 
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')

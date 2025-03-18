@@ -67,9 +67,8 @@ def create_sat_score_report(score_data):
             'name': f"SAT Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')} - {score_data['test_code'].upper()}.pdf"
             }
         ).execute()
-        logging.info(SHEET_ID)
         ss_copy_id = ss_copy.get('id')
-        logging.info(f'Created copy of {SHEET_ID} as {ss_copy_id}')
+        logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
 
         ss = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
         sheets = ss.get('sheets', [])
@@ -524,16 +523,11 @@ def create_sat_score_report(score_data):
         }
 
         # Execute the batch update request
-        logging.info('Starting batch update')
         response = service.spreadsheets().batchUpdate(
             spreadsheetId=ss_copy_id,
             body=batch_update_request
         ).execute()
-        logging.info('Batch update complete')
-
-        logging.info('ss_copy_id: ' + ss_copy_id)
-        print('ss_copy_id: ' + ss_copy_id)
-        # logging.info(score_data)
+        logging.info('Spreadsheet update complete')
 
         return ss_copy_id, score_data
     except Exception:
@@ -595,10 +589,6 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             message = f"Please find the score report for {score_data['test_code'].upper()} attached."
             send_score_report_email(score_data, base64_blob)
             logging.info(f"PDF report sent to {score_data['email']}")
-            # drive_service.files().update(fileId=spreadsheet_id, body={'trashed': True}).execute()
-            # drive_service.files().update(fileId=file.get('id'), body={'trashed': True}).execute()
-            # logging.info(f'Spreadsheet {spreadsheet_id} and PDF moved to trash')
-
         else:
             logging.error(f'Failed to fetch PDF: {response.content}')
     except Exception:
@@ -615,12 +605,10 @@ def send_answers_to_student_ss(score_data):
     )
 
     try:
-        student_ss_id = score_data['student_ss_id']
-
         # Create the Sheets API service
         service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
-        ss = service.spreadsheets().get(spreadsheetId=student_ss_id).execute()
+        ss = service.spreadsheets().get(spreadsheetId=score_data['student_ss_id']).execute()
         student_sheets = ss.get('sheets', [])
         # pp.pprint(ss)
 
@@ -631,7 +619,7 @@ def send_answers_to_student_ss(score_data):
                 break
 
         score_data['test_sheet_id'] = str(student_answer_sheet_id)
-        logging.info('student_answer_sheet_id: ' + score_data['test_sheet_id'])
+        logging.info('<a href="https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?gid=' + score_data['test_sheet_id'] + '">Student spreadsheet</a>')
 
         # Process score data
         if score_data['is_rw_hard']:
@@ -645,7 +633,7 @@ def send_answers_to_student_ss(score_data):
 
         # After setting test code and difficulty, get values from the answer sheet
         student_answer_sheet_range = f'{score_data["test_code"].upper()}!A1:L57'  # Adjust range as needed
-        student_answer_data = service.spreadsheets().values().get(spreadsheetId=student_ss_id, range=student_answer_sheet_range).execute()
+        student_answer_data = service.spreadsheets().values().get(spreadsheetId=score_data['student_ss_id'], range=student_answer_sheet_range).execute()
         student_answer_values = student_answer_data.get('values', [])
 
         completed_subjects = []
@@ -807,14 +795,13 @@ def send_answers_to_student_ss(score_data):
             }
             requests.append(request)
 
-        logging.info('Starting student sheet batch update')
         batch_update_request = {'requests': requests}
         response = service.spreadsheets().batchUpdate(
-            spreadsheetId=student_ss_id,
+            spreadsheetId=score_data['student_ss_id'],
             body=batch_update_request
         ).execute()
 
-        logging.info('student_ss_id: ' + student_ss_id)
+        logging.info('Student spreadsheet updated')
 
         return score_data
 
