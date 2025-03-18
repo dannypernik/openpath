@@ -544,7 +544,7 @@ def send_pdf_score_report(spreadsheet_id, score_data):
 
     try:
         # Create the Drive API service
-        drive_service = build('drive', 'v3', credentials=creds)
+        drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Prepare URL for PDF export
         url_base = f'https://docs.google.com/spreadsheets/d/{spreadsheet_id}/'

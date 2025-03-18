@@ -1153,10 +1153,6 @@ def send_score_report_email(score_data, base64_blob):
         }
 
     result = mailjet.send.create(data=data)
-    if result.status_code == 200:
-        print('Score report email sent to ' + app.config['MAIL_USERNAME'])
-    else:
-        print('Score report email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 def send_changed_answers_email(score_data):
