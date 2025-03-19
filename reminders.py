@@ -240,14 +240,14 @@ def main():
 
         # Send reminder email to students ~2 days in advance
         reminder_count = 0
-        for e in upcoming_events:
-            for student in upcoming_students:
-                name = full_name(student)
-                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
-                    reminder_count += 1
-                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
-                    logging.info(msg)
-                    messages.append(msg)
+        # for e in upcoming_events:
+        #     for student in upcoming_students:
+        #         name = full_name(student)
+        #         if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+        #             reminder_count += 1
+        #             msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
+        #             logging.info(msg)
+        #             messages.append(msg)
 
         if reminder_count == 0:
             msg = 'No reminders sent.'
@@ -447,11 +447,11 @@ def main():
         other_tutoring_hours = 0
         next_sunday = today + datetime.timedelta((6 - today.weekday()) % 7)
         weekly_data = {
-            'dates': [0,0,0,0,0,0,0,0,0,0],
-            'sessions': [0,0,0,0,0,0,0,0,0,0],
-            'day_hours': [0,0,0,0,0,0,0,0,0,0],
-            'evening_hours': [0,0,0,0,0,0,0,0,0,0],
-            'projected_hours': [0,0,0,0,0,0,0,0,0,0]
+            'dates': [0,0,0,0,0,0,0,0,0,0,0],
+            'sessions': [0,0,0,0,0,0,0,0,0,0,0],
+            'day_hours': [0,0,0,0,0,0,0,0,0,0,0],
+            'evening_hours': [0,0,0,0,0,0,0,0,0,0,0],
+            'projected_hours': [0,0,0,0,0,0,0,0,0,0,0]
         }
 
         for e in tutoring_events:
