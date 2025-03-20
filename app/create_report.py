@@ -527,7 +527,7 @@ def create_sat_score_report(score_data):
             spreadsheetId=ss_copy_id,
             body=batch_update_request
         ).execute()
-        logging.info('Spreadsheet update complete')
+        logging.info('Batch update complete')
 
         return ss_copy_id, score_data
     except Exception:
@@ -619,7 +619,7 @@ def send_answers_to_student_ss(score_data):
                 break
 
         score_data['test_sheet_id'] = str(student_answer_sheet_id)
-        logging.info('<a href="https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?gid=' + score_data['test_sheet_id'] + '">Student spreadsheet</a>')
+        logging.info('https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?gid=' + score_data['test_sheet_id'])
 
         # Process score data
         if score_data['is_rw_hard']:
