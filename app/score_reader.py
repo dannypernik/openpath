@@ -510,7 +510,7 @@ def check_answer_key(score_details_data):
           '3': 'A',
           '4': 'D',
           '5': 'A',
-          '6': '.3',
+          '6': '0.3',
           '7': 'C',
           '8': '5',
           '9': 'B',
