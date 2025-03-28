@@ -30,7 +30,7 @@ def make_celery(app):
     )
     celery.conf.update(app.config)
     # celery.conf.worker_max_memory_per_child = 333000
-    # celery.conf.worker_max_tasks_per_child = 1
+    celery.conf.worker_max_tasks_per_child = 1
     celery.conf.task_acks_late = True  # Acknowledge tasks only after execution
 
     return celery
