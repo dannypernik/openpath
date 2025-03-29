@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from dateutil.parser import parse
 import requests
 import json
+import logging
 
 
 def get_quote():
@@ -62,7 +63,7 @@ def send_contact_email(user, message, subject):
     crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
-        print('crm_contact passes')
+        logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
             'assignee_id': app.config['ONEPAGECRM_ID'],
@@ -73,14 +74,14 @@ def send_contact_email(user, message, subject):
             #'position': 1
         }
         crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        print('crm_action:', crm_action)
+        logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        print('Contact email sent from ' + user.email)
+        logging.info('Contact email sent from ' + user.email)
     else:
-        print('Contact email from ' + user.email + ' failed with code ' + result.status_code)
+        logging.info('Contact email from ' + user.email + ' failed with code ' + result.status_code)
     return result.status_code
 
 
@@ -112,9 +113,9 @@ def send_confirmation_email(user, message):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Confirmation email sent to ' + user.email)
+        logging.info('Confirmation email sent to ' + user.email)
     else:
-        print('Confirmation email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Confirmation email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -316,9 +317,9 @@ def send_session_recap_email(student, events):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        print(student.first_name, student.last_name, start_display, timezone, warnings_str)
+        logging.info(student.first_name, student.last_name, start_display, timezone, warnings_str)
     else:
-        print('Error for ' + student.first_name + '\'s session update email with code', result.status_code, result.reason)
+        logging.info('Error for ' + student.first_name + '\'s session update email with code', result.status_code, result.reason)
     return result.status_code
 
 
@@ -348,9 +349,9 @@ def send_notification_email(alerts):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Notification email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Notification email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Notification email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Notification email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -544,7 +545,7 @@ def send_signup_notification_email(user, dates):
     crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
-        print('crm_contact passes')
+        logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
             'assignee_id': app.config['ONEPAGECRM_ID'],
@@ -555,14 +556,14 @@ def send_signup_notification_email(user, dates):
             #'position': 1
         }
         crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        print('crm_action:', crm_action)
+        logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        print('Signup notification email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Signup notification email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Signup notification email to ' + app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+        logging.info('Signup notification email to ' + app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
     return result.status_code
 
 
@@ -601,9 +602,9 @@ def send_verification_email(user, page=None):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        print('Verification email sent to ' + user.email)
+        logging.info('Verification email sent to ' + user.email)
     else:
-        print('Verification email to ' + user.email + ' failed with code ' + result.status_code)
+        logging.info('Verification email to ' + user.email + ' failed with code ' + result.status_code)
     return result.status_code
 
 
@@ -645,9 +646,9 @@ def send_password_reset_email(user, page=None):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Password reset email sent to ' + user.email)
+        logging.info('Password reset email sent to ' + user.email)
     else:
-        print('Password reset email to ' + user.email + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('Password reset email to ' + user.email + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
@@ -691,7 +692,7 @@ def send_test_strategies_email(student, parent, relation):
     crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
-        print('crm_contact passes')
+        logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
             'assignee_id': app.config['ONEPAGECRM_ID'],
@@ -702,13 +703,13 @@ def send_test_strategies_email(student, parent, relation):
             #'position': 1
         }
         crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        print('crm_action:', crm_action)
+        logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print(result.json())
+        logging.info(result.json())
     else:
-        print('Top 10 email failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('Top 10 email failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
@@ -743,9 +744,9 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print(result.json())
+        logging.info(result.json())
     else:
-        print('Test registration email failed to send with code', result.status_code, result.reason)
+        logging.info('Test registration email failed to send with code', result.status_code, result.reason)
     return result.status_code
 
 
@@ -780,9 +781,9 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print(result.json())
+        logging.info(result.json())
     else:
-        print('Prep class email failed to send with code', result.status_code, result.reason)
+        logging.info('Prep class email failed to send with code', result.status_code, result.reason)
     return result.status_code
 
 
@@ -824,7 +825,7 @@ def send_score_analysis_email(student, parent, school):
     crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
-        print('crm_contact passes')
+        logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
             'assignee_id': app.config['ONEPAGECRM_ID'],
@@ -835,13 +836,13 @@ def send_score_analysis_email(student, parent, school):
             #'position': 1
         }
         crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
-        print('crm_action:', crm_action)
+        logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print(result.json())
+        logging.info(result.json())
     else:
-        print('Score analysis confirmation email failed to send with code', result.status_code, result.reason)
+        logging.info('Score analysis confirmation email failed to send with code', result.status_code, result.reason)
     return result.status_code
 
 
@@ -960,9 +961,9 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('\nWeekly report email sent.')
+        logging.info('\nWeekly report email sent.')
     else:
-        print('\nWeekly report email error:', str(result.status_code), result.reason, '\n')
+        logging.info('\nWeekly report email error:', str(result.status_code), result.reason, '\n')
     return result.status_code
 
 
@@ -1011,9 +1012,9 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('\nScript status email sent.')
+        logging.info('\nScript status email sent.')
     else:
-        print('Script status email error:', str(result.status_code), result.reason, '\n')
+        logging.info('Script status email error:', str(result.status_code), result.reason, '\n')
     return result.status_code
 
 
@@ -1046,9 +1047,9 @@ def send_schedule_conflict_email(message):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Schedule conflict email sent to ' + user.email)
+        logging.info('Schedule conflict email sent to ' + user.email)
     else:
-        print('Schedule conflict email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Schedule conflict email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1079,9 +1080,9 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('NTPA email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('NTPA email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('NTPA email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('NTPA email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1113,9 +1114,9 @@ def send_report_submitted_email(score_data):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1181,9 +1182,9 @@ def send_changed_answers_email(score_data):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Changed answer email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Changed answer email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Changed answer email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Changed answer email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1214,9 +1215,9 @@ def send_fail_mail(subject, error='unknown error', data=None):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Fail mail sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Fail mail sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1247,7 +1248,7 @@ def send_task_fail_mail(exc, task_id, args, kwargs, einfo):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        print('Task fail mail sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Task fail mail sent to ' + app.config['MAIL_USERNAME'])
     else:
-        print('Task fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Task fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
