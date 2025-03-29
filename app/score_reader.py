@@ -2410,9 +2410,6 @@ def check_answer_key(score_details_data):
             'new_key': score_details_data['answers'][sub][mod][q]['correct_answer']
           })
 
-  if len(score_details_data['answer_key_mismatches']) > 0:
-    send_changed_answers_email(score_details_data)
-
   return score_details_data
 
 

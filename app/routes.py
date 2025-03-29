@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
+    send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
 from functools import wraps
 import requests
 import json
@@ -1040,6 +1040,9 @@ def sat_report():
                     return render_template('sat-report.html', form=form, hcaptcha_key=hcaptcha_key)
 
             create_and_send_sat_report_task.delay(score_data)
+
+            if len(score_data['answer_key_mismatches']) > 0:
+                send_changed_answers_email(score_data)
             return render_template('score-report-sent.html')
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
