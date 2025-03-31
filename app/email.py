@@ -163,7 +163,7 @@ def send_reminder_email(event, student, tutor):
     else:
         event_type = 'session'
 
-    location = event['event'].get('location')
+    location = event['event'].get('location').lower()
     warnings = []
     warnings_str = ''
 
