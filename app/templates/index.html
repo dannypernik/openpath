@@ -6,6 +6,7 @@
   <meta property="og:description" content="Schedule your free SAT or ACT prep session" />
   <meta property="og:image" content="{{ url_for('static', filename='img/og-image.jpg') }}" />
 
+  <script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module"></script>
   <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 {% endblock head %}
 
@@ -206,9 +207,13 @@
           {{ form.subject(class='d-none') }}
           <div class="d-md-flex">
             {{ form.message(rows='3', class="flex-grow-1") }}
-            <div class="mt-md-3 ms-md-3">
+            <altcha-widget
+              challengeurl="https://us.altcha.org/api/v1/challenge?apiKey={{ altcha_site_key }}"
+              debug
+            ></altcha-widget>
+            <!-- <div class="mt-md-3 ms-md-3">
               {{ hcaptcha }}
-            </div>
+            </div> -->
           </div>
 
           {{ form.submit }}

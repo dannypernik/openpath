@@ -73,16 +73,34 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def validate_altcha_response(token):
+    """Validate Altcha response token."""
+    altcha_secret_key = app.config['ALTCHA_SECRET_KEY']
+    url = "https://eu.altcha.org/api/v1/verify"
+    payload = {
+        "secret": altcha_secret_key,
+        "response": token
+    }
+    response = requests.post(url, json=payload)
+    result = response.json()
+    return result.get("success", False)
+
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     form = InquiryForm()
+    altcha_site_key = app.config['ALTCHA_SITE_KEY']
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
+        altcha_token = request.form.get('altcha-response')
+        if not validate_altcha_response(altcha_token):
+            flash('Captcha verification failed. Please try again.', 'error')
             return redirect(url_for('index', _anchor='home'))
+        # if hcaptcha.verify():
+        #     pass
+        # else:
+        #     flash('Captcha was unsuccessful. Please try again.', 'error')
+        #     return redirect(url_for('index', _anchor='home'))
         user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
         message = form.message.data
         subject = form.subject.data
@@ -114,7 +132,7 @@ def index():
                 flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
                 return redirect(url_for('index', _anchor='home'))
         flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
+    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'), altcha_site_key=altcha_site_key)
 
 
 @app.route('/team', methods=['GET', 'POST'])
