@@ -206,10 +206,10 @@
           {{ form.phone }}
           {{ form.subject(class='d-none') }}
           <div class="d-md-flex">
-            {{ form.message(rows='3', class="flex-grow-1") }}
+            {{ form.message(rows='2', class="flex-grow-1") }}
             <altcha-widget
               challengeurl="https://us.altcha.org/api/v1/challenge?apiKey={{ altcha_site_key }}"
-              debug
+              class="mt-3 ms-3 mb-2"
             ></altcha-widget>
             <!-- <div class="mt-md-3 ms-md-3">
               {{ hcaptcha }}

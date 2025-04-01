@@ -5920,13 +5920,6 @@ progress {
   }
 }
 
-.btn,
-input[type=submit] {
-  --bs-btn-hover-bg: #e45b39;
-  --bs-btn-hover-color: white;
-  --bs-btn-font-size: 1.8rem;
-}
-
 html {
   height: 100%;
   scroll-padding-top: 60px;
@@ -6179,6 +6172,9 @@ input[type=submit] {
   background-color: #f06d53;
   border-color: #f06d53;
   color: white;
+  --bs-btn-hover-bg: #e45b39;
+  --bs-btn-hover-color: white;
+  --bs-btn-font-size: 1.8rem;
   display: block;
   margin: 1rem auto;
   padding: 1rem 2rem;
@@ -6812,6 +6808,27 @@ a.info-icon:hover span {
   100% {
     transform: rotate(360deg);
   }
+}
+:root {
+  --altcha-border-width: 1px;
+  --altcha-border-radius: 3px;
+  --altcha-color-base: #ffffff;
+  --altcha-color-border: #a0a0a0;
+  --altcha-color-text: currentColor;
+  --altcha-color-border-focus: currentColor;
+  --altcha-color-error-text: #f23939;
+  --altcha-color-footer-bg: #f4f4f4;
+  --altcha-max-width: 433px;
+}
+
+#altcha_checkbox {
+  opacity: 1;
+}
+
+.altcha-label {
+  text-wrap: nowrap;
+  margin-right: 2rem;
+  font-size: 1.6rem;
 }
 
 /*# sourceMappingURL=custom.css.map */
