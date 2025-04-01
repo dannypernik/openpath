@@ -73,17 +73,17 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def validate_altcha_response(token):
-    """Validate Altcha response token."""
-    altcha_secret_key = app.config['ALTCHA_SECRET_KEY']
-    url = "https://eu.altcha.org/api/v1/verify"
-    payload = {
-        "secret": altcha_secret_key,
-        "response": token
-    }
-    response = requests.post(url, json=payload)
-    result = response.json()
-    return result.get("success", False)
+# def validate_altcha_response(token):
+#     """Validate Altcha response token."""
+#     altcha_secret_key = app.config['ALTCHA_SECRET_KEY']
+#     url = "https://us.altcha.org/api/v1/verify"
+#     payload = {
+#         "secret": altcha_secret_key,
+#         "response": token
+#     }
+#     response = requests.post(url, json=payload)
+#     result = response.json()
+#     return result.get("success", False)
 
 
 @app.route('/', methods=['GET', 'POST'])
