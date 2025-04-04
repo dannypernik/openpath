@@ -400,7 +400,7 @@ def main():
                 other_scheduled_students.append(s)
         if batch_updates:
             body = {
-                'valueInputOption': 'RAW',
+                'valueInputOption': 'USER_ENTERED',
                 'data': batch_updates
             }
             sheet.values().batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
