@@ -239,7 +239,7 @@ def main():
         messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
-        # reminder_count = 0
+        reminder_count = 0
         # for e in upcoming_events:
         #     for student in upcoming_students:
         #         name = full_name(student)
