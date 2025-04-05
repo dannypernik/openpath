@@ -7,19 +7,27 @@
 {% endblock head %}
 
 {% block container %}
-  <div class="row gx-5 section-margin justify-content-center">
-    <div class="col-12 col-sm-11 text-center">
-      <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
-      <p>
-        Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
-      </p>
+  {% block header %}
+    <div class="row gx-5 section-margin justify-content-center">
+      <div class="col-12 col-sm-11 text-center">
+        <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
+        <p>
+          Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
+        </p>
+      </div>
     </div>
-    <div class="d-block d-lg-none col-10">
-      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
-    </div>
-    <div class="d-none d-lg-block col-lg-6 mt-3">
-      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
-    </div>
+  {% endblock header %}
+
+  <div class="row gx-5 justify-content-center">
+    {% block preview_images %}
+      <div class="d-block d-lg-none col-10">
+        <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
+      </div>
+      <div class="d-none d-lg-block col-lg-6 mt-3">
+        <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
+      </div>
+    {% endblock preview_images %}
+
     <div class="col-12 col-sm-10 col-lg-5 col-xl-4">
       <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
         <div class="row justify-content-center mt-3">
@@ -243,7 +251,7 @@
 {% endblock footnote %}
 
 {% block end_scripts %}
-  <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
   <script>
 
