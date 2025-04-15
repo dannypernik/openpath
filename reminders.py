@@ -62,7 +62,8 @@ calendars = [
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
     { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
     { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' },
-    { 'tutor': 'Elizabeth Walker', 'id': '2f96dd1a476fb24970a6307a96fb718867066c1b8ff0c9de865a440e874cb329@group.calendar.google.com' }
+    { 'tutor': 'Elizabeth Walker', 'id': '2f96dd1a476fb24970a6307a96fb718867066c1b8ff0c9de865a440e874cb329@group.calendar.google.com' },
+    { 'tutor': 'Hannah Gustafson', 'id': 'cc063cbfcb84d6c89d1befd047caf6377a3bdffca7f564b75fcc4c8b8141d3d1@group.calendar.google.com' }
 ]
 
 # gspread to write to spreadsheet
