@@ -128,7 +128,7 @@ def send_reminder_email(event, student, tutor):
     reply_email = []
     if student.parent:
         parent = student.parent
-        if parent.session_reminders:
+        if parent.email and parent.session_reminders:
             cc_email.append({ 'Email': parent.email })
             if parent.secondary_email:
                 cc_email.append({ 'Email': parent.secondary_email })
