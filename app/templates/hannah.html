@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Hannah Gustafson - Open Path Tutoring
+{% endblock title %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col">
+      <div class="profile-pic-container"><img class="profile-pic" src="{{ url_for('static', filename='img/team/hannah.jpg') }}"></div>
+      <h1 class="text-center mb-4 mt-2">Meet Hannah Gustafson</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p>
+        <span class="h4 fw-bold me-1">Hi there! I'm Hannah,</span>
+        a neuroscience graduate and experienced tutor with a passion for helping
+        students unlock their potential through personalized, research-backed instruction.
+        I hold a Bachelor of Science in Neuroscience from Baylor University and bring over
+        1,500 hours of tutoring experience across subjects ranging from executive
+        functioning and math tutoring to essay writing and reading intervention.
+      </p>
+      <p>
+        My academic background in cognitive science fuels my work with students who learn
+        differently, especially those with ADHD, dyslexia, autism, and other learning
+        challenges. I'm trained in the Orton-Gillingham-based Reading Horizons curriculum
+        and specialize in multi-sensory reading intervention for elementary students. I
+        also provide executive functioning coaching—helping students build skills in
+        organization, time management, prioritization, and goal setting.
+      </p>
+      <p>
+        In addition to tutoring, I'm currently engaged in educational research and co-authoring a
+        case study on executive functioning intervention.  My work blends behavioral science with
+        hands-on support, and I'm passionate about making learning approachable, encouraging, and
+        effective for every student.
+      </p>
+      <p>
+        When I'm not teaching or researching, I enjoy writing, hiking, and exploring new ways to
+        support students' growth both inside and outside the classroom.
+      </p>
+      <h3>Subjects covered</h3>
+      <p>
+        Executive Functioning, Reading Intervention (Orton-Gillingham), Writing, English,
+        College Essay Coaching, Study Skills, All Math up to Algebra II and Geometry,
+        Educational Advocacy
+      </p>
+      <div class="text-center mt-4">
+        <a href="{{ url_for('index', _anchor='contact') }}" class="btn">Get in touch</a>
+      </div>
+        </div>
+      </div>
+{% endblock content %}
+
