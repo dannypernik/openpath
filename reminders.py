@@ -378,7 +378,6 @@ def main():
                         {'range': f'K{s["row"]}', 'values': [[s['deadline']]]}
                     ]
                     batch_updates.extend(cell_updates)
-                    logging.info(f"Prepared update for {s['name']} in the spreadsheet")
                     break
                 except gspread.exceptions.APIError as e:
                     logging.error(f"APIError: {e.response.text}")
@@ -405,7 +404,7 @@ def main():
                 'data': batch_updates
             }
             sheet.values().batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
-            logging.info("Successfully executed batch update")
+            logging.info('Successfully updated student schedule data')
 
         low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
 
