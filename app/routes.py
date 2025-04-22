@@ -137,7 +137,7 @@ def index():
 
 @app.route('/team', methods=['GET', 'POST'])
 def team():
-    team_members = User.query.order_by(User.phone.asc() ).filter(User.role.in_(['tutor', 'admin'])).filter_by(status='active')
+    team_members = User.query.order_by(User.phone.asc()).filter(User.role.in_(['tutor', 'admin'])).filter_by(status='active')
     return render_template('team.html', title='Our Team', full_name=full_name, team_members=team_members)
 
 @app.route('/about')
