@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Jessica Samson - Open Path Tutoring
+{% endblock title %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col">
+      <div class="profile-pic-container"><img class="profile-pic" src="{{ url_for('static', filename='img/team/jessica.jpg') }}"></div>
+      <h1 class="text-center mb-4 mt-2">Meet Jessica Samson</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p>
+        <span class="h4 fw-bold me-1">Hi there! My name is Jessica,</span>
+        and my passion for teaching began at a young age. At just five years old, I
+        discovered my love for education when my kindergarten teacher entrusted me with
+        classmates who needed extra support. I enjoyed helping others learn and this
+        early experience solidified my lifelong commitment to education.
+      </p>
+      <p>
+        With over two decades of experience in teaching, mentoring, and tutoring, I can
+        help your child succeed. I offer personalized tutoring, test prep, and homework
+        help for all levels of Environmental Science, Biology, and Life Science. I also
+        provide comprehensive guidance to students in building strong resumes, finding and
+        applying to summer programs, writing research papers, selecting and applying to
+        colleges that align with their goals, and securing scholarships. My expertise has
+        helped students earn full-ride scholarships and gain acceptance into prestigious
+        programs, including Princeton University and the Yale Young Global Scholars summer
+        program. With a proven track record of success, I am committed to empowering
+        students to excel and achieve their goals.
+      </p>
+      <p>
+        As a teacher, I consistently helped my students earn top scores on the Biology
+        state test and the AP Environmental Science exam. In 2021, my first year teaching
+        the course, my Crawford High School students achieved an 80% pass rate (global
+        pass rate: 52.9%) with 60% scoring a 4. Crawford's AP exam pass rate for the two
+        years prior was 19.5%. High state test and AP scores show colleges make students
+        more competitive when applying, especially for scholarships. My goal is to help
+        your student succeed, and I look forward to working with you to help them
+        reach their potential.
+      </p>
+      <h3>Subjects covered</h3>
+      <p>
+        Environmental Science (on-level, AP, and college) Biology (on-level, honors, AP,
+        and college), Life Science, College and Scholarship Essays, and Resume Writing
+      </p>
+      <div class="text-center mt-4">
+        <a href="{{ url_for('index', _anchor='contact') }}" class="btn">Get in touch</a>
+      </div>
+        </div>
+      </div>
+{% endblock content %}
+
