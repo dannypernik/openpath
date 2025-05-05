@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
-    SubmitField, IntegerField, RadioField, SelectField, validators
-from wtforms.fields.html5 import DateField, EmailField
-from flask_wtf.file import FileField, FileRequired, FileAllowed
+    SubmitField, IntegerField, RadioField, SelectField, validators, FileField
+from wtforms.fields import DateField, EmailField, ColorField
+from flask_wtf.file import FileRequired, FileAllowed
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
 from app.models import User, TestDate, UserTestDate, TestScore
@@ -101,7 +101,7 @@ class UserForm(FlaskForm):
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
     role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'), \
-        ('tutor','Tutor'),('admin','Admin')])
+        ('tutor','Tutor'),('admin','Admin'),('partner','Partner')])
     title = StringField('Title', render_kw={'placeholder': 'Title'})
     tutor_id = SelectField('Tutor', coerce=int)
     parent_id = SelectField('Parent', coerce=int)
@@ -257,3 +257,20 @@ class ReviewForm(FlaskForm):
     photo = FileField('Photo', render_kw={'placeholder': 'Photo'}, \
         validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField()
+
+class OrgSettingsForm(FlaskForm):
+    org_id = SelectField('Organization', coerce=int)
+    org_name = StringField('Organization name', render_kw={'placeholder': 'Organization name'}, \
+    validators=[InputRequired()])
+    partner_id = SelectField('Partner', coerce=int)
+    first_name = StringField('Partner first name', render_kw={'placeholder': 'Partner first name'})
+    last_name = StringField('Partner last name', render_kw={'placeholder': 'Partner last name'})
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'})
+    color1 = ColorField('Primary color', render_kw={'placeholder': 'Primary color'}, \
+        validators=[InputRequired()])
+    color2 = ColorField('Secondary color', render_kw={'placeholder': 'Secondary color'}, \
+        validators=[InputRequired()])
+    color3 = ColorField('Tertiary color', render_kw={'placeholder': 'Tertiary color'}, \
+        validators=[InputRequired()])
+    logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')])
+    submit = SubmitField('Save')

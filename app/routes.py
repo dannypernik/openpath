@@ -4,9 +4,9 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm, ReviewForm
+    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm, ReviewForm, OrgSettingsForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
-from app.models import User, TestDate, UserTestDate, TestScore, Review
+from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
@@ -19,7 +19,7 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-from app.create_report import check_service_account_access
+from app.create_report import check_service_account_access, create_custom_spreadsheet
 from app.tasks import create_and_send_sat_report_task
 import logging
 from googleapiclient.errors import HttpError
@@ -34,6 +34,26 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_viewed = datetime.utcnow()
         db.session.commit()
+
+# @app.before_first_request
+# def register_organization_routes():
+#     organizations = Organization.query.all()
+#     for org in organizations:
+#         register_custom_route(org.slug, org.spreadsheet_url)
+
+# def register_custom_route(slug, spreadsheet_url):
+#     endpoint_name = f"{slug}_score_report"
+#     @app.route(f'/{slug}', methods=['GET', 'POST'], endpoint=endpoint_name)
+#     def custom_score_report():
+#         organization = Organization.query.filter_by(slug=slug).first()
+#         form = ScoreReportForm()
+#         if form.validate_on_submit():
+#             spreadsheet_id = spreadsheet_url.split('/d/')[1].split('/')[0]
+#             score_data = get_all_data(request.files['report_file'], request.files['details_file'])
+#             create_sat_score_report(score_data, spreadsheet_id)
+#             flash('Score report generated successfully!', 'success')
+#             return redirect(url_for(endpoint_name))
+#         return render_template(f'org-score-report.html', organization=organization, form=form)
 
 def dir_last_updated(folder):
     return str(max(os.path.getmtime(os.path.join(root_path, f))
@@ -1099,6 +1119,83 @@ def sat_report():
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
 
 
+@app.route('/org-settings', methods=['GET', 'POST'])
+@login_required
+def org_settings():
+    form = OrgSettingsForm()
+
+    partners = User.query.order_by(User.first_name, User.last_name).filter_by(role='partner')
+    partner_list = [(0,'New partner')] + [(u.id, full_name(u)) for u in partners]
+    form.partner_id.choices = partner_list
+
+    organizations = Organization.query.order_by(Organization.name)
+    org_list = [(0,'New organization')] + [(o.id, o.name) for o in organizations]
+    form.org_id.choices = org_list
+
+    if form.validate_on_submit():
+        organization_name = form.org_name.data
+        slug = organization_name.lower().replace(' ', '-')
+        brand_colors = [
+            form.color1.data,  # Hex values
+            form.color2.data,
+            form.color3.data
+        ]
+
+        try:
+            if form.partner_id.data == 0:
+                partner = User(first_name=form.first_name.data, last_name=form.last_name.data, \
+                    email=form.email.data.lower(), role='partner',
+                    session_reminders=False, test_reminders=False)
+                db.session.add(partner)
+                db.session.flush()
+            else:
+                partner = User.query.filter_by(id=form.partner_id.data).first()
+
+            # Create or update the organization
+            if form.org_id.data == 0:
+                organization = Organization(name=organization_name, slug=slug)
+                db.session.add(organization)
+                db.session.flush()
+            else:
+                organization = Organization.query.filter_by(id=form.org_id.data).first()
+
+            if organization_name != organization.name:
+                organization.name = organization_name
+                organization.slug = slug
+            organization.color1 = form.color1.data
+            organization.color2 = form.color2.data
+            organization.color3 = form.color3.data
+
+            db.session.add(partner)
+
+            # Save the uploaded logo file
+            logo_file = form.logo.data
+            if logo_file:
+                # Ensure the upload directory exists
+                upload_dir = os.path.join(app.root_path, 'static/img/orgs')
+                os.makedirs(upload_dir, exist_ok=True)
+
+                # Save the file with a secure filename
+                filename = secure_filename(f"{slug}.{logo_file.filename.split('.')[-1]}")
+                logo_path = os.path.join(upload_dir, filename)
+                logo_file.save(logo_path)
+
+                # Store the relative path in the database
+                organization.logo_path = f"img/orgs/{filename}"
+
+            # Generate the custom spreadsheet
+            spreadsheet_url = create_custom_spreadsheet(organization)
+            organization.spreadsheet_url = spreadsheet_url
+            db.session.add(organization)
+            db.session.commit()
+
+            flash('Custom spreadsheet created successfully!', 'success')
+        except Exception as e:
+            flash(f"Error creating custom spreadsheet: {e}", 'error')
+
+    return render_template('org-settings.html', form=form)
+
+
 @app.route('/pay')
 def pay():
     return redirect('https://link.waveapps.com/4yu6up-ne82sd')
@@ -1183,3 +1280,18 @@ for path in template_list:
     endpoint = path.replace('-','_')
     if endpoint not in endpoints:
         register_template_endpoint(path, endpoint)
+
+
+@app.route('/<slug>', methods=['GET', 'POST'])
+def custom_score_report(slug):
+    organization = Organization.query.filter_by(slug=slug).first_or_404()
+    form = ScoreReportForm()
+
+    if form.validate_on_submit():
+        spreadsheet_id = organization.spreadsheet_url.split('/d/')[1].split('/')[0]
+        score_data = get_all_data(request.files['report_file'], request.files['details_file'])
+        create_sat_score_report(score_data, spreadsheet_id)
+        flash('Score report generated successfully', 'success')
+        return redirect(url_for('custom_score_report', slug=slug))
+
+    return render_template('org-sat-report.html', organization=organization, form=form)

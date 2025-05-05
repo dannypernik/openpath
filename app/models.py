@@ -67,6 +67,7 @@ class User(UserMixin, db.Model):
         backref=db.backref('user', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id', name='fk_user_organization'))  # Foreign key to Organization
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
@@ -161,6 +162,18 @@ class Review(db.Model):
 
     def __repr__(self):
         return '<Review {}>'.format(self.date)
+
+
+class Organization(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    slug = db.Column(db.String(255), unique=True, nullable=False)  # URL-friendly name
+    spreadsheet_url = db.Column(db.String(255), nullable=True)  # URL of the customized spreadsheet
+    color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
+    color2 = db.Column(db.String(7), nullable=True)
+    color3 = db.Column(db.String(7), nullable=True)
+    logo_path = db.Column(db.String(128), nullable=True)  # Path to the logo image
+    users = db.relationship('User', backref='organization', lazy=True)  # Relationship to users
 
 
 @login.user_loader

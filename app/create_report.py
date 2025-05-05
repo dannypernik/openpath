@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
+from flask import url_for
 import requests
 import pprint
 import base64
@@ -19,9 +20,14 @@ logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(ascti
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
+def get_static_url(filename):
+    with app.app_context():  # Ensure an application context is available
+        return url_for('static', filename=filename)
+
 # Constants
 SHEET_ID = app.config['SCORE_REPORT_SS_ID'] # Your spreadsheet ID
 SCORE_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
+ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
 total_questions = {
@@ -808,3 +814,211 @@ def send_answers_to_student_ss(score_data):
     except Exception:
         logging.error(f'Error in send_answers_to_student_ss: {Exception}')
         raise
+
+
+def create_custom_spreadsheet(organization):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+    )
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+
+    # Step 1: Copy the default template
+    file_copy = drive_service.files().copy(
+        fileId=SHEET_ID,
+        body={
+            'parents': [ORG_FOLDER_ID],
+            'name': f'{organization.name} Template'}
+    ).execute()
+    ss_copy_id = file_copy.get('id')
+    ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
+
+    sheets = ss_copy.get('sheets', [])
+
+    answer_sheet_id = None
+    analysis_sheet_id = None
+    for sheet in sheets:
+        if sheet['properties']['title'] == 'Answers':
+            answer_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Data':
+            data_sheet_id = sheet['properties']['sheetId']
+
+    print(ss_copy_id)
+
+    # Step 2: Update header colors (A1:K6) and set borders
+    requests = [
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 6,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    # "color": {
+                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
+                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
+                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
+                    # },
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    # "color": {
+                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
+                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
+                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
+                    # },
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    # "color": {
+                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
+                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
+                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
+                    # },
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    # "color": {
+                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
+                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
+                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
+                    # },
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": analysis_sheet_id,  # Assuming the first sheet
+                    "startRowIndex": 0,
+                    "endRowIndex": 6,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.backgroundColor"
+            }
+        }
+    ]
+
+    # # Step 3: Update conditional formatting rules
+    # for i, color in enumerate(brand_colors[1:]):
+    #     requests.append({
+    #         "updateConditionalFormatRule": {
+    #             "rule": {
+    #                 "ranges": [
+    #                     {
+    #                         "sheetId": 0,
+    #                         "startRowIndex": 6,
+    #                         "endRowIndex": 100,
+    #                         "startColumnIndex": 0,
+    #                         "endColumnIndex": 11
+    #                     }
+    #                 ],
+    #                 "booleanRule": {
+    #                     "condition": {
+    #                         "type": "CUSTOM_FORMULA",
+    #                         "values": [{"userEnteredValue": f"=MOD(ROW(),2)={i}"}]
+    #                     },
+    #                     "format": {
+    #                         "backgroundColor": {
+    #                             "red": hex_to_rgb(organization.color2)[0] / 255,
+    #                             "green": hex_to_rgb(organization.color2)[1] / 255,
+    #                             "blue": hex_to_rgb(organization.color2)[2] / 255
+    #                         }
+    #                     }
+    #                 }
+    #             },
+    #             "index": i
+    #         }
+    #     })
+
+    # Step 4: Add the logo to cell B2
+    if organization.logo_path:
+        logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
+        requests.append({
+            "updateCells": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 1,  # Row B2 (row index starts at 0)
+                "endRowIndex": 2,
+                "startColumnIndex": 1,  # Column B2 (column index starts at 0)
+                "endColumnIndex": 2
+            },
+            "rows": [
+                {
+                "values": [
+                    {
+                    "userEnteredValue": {
+                        "formulaValue": f'=IMAGE("{logo_url}")'
+                    }
+                    }
+                ]
+                }
+            ],
+            "fields": "userEnteredValue"
+            }
+        })
+
+    # Execute batch update
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=ss_copy_id,
+        body={"requests": requests}
+    ).execute()
+
+    # Return the URL of the customized spreadsheet
+    return f"https://docs.google.com/spreadsheets/d/{ss_copy_id}/edit"
+
+
+def hex_to_rgb(hex_color):
+    """Convert a hex color string (e.g., #FF0000) to an RGB tuple (e.g., (255, 0, 0))."""
+    hex_color = hex_color.lstrip('#')  # Remove the '#' character
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))

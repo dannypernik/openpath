@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+  {% block alerts %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="row justify-content-center alert {{ category }}" role="alert">
+            <div class="col-11 col-md-10 col-xl-9">
+              {{ message }}
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if form %}
+      {% for field, errors in form.errors.items() %}
+        {% for e in errors %}
+          <div class="row justify-content-center alert error" role="alert">
+            <div class="col-11 col-md-10 col-xl-9">
+              {{ field }}: {{ e }}
+            </div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+  {% endblock alerts %}
+{% endblock navbar %}
+
+{% block content %}
+<h1>Customize Your Organization's Score Report</h1>
+<form method='post' enctype='multipart/form-data'>
+    {{ form.hidden_tag() }}
+    <div class="mb-1">
+      {{ form.org_id.label }} {{ form.org_id }}
+    </div>
+    <div id="new-org-info" class="mb-2">
+      {{ form.org_name }}
+    </div>
+    <div class="mb-1">
+      {{ form.partner_id.label }} {{ form.partner_id }}
+    </div>
+    <div id="new-partner-info">
+      <div>
+        {{ form.first_name }}
+      </div>
+      <div>
+        {{ form.last_name }}
+      </div>
+      <div>
+        {{ form.email }}
+    </div>
+    </div>
+    <div class="mb-2">
+      {{ form.color1.label }}
+      {{ form.color1 }}
+    </div>
+    <div class="mb-2">
+      {{ form.color2.label }}
+      {{ form.color2 }}
+    </div>
+    <div class="mb-2">
+      {{ form.color3.label }}
+      {{ form.color3 }}
+    </div>
+    <div>
+      {{ form.logo.label }} {{ form.logo }}
+    </div>
+    <div>
+      {{ form.submit }}
+    </div>
+</form>
+{% endblock %}
+
+{% block end_scripts %}
+  <script>
+    const slideDown = element => element.style.height = `${element.scrollHeight + 20}px`;
+    const slideUp = element => element.style.height = 0;
+
+    document.getElementById('partner_id').addEventListener('change', function() {
+      if(this.value == 0) {
+        document.getElementById('new-partner-info').style.display = 'block';
+      }
+      else {
+        document.getElementById('new-partner-info').style.display = 'none';
+      }
+    });
+    document.getElementById('org_id').addEventListener('change', function() {
+      const orgNameField = document.getElementById('org_name');
+      const selectedOrgName = this.options[this.selectedIndex].text;
+      if (this.value != 0) {
+      orgNameField.value = selectedOrgName;
+      } else {
+      orgNameField.value = '';
+      }
+    });
+  </script>
+{% endblock end_scripts %}
