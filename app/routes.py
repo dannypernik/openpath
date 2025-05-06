@@ -1286,6 +1286,7 @@ for path in template_list:
 def custom_score_report(slug):
     organization = Organization.query.filter_by(slug=slug).first_or_404()
     form = ScoreReportForm()
+    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
     if form.validate_on_submit():
         spreadsheet_id = organization.spreadsheet_url.split('/d/')[1].split('/')[0]
@@ -1294,4 +1295,4 @@ def custom_score_report(slug):
         flash('Score report generated successfully', 'success')
         return redirect(url_for('custom_score_report', slug=slug))
 
-    return render_template('org-sat-report.html', organization=organization, form=form)
+    return render_template('org-sat-report.html', organization=organization, form=form, hcaptcha_key=hcaptcha_key)
