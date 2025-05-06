@@ -224,11 +224,6 @@ def create_sat_score_report(score_data, organization_dict=None):
             }
         })
 
-        # Add the request to the batch update request
-        # batch_update_request = {
-        #     'requests': requests
-        # }
-
         if score_data['is_rw_hard']:
             rw_difficulty = 3
         else:
@@ -336,11 +331,6 @@ def create_sat_score_report(score_data, organization_dict=None):
                     }
                 }
                 requests.append(request)
-
-                # Add the request to the batch update request
-                # batch_update_request = {
-                #     'requests': requests
-                # }
 
                 x += 1
 
@@ -460,10 +450,32 @@ def create_sat_score_report(score_data, organization_dict=None):
         }
         requests.append(request)
 
-        # # Add the request to the batch update request
-        # batch_update_request = {
-        #     'requests': requests
-        # }
+        # Hide pivot table default message
+        request = {
+            'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': 4,
+                    'endRowIndex': 5,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': ' '
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
+            }
+        }
+        requests.append(request)
+
 
         # Hide 'Data' sheet
         request = {
@@ -880,29 +892,6 @@ def create_custom_spreadsheet(organization):
                     }
                 },
                 "fields": "userEnteredFormat.backgroundColor"
-            }
-        },
-        {
-            "repeatCell": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 4,  # Row B5 (row index starts at 0)
-                    "endRowIndex": 5,
-                    "startColumnIndex": 1,  # Column B5 (column index starts at 0)
-                    "endColumnIndex": 2
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "textFormat": {
-                            "foregroundColor": {
-                                "red": hex_to_rgb(organization.color1)[0] / 255,
-                                "green": hex_to_rgb(organization.color1)[1] / 255,
-                                "blue": hex_to_rgb(organization.color1)[2] / 255
-                            }
-                        }
-                    }
-                },
-                "fields": "userEnteredFormat.textFormat.foregroundColor"
             }
         }
     ]
