@@ -818,11 +818,6 @@ def create_custom_spreadsheet(organization):
                 "top": {
                     "style": "SOLID",
                     "width": 1,
-                    # "color": {
-                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
-                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
-                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
-                    # },
                     "colorStyle": {
                         "rgbColor": {
                             "red": hex_to_rgb(organization.color1)[0] / 255,
@@ -834,11 +829,6 @@ def create_custom_spreadsheet(organization):
                 "bottom": {
                     "style": "SOLID",
                     "width": 1,
-                    # "color": {
-                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
-                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
-                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
-                    # },
                     "colorStyle": {
                         "rgbColor": {
                             "red": hex_to_rgb(organization.color1)[0] / 255,
@@ -850,11 +840,6 @@ def create_custom_spreadsheet(organization):
                 "left": {
                     "style": "SOLID",
                     "width": 1,
-                    # "color": {
-                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
-                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
-                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
-                    # },
                     "colorStyle": {
                         "rgbColor": {
                             "red": hex_to_rgb(organization.color1)[0] / 255,
@@ -866,11 +851,6 @@ def create_custom_spreadsheet(organization):
                 "right": {
                     "style": "SOLID",
                     "width": 1,
-                    # "color": {
-                    #     "red": hex_to_rgb(organization.color1)[0] / 255,
-                    #     "green": hex_to_rgb(organization.color1)[1] / 255,
-                    #     "blue": hex_to_rgb(organization.color1)[2] / 255
-                    # },
                     "colorStyle": {
                         "rgbColor": {
                             "red": hex_to_rgb(organization.color1)[0] / 255,
@@ -884,7 +864,7 @@ def create_custom_spreadsheet(organization):
         {
             "repeatCell": {
                 "range": {
-                    "sheetId": analysis_sheet_id,  # Assuming the first sheet
+                    "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
                     "endRowIndex": 6,
                     "startColumnIndex": 0,
@@ -900,6 +880,29 @@ def create_custom_spreadsheet(organization):
                     }
                 },
                 "fields": "userEnteredFormat.backgroundColor"
+            }
+        },
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 4,  # Row B5 (row index starts at 0)
+                    "endRowIndex": 5,
+                    "startColumnIndex": 1,  # Column B5 (column index starts at 0)
+                    "endColumnIndex": 2
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": hex_to_rgb(organization.color1)[0] / 255,
+                                "green": hex_to_rgb(organization.color1)[1] / 255,
+                                "blue": hex_to_rgb(organization.color1)[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat.foregroundColor"
             }
         }
     ]
@@ -935,31 +938,6 @@ def create_custom_spreadsheet(organization):
     #             "index": i
     #         }
     #     })
-
-    requests.append(
-        {'updateCells': {
-                'range': {
-                    'sheetId': analysis_sheet_id,
-                    'startRowIndex': 4,
-                    'endRowIndex': 5,
-                    'startColumnIndex': 1,
-                    'endColumnIndex': 2
-                },
-                'rows': [
-                    {
-                        'values': [
-                            {
-                                'userEnteredValue': {
-                                    'stringValue': ' '
-                                }
-                            }
-                        ]
-                    }
-                ],
-                'fields': 'userEnteredValue'
-            }
-        }
-    )
 
     # Step 4: Add the logo to cell B2
     if organization.logo_path:
