@@ -168,12 +168,12 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)  # URL-friendly name
-    spreadsheet_url = db.Column(db.String(255), nullable=True)  # URL of the customized spreadsheet
+    spreadsheet_id = db.Column(db.String(255), nullable=True)
     color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
     color2 = db.Column(db.String(7), nullable=True)
     color3 = db.Column(db.String(7), nullable=True)
-    logo_path = db.Column(db.String(128), nullable=True)  # Path to the logo image
-    users = db.relationship('User', backref='organization', lazy=True)  # Relationship to users
+    logo_path = db.Column(db.String(128), nullable=True)
+    users = db.relationship('User', backref='organization', lazy=True)
 
 
 @login.user_loader

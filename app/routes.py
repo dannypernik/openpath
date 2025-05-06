@@ -35,26 +35,6 @@ def before_request():
         current_user.last_viewed = datetime.utcnow()
         db.session.commit()
 
-# @app.before_first_request
-# def register_organization_routes():
-#     organizations = Organization.query.all()
-#     for org in organizations:
-#         register_custom_route(org.slug, org.spreadsheet_url)
-
-# def register_custom_route(slug, spreadsheet_url):
-#     endpoint_name = f"{slug}_score_report"
-#     @app.route(f'/{slug}', methods=['GET', 'POST'], endpoint=endpoint_name)
-#     def custom_score_report():
-#         organization = Organization.query.filter_by(slug=slug).first()
-#         form = ScoreReportForm()
-#         if form.validate_on_submit():
-#             spreadsheet_id = spreadsheet_url.split('/d/')[1].split('/')[0]
-#             score_data = get_all_data(request.files['report_file'], request.files['details_file'])
-#             create_sat_score_report(score_data, spreadsheet_id)
-#             flash('Score report generated successfully!', 'success')
-#             return redirect(url_for(endpoint_name))
-#         return render_template(f'org-score-report.html', organization=organization, form=form)
-
 def dir_last_updated(folder):
     return str(max(os.path.getmtime(os.path.join(root_path, f))
                    for root_path, dirs, files in os.walk(folder)
@@ -989,136 +969,6 @@ def cal_check():
     return ('', 200, None)
 
 
-@app.route('/score-report', methods=['GET', 'POST'])
-@app.route('/sat-report', methods=['GET', 'POST'])
-@app.route('/davisgroves', methods=['GET', 'POST'])
-def sat_report():
-    form = ScoreReportForm()
-    template_name = request.path.lstrip('/') + '.html'
-    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user:
-          user.first_name = form.first_name.data
-          user.last_name = form.last_name.data
-        else:
-            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
-
-        pdf_folder_path = 'app/static/files/scores/pdf'
-        json_folder_path = 'app/static/files/scores/json'
-
-        if not os.path.exists(pdf_folder_path):
-            os.makedirs(pdf_folder_path)
-
-        if not os.path.exists(json_folder_path):
-            os.makedirs(json_folder_path)
-
-        full_name = form.first_name.data + ' ' + form.last_name.data
-        if form.spreadsheet_url.data:
-            try:
-                student_ss_full_url = form.spreadsheet_url.data
-                student_ss_base_url = student_ss_full_url.split('?')[0]
-                if '/d/' in student_ss_base_url:
-                    student_ss_id = student_ss_base_url.split('/d/')[1].split('/')[0]
-                else:
-                    student_ss_id = student_ss_base_url
-            except:
-                flash('Invalid Google Sheet URL', 'error')
-                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-        else:
-            student_ss_id = None
-
-        report_file = request.files['report_file']
-        details_file = request.files['details_file']
-
-        if not (allowed_file(report_file.filename) and allowed_file(details_file.filename)):
-            flash('Only PDF files are allowed', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-
-        report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
-        details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
-        report_file.save(report_file_path)
-        details_file.save(details_file_path)
-
-        try:
-            score_data = get_all_data(report_file, details_file)
-            logging.info(f"Score data: {score_data}")
-            if score_data.get('student_name') is None:
-                score_data['student_name'] = full_name
-            score_data['email'] = form.email.data.lower()
-            score_data['submitter_name'] = full_name
-            score_data['student_ss_id'] = student_ss_id
-            # send_report_submitted_task.delay(score_data)
-
-            filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
-            os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
-            os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
-            json_file_path = os.path.join(json_folder_path, filename + '.json')
-            with open(json_file_path, "w") as json_file:
-                json.dump(score_data, json_file, indent=2)
-
-            test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
-                m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
-                type='practice', user_id=user.id)
-
-            db.session.add(test)
-            db.session.commit()
-
-            logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-
-            if student_ss_id:
-                has_access = check_service_account_access(student_ss_id)
-                if not has_access:
-                    flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
-                    logging.error('Service account does not have access to student spreadsheet')
-                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-
-            create_and_send_sat_report_task.delay(score_data)
-
-            if len(score_data['answer_key_mismatches']) > 0:
-                send_changed_answers_email(score_data)
-            return render_template('score-report-sent.html')
-        except ValueError as ve:
-            if 'Test unavailable' in str(ve):
-                flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
-            elif 'Missing math modules' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'missing RW questions' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'missing Math questions' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'date or test code mismatch' in str(ve):
-                flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
-            elif 'insufficient questions answered' in str(ve):
-                flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
-            logger.error(f"Error generating score report: {ve}", exc_info=True)
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-        except FileNotFoundError as fe:
-            if 'Score Report PDF does not match expected format' in str(fe):
-                flash(Markup('Score Report PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
-            elif 'Score Details PDF does not match expected format' in str(fe):
-                flash(Markup('Score Details PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-        except Exception as e:
-            logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
-            email = send_fail_mail('Cannot generate score report', [user.first_name, user.last_name, user.email], traceback.format_exc())
-            if email == 200:
-                flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
-            else:
-                flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-        if len(score_data['answer_key_mismatches']) > 0:
-            flash('Creating score report, but it appears that the College Board has changed the answer key for ' + score_data['test_display_name'] + '. Check your inbox for more details.', 'error')
-        flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
-    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key)
-
-
 @app.route('/org-settings', methods=['GET', 'POST'])
 @login_required
 def org_settings():
@@ -1184,8 +1034,8 @@ def org_settings():
                 organization.logo_path = f"img/orgs/{filename}"
 
             # Generate the custom spreadsheet
-            spreadsheet_url = create_custom_spreadsheet(organization)
-            organization.spreadsheet_url = spreadsheet_url
+            spreadsheet_id = create_custom_spreadsheet(organization)
+            organization.spreadsheet_id = spreadsheet_id
             db.session.add(organization)
             db.session.commit()
 
@@ -1258,6 +1108,137 @@ def sitemap():
     return response
 
 
+@app.route('/score-report', methods=['GET', 'POST'])
+@app.route('/sat-report', methods=['GET', 'POST'])
+def sat_report():
+    form = ScoreReportForm()
+    return handle_sat_report(form, 'sat-report.html')
+
+
+def handle_sat_report(form, template_name, organization=None):
+    form = ScoreReportForm()
+    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('Captcha was unsuccessful. Please try again.', 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+        user = User.query.filter_by(email=form.email.data.lower()).first()
+        if user:
+          user.first_name = form.first_name.data
+          user.last_name = form.last_name.data
+        else:
+            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
+
+        pdf_folder_path = 'app/static/files/scores/pdf'
+        json_folder_path = 'app/static/files/scores/json'
+
+        if not os.path.exists(pdf_folder_path):
+            os.makedirs(pdf_folder_path)
+
+        if not os.path.exists(json_folder_path):
+            os.makedirs(json_folder_path)
+
+        full_name = form.first_name.data + ' ' + form.last_name.data
+        if form.spreadsheet_url.data:
+            try:
+                student_ss_full_url = form.spreadsheet_url.data
+                student_ss_base_url = student_ss_full_url.split('?')[0]
+                if '/d/' in student_ss_base_url:
+                    student_ss_id = student_ss_base_url.split('/d/')[1].split('/')[0]
+                else:
+                    student_ss_id = student_ss_base_url
+            except:
+                flash('Invalid Google Sheet URL', 'error')
+                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+        else:
+            student_ss_id = None
+
+        report_file = request.files['report_file']
+        details_file = request.files['details_file']
+
+        if not (allowed_file(report_file.filename) and allowed_file(details_file.filename)):
+            flash('Only PDF files are allowed', 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+        report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
+        details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
+        report_file.save(report_file_path)
+        details_file.save(details_file_path)
+
+        try:
+            score_data = get_all_data(report_file, details_file)
+            logging.info(f"Score data: {score_data}")
+            if score_data.get('student_name') is None:
+                score_data['student_name'] = full_name
+            score_data['email'] = form.email.data.lower()
+            score_data['submitter_name'] = full_name
+            score_data['student_ss_id'] = student_ss_id
+            # send_report_submitted_task.delay(score_data)
+
+            filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
+            os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
+            os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
+            json_file_path = os.path.join(json_folder_path, filename + '.json')
+            with open(json_file_path, "w") as json_file:
+                json.dump(score_data, json_file, indent=2)
+
+            test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
+                m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
+                type='practice', user_id=user.id)
+
+            db.session.add(test)
+            db.session.commit()
+
+            logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
+
+            if student_ss_id:
+                has_access = check_service_account_access(student_ss_id)
+                if not has_access:
+                    flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
+                    logging.error('Service account does not have access to student spreadsheet')
+                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            print(f"Organization Dict in handle_sat_report: {organization}")
+            create_and_send_sat_report_task.delay(score_data, organization_dict=organization)
+
+            if len(score_data['answer_key_mismatches']) > 0:
+                send_changed_answers_email(score_data)
+            return render_template('score-report-sent.html')
+        except ValueError as ve:
+            if 'Test unavailable' in str(ve):
+                flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
+            elif 'Missing math modules' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'missing RW questions' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'missing Math questions' in str(ve):
+                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'date or test code mismatch' in str(ve):
+                flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
+            elif 'insufficient questions answered' in str(ve):
+                flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
+            logger.error(f"Error generating score report: {ve}", exc_info=True)
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+        except FileNotFoundError as fe:
+            if 'Score Report PDF does not match expected format' in str(fe):
+                flash(Markup('Score Report PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+            elif 'Score Details PDF does not match expected format' in str(fe):
+                flash(Markup('Score Details PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+        except Exception as e:
+            logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
+            email = send_fail_mail('Cannot generate score report', [user.first_name, user.last_name, user.email], traceback.format_exc())
+            if email == 200:
+                flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
+            else:
+                flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+        flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
+    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+
 def TemplateRenderer(app):
     def register_template_endpoint(name, endpoint):
         @app.route('/' + name, endpoint=endpoint)
@@ -1284,15 +1265,30 @@ for path in template_list:
 
 @app.route('/<slug>', methods=['GET', 'POST'])
 def custom_score_report(slug):
-    organization = Organization.query.filter_by(slug=slug).first_or_404()
     form = ScoreReportForm()
-    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
+    organization = Organization.query.filter_by(slug=slug).first_or_404()
 
-    if form.validate_on_submit():
-        spreadsheet_id = organization.spreadsheet_url.split('/d/')[1].split('/')[0]
-        score_data = get_all_data(request.files['report_file'], request.files['details_file'])
-        create_sat_score_report(score_data, spreadsheet_id)
-        flash('Score report generated successfully', 'success')
-        return redirect(url_for('custom_score_report', slug=slug))
+    # Convert the organization object to a dictionary
+    organization_dict = {
+        'name': organization.name,
+        'logo_path': organization.logo_path,
+        'slug': organization.slug,
+        'spreadsheet_id': organization.spreadsheet_id,
+    }
+    print(f"Organization Dict in Route: {organization_dict}")
+    return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
-    return render_template('org-sat-report.html', organization=organization, form=form, hcaptcha_key=hcaptcha_key)
+# @app.route('/<slug>', methods=['GET', 'POST'])
+# def custom_score_report(slug):
+#     organization = Organization.query.filter_by(slug=slug).first_or_404()
+#     form = ScoreReportForm()
+#     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
+
+#     if form.validate_on_submit():
+#         spreadsheet_id = organization.spreadsheet_url.split('/d/')[1].split('/')[0]
+#         score_data = get_all_data(request.files['report_file'], request.files['details_file'])
+#         create_sat_score_report(score_data, spreadsheet_id)
+#         flash('Score report generated successfully', 'success')
+#         return redirect(url_for('custom_score_report', slug=slug))
+
+#     return render_template('org-sat-report.html', organization=organization, form=form, hcaptcha_key=hcaptcha_key)

@@ -53,7 +53,7 @@ def check_service_account_access(spreadsheet_id):
         return False
 
 
-def create_sat_score_report(score_data):
+def create_sat_score_report(score_data, organization_dict=None):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/spreadsheets',
@@ -65,16 +65,19 @@ def create_sat_score_report(score_data):
         service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
+        print(f"Organization Dict in create_sat_score_report: {organization_dict}")
+        file_id = organization_dict['spreadsheet_id'] if organization_dict else SHEET_ID
+
         # Create a copy of the file
         ss_copy = drive_service.files().copy(
-            fileId=SHEET_ID,
+            fileId=file_id,
             body={
             'parents': [SCORE_REPORT_FOLDER_ID],
-            'name': f"SAT Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')} - {score_data['test_code'].upper()}.pdf"
+            'name': f"{score_data['test_code'].upper()} Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')}.pdf"
             }
         ).execute()
         ss_copy_id = ss_copy.get('id')
-        logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
+        logging.info(f'ss_copy_id: {ss_copy_id} (copied from {file_id})')
 
         ss = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
         sheets = ss.get('sheets', [])
@@ -461,54 +464,6 @@ def create_sat_score_report(score_data):
         # batch_update_request = {
         #     'requests': requests
         # }
-
-        request = {
-            # NTPA design
-            'updateCells': {
-                'range': {
-                    'sheetId': analysis_sheet_id,
-                    'startRowIndex': 1,
-                    'endRowIndex': 4,
-                    'startColumnIndex': 1,
-                    'endColumnIndex': 4
-                },
-                'rows': [
-                    {
-                        'values': [
-                            {
-                                'userEnteredValue': {
-                                    'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
-                                }
-                            }
-                        ]
-                    }
-                ],
-                'fields': 'userEnteredValue'
-            }
-            # OPT design
-            # 'updateCells': {
-            #     'range': {
-            #         'sheetId': analysis_sheet_id,
-            #         'startRowIndex': 4,
-            #         'endRowIndex': 5,
-            #         'startC3lumnIndex': 2,
-            #         'endColumnIndex': 3
-            #     },
-            #     'rows': [
-            #         {
-            #             'values': [
-            #                 {
-            #                     'userEnteredValue': {
-            #                         'stringValue': 'SAT Score Analysis for ' + score_data['student_name']
-            #                     }
-            #                 }
-            #             ]
-            #         }
-            #     ],
-            #     'fields': 'userEnteredValue'
-            # }
-        }
-        requests.append(request)
 
         # Hide 'Data' sheet
         request = {
@@ -981,6 +936,31 @@ def create_custom_spreadsheet(organization):
     #         }
     #     })
 
+    requests.append(
+        {'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': 4,
+                    'endRowIndex': 5,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': ' '
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
+            }
+        }
+    )
+
     # Step 4: Add the logo to cell B2
     if organization.logo_path:
         logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
@@ -1014,8 +994,7 @@ def create_custom_spreadsheet(organization):
         body={"requests": requests}
     ).execute()
 
-    # Return the URL of the customized spreadsheet
-    return f"https://docs.google.com/spreadsheets/d/{ss_copy_id}/edit"
+    return ss_copy_id
 
 
 def hex_to_rgb(hex_color):

@@ -20,10 +20,11 @@ class MyTaskBaseClass(celery.Task):
         send_task_fail_mail(exc, task_id, args, kwargs, einfo)
 
 @celery.task(name='app.tasks.create_and_send_sat_report_task', bind=True, base=MyTaskBaseClass)
-def create_and_send_sat_report_task(self, score_data):
+def create_and_send_sat_report_task(self, score_data, organization_dict=None):
   try:
+    print(f"Organization Dict in Celery Task: {organization_dict}")
     mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
-    spreadsheet_id, score_data_updated = create_sat_score_report(score_data)
+    spreadsheet_id, score_data_updated = create_sat_score_report(score_data, organization_dict)
     mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     score_report_mem = mem_post_report - mem_start
     logging.info(f"Score report used {score_report_mem:.2f} MB of memory")
