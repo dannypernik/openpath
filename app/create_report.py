@@ -450,32 +450,6 @@ def create_sat_score_report(score_data, organization_dict=None):
         }
         requests.append(request)
 
-        # Hide pivot table default message
-        request = {
-            'updateCells': {
-                'range': {
-                    'sheetId': analysis_sheet_id,
-                    'startRowIndex': 4,
-                    'endRowIndex': 5,
-                    'startColumnIndex': 1,
-                    'endColumnIndex': 2
-                },
-                'rows': [
-                    {
-                        'values': [
-                            {
-                                'userEnteredValue': {
-                                    'stringValue': ' '
-                                }
-                            }
-                        ]
-                    }
-                ],
-                'fields': 'userEnteredValue'
-            }
-        }
-        requests.append(request)
-
 
         # Hide 'Data' sheet
         request = {
@@ -800,9 +774,8 @@ def create_custom_spreadsheet(organization):
     ).execute()
     ss_copy_id = file_copy.get('id')
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
-
     sheets = ss_copy.get('sheets', [])
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -960,6 +933,32 @@ def create_custom_spreadsheet(organization):
         spreadsheetId=ss_copy_id,
         body={"requests": requests}
     ).execute()
+
+    # Step 3: Update conditional formatting rules
+    for sheet in sheets:
+        if sheet['properties']['sheetId'] == analysis_sheet_id:
+            for rule in sheet.get('conditionalFormats', []):
+                if 'booleanRule' in rule:
+                    bg_color = rule['booleanRule']['format']['backgroundColor']
+                    if bg_color == {'red': 28/255, 'green': 77/255, 'blue': 101/255}:  # #1c4d65
+                        rule['booleanRule']['format']['backgroundColor'] = {
+                            'red': hex_to_rgb(organization.color1)[0] / 255,
+                            'green': hex_to_rgb(organization.color1)[1] / 255,
+                            'blue': hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    elif bg_color == {'red': 255/255, 'green': 168/255, 'blue': 116/255}:  # #ffa874
+                        rule['booleanRule']['format']['backgroundColor'] = {
+                            'red': hex_to_rgb(organization.color2)[0] / 255,
+                            'green': hex_to_rgb(organization.color2)[1] / 255,
+                            'blue': hex_to_rgb(organization.color2)[2] / 255
+                        }
+                    elif bg_color == {'red': 196/255, 'green': 240/255, 'blue': 247/255}:  # #c4f0f7
+                        rule['booleanRule']['format']['backgroundColor'] = {
+                            'red': hex_to_rgb(organization.color3)[0] / 255,
+                            'green': hex_to_rgb(organization.color3)[1] / 255,
+                            'blue': hex_to_rgb(organization.color3)[2] / 255
+                        }
+            break
 
     return ss_copy_id
 

@@ -1003,9 +1003,11 @@ def org_settings():
 
             # Create or update the organization
             if form.org_id.data == 0:
+                print('Creating new organization')
                 organization = Organization(name=organization_name, slug=slug)
                 db.session.add(organization)
                 db.session.flush()
+                print(organization.id)
             else:
                 organization = Organization.query.filter_by(id=form.org_id.data).first()
 
@@ -1036,10 +1038,11 @@ def org_settings():
             # Generate the custom spreadsheet
             spreadsheet_id = create_custom_spreadsheet(organization)
             organization.spreadsheet_id = spreadsheet_id
-            db.session.add(organization)
+
             db.session.commit()
 
             flash('Custom spreadsheet created successfully!', 'success')
+            return redirect(url_for('org_settings'))
         except Exception as e:
             flash(f"Error creating custom spreadsheet: {e}", 'error')
 
@@ -1205,7 +1208,12 @@ def handle_sat_report(form, template_name, organization=None):
 
             if len(score_data['answer_key_mismatches']) > 0:
                 send_changed_answers_email(score_data)
-            return render_template('score-report-sent.html')
+
+            if organization:
+                return_route = url_for('custom_score_report', slug=organization['slug'])
+            else:
+                return_route = url_for('sat_report')
+            return render_template('score-report-sent.html', return_route=return_route)
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
@@ -1235,7 +1243,6 @@ def handle_sat_report(form, template_name, organization=None):
             else:
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
-        flash('Success! Your score report should arrive to your inbox in the next 5 minutes.')
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
 
