@@ -140,8 +140,8 @@ def create_sat_score_report(score_data, organization_dict=None):
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
-                    'startRowIndex': 4,
-                    'endRowIndex': 5,
+                    'startRowIndex': 5,
+                    'endRowIndex': 6,
                     'startColumnIndex': 1,
                     'endColumnIndex': 2
                 },
