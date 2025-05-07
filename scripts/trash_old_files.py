@@ -3,6 +3,14 @@ import logging
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+# Configure logging
+LOG_FILE = '/var/log/trash_old_files.log'  # Update this path if needed
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Update with the correct path
 
 def trash_old_files(folder_id):
