@@ -1,0 +1,29 @@
+import datetime
+import logging
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+
+SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Update with the correct path
+
+def trash_old_files(folder_id):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+    try:
+        drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+
+        query = f"'{folder_id}' in parents and trashed=false and modifiedTime < '{(datetime.datetime.utcnow() - datetime.timedelta(days=30)).isoformat()}Z'"
+        files = drive_service.files().list(q=query, fields='files(id, name)').execute().get('files', [])
+
+        for file in files:
+            file_id = file['id']
+            drive_service.files().update(fileId=file_id, body={'trashed': True}).execute()
+            logging.info(f"Trashed file: {file['name']} (ID: {file_id})")
+    except Exception as e:
+        logging.error(f'Error in trash_old_files: {e}')
+        raise
+
+if __name__ == '__main__':
+    # Replace 'YOUR_FOLDER_ID' with the actual folder ID
+    trash_old_files('15tJsdeOx_HucjIb6koTaafncTj-e6FO6')
