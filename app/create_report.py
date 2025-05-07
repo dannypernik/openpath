@@ -450,6 +450,35 @@ def create_sat_score_report(score_data, organization_dict=None):
         }
         requests.append(request)
 
+        if organization_dict:
+            title_row = 4 # Row B5 if custom organization
+        else:
+            title_row = 1 # Row B2 if default template
+        request = {
+            'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': title_row,  # Row B5 (row index starts at 0)
+                    'endRowIndex': title_row + 1,
+                    'startColumnIndex': 1,  # Column B (column index starts at 0)
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': f"{score_data['test_code'].upper()} Score Analysis for {score_data['student_name']}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
+            }
+        }
+        requests.append(request)
+
 
         # Hide 'Data' sheet
         request = {
@@ -789,14 +818,14 @@ def create_custom_spreadsheet(organization):
 
     print(ss_copy_id)
 
-    # Step 2: Update header colors (A1:K6) and set borders
+    # Step 2: Update header colors (A1:K7) and set borders
     requests = [
         {
             "updateBorders": {
                 "range": {
                     "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 6,
+                    "endRowIndex": 7,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -869,38 +898,6 @@ def create_custom_spreadsheet(organization):
         }
     ]
 
-    # # Step 3: Update conditional formatting rules
-    # for i, color in enumerate(brand_colors[1:]):
-    #     requests.append({
-    #         "updateConditionalFormatRule": {
-    #             "rule": {
-    #                 "ranges": [
-    #                     {
-    #                         "sheetId": 0,
-    #                         "startRowIndex": 6,
-    #                         "endRowIndex": 100,
-    #                         "startColumnIndex": 0,
-    #                         "endColumnIndex": 11
-    #                     }
-    #                 ],
-    #                 "booleanRule": {
-    #                     "condition": {
-    #                         "type": "CUSTOM_FORMULA",
-    #                         "values": [{"userEnteredValue": f"=MOD(ROW(),2)={i}"}]
-    #                     },
-    #                     "format": {
-    #                         "backgroundColor": {
-    #                             "red": hex_to_rgb(organization.color2)[0] / 255,
-    #                             "green": hex_to_rgb(organization.color2)[1] / 255,
-    #                             "blue": hex_to_rgb(organization.color2)[2] / 255
-    #                         }
-    #                     }
-    #                 }
-    #             },
-    #             "index": i
-    #         }
-    #     })
-
     # Step 4: Add the logo to cell B2
     if organization.logo_path:
         logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
@@ -964,6 +961,5 @@ def create_custom_spreadsheet(organization):
 
 
 def hex_to_rgb(hex_color):
-    """Convert a hex color string (e.g., #FF0000) to an RGB tuple (e.g., (255, 0, 0))."""
     hex_color = hex_color.lstrip('#')  # Remove the '#' character
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
