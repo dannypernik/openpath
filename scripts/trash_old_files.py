@@ -16,10 +16,12 @@ def trash_old_files(folder_id):
         query = f"'{folder_id}' in parents and trashed=false and modifiedTime < '{(datetime.datetime.utcnow() - datetime.timedelta(days=30)).isoformat()}Z'"
         files = drive_service.files().list(q=query, fields='files(id, name)').execute().get('files', [])
 
+        logging.info(f"Found {len(files)} files to trash in folder {folder_id}")
         for file in files:
             file_id = file['id']
             drive_service.files().update(fileId=file_id, body={'trashed': True}).execute()
             logging.info(f"Trashed file: {file['name']} (ID: {file_id})")
+        logging.info("Trashing complete")
     except Exception as e:
         logging.error(f'Error in trash_old_files: {e}')
         raise
