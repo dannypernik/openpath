@@ -20,7 +20,7 @@ if (role.value == 'tutor' || role.value == 'admin') {
   titleDiv.style.display = 'none';
 }
 
-role.addEventListener("change", function () {
+role.addEventListener('change', function () {
   if (this.value == 'student') {
     parentDiv.style.display = 'block';
     tutorDiv.style.display = 'block';
@@ -31,7 +31,7 @@ role.addEventListener("change", function () {
     gradYearDiv.style.display = 'none';
     document.getElementById('parent_id').value = 0;
     document.getElementById('tutor_id').value = 0;
-    document.getElementById('grad_year').value = 0;
+    document.getElementById('grad_year').value = 'adult';
   }
 
   if (this.value == 'tutor' || this.value == 'admin') {
