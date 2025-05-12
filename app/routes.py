@@ -1246,6 +1246,20 @@ def handle_sat_report(form, template_name, organization=None):
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
 
+@app.route('/<slug>')
+def partner_page(slug):
+    organization = Organization.query.filter_by(slug=slug).first_or_404()
+    # Convert the organization object to a dictionary
+    organization_dict = {
+        'name': organization.name,
+        'logo_path': organization.logo_path,
+        'slug': organization.slug,
+        'spreadsheet_id': organization.spreadsheet_id,
+    }
+    return render_template('partner-page.html', title=organization.name, organization=organization_dict)
+
+
+
 def TemplateRenderer(app):
     def register_template_endpoint(name, endpoint):
         @app.route('/' + name, endpoint=endpoint)
