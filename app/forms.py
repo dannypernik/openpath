@@ -228,7 +228,8 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     submit = SubmitField()
 
-class ScoreReportForm(FlaskForm):
+
+class SATReportForm(FlaskForm):
     first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
@@ -248,6 +249,20 @@ class ScoreReportForm(FlaskForm):
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
+
+
+class ACTReportForm(FlaskForm):
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+        validators=[InputRequired()])
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
+        validators=[InputRequired()])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    test_code = SelectField('Test code', coerce=int)
+    answer_img = FileField('Answer sheet photo', render_kw={'placeholder': 'Answer sheet photo'}, \
+        validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
+    submit = SubmitField()
+
 
 class ReviewForm(FlaskForm):
     text = TextAreaField('Review', render_kw={'placeholder': 'Review'}, \

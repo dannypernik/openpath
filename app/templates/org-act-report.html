@@ -1,0 +1,21 @@
+{% extends 'sat-report.html' %}
+
+{% block header %}
+  <div class="text-center">
+    <div class="row justify-content-center my-4">
+      <div class="col-5 col-sm-3">
+        <img style="width:255px" class="school-logo" src="{{ url_for('static', filename=organization['logo_path']) }}">
+      </div>
+      <div class="col-2 d-flex">
+        <img class="plus-icon" src="{{ url_for('static', filename='img/plus.svg') }}">
+      </div>
+      <div class="col-5 col-sm-3">
+        <img style="width:277px" class="school-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
+      </div>
+    </div>
+    <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
+    <p>
+      Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
+    </p>
+  </div>
+{% endblock header %}

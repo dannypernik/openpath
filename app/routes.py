@@ -4,7 +4,8 @@ from flask import Flask, render_template, flash, Markup, redirect, url_for, \
 from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
-    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, ScoreReportForm, ReviewForm, OrgSettingsForm
+    ResetPasswordForm, TutorForm, RecapForm, NtpaForm, SATReportForm, ACTReportForm, \
+    ReviewForm, OrgSettingsForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from werkzeug.urls import url_parse
@@ -1114,12 +1115,12 @@ def sitemap():
 @app.route('/score-report', methods=['GET', 'POST'])
 @app.route('/sat-report', methods=['GET', 'POST'])
 def sat_report():
-    form = ScoreReportForm()
+    form = SATReportForm()
     return handle_sat_report(form, 'sat-report.html')
 
 
 def handle_sat_report(form, template_name, organization=None):
-    form = ScoreReportForm()
+    form = SATReportForm()
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -1203,17 +1204,16 @@ def handle_sat_report(form, template_name, organization=None):
                     flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
                     logging.error('Service account does not have access to student spreadsheet')
                     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
-            print(f"Organization Dict in handle_sat_report: {organization}")
             create_and_send_sat_report_task.delay(score_data, organization_dict=organization)
 
             if len(score_data['answer_key_mismatches']) > 0:
                 send_changed_answers_email(score_data)
 
             if organization:
-                return_route = url_for('custom_score_report', slug=organization['slug'])
+                return_route = url_for('custom_sat_report', slug=organization['slug'])
             else:
                 return_route = url_for('sat_report')
-            return render_template('score-report-sent.html', return_route=return_route)
+            return render_template('sat-report-sent.html', return_route=return_route)
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
@@ -1283,10 +1283,9 @@ for path in template_list:
     if endpoint not in endpoints:
         register_template_endpoint(path, endpoint)
 
-
-@app.route('/<slug>', methods=['GET', 'POST'])
-def custom_score_report(slug):
-    form = ScoreReportForm()
+@app.route('/<slug>/sat', methods=['GET', 'POST'])
+def custom_sat_report(slug):
+    form = SATReportForm()
     organization = Organization.query.filter_by(slug=slug).first_or_404()
 
     # Convert the organization object to a dictionary
@@ -1296,20 +1295,66 @@ def custom_score_report(slug):
         'slug': organization.slug,
         'spreadsheet_id': organization.spreadsheet_id,
     }
-    print(f"Organization Dict in Route: {organization_dict}")
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
-# @app.route('/<slug>', methods=['GET', 'POST'])
-# def custom_score_report(slug):
-#     organization = Organization.query.filter_by(slug=slug).first_or_404()
-#     form = ScoreReportForm()
-#     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-#     if form.validate_on_submit():
-#         spreadsheet_id = organization.spreadsheet_url.split('/d/')[1].split('/')[0]
-#         score_data = get_all_data(request.files['report_file'], request.files['details_file'])
-#         create_sat_score_report(score_data, spreadsheet_id)
-#         flash('Score report generated successfully', 'success')
-#         return redirect(url_for('custom_score_report', slug=slug))
+@app.route('/<slug>/act', methods=['GET', 'POST'])
+def custom_act_report(slug):
+    form = SATReportForm()
+    organization = Organization.query.filter_by(slug=slug).first_or_404()
 
-#     return render_template('org-sat-report.html', organization=organization, form=form, hcaptcha_key=hcaptcha_key)
+    # Convert the organization object to a dictionary
+    organization_dict = {
+        'name': organization.name,
+        'logo_path': organization.logo_path,
+        'slug': organization.slug,
+        'spreadsheet_id': organization.spreadsheet_id,
+    }
+    return handle_act_report(form, 'org-act-report.html', organization=organization_dict)
+
+
+    def handle_act_report(form, template_name, organization=None):
+        hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
+        if form.validate_on_submit():
+            if hcaptcha.verify():
+                pass
+            else:
+                flash('Captcha was unsuccessful. Please try again.', 'error')
+                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+            user = User.query.filter_by(email=form.email.data.lower()).first()
+            if user:
+                user.first_name = form.first_name.data
+                user.last_name = form.last_name.data
+            else:
+                user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
+
+            answer_img = request.files['answer_img']
+            if not allowed_file(answer_img.filename):
+                flash('Only image files are allowed', 'error')
+                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+            folder_path = 'app/static/files/photos'
+            if not os.path.exists(photo_folder_path):
+                os.makedirs(photo_folder_path)
+
+            answer_img_path = os.path.join(folder_path, secure_filename(answer_img.filename))
+            answer_img.save(answer_img_path)
+
+            try:
+                email_status = send_contact_email(
+                    user,
+                    f"ACT report photo uploaded by {user.first_name} {user.last_name}",
+                    "ACT Report Submission",
+                    attachments=[answer_img_path]
+                )
+                if email_status == 200:
+                    flash('Your photo has been submitted successfully. Our team will review it and get back to you.', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash('Failed to send the photo. Please contact support.', 'error')
+            except Exception as e:
+                logger.error(f"Error sending ACT report email: {e}", exc_info=True)
+                flash('An unexpected error occurred. Please try again later.', 'error')
+
+        return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
