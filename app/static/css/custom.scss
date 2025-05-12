@@ -743,8 +743,7 @@ div.alert {
 // About & School pages //
 
 .profile-pic,
-.school-logo {
-  // @include xy-center();
+.org-logo {
   @include img-fluid();
   display: block;
 
@@ -754,10 +753,10 @@ div.alert {
   }
 }
 
-.school-logo {
+.org-logo {
   @include xy-center();
-  width: 155px;
-
+  width: 200px;
+  max-width: 100%;
 }
 
 .profile-pic-container {
@@ -788,7 +787,7 @@ div.alert {
 
 .plus-icon {
   @include xy-center();
-  width: 55px;
+  width: 44px;
   max-width: 100%;
 }
 

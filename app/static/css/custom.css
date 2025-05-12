@@ -6582,23 +6582,24 @@ div.alert a {
 }
 
 .profile-pic,
-.school-logo {
+.org-logo {
   max-width: 100%;
   height: auto;
   display: block;
 }
 .profile-pic.wide,
-.school-logo.wide {
+.org-logo.wide {
   width: 250px;
   margin-bottom: 0;
 }
 
-.school-logo {
+.org-logo {
   position: relative;
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
-  width: 155px;
+  width: 200px;
+  max-width: 100%;
 }
 
 .profile-pic-container {
@@ -6630,7 +6631,7 @@ div.alert a {
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
-  width: 55px;
+  width: 44px;
   max-width: 100%;
 }
 
