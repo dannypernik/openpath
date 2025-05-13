@@ -2,13 +2,7 @@
 
 {% block content %}
   <h2>It's not you, it's us... something went wrong.</h2>
-  <div>
-    Apologies for the inconvenience. If you would be so kind as to let us know
-    how you arrived here, it would be very helpful.
-  </div>
-  <div class="mt-3">
-    <a href="{{ url_for('index', _anchor='contact') }}" class="btn">
-      Contact us
-    </a>
+    Apologies for the inconvenience. You can contact us at
+    <a href="mailto:{{ hello }}" target="blank">{{ hello }}</a>.
   </div>
 {% endblock content %}
