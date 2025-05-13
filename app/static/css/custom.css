@@ -6641,6 +6641,7 @@ div.alert a {
   object-fit: cover;
   width: 100%;
   height: auto;
+  max-height: 8rem;
 }
 
 .plus-icon {
