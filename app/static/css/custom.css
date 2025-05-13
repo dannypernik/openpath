@@ -6640,8 +6640,6 @@ div.alert a {
   display: block;
   object-fit: cover;
   width: 100%;
-  height: auto;
-  max-height: 8rem;
 }
 
 .plus-icon {
