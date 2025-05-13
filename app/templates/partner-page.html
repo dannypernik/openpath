@@ -7,30 +7,32 @@
 {% endblock head %}
 
 {% block container %}
-  {% block header %}
-    <div class="text-center">
-      <div class="row justify-content-center my-4">
-        <div class="col-5 col-sm-3">
-          <img class="org-logo" src="{{ url_for('static', filename=organization['logo_path']) }}">
-        </div>
-        <div class="col-2 d-flex">
-          <img class="plus-icon" src="{{ url_for('static', filename='img/plus.svg') }}">
-        </div>
-        <div class="col-5 col-sm-3">
-          <img style="width:277px" class="org-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
-        </div>
+  <div class="row text-center justify-content-center">
+    <div class="d-flex mt-4 mb-3 justify-content-center col-12 col-sm-11 col-md-9 col-lg-8 col-xl-7">
+      <div class="logo-container">
+        <a href="{{ url_for('partner_page', slug=organization['slug']) }}">
+          <img class="partner-logo" src="{{ url_for('static', filename=organization['logo_path']) }}">
+        </a>
       </div>
-      <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
-      <p>
-        Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
-      </p>
+        <img class="plus-icon" src="{{ url_for('static', filename='img/plus.svg') }}">
+      <div class="logo-container">
+        <img id="opt-partner-logo" class="partner-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
+      </div>
     </div>
-  {% endblock header %}
+    {% block title_text %}
+      <h1>Get your practice test score analysis</h1>
+      <p>
+        Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
+      </p>
+    {% endblock title_text %}
+  </div>
 
   {% block form_content %}
-    <div class="row mt-4">
-      <a href="{{ url_for('custom_sat_report', slug=organization['slug']) }}" class="btn d-inline-block w-auto">Practice SAT<sup class="">&#174;</sup> analysis</a>
-      <!-- <a href="{{ url_for('custom_act_report', slug=organization['slug']) }}" class="btn d-inline-block w-auto">Practice ACT<sup class="">&#174;</sup> analysis</a> -->
+    <div class="row justify-content-center">
+      <div class="text-center">
+        <a href="{{ url_for('custom_sat_report', slug=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice SAT<sup class="">&#174;</sup> analysis</a>
+        <a href="{{ url_for('custom_act_report', slug=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice ACT<sup class="">&#174;</sup> analysis</a>
+      </div>
     </div>
   {% endblock form_content %}
 {% endblock container %}
