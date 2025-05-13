@@ -6148,6 +6148,9 @@ a {
   color: #00617b;
   text-decoration: none;
 }
+a.sec {
+  color: #f06d53;
+}
 a:hover {
   text-decoration: underline;
   text-underline-offset: 6px;
@@ -6626,13 +6629,28 @@ div.alert a {
   filter: brightness(1);
 }
 
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.logo-container img {
+  display: block;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
 .plus-icon {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  width: 44px;
+  width: calc(2.8rem + 1vw);
   max-width: 100%;
+  margin: 0 4vw;
+}
+
+.logo-container:has(#opt-partner-logo) {
+  max-width: 45%;
 }
 
 .review-img {
@@ -6727,17 +6745,20 @@ a.info-icon {
   text-decoration: none;
 }
 a.info-icon svg {
-  vertical-align: text-top;
+  vertical-align: middle;
   margin-left: 0.5rem;
 }
 a.info-icon span {
-  display: none;
+  color: #f06d53;
+  font-size: 1.6rem;
+}
+a.info-icon:hover {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: #f06d53;
 }
 a.info-icon:hover span {
-  display: inline-block;
-  text-decoration: none;
-  color: #f06d53;
-  font-weight: 400;
+  color: #00617b;
 }
 
 .modal-header {

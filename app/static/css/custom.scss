@@ -299,6 +299,10 @@ a {
   color: $text-color;
   text-decoration: none;
 
+  &.sec {
+    color: $secondary-color;
+  }
+
   &:hover {
     @include underline-hover();
     color: $text-color;
@@ -785,10 +789,28 @@ div.alert {
   }
 }
 
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.logo-container img {
+  display: block;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
 .plus-icon {
-  @include xy-center();
-  width: 44px;
+  width: calc(2.8rem + 1vw);
   max-width: 100%;
+  margin: 0 calc(4vw);
+}
+
+.logo-container:has(#opt-partner-logo) {
+  max-width:45%;
 }
 
 // Reviews page //
@@ -890,19 +912,24 @@ a.info-icon {
   text-decoration: none;
 
   svg {
-    vertical-align: text-top;
+    vertical-align: middle;
     margin-left: 0.5rem;
   }
 
   span {
-    display: none;
+    color: $secondary-color;
+    font-size: $font-size-sm;
   }
 
-  &:hover span {
-    display: inline-block;
-    text-decoration: none;
-    color: $secondary-color;
-    font-weight: 400;
+  &:hover {
+    @include underline-hover();
+
+    span {
+    // display: inline-block;
+    // text-decoration: none;
+      color: $text-color;
+      // font-weight: 600;
+    }
   }
 }
 

@@ -99,7 +99,7 @@
               {% for e in errors %}
                 <div class="row justify-content-center alert error" role="alert">
                   <div class="col-11 col-md-10 col-xl-9">
-                    {{ field }}: {{ e }}
+                    {{ field }} error: {{ e | safe }}
                   </div>
                 </div>
               {% endfor %}

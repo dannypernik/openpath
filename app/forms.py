@@ -244,9 +244,9 @@ class SATReportForm(FlaskForm):
     # m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
     #     validators=[InputRequired()])
     report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
-        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>.')])
     details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
-        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please follow the exact steps above.')])
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a>.')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 
@@ -258,8 +258,12 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    test_code = SelectField('Test code', coerce=int)
-    answer_img = FileField('Answer sheet photo', render_kw={'placeholder': 'Answer sheet photo'}, \
+    test_code = SelectField('Test code', choices=[(None, 'Test code (Form number)'), \
+        ('202206','202206 (Form E26)'), ('202212','202212 (Form F07)'),
+        ('202304','202304 (Form F11)'), ('202306','202306 (Form F12)'), ('202309','202309 (Form G01)'), \
+        ('202404','202404 (Form G19)'), ('202406','202406 (Form G20)')],
+         validators=[InputRequired()])
+    answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
     submit = SubmitField()
 
@@ -287,5 +291,5 @@ class OrgSettingsForm(FlaskForm):
         validators=[InputRequired()])
     color3 = ColorField('Tertiary color', render_kw={'placeholder': 'Tertiary color'}, \
         validators=[InputRequired()])
-    logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')])
+    logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg'], 'Images only please (png, jpg, jpeg)')])
     submit = SubmitField('Save')

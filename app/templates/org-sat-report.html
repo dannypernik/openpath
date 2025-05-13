@@ -1,5 +1,12 @@
 {% extends 'partner-page.html' %}
 
+{% block title_text %}
+  <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
+  <p>
+    Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
+  </p>
+{% endblock title_text %}
+
 {% block form_content %}
   <div class="row gx-5 justify-content-center">
     <div class="d-block d-lg-none col-10">
@@ -12,15 +19,15 @@
     <div class="col-12 col-sm-10 col-lg-5 col-xl-4">
       <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
         <div class="row justify-content-center mt-3">
-          <div class="col-12">
+          <div class="col-12 d-none">
             {{ form.hidden_tag() }}
-            {{ form.first_name }}
+            {{ form.first_name(value=admin.first_name) }}
           </div>
-          <div class="col-12">
-            {{ form.last_name }}
+          <div class="col-12 d-none">
+            {{ form.last_name(value=admin.last_name) }}
           </div>
-          <div class="col-12">
-            {{ form.email }}
+          <div class="col-12 d-none">
+            {{ form.email(value=admin.email) }}
           </div>
           <!-- <div class="col-12">
             <div id="drop-area" class="drop-area">

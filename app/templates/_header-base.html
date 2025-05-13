@@ -11,7 +11,6 @@
       <div class="col-2 col-sm-4">
         <a id="menu-btn" data-drawer-trigger aria-controls="site-menu" aria-expanded="false">
           <div id="menu-title" class="d-none d-sm-block text-truncate">
-            {#
             {% if current_user.is_authenticated %}
               <span class="">
                 {{ current_user.first_name }}
@@ -22,7 +21,6 @@
             {% else %}
               Menu
             {% endif %}
-            #}
           </div>
           <img id="menu-icon" src="{{ url_for('static', filename='img/menu.svg') }}" alt="">
         </a>
@@ -50,30 +48,29 @@
           <p>Home</p>
         </div>
       </a>
-      {#
-        {% if current_user.is_admin %}
-            <!-- <a data-drawer-trigger data-drawer-close aria-controls="nested-menu" aria-expanded="false">
-              <div class="menu-link">
-                <p>Admin</p>
-              </div>
-            </a> -->
-            <a href="{{ url_for('users') }}">
-              <div class="menu-link">
-                <p>Users</p>
-              </div>
-            </a>
-            <a href="{{ url_for('students') }}">
-              <div class="menu-link">
-                <p>Students</p>
-              </div>
-            </a>
-            <a href="{{ url_for('tutors') }}">
-              <div class="menu-link">
-                <p>Tutors</p>
-              </div>
-            </a>
-        {% endif %}
-      #}
+
+      {% if current_user.is_admin %}
+          <!-- <a data-drawer-trigger data-drawer-close aria-controls="nested-menu" aria-expanded="false">
+            <div class="menu-link">
+              <p>Admin</p>
+            </div>
+          </a> -->
+          <a href="{{ url_for('users') }}">
+            <div class="menu-link">
+              <p>Users</p>
+            </div>
+          </a>
+          <a href="{{ url_for('students') }}">
+            <div class="menu-link">
+              <p>Students</p>
+            </div>
+          </a>
+          <a href="{{ url_for('tutors') }}">
+            <div class="menu-link">
+              <p>Tutors</p>
+            </div>
+          </a>
+      {% endif %}
 
       <a href="{{ url_for('team') }}">
         <div class="menu-link">
@@ -106,7 +103,7 @@
           </div>
         </a>
       {% endblock contact_link %}
-      {#
+
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('logout') }}">
           <div class="menu-link">
@@ -120,7 +117,6 @@
           </div>
         </a>
       {% endif %}
-      #}
 
     </div>
   </div>

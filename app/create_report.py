@@ -880,9 +880,51 @@ def create_custom_spreadsheet(organization):
                 "range": {
                     "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 6,
+                    "endRowIndex": 7,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.backgroundColor"
+            }
+        },
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 12
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": hex_to_rgb(organization.color1)[0] / 255,
+                            "green": hex_to_rgb(organization.color1)[1] / 255,
+                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.backgroundColor"
+            }
+        },
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 32,
+                    "endRowIndex": 35,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 12
                 },
                 "cell": {
                     "userEnteredFormat": {
@@ -899,31 +941,31 @@ def create_custom_spreadsheet(organization):
     ]
 
     # Step 4: Add the logo to cell B2
-    if organization.logo_path:
-        logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
-        requests.append({
-            "updateCells": {
-            "range": {
-                "sheetId": analysis_sheet_id,
-                "startRowIndex": 1,  # Row B2 (row index starts at 0)
-                "endRowIndex": 2,
-                "startColumnIndex": 1,  # Column B2 (column index starts at 0)
-                "endColumnIndex": 2
-            },
-            "rows": [
-                {
-                "values": [
-                    {
-                    "userEnteredValue": {
-                        "formulaValue": f'=IMAGE("{logo_url}")'
-                    }
-                    }
-                ]
-                }
-            ],
-            "fields": "userEnteredValue"
-            }
-        })
+    # if organization.logo_path:
+    #     logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
+    #     requests.append({
+    #         "updateCells": {
+    #         "range": {
+    #             "sheetId": analysis_sheet_id,
+    #             "startRowIndex": 1,  # Row B2
+    #             "endRowIndex": 2,
+    #             "startColumnIndex": 1,  # Column B2
+    #             "endColumnIndex": 2
+    #         },
+    #         "rows": [
+    #             {
+    #             "values": [
+    #                 {
+    #                 "userEnteredValue": {
+    #                     "formulaValue": f'=IMAGE("{logo_url}")'
+    #                 }
+    #                 }
+    #             ]
+    #             }
+    #         ],
+    #         "fields": "userEnteredValue"
+    #         }
+    #     })
 
     # Execute batch update
     service.spreadsheets().batchUpdate(

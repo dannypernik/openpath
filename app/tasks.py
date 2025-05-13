@@ -40,27 +40,3 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
     raise e
-
-# @celery.task(name='app.tasks.send_answers_to_student_ss_task', bind=True, base=MyTaskBaseClass)
-# def send_answers_to_student_ss_task(self, score_data):
-#     try:
-#         logging.info('SAT answers sent to student spreadsheet')
-#     except Exception as e:
-#         logging.error(f'Error sending SAT answers to spreadsheet: {e}')
-#         raise e
-
-# @worker_shutdown.connect
-# def worker_shutdown_handler(sender=None, **kwargs):
-#     logging.error('Worker is shutting down')
-#     log_stream.seek(0)
-#     recent_logs = log_stream.read()
-#     error = f"A Celery worker is shutting down unexpectedly.\n\nRecent logs:\n{recent_logs}"
-#     send_fail_mail('Celery worker process shutdown', error)
-
-# @worker_process_shutdown.connect
-# def worker_process_shutdown_handler(sender=None, **kwargs):
-#     logging.error('Worker process is shutting down')
-#     log_stream.seek(0)
-#     recent_logs = log_stream.read()
-#     error = f"A Celery worker process is shutting down unexpectedly.\n\nRecent logs:\n{recent_logs}"
-#     send_fail_mail('Celery worker process shutdown', error)

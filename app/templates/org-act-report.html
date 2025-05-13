@@ -1,21 +1,97 @@
-{% extends 'sat-report.html' %}
+{% extends 'partner-page.html' %}
 
-{% block header %}
-  <div class="text-center">
-    <div class="row justify-content-center my-4">
-      <div class="col-5 col-sm-3">
-        <img style="width:255px" class="school-logo" src="{{ url_for('static', filename=organization['logo_path']) }}">
-      </div>
-      <div class="col-2 d-flex">
-        <img class="plus-icon" src="{{ url_for('static', filename='img/plus.svg') }}">
-      </div>
-      <div class="col-5 col-sm-3">
-        <img style="width:277px" class="school-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
+{% block title_text %}
+  <h1>Practice ACT<sup class="h5">&#174;</sup> score analysis</h1>
+  <p>
+    After completing a practice test, upload a photo of your ACT bubble sheet to get a detailed score analysis.
+  </p>
+{% endblock title_text %}
+
+{% block form_content %}
+  <div class="row gx-5 justify-content-center">
+    <div class="d-block d-lg-none col-10">
+      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis-sm.jpg') }}" alt="">
+    </div>
+    <div class="d-none d-lg-block col-lg-6 mt-3">
+      <img class="img-fluid" src="{{ url_for('static', filename='img/sample-score-analysis.jpg') }}" alt="">
+    </div>
+
+    <div class="col-12 col-sm-10 col-lg-5 col-xl-4">
+      <form id="score-report-form" action="" method="post" enctype="multipart/form-data">
+        <div class="row justify-content-center mt-3">
+          <div class="col-12">
+            {{ form.hidden_tag() }}
+            {{ form.first_name }}
+          </div>
+          <div class="col-12">
+            {{ form.last_name }}
+          </div>
+          <div class="col-12 d-none">
+            {{ form.email(value=admin.email) }}
+          </div>
+          <div class="col-12 my-2">
+            {{ form.test_code }}
+          </div>
+          <div class="col-12">
+            {{ form.answer_img.label(class='mt-2') }}
+            <a class="info-icon" href="#" data-bs-toggle="modal" data-bs-target="#answer-img-modal">
+              <svg
+                width="18"
+                height="18"
+                version="1.1"
+                viewBox="0 0 2.2316 2.2316"
+                xml:space="preserve"
+                id="svg1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:svg="http://www.w3.org/2000/svg">
+              <path
+                d="M 1.115808,0 A 1.1158076,1.1158 0 0 0 0,1.1158 1.1158076,1.1158 0 0 0 1.115808,2.2316 1.1158076,1.1158 0 0 0 2.2316,1.1158 1.1158076,1.1158 0 0 0 1.115808,0 Z m 0.164048,0.26635 c 0.05824,0 0.108,0.01944 0.14928,0.05821 0.04144,0.03886 0.06192,0.08565 0.06192,0.140192 0,0.05466 -0.02064,0.101344 -0.06192,0.139728 -0.04128,0.03853 -0.09104,0.05779 -0.14928,0.05779 -0.0584,0 -0.10832,-0.01928 -0.15008,-0.05779 -0.0416,-0.0384 -0.06256,-0.08507 -0.06256,-0.139728 0,-0.05456 0.02096,-0.101312 0.06256,-0.140192 0.04176,-0.03882 0.09168,-0.05821 0.15008,-0.05821 z M 1.082928,0.841152 c 0.0856,0 0.15168,0.02069 0.19808,0.06208 0.0464,0.04141 0.0696,0.0951 0.0696,0.161259 0,0.01376 -0.00152,0.03781 -0.0048,0.07227 -0.0032,0.03454 -0.0096,0.06621 -0.01776,0.09499 l -0.08864,0.313735 c -0.008,0.0252 -0.0144,0.054 -0.01952,0.08643 -0.0064,0.03221 -0.008,0.05682 -0.008,0.07331 0,0.04166 0.0096,0.0701 0.02784,0.08522 0.01872,0.01504 0.05104,0.02264 0.09696,0.02264 0.0216,0 0.04608,-0.0038 0.07328,-0.01136 0.0272,-0.0075 0.04704,-0.01408 0.0592,-0.01987 l -0.02368,0.09704 c -0.0712,0.02811 -0.12816,0.04949 -0.170464,0.06421 -0.0424,0.01472 -0.09168,0.0221 -0.14784,0.0221 -0.08624,0 -0.15328,-0.02112 -0.201088,-0.06307 -0.04784,-0.04211 -0.07168,-0.09549 -0.07168,-0.160224 0,-0.02506 0.0016,-0.05083 0.0048,-0.0771 0.0032,-0.02629 0.0096,-0.05592 0.01728,-0.08901 l 0.08896,-0.314997 c 0.008,-0.03016 0.0144,-0.05875 0.02,-0.08578 0.0048,-0.02686 0.008,-0.05157 0.008,-0.07381 0,-0.04022 -0.008,-0.06837 -0.02496,-0.08419 -0.01664,-0.01584 -0.04816,-0.02378 -0.0952,-0.02378 -0.02304,0 -0.04672,0.0037 -0.07072,0.01088 -0.02416,0.0072 -0.04496,0.01408 -0.06224,0.0205 l 0.02384,-0.09712 c 0.05824,-0.02374 0.11408,-0.04406 0.167328,-0.06093 0.05328,-0.01691 0.10368,-0.02539 0.15136,-0.02539 z"
+                stroke-width="0.0217687"
+                id="path1" />
+              </svg>
+              <span>Instructions</span>
+            </a>
+            {{ form.answer_img }}
+          </div>
+          <div class="col-12 mt-2">
+            <div class="d-md-flex">
+              <div class="h-captcha" data-sitekey="{{ hcaptcha_key }}" data-callback="captchaPassed"></div>
+              <input id="submit" class="flex-grow-1 ms-1 mt-0 btn" disabled name="submit" type="submit" value="Submit">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="answer-img-modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="modal-header mt-2">
+              <h2 class="modal-title">Answer sheet instructions</h2>
+              <span type="button" class="btn-close" data-bs-dismiss="modal">&times;</span>
+            </div>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <ol class="mb-3">
+                <li>Print one of the following ACTs: {{ form.test_code }}</li>
+                <!-- 202206, 202212, 202304, 202306, 202309, 202404, 202406 -->
+
+                <li>Print the <strong><a href="https://mypractice.collegeboard.org" target="_blank">ACT bubble sheet</a></strong> and use it as you take your practice ACT.</li>
+                <li>Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.</li>
+                <li>Upload the photo to the form on this page.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
-    <p>
-      Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
-    </p>
   </div>
-{% endblock header %}
+{% endblock form_content %}
+
+{% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{% endblock end_scripts %}
