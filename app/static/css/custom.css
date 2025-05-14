@@ -6639,7 +6639,7 @@ div.alert a {
 .logo-container img {
   display: block;
   object-fit: contain;
-  width: 100%;
+  max-width: 100%;
   max-height: 10rem;
 }
 
