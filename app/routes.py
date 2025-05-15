@@ -1347,7 +1347,6 @@ def handle_act_report(form, template_name, organization=None):
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
 
-        db.session.add(current_user)
 
         user = User.query.filter_by(first_name=form.first_name.data, last_name=form.last_name.data).first()
         if user:
@@ -1377,17 +1376,15 @@ def handle_act_report(form, template_name, organization=None):
         try:
             email_status = act_report_submitted_email(
                 user,
-                admin = {
-                    'admin_email': admin.email if organization else None,
-                    'admin_name': f"{admin.first_name} {admin.last_name}" if admin else None,
-                    'org_name': organization['name'] if organization else None
-                },
                 attachment={
                     'path': answer_img_path,
                     'blob': blob,
                     'content_type': content_type,
                     'file_extension': file_extension,
                     'test_code': form.test_code.data,
+                    'admin_email': admin.email if organization else None,
+                    'admin_name': f"{admin.first_name} {admin.last_name}" if organization else None,
+                    'org_name': organization['name'] if organization else None
                 }
             )
 
@@ -1406,6 +1403,8 @@ def handle_act_report(form, template_name, organization=None):
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
             flash('An unexpected error occurred. Please try again later.', 'error')
+
+        db.session.add(current_user)
 
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
 
