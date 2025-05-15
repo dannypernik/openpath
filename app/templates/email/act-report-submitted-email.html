@@ -1,0 +1,9 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  <p>
+    ACT answer sheet submitted for {{ user.first_name }} {{ user.last_name }}.
+    Send results to {{ user.email }}.
+  </p>
+{% endblock content %}
+

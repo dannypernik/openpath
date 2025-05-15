@@ -1,1 +1,0 @@
-Score report submitted for {{ score_data['student_name'] }} ({{ score_data['email'] }})

@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 from app.email import send_contact_email, send_verification_email, send_password_reset_email, \
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
-    send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, send_ntpa_email, send_fail_mail
+    send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
+    send_ntpa_email, send_fail_mail, act_report_submitted_email
 from functools import wraps
 import requests
 import json
@@ -26,6 +27,10 @@ import logging
 from googleapiclient.errors import HttpError
 import traceback
 from redis import Redis
+from PIL import Image
+from pillow_heif import register_heif_opener
+from pypdf import PdfReader
+import base64
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -67,11 +72,36 @@ def proper(name):
     except:
         return name
 
+register_heif_opener()
 
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'pdf'}
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def is_valid_image(file):
+    try:
+        img = Image.open(file)
+        img.verify()  # Verify that it is, indeed, an image
+        return True
+    except (IOError, SyntaxError):
+        return False
+
+def is_valid_pdf(file):
+    try:
+        reader = PdfReader(file)
+        # Attempt to read the first page to ensure it's a valid PDF
+        if len(reader.pages) > 0:
+            return True
+    except Exception:
+        return False
+    return False
+
+def get_image_info(file_path):
+    try:
+        with Image.open(file_path) as img:
+            file_format = img.format
+            content_type = Image.MIME.get(file_format)
+            file_extension = file_format.lower()
+            return content_type, file_extension
+    except Exception as e:
+        print(f"Image format error: {e}")
+        return None, None
 
 
 # def validate_altcha_response(token):
@@ -1188,8 +1218,8 @@ def handle_sat_report(form, template_name, organization=None):
         else:
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
-        pdf_folder_path = 'app/static/files/scores/pdf'
-        json_folder_path = 'app/static/files/scores/json'
+        pdf_folder_path = 'app/static/files/sat/pdf'
+        json_folder_path = 'app/static/files/sat/json'
 
         if not os.path.exists(pdf_folder_path):
             os.makedirs(pdf_folder_path)
@@ -1215,9 +1245,9 @@ def handle_sat_report(form, template_name, organization=None):
         report_file = request.files['report_file']
         details_file = request.files['details_file']
 
-        # if not (allowed_file(report_file.filename) and allowed_file(details_file.filename)):
-        #     flash('Only PDF files are allowed', 'error')
-        #     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+        if not (is_valid_pdf(report_file.filename) and is_valid_pdf(details_file.filename)):
+            flash('Only PDF files are allowed', 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
         report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
         details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
@@ -1232,7 +1262,6 @@ def handle_sat_report(form, template_name, organization=None):
             score_data['email'] = form.email.data.lower()
             score_data['submitter_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
-            # send_report_submitted_task.delay(score_data)
 
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
@@ -1306,6 +1335,7 @@ def handle_act_report(form, template_name, organization=None):
         'last_name': '',
         'email': '',
     }
+
     if organization:
         org = Organization.query.filter_by(slug=organization['slug']).first()
         admin = User.query.filter_by(organization_id=org.id).first()
@@ -1317,7 +1347,9 @@ def handle_act_report(form, template_name, organization=None):
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
 
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        db.session.add(current_user)
+
+        user = User.query.filter_by(first_name=form.first_name.data, last_name=form.last_name.data).first()
         if user:
             user.first_name = form.first_name.data
             user.last_name = form.last_name.data
@@ -1325,29 +1357,48 @@ def handle_act_report(form, template_name, organization=None):
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
         answer_img = request.files['answer_img']
-        if not allowed_file(answer_img.filename):
-            flash('Only image files are allowed', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
 
-        folder_path = 'app/static/files/photos'
-        if not os.path.exists(photo_folder_path):
-            os.makedirs(photo_folder_path)
+        folder_path = 'app/static/files/act'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
         answer_img_path = os.path.join(folder_path, secure_filename(answer_img.filename))
         answer_img.save(answer_img_path)
 
+        if not is_valid_image(answer_img):
+            flash('Please upload an image (jpg, png, webp, or heic)', 'error')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+
+        content_type, file_extension = get_image_info(answer_img_path)
+
+        with open(answer_img_path, "rb") as file:
+            blob = base64.b64encode(file.read()).decode('utf-8')
+
         try:
-            email_status = send_contact_email(
+            email_status = act_report_submitted_email(
                 user,
-                f"ACT report photo uploaded by {user.first_name} {user.last_name}",
-                "ACT Report Submission",
-                attachments=[answer_img_path]
+                attachment={
+                    'path': answer_img_path,
+                    'blob': blob,
+                    'content_type': content_type,
+                    'file_extension': file_extension,
+                    'test_code': form.test_code.data,
+                    'org_name': organization['name'] if organization else None,
+                }
             )
+
             if email_status == 200:
-                flash('Your photo has been submitted successfully. Our team will review it and get back to you.', 'success')
-                return redirect(url_for('index'))
+                if organization:
+                    return_route = url_for('custom_act_report', slug=organization['slug'])
+                    flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
+                    Results will be sent to {admin.first_name} {admin.last_name} within 48 hrs.<br> \
+                    <a href="{return_route}">Submit another test</a>'), 'success')
+                    return redirect(url_for('index'))
+                else:
+                    return_route = url_for('act_report')
+                    return render_template('act-report-sent.html', return_route=return_route)
             else:
-                flash('Failed to send the photo. Please contact support.', 'error')
+                flash(f'Failed to send answer sheet. Please contact {hello}.', 'error')
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
             flash('An unexpected error occurred. Please try again later.', 'error')

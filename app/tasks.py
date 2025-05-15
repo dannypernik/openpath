@@ -2,7 +2,7 @@ import os
 from app import celery
 # from celery.signals import worker_process_shutdown, worker_shutdown
 from app.create_report import create_sat_score_report, send_pdf_score_report, send_answers_to_student_ss
-from app.email import send_report_submitted_email, send_task_fail_mail, send_fail_mail
+from app.email import sat_report_submitted_email, send_task_fail_mail, send_fail_mail
 # from io import StringIO
 import logging
 import resource

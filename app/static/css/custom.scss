@@ -457,8 +457,14 @@ div.alert {
   }
 
   a {
+    color: $text-color;
     text-decoration: underline;
     white-space: nowrap;
+
+    &:hover {
+      @include underline-hover();
+      color: $text-color;
+    }
   }
 }
 

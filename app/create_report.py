@@ -1,6 +1,6 @@
 import os
 from app import app
-from app.email import send_score_report_email
+from app.email import sat_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -563,7 +563,7 @@ def send_pdf_score_report(spreadsheet_id, score_data):
 
             # Send email with PDF attachment
             message = f"Please find the score report for {score_data['test_code'].upper()} attached."
-            send_score_report_email(score_data, base64_blob)
+            sat_score_report_email(score_data, base64_blob)
             logging.info(f"PDF report sent to {score_data['email']}")
         else:
             logging.error(f'Failed to fetch PDF: {response.content}')

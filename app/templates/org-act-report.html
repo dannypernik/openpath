@@ -56,7 +56,7 @@
           <div class="col-12 mt-2">
             <div class="d-md-flex">
               <div class="h-captcha" data-sitekey="{{ hcaptcha_key }}" data-callback="captchaPassed"></div>
-              <input id="submit" class="flex-grow-1 ms-1 mt-0 btn" disabled name="submit" type="submit" value="Submit">
+              <input id="submit" class="flex-grow-1 ms-1 mt-0 btn" name="submit" type="submit" value="Submit">
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@
                 <li>Print one of the following ACTs: {{ form.test_code }}</li>
                 <!-- 202206, 202212, 202304, 202306, 202309, 202404, 202406 -->
 
-                <li>Print the <strong><a href="https://mypractice.collegeboard.org" target="_blank">ACT bubble sheet</a></strong> and use it as you take your practice ACT.</li>
+                <li>Print the <a href="{{ url_for('static', filename='files/act-bubble-sheet.pdf')}}" class="semibold" target="_blank">ACT bubble sheet</a> and use it as you take your practice ACT.</li>
                 <li>Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.</li>
                 <li>Upload the photo to the form on this page.</li>
               </ol>
