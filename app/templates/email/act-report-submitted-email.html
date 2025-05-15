@@ -3,7 +3,7 @@
 {% block content %}
   <p>
     ACT answer sheet submitted for {{ user.first_name }} {{ user.last_name }}.
-    Send results to {{ user.email }}.
+    Send results to {admin['first_name']} {admin['last_name']} ({{ admin['email'] }}).
   </p>
 {% endblock content %}
 

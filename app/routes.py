@@ -1377,13 +1377,17 @@ def handle_act_report(form, template_name, organization=None):
         try:
             email_status = act_report_submitted_email(
                 user,
+                admin = {
+                    'admin_email': admin.email if organization else None,
+                    'admin_name': f"{admin.first_name} {admin.last_name}" if admin else None,
+                    'org_name': organization['name'] if organization else None
+                },
                 attachment={
                     'path': answer_img_path,
                     'blob': blob,
                     'content_type': content_type,
                     'file_extension': file_extension,
                     'test_code': form.test_code.data,
-                    'org_name': organization['name'] if organization else None,
                 }
             )
 

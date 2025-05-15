@@ -1156,13 +1156,13 @@ def sat_score_report_email(score_data, base64_blob):
     return result.status_code
 
 
-def act_report_submitted_email(user, attachment=None):
+def act_report_submitted_email(user, admin=None, attachment=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     if attachment:
-        subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted via {attachment["org_name"]}'
+        subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted via {admin["org_name"]}'
     else:
         subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted'
 
@@ -1179,9 +1179,9 @@ def act_report_submitted_email(user, attachment=None):
                             'Email': app.config['MAIL_USERNAME']
                         }
                     ],
-                    'ReplyTo': { 'Email': user.email },
+                    'ReplyTo': { 'Email': admin['email'] if admin else app.config['MAIL_USERNAME'] },
                     'Subject': subject,
-                    'HTMLPart': render_template('email/act-report-submitted-email.html', user=user),
+                    'HTMLPart': render_template('email/act-report-submitted-email.html', user=user, admin=admin),
                     'Attachments': [
                         {
                             'ContentType': attachment['content_type'],
