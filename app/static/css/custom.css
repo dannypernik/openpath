@@ -6326,7 +6326,11 @@ div.alert.error {
 div.alert a {
   color: #00617b;
   text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: #f06d53;
+  text-decoration: underline;
   white-space: nowrap;
+  font-weight: 600;
 }
 div.alert a:hover {
   text-decoration: underline;

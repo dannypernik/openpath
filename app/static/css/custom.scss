@@ -458,8 +458,10 @@ div.alert {
 
   a {
     color: $text-color;
+    @include underline-hover();
     text-decoration: underline;
     white-space: nowrap;
+    font-weight: 600;
 
     &:hover {
       @include underline-hover();
