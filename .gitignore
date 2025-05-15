@@ -17,3 +17,6 @@ request.py
 get-pip.py
 dump.rdb
 app/static/test/
+app/static/files/sat
+app/static/files/act
+app/static/img/orgs
