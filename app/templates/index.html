@@ -20,18 +20,18 @@
 {% endblock styles_scripts %}
 
 {% block container %}
-  <div id="home" class="inverse text-center">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div id="home-alert" class="row justify-content-center alert {{ category }}">
-            <div class="col-sm-11 col-md-10 col-lg-9">
-              <div role="alert">{{ message }}</div>
-            </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div id="home-alert" class="row justify-content-center alert {{ category }}">
+          <div class="col-sm-11 col-md-10 col-lg-9">
+            <div role="alert">{{ message }}</div>
           </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <div id="home" class="inverse text-center">
     <nav class="row justify-content-center g-0">
       <div class="col-11 col-md-10">
         <div class="row justify-content-center justify-content-md-end">

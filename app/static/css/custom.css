@@ -6144,25 +6144,19 @@ ul li::marker {
 }
 
 a {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #00617b;
   display: inline-block;
   color: #00617b;
-  text-decoration: none;
 }
 a.sec {
   color: #f06d53;
 }
 a:hover {
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-color: #f06d53;
   color: #00617b;
+  text-decoration-color: #f06d53;
   font-weight: 600;
-}
-
-.inverse a:hover,
-.inverse a:hover h4,
-.inverse a:hover .h4 {
-  color: white;
 }
 
 a.btn:hover {
@@ -6252,11 +6246,6 @@ a.btn {
   color: #888;
 }
 
-.inverse .btn.clr {
-  background-color: transparent;
-  border-color: white;
-}
-
 .btn.sm {
   font-size: 1.6rem;
   font-weight: 400;
@@ -6326,17 +6315,13 @@ div.alert.error {
 div.alert a {
   color: #00617b;
   text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-color: #f06d53;
-  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #00617b;
   white-space: nowrap;
   font-weight: 600;
 }
 div.alert a:hover {
-  text-decoration: underline;
-  text-underline-offset: 6px;
   text-decoration-color: #f06d53;
-  color: #00617b;
 }
 
 .section-margin {
@@ -6374,6 +6359,11 @@ div.alert a:hover {
 .footer a {
   font-weight: 400;
 }
+.footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #f06d53;
+}
 
 #ntpa-logo {
   width: 200px;
@@ -6398,7 +6388,7 @@ div.alert a:hover {
 
 #menu-btn:hover {
   text-decoration: underline;
-  text-underline-offset: 6px;
+  text-underline-offset: 5px;
   text-decoration-color: #f06d53;
 }
 
@@ -6533,9 +6523,13 @@ div.alert a:hover {
   font-weight: 400;
   padding: calc(3rem + 2vw) 0;
   text-transform: capitalize;
+  text-decoration: none;
 }
 .home-nav a:focus, .home-nav a:hover {
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #f06d53;
 }
 .home-nav li {
   list-style: none;
@@ -6559,9 +6553,19 @@ div.alert a:hover {
 .inverse {
   color: white;
 }
-
 .inverse a {
   color: white;
+  text-decoration: none;
+}
+.inverse a:hover {
+  color: white;
+}
+.inverse a:hover h4, .inverse a:hover .h4 {
+  color: white;
+}
+.inverse .btn.clr {
+  background-color: transparent;
+  border-color: white;
 }
 
 .home-next {
@@ -6569,9 +6573,11 @@ div.alert a:hover {
   margin: calc(2rem + 1vw) auto 3rem;
   text-align: center;
 }
+.home-next a {
+  text-decoration: none;
+}
 .home-next a:hover {
   color: rgb(0, 69, 87);
-  text-decoration: none;
 }
 .home-next a:hover h4, .home-next a:hover .h4 {
   font-weight: 600;
@@ -6631,6 +6637,9 @@ div.alert a:hover {
   filter: brightness(0.9);
 }
 
+.team-member a {
+  text-decoration: none;
+}
 .team-member a:hover {
   text-decoration: none;
   font-weight: inherit;
@@ -6765,7 +6774,7 @@ a.info-icon span {
 }
 a.info-icon:hover {
   text-decoration: underline;
-  text-underline-offset: 6px;
+  text-underline-offset: 5px;
   text-decoration-color: #f06d53;
 }
 a.info-icon:hover span {
