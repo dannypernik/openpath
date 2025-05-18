@@ -24,7 +24,7 @@ def generate_502():
     hello = app.config['HELLO_EMAIL']
 
     # Render the 502.html template with the base.html layout
-    rendered_html = render_template('app/static/502.html', hello=hello)
+    rendered_html = render_template('502.html', hello=hello)
 
     # Save the rendered HTML to templates
     output_path = 'app/static/502.html'
