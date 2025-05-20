@@ -244,9 +244,9 @@ class SATReportForm(FlaskForm):
     # m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
     #     validators=[InputRequired()])
     report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
-        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>.')])
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>')])
     details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
-        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a>.')])
+        validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a>')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 

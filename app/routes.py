@@ -1245,7 +1245,7 @@ def handle_sat_report(form, template_name, organization=None):
         report_file = request.files['report_file']
         details_file = request.files['details_file']
 
-        if not (is_valid_pdf(report_file.filename) and is_valid_pdf(details_file.filename)):
+        if not (is_valid_pdf(report_file) and is_valid_pdf(details_file)):
             flash('Only PDF files are allowed', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
