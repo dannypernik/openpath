@@ -6159,6 +6159,15 @@ a:hover {
   font-weight: 600;
 }
 
+.no-decoration a {
+  text-decoration: none;
+}
+.no-decoration a:hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #f06d53;
+}
+
 a.btn:hover {
   text-decoration: none;
 }

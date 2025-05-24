@@ -310,6 +310,14 @@ a {
   }
 }
 
+.no-decoration a {
+  text-decoration: none;
+
+  &:hover {
+    @include underline-link($secondary-color);
+  }
+}
+
 a.btn:hover {
   text-decoration: none;
 }
