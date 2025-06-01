@@ -17,7 +17,7 @@ Things to bring
 During the test
 -  Plan to arrive by 7:45am, especially if you have never been to the testing center. You may be denied entry if you arrive after 8:00am.
 -  Focus over speed. It's better to get through 90% of the questions focused than 100% of the questions rushed.
--  Before the start of each section, visualize yourself using your chosen strategies, feeling confident in your answers, and moving easily through the test.
+-  Before the start of each section, visualize yourself using your chosen strategies, feeling confident in your answers, and moving easily through the test. Slow is smooth, and smooth is fast.
 -  Find what's familiar. Each {{ test_date.test.upper() }} brings new ways to ask questions that cover the same old concepts. Identifying the concept is often half the challenge.
 -  {% if test_date.test == 'sat' %}The SAT usually ends with an experimental 5th section.{% elif test_date.test == 'act' %}The ACT usually includes an experimental 5th section after Science but before the optional essay.{% endif %} This section does not count toward your score.
 
