@@ -1218,8 +1218,8 @@ def handle_sat_report(form, template_name, organization=None):
         else:
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
-        pdf_folder_path = 'app/static/files/sat/pdf'
-        json_folder_path = 'app/static/files/sat/json'
+        pdf_folder_path = 'app/private/files/sat/pdf'
+        json_folder_path = 'app/private/files/sat/json'
 
         if not os.path.exists(pdf_folder_path):
             os.makedirs(pdf_folder_path)
@@ -1251,6 +1251,8 @@ def handle_sat_report(form, template_name, organization=None):
 
         report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
         details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
+        json_file_path = os.path.join(json_folder_path, filename + '.json')
+
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
@@ -1266,7 +1268,7 @@ def handle_sat_report(form, template_name, organization=None):
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
             os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
-            json_file_path = os.path.join(json_folder_path, filename + '.json')
+
             with open(json_file_path, "w") as json_file:
                 json.dump(score_data, json_file, indent=2)
 
@@ -1356,12 +1358,15 @@ def handle_act_report(form, template_name, organization=None):
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
         answer_img = request.files['answer_img']
+        file_extension = answer_img.filename.split('.')[-1].lower()
+        date = datetime.today().date().strftime('%Y.%m.%d')
 
-        folder_path = 'app/static/files/act'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        img_folder_path = 'app/private/files/act/img'
+        if not os.path.exists(img_folder_path):
+            os.makedirs(img_folder_path)
+        filename = f"ACT {form.test_code.data} score analysis for {user.first_name} {user.last_name} - {date}.{file_extension}"
 
-        answer_img_path = os.path.join(folder_path, secure_filename(answer_img.filename))
+        answer_img_path = os.path.join(img_folder_path, filename)
         answer_img.save(answer_img_path)
 
         if not is_valid_image(answer_img):
