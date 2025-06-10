@@ -56,7 +56,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
-SUMMARY_RANGE = 'Summary!A5:Z'
+SUMMARY_RANGE = 'Summary!A6:Z'
 calendars = [
     { 'tutor': 'Danny Pernik', 'id': 'danny.pernik@openpathtutoring.com'},
     { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
@@ -352,7 +352,7 @@ def main():
 
                 s_data = {
                     'name': name,
-                    'row': i + 5,         # summary_data starts from A5
+                    'row': i + 6,         # summary_data starts from A6
                     'hours': ss_hours,
                     'rate': ss_rate,
                     'status': s.status.title(),
