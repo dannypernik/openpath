@@ -382,7 +382,7 @@ def main():
                 except gspread.exceptions.APIError as e:
                     logging.error(f"APIError: {e.response.text}")
                     if attempt < retries - 1:
-                        logging.info(f"Attempt {attempt + 1} in {delay} seconds...")
+                        logging.info(f"Attempt {attempt + 1}...")
                         time.sleep(2)
                     else:
                         raise
@@ -475,14 +475,14 @@ def main():
             weekly_data[e['time_group']][e['week_num']] += e['hours']
             weekly_data['sessions'][e['week_num']] += 1
 
-        if day_of_week == 'Monday':
-            # TODO: implement unregistered_active_students and undecided_active_students
-            for tutor in tutors:
-                if full_name(tutor) in tutors_attention and tutor.id != 1:
-                    msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
-                        other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
-                    logging.info(msg)
-                    messages.append(msg)
+        # if day_of_week == 'Monday':
+        #     # TODO: implement unregistered_active_students and undecided_active_students
+        #     for tutor in tutors:
+        #         if full_name(tutor) in tutors_attention and tutor.id != 1:
+        #             msg = send_tutor_email(tutor, low_scheduled_students, unscheduled_students,
+        #                 other_scheduled_students, paused_students, unregistered_active_students, undecided_active_students)
+        #             logging.info(msg)
+        #             messages.append(msg)
 
         if day_of_week == 'Sunday':
             # TODO: implement unregistered_active_students and undecided_active_students
