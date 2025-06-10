@@ -6,8 +6,7 @@ __pycache__
 /logs/
 /certs/
 app.db
-token.json
-token2.json
+token*
 credentials*
 service_account_key*
 app/static/img/favicons/favicon.svg
@@ -16,7 +15,5 @@ app/static/files/scores/
 request.py
 get-pip.py
 dump.rdb
-app/static/test/
-app/static/files/sat
-app/static/files/act
+app/private/
 app/static/img/orgs
