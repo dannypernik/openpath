@@ -32,4 +32,4 @@ class Config(object):
     TODOIST_ID = os.environ.get('TODOIST_ID')
     GAS_DEPLOYMENT_ID = os.environ.get('GAS_DEPLOYMENT_ID')
     SCORE_REPORT_SS_ID = os.environ.get('SCORE_REPORT_SS_ID')
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    RESOURCE_FOLDER_ID = os.environ.get('RESOURCE_FOLDER_ID')

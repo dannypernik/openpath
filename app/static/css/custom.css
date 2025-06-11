@@ -5963,9 +5963,9 @@ h6,
 
 h1,
 .h1 {
-  font-family: "Montserrat Alternates", "Helvetica", sans-serif;
   font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
+  font-weight: 700;
 }
 
 h2,
@@ -6508,7 +6508,7 @@ div.alert a:hover {
 }
 
 #home-title {
-  font-family: "Montserrat Alternates", sans-serif;
+  font-family: "Montserrat Alternates", "Montserrat", "Helvetica", sans-serif;
   font-size: calc(1.8rem + 3vw);
   font-weight: 400;
 }
@@ -6549,6 +6549,9 @@ div.alert a:hover {
   min-height: 100vh;
   overflow: auto;
   padding-top: calc(3rem + 2vw);
+}
+.home-section h1, .home-section .h1 {
+  font-weight: normal;
 }
 
 .home-section.end {
@@ -6680,6 +6683,10 @@ div.alert a:hover {
 
 .logo-container:has(#opt-partner-logo) {
   max-width: 45%;
+}
+
+#free-resources-row {
+  overflow: hidden;
 }
 
 .review-img {

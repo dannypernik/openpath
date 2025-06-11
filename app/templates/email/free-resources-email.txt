@@ -1,0 +1,9 @@
+Hi {{ user.first_name }}, thank you for requesting access to our free resources. They are designed to help you make the most of your time spent on test prep. Well done to take this step towards improving your score!
+
+You should now have access to our Test Prep Resources folder on Google Drive:
+{{ resource_folder_url }}
+
+Start with the answer analysis instructions within the SAT and ACT folders. You are welcome to reply to this email with any questions.
+
+Happy prepping!
+The Open Path Tutoring Team

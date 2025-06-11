@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <div class="row section-margin justify-content-center">
+    <div class="col-11 col-sm-10 col-lg-9 col-xxl-8">
+      <div class="row justify-content-center">
+        <div class="col-12">
+          <h1>Our mission:
+            <span class="fw-normal">
+              To help any student who is committed to improving their SAT<sup>&reg;</sup> or ACT<sup>&reg;</sup> score.
+            </span>
+          </h1>
+
+          <p>
+            We believe that every student deserves support on the SAT or ACT. Any student who is
+            willing to put in the work to realize their fullest potential should be given the
+            tools to do so, regardless of their financial position. We have three offerings to
+            help bridge the gap:
+          </p>
+          <h3 class="fw-bold">Free resources</h3>
+        </div>
+      </div>
+      <div id="free-resources-row" class="row">
+        <div class="d-block d-lg-none col-12 mt-1 mb-2">
+          <img class="img-fluid" src="{{ url_for('static', filename='img/sample-sat-score-analysis-sm.jpg') }}" alt="">
+        </div>
+        <div id="free-resources-text" class="col-12 col-lg-6">
+          <p>
+            Since 2020, we have been creating and refining tools to help students and tutors
+            efficiently navigate test prep. While a trained tutor will get the most out of these
+            resources, any dedicated self-starter can use them to improve their score as quickly
+            as possible.
+          </p>
+          <p>
+            The resources are designed to show a student their biggest opportunities for
+            improvement with a level of detail that the College Board and ACT should provide, but
+            do not. You can check out the
+            <a class="semibold" href="https://docs.google.com/document/d/1D5pZK9UfHFxsnpL4iGatqD-R7eoYkFweIRTvEiUhxYU/" target="_blank">
+              SAT<sup>&reg;</sup> Instructions
+            </a> or
+            <a class="semibold" href="https://docs.google.com/document/d/1H31vJDIyRS3bphtwSfcrT7zDdOE5rb7UmSkBga72u98/" target="_blank">
+              ACT<sup>&reg;</sup> Instructions
+            </a> to get a sense for how these tools can help you.
+          </p>
+          <p class="mb-0">
+            Enter your email for free access to our test prep tools:
+          </p>
+        </div>
+        <div class="d-none d-lg-block col-md-6 mt-2">
+          <img class="img-fluid" src="{{ url_for('static', filename='img/sample-sat-score-analysis.jpg') }}" alt="">
+        </div>
+      </div>
+
+      <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="row mt-2">
+          <div class="col-5">
+            {{ form.first_name }}
+          </div>
+          <div class="col-7 col-lg-5">
+            {{ form.email }}
+          </div>
+          <div class="col-12 col-lg-2">
+            {{ form.submit(class="btn sm fw-bold") }}
+          </div>
+        </div>
+      </form>
+      <div id="scholarship-row" class="row mt-4">
+        <div class="col-12">
+          <h3 class="fw-bold">Test Prep Scholarship</h3>
+          <p>
+            We have a goal of providing tutoring services to students of every socioeconomic background.
+            To this end, we award test prep scholarships to students who demonstrate a commitment to
+            doing the work to improve their score, but whose families cannot afford the full tutoring rate.
+          </p>
+          <p>
+            Families are asked to pay what they can comfortably afford, and the remaining
+            balance is split 50-50 between a discount from Open Path Tutoring and generous
+            donations from the community. With this innovative approach, a donation of as
+            little as $100 can make a 10-hour tutoring program possible.
+          </p>
+          <p class="text-center">
+            <a href="{{ url_for('nominate') }}" class="btn me-3">Nominate a student</a>
+            <a href="https://buy.stripe.com/8x27sMdZf6wm7ny6Uh7wA0j" class="btn ms-3" target="_blank">
+              Make a contribution
+            </a>
+          </p>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <h3 class="fw-bold">Community service discount</h3>
+          <p>
+            The Open Path Tutoring team truly appreciates and literally values the service that
+            students and families provide to their communities.
+            Each hour that a student or parent volunteers with their favorite nonprofit
+            earns a $20 discount on an hour of tutoring. (Some of the volunteer hours should
+            be completed by the student and not required by their school.)
+          </p>
+          <p class="text-center">
+            <a href="{{ url_for('index', _anchor='contact', subject='Community service discount') }}" class="btn">Get in touch</a><br>
+            <a href="{{ url_for('index') }}" class="btn clr sm">Home</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock container %}
+
+{% block end_scripts %}
+  <script>
+    function adjustRowHeight() {
+      const textElement = document.getElementById('free-resources-text');
+      const rowElement = document.getElementById('free-resources-row');
+      const cloneRowElement = document.getElementById('scholarship-row');
+
+      if (textElement && rowElement && cloneRowElement) {
+
+        const isSmallScreen = window.innerWidth < 992; // Bootstrap's medium breakpoint is 992px
+
+        if (isSmallScreen) {
+          rowElement.style.height = 'auto'; // Reset height to auto for small screens
+          console.log('Screen is medium or smaller, row height set to auto.');
+        }
+        else {
+          // Create a temporary clone of the text content
+          const tempClone = textElement.cloneNode(true);
+          tempClone.id = 'resources-text-clone'; // Apply the CSS id for styling
+          tempClone.className = textElement.className; // Copy all classes from free-resources-text
+          tempClone.style.visibility = 'hidden'; // Hide the clone to avoid displaying it
+
+          cloneRowElement.appendChild(tempClone);
+
+          const textHeight = tempClone.offsetHeight; // Get the height of the text content
+          cloneRowElement.removeChild(tempClone); // Remove the temporary clone
+
+          rowElement.style.height = `${textHeight}px`; // Set the row height
+          console.log(`Row height set to: ${textHeight}px`);
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', adjustRowHeight);
+    window.addEventListener('resize', adjustRowHeight);
+  </script>
+{% endblock end_scripts %}

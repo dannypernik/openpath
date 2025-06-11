@@ -1,0 +1,37 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  <style>
+    h3 {
+      margin-bottom: 0;
+      margin-block-end: 5px;
+    }
+  </style>
+  <h3>Reason for Nomination</h3>
+  {{ form_data.nomination_text }}
+
+  <h3>Student</h3>
+  {{ form_data.student_first_name }} {{ form_data.student_last_name }}<br>
+  {{ form_data.student_email }}
+
+  <h3>Parent/Guardian</h3>
+  {{ form_data.parent_first_name }} {{ form_data.parent_last_name }}<br>
+  {{ form_data.parent_email }}
+
+  {% if form_data.nominator_email %}
+    <h3>Nominator</h3>
+    {{ form_data.nominator_first_name }} {{ form_data.nominator_last_name }}<br>
+    {{ form_data.nominator_email }}
+  {% endif %}
+
+  <h3>Additional Information</h3>
+  {% if form_data.is_anonymous %}
+    Anonymous Nomination<br>
+  {% endif %}
+  {% if form_data.is_self_nomination %}
+    Self-Nomination<br>
+  {% endif %}
+  {% if form_data.is_caregiver_nomination %}
+    Parent/Guardian Nomination
+  {% endif %}
+{% endblock content %}

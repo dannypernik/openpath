@@ -1,0 +1,24 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  <p>
+    Hi {{ user.first_name }}, thank you for requesting access to our free resources. They
+    are designed to help you make the most of your time spent on test prep. Well done to
+    take this step towards improving your score!
+  </p>
+  <p>
+    You should now have access to our
+    <a href="{{ resource_folder_url }}" target="_blank">Test Prep Resources</a>
+    folder on Google Drive. Start with the
+    <a href="https://docs.google.com/document/d/1D5pZK9UfHFxsnpL4iGatqD-R7eoYkFweIRTvEiUhxYU/" target="_blank">
+      SAT
+    </a> or
+    <a href="https://docs.google.com/document/d/1H31vJDIyRS3bphtwSfcrT7zDdOE5rb7UmSkBga72u98/" target="_blank">
+      ACT
+    </a> Answer Analysis Instructions within that folder. You are welcome to reply to this email with any questions.
+  </p>
+  <p>
+    Happy prepping!<br>
+    The Open Path Tutoring Team
+  </p>
+{% endblock content %}

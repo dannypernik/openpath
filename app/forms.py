@@ -293,3 +293,30 @@ class OrgSettingsForm(FlaskForm):
         validators=[InputRequired()])
     logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg'], 'Images only please (png, jpg, jpeg)')])
     submit = SubmitField('Save')
+
+class FreeResourcesForm(FlaskForm):
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+        validators=[InputRequired()])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    submit = SubmitField()
+
+class NominationForm(FlaskForm):
+    student_first_name = StringField('Student first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])
+    student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'}, validators=[DataRequired()])
+    student_email = StringField('Student email', render_kw={'placeholder': 'Email'}, validators=[DataRequired(), Email()])
+    parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])
+    parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'}, validators=[DataRequired()])
+    parent_email = StringField('Parent Email', render_kw={'placeholder': 'Email'}, validators=[DataRequired(), Email()])
+    nominator_first_name = StringField('Your first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])
+    nominator_last_name = StringField('Your last name', render_kw={'placeholder': 'Last name'}, validators=[DataRequired()])
+    nominator_email = StringField('Your email', render_kw={'placeholder': 'Email'}, validators=[DataRequired(), Email()])
+    nomination_text = TextAreaField(
+        'Nomination text',
+        render_kw={'placeholder': 'Why does this student deserve a test prep scholarship?', 'rows': '5'},
+        validators=[DataRequired()]
+    )
+    is_anonymous = BooleanField('Do not share my name with the student or parent')
+    is_self_nomination = BooleanField('I am nominating myself')
+    is_caregiver_nomination = BooleanField('I am the student\'s parent or guardian')
+    submit = SubmitField('Submit')

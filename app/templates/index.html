@@ -33,13 +33,34 @@
   {% endwith %}
   <div id="home" class="inverse text-center">
     <nav class="row justify-content-center g-0">
-      <div class="col-11 col-md-10">
-        <div class="row justify-content-center justify-content-md-end">
-          <div class="home-nav col col-md-7 col-lg-6 col-xl-5">
-            <div class="d-none d-md-block"><a href="#home" data-text="home">home</a></div>
-            <div><a href="{{ url_for('reviews') }}" data-text="reviews">reviews</a></div>
-            <div><a href="{{ url_for('team') }}" data-text="our team">our team</a></div>
-            <div><a href="#contact" data-text="contact">contact</a></div>
+      <div class="col-11">
+        <div class="row justify-content-center justify-content-xl-end">
+          <div class="home-nav col col-lg-10 col-xl-8">
+            <div class="d-none d-md-block">
+              <a href="#home" data-text="home">
+                home
+              </a>
+            </div>
+            <div>
+              <a href="{{ url_for('reviews') }}" data-text="reviews">
+                reviews
+              </a>
+            </div>
+            <div>
+              <a href="{{ url_for('team') }}" data-text="our team">
+                our team
+              </a>
+            </div>
+            <div class="d-none d-sm-block">
+              <a href="{{ url_for('mission') }}" data-text="test prep for all">
+                test prep for all
+              </a>
+            </div>
+            <div>
+              <a href="#contact" data-text="contact">
+                contact
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -59,7 +80,7 @@
     </div>
     <div class="row justify-content-center">
       <div class="col col-sm-11">
-        <a id="request-trial" class="btn lead" href="#contact">
+        <a id="request-trial" class="btn lead" href="?subject=Trial session request#contact">
           Request a free intro session
         </a>
         <!-- <a class="btn lead mx-2"
@@ -205,7 +226,7 @@
           {{ form.first_name }}
           {{ form.email }}
           {{ form.phone }}
-          {{ form.subject(class='d-none') }}
+          {{ form.subject(class="d-none") }}
           <div class="d-md-flex">
             {{ form.message(rows='2', class="flex-grow-1") }}
             <!-- <altcha-widget
@@ -240,12 +261,29 @@
   </script>
 
   <script>
-    document.getElementById("request-trial").addEventListener("click", function () {
-      document.getElementById("subject").setAttribute('value', 'Trial session request');
+    // Function to get query parameters
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Autofill the name input if query parameter exists
+    window.addEventListener('DOMContentLoaded', () => {
+      const nameValue = getQueryParam('subject');
+      if (nameValue) {
+        const subjectField = document.getElementById('subject')
+        subjectField.value = nameValue;
+        subjectField.classList.remove('d-none');
+
+      }
     });
 
-    function onSubmit(token) {
-     document.getElementById("inquiry-form").submit();
-    }
+    // document.getElementById("request-trial").addEventListener("click", function () {
+    //   document.getElementById("subject").setAttribute('value', 'Trial session request');
+    // });
+
+    // function onSubmit(token) {
+    //  document.getElementById("inquiry-form").submit();
+    // }
   </script>
 {% endblock end_scripts %}

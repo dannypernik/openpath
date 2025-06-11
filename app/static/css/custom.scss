@@ -13,7 +13,7 @@ $table-color: #2fb2cb;
 $grey: #888;
 $light-grey: #ddd;
 $body-font: 'Montserrat', 'Helvetica', sans-serif;
-$title-font: 'Montserrat Alternates', 'Helvetica', sans-serif;
+$logo-font: 'Montserrat Alternates', 'Montserrat', 'Helvetica', sans-serif;
 
 @import "../scss/bootstrap-reboot.scss";
 @import "bootstrap/bootstrap-grid.min.css";
@@ -96,9 +96,9 @@ h6,
 
 h1,
 .h1 {
-  font-family: $title-font;
   font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
+  font-weight: 700;
 }
 
 h2,
@@ -659,7 +659,7 @@ div.alert {
 }
 
 #home-title {
-  font-family: "Montserrat Alternates", sans-serif;
+  font-family: $logo-font;
   font-size: calc(1.8rem + 3vw);
   font-weight: 400;
 }
@@ -702,6 +702,10 @@ div.alert {
   min-height: 100vh;
   overflow: auto;
   padding-top: calc(3rem + 2vw);
+
+  h1 {
+    font-weight: normal;
+  }
 }
 
 .home-section.end {
@@ -844,6 +848,12 @@ div.alert {
   max-width:45%;
 }
 
+// Mission page //
+
+#free-resources-row {
+  overflow: hidden;
+}
+
 // Reviews page //
 
 .review-img {
@@ -851,6 +861,7 @@ div.alert {
   margin-bottom: 2rem;
 }
 
+// Users pages //
 
 .student-list,
 .user-list {

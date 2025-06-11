@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="mb-3">Nominate a student for the Test Prep Scholarship</h2>
+  <p>
+    We want to make personalized test prep possible for dedicated students who would not
+    otherwise have the opportunity. If you know a student who deserves to be considered,
+    please nominate them below.
+  </p>
+  <p>
+    Families of selected students will be offered a discounted rate on a sliding scale. We
+    will communicate that the nomination is based on the student's desire and commitment
+    to improve rather than the family's financial position. Students will be asked to
+    write a response of no more than one page to the prompt, "What difference would a
+    great SAT<sup>&reg;</sup> or ACT<sup>&reg;</sup> score make for you? What are you willing to do to achieve it?"
+  </p>
+  <form action="" method="post">
+    {{ form.hidden_tag() }}
+
+    {{ form.is_anonymous }}
+    {{ form.is_anonymous.label(class="mb-4") }}
+
+    <h5 class="fw-bold">Student information</h5>
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6">
+        {{ form.student_first_name }}
+      </div>
+      <div class="col-12 col-md-6">
+        {{ form.student_last_name }}
+      </div>
+      <div class="col-12">
+        {{ form.student_email }}
+      </div>
+      <div class="col-12">
+        {{ form.nomination_text }}
+      </div>
+      <div class="col-12">
+        <div class="d-inline-block mx-2">
+          {{ form.is_caregiver_nomination }}
+          {{ form.is_caregiver_nomination.label }}
+        </div>
+        <div class="d-inline-block mx-2">
+          {{ form.is_self_nomination }}
+          {{ form.is_self_nomination.label }}
+        </div>
+      </div>
+    </div>
+
+    <div id="parent-info">
+      <h5 class="fw-bold mt-4">Parent information</h5>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-6">
+          {{ form.parent_first_name }}
+        </div>
+        <div class="col-12 col-md-6">
+          {{ form.parent_last_name }}
+        </div>
+        <div class="col-12">
+          {{ form.parent_email }}
+        </div>
+      </div>
+    </div>
+
+    <div id="nominator-info">
+      <h5 class="fw-bold mt-4">Nominator information</h5>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-6">
+          {{ form.nominator_first_name }}
+        </div>
+        <div class="col-12 col-md-6">
+          {{ form.nominator_last_name }}
+        </div>
+        <div class="col-12">
+          {{ form.nominator_email }}
+        </div>
+      </div>
+    </div>
+
+    {{ form.submit }}
+  </form>
+  <p class="text-center">
+    <a href="{{ url_for('mission') }}" class="btn sm clr">Our mission</a>
+  </p>
+{% endblock content %}
+
+{% block end_scripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const isCaregiverCheckbox = document.querySelector('#is_caregiver_nomination');
+      const isSelfNominationCheckbox = document.querySelector('#is_self_nomination');
+      const parentInfoSection = document.querySelector('#parent-info');
+      const nominatorInfoSection = document.querySelector('#nominator-info');
+
+      const parentFirstName = document.querySelector('#parent_first_name');
+      const parentLastName = document.querySelector('#parent_last_name');
+      const parentEmail = document.querySelector('#parent_email');
+
+      const yourFirstName = document.querySelector('#nominator_first_name');
+      const yourLastName = document.querySelector('#nominator_last_name');
+      const yourEmail = document.querySelector('#nominator_email');
+
+      function toggleSections() {
+      // if (isCaregiverCheckbox.checked) {
+      //   parentInfoSection.style.display = 'none';
+      //   parentFirstName.required = false;
+      //   parentLastName.required = false;
+      //   parentEmail.required = false;
+      // } else {
+      //   parentInfoSection.style.display = 'block';
+      //   parentFirstName.required = true;
+      //   parentLastName.required = true;
+      //   parentEmail.required = true;
+      // }
+
+      if (isSelfNominationCheckbox.checked || isCaregiverCheckbox.checked) {
+        nominatorInfoSection.style.display = 'none';
+        yourFirstName.required = false;
+        yourLastName.required = false;
+        yourEmail.required = false;
+      } else {
+        nominatorInfoSection.style.display = 'block';
+        yourFirstName.required = true;
+        yourLastName.required = true;
+        yourEmail.required = true;
+      }
+      }
+
+      isCaregiverCheckbox.addEventListener('change', function () {
+      if (isCaregiverCheckbox.checked) {
+        isSelfNominationCheckbox.checked = false;
+      }
+      toggleSections();
+      });
+
+      isSelfNominationCheckbox.addEventListener('change', function () {
+      if (isSelfNominationCheckbox.checked) {
+        isCaregiverCheckbox.checked = false;
+      }
+      toggleSections();
+      });
+    });
+  </script>
+{% endblock end_scripts %}

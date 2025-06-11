@@ -5,7 +5,7 @@ from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
     ResetPasswordForm, TutorForm, RecapForm, NtpaForm, SATReportForm, ACTReportForm, \
-    ReviewForm, OrgSettingsForm
+    ReviewForm, OrgSettingsForm, FreeResourcesForm, NominationForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from werkzeug.urls import url_parse
@@ -15,7 +15,8 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
     send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
-    send_ntpa_email, send_fail_mail, act_report_submitted_email
+    send_ntpa_email, send_fail_mail, act_report_submitted_email, send_free_resources_email, \
+    send_nomination_email
 from functools import wraps
 import requests
 import json
@@ -31,6 +32,8 @@ from PIL import Image
 from pillow_heif import register_heif_opener
 from pypdf import PdfReader
 import base64
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -104,6 +107,28 @@ def get_image_info(file_path):
         return None, None
 
 
+def add_user_to_drive_folder(email, folder_id):
+    """Add a user as a viewer to a Google Drive folder without sending a notification email."""
+    # Authenticate using the Service Account
+    credentials = Credentials.from_service_account_file('service_account_key.json')
+    service = build('drive', 'v3', credentials=credentials)
+
+    # Create permission
+    permission = {
+        'type': 'user',
+        'role': 'reader',
+        'emailAddress': email
+    }
+
+    # Add permission to the folder without sending a notification email
+    service.permissions().create(
+        fileId=folder_id,
+        body=permission,
+        fields='id',
+        sendNotificationEmail=False  # Suppress email notification
+    ).execute()
+
+
 # def validate_altcha_response(token):
 #     """Validate Altcha response token."""
 #     altcha_secret_key = app.config['ALTCHA_SECRET_KEY']
@@ -158,9 +183,9 @@ def index():
 
         email_status = send_contact_email(user, message, subject)
         if email_status == 200:
-            conf_status = send_confirmation_email(user, message)
+            conf_status = send_confirmation_email(user.email, message)
             if conf_status == 200:
-                flash('Please check ' + user.email + ' for a confirmation email. Thank you for reaching out!')
+                flash('Thank you for reaching out! We\'ll be in touch.')
                 return redirect(url_for('index', _anchor='home'))
         flash('Email failed to send, please contact ' + hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'), altcha_site_key=altcha_site_key)
@@ -171,6 +196,76 @@ def team():
     team_members = User.query.order_by(User.phone.asc()).filter(User.role.in_(['tutor', 'admin'])).filter_by(status='active')
     return render_template('team.html', title='Our Team', full_name=full_name, team_members=team_members)
 
+
+@app.route('/mission', methods=['GET', 'POST'])
+def mission():
+    form = FreeResourcesForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data.lower()).first()
+        if not user:
+            user = User(first_name=form.first_name.data, email=form.email.data.lower())
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                flash('An error occurred. Please try again later.', 'error')
+                logger.error(f"Error adding user: {e}", exc_info=True)
+
+        try:
+            folder_id = app.config['RESOURCE_FOLDER_ID']  # Replace with your folder ID
+            add_user_to_drive_folder(user.email, folder_id)
+
+            email_status = send_free_resources_email(user)
+            if email_status == 200:
+                flash('Your free resources are on their way to your inbox!', 'success')
+            else:
+                flash(Markup('Email failed to send. Please contact <a href="mailto:' + hello + '" target="_blank">' + hello + '</a>'), 'error')
+        except Exception as e:
+            logger.error(f"Error adding user to Google Drive folder: {e}", exc_info=True)
+            flash('An error occurred while granting access to resources. Please try again later.', 'error')
+    return render_template('mission.html', title='Our mission', form=form)
+
+
+@app.route('/nominate', methods=['GET', 'POST'])
+def nominate():
+    form = NominationForm()
+    if form.validate_on_submit():
+
+        form_data = {
+            'student_first_name': form.student_first_name.data,
+            'student_last_name': form.student_last_name.data,
+            'student_email': form.student_email.data,
+            'is_anonymous': form.is_anonymous.data,
+            'is_self_nomination': form.is_self_nomination.data,
+            'is_caregiver_nomination': form.is_caregiver_nomination.data,
+            'parent_first_name': form.parent_first_name.data,
+            'parent_last_name': form.parent_last_name.data,
+            'parent_email': form.parent_email.data,
+            'nomination_text': form.nomination_text.data,
+        }
+
+        if form_data['is_self_nomination']:
+            form_data['contact_email'] = form_data['student_email']
+        elif form_data['is_caregiver_nomination']:
+            form_data['contact_email'] = form_data['parent_email']
+        else:
+            form_data['contact_email'] = form_data['nominator_email']
+            form_data['nominator_first_name'] = form.nominator_first_name.data
+            form_data['nominator_last_name'] = form.nominator_last_name.data
+            form_data['nominator_email'] = form.nominator_email.data
+
+        email_status = send_nomination_email(form_data)
+        if email_status == 200:
+            send_confirmation_email(form_data['contact_email'], form_data['nomination_text'])
+            flash('Thank you for your nomination! We will be in touch.')
+            return redirect(url_for('index'))
+        else:
+            flash('An error occurred. Please contact ' + hello, 'error')
+            logging.error(f"Error processing nomination. Email status {email_status}")
+    return render_template('nominate.html', form=form)
+
+
 @app.route('/about')
 def about():
     return render_template('about.html', title='About')
@@ -180,10 +275,10 @@ def reviews():
     form = ReviewForm()
     reviews = Review.query.order_by(Review.timestamp.desc()).all()
     if form.validate_on_submit():
-        photo = request.files['photo']
-        photo_path = os.path.join('img/schools/', str(user_id) + '.' + secure_filename(photo.filename).split('.')[-1])
-        photo.save(os.path.join('app/static', photo_path))
-        review = Review(text=form.text.data, author=form.author.data, photo_path=photo_path, timestamp=datetime.utcnow())
+        # photo = request.files['photo']
+        # photo_path = os.path.join('img/schools/', str(user_id) + '.' + secure_filename(photo.filename).split('.')[-1])
+        # photo.save(os.path.join('app/static', photo_path))
+        review = Review(text=form.text.data, author=form.author.data, timestamp=datetime.utcnow())
         try:
             db.session.add(review)
             db.session.commit()
@@ -735,36 +830,6 @@ def test_reminders():
         imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
 
-@app.route('/sat', methods=['GET', 'POST'])
-def sat():
-    form = EmailListForm()
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('sat'))
-        email_exists = User.query.filter_by(email=form.email.data.lower()).first()
-        if email_exists:
-            flash('An account already exists for this email. Try logging in or resetting your password.', 'error')
-            return redirect(url_for('signin'))
-        user = User(first_name=form.first_name.data, email=form.email.data.lower())
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except:
-            db.session.rollback()
-            flash('User was not saved, please contact ' + hello, 'error')
-        email_status = send_contact_email(user, 'Interested in Digital SAT app', 'Digital SAT inquiry')
-        if email_status == 200:
-            verification_status = send_verification_email(user)
-            if verification_status == 200:
-                flash('Please check your inbox to verify your email.')
-                return redirect(url_for('sat'))
-        flash('Verification email did not send, please contact ' + hello, 'error')
-    return render_template('sat.html', form=form)
-
-
 @app.route('/griffin', methods=['GET', 'POST'])
 def griffin():
     form = ScoreAnalysisForm()
@@ -876,7 +941,7 @@ def kaps():
         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
             grad_year=form.grad_year.data)
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_prep_class_email(student, parent, school, test, time, location, cost)
+        email_status = send_prep_class_email(student, parent, school, test)
         if email_status == 200:
             return render_template('registration-confirmed.html', email=form.parent_email.data)
         else:
@@ -913,33 +978,33 @@ def centerville():
         date=date, time=time, location=location, submit_text=submit_text)
 
 
-@app.route('/spartans', methods=['GET', 'POST'])
-def spartans():
-    form = ScoreAnalysisForm()
-    school = 'Spartans Swimming'
-    test = 'ACT, SAT, or PSAT'
-    date = 'Saturday, December 3rd, 2022'
-    time = '9:30am to 1:00pm'
-    location = 'Zoom'
-    contact_info = ''
-    submit_text = 'Register'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('spartans'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = tbd(student, parent, school, test, date, time, location, contact_info)
-        if email_status == 200:
-            return render_template('test-registration-submitted.html', email=parent.email,
-            student=student, test=test)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('spartans.html', form=form, school=school, test=test, \
-        date=date, time=time, location=location, submit_text=submit_text)
+# @app.route('/spartans', methods=['GET', 'POST'])
+# def spartans():
+#     form = ScoreAnalysisForm()
+#     school = 'Spartans Swimming'
+#     test = 'ACT, SAT, or PSAT'
+#     date = 'Saturday, December 3rd, 2022'
+#     time = '9:30am to 1:00pm'
+#     location = 'Zoom'
+#     contact_info = ''
+#     submit_text = 'Register'
+#     if form.validate_on_submit():
+#         if hcaptcha.verify():
+#             pass
+#         else:
+#             flash('Captcha was unsuccessful. Please try again.', 'error')
+#             return redirect(url_for('spartans'))
+#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+#             grad_year=form.grad_year.data)
+#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+#         email_status = tbd(student, parent, school, test, date, time, location, contact_info)
+#         if email_status == 200:
+#             return render_template('test-registration-submitted.html', email=parent.email,
+#             student=student, test=test)
+#         else:
+#             flash('Email failed to send, please contact ' + hello, 'error')
+#     return render_template('spartans.html', form=form, school=school, test=test, \
+#         date=date, time=time, location=location, submit_text=submit_text)
 
 
 @app.route('/sat-act-data')

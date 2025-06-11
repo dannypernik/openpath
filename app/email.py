@@ -85,7 +85,7 @@ def send_contact_email(user, message, subject):
     return result.status_code
 
 
-def send_confirmation_email(user, message):
+def send_confirmation_email(user_email, message):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -99,23 +99,21 @@ def send_confirmation_email(user, message):
                 },
                 'To': [
                     {
-                    'Email': user.email
+                    'Email': user_email
                     }
                 ],
                 'Subject': 'Email confirmation + a quote from Brene Brown',
-                'TextPart': render_template('email/confirmation.txt',
-                                         user=user, message=message),
-                'HTMLPart': render_template('email/confirmation.html',
-                                         user=user, message=message)
+                'TextPart': render_template('email/confirmation-email.txt', message=message),
+                'HTMLPart': render_template('email/confirmation-email.html', message=message)
             }
         ]
     }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Confirmation email sent to ' + user.email)
+        logging.info('Confirmation email sent to ' + user_email)
     else:
-        logging.info('Confirmation email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Confirmation email to ' + user_email + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -683,9 +681,9 @@ def send_test_strategies_email(student, parent, relation):
     }
 
     new_contact = {
-        'first_name': user.first_name, 'last_name': 'OPT test strategies form', \
-        'emails': [{ 'type': 'home', 'value': user.email}], \
-        'phones': [{ 'type': 'mobile', 'value': user.phone}], \
+        'first_name': parent.first_name, 'last_name': 'OPT test strategies form', \
+        'emails': [{ 'type': 'home', 'value': parent.email}], \
+        'phones': [{ 'type': 'mobile', 'value': parent.phone}], \
         'tags': ['Website']
     }
 
@@ -1018,7 +1016,6 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
     return result.status_code
 
 
-
 def send_schedule_conflict_email(message):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
@@ -1047,9 +1044,9 @@ def send_schedule_conflict_email(message):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Schedule conflict email sent to ' + user.email)
+        logging.info('Schedule conflict email sent to ' + app.config['MAIL_USERNAME'])
     else:
-        logging.info('Schedule conflict email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Schedule conflict email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1083,6 +1080,102 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
         logging.info('NTPA email sent to ' + app.config['MAIL_USERNAME'])
     else:
         logging.info('NTPA email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
+
+
+def send_free_resources_email(user):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    resource_folder_url = 'https://drive.google.com/drive/folders/' + app.config['RESOURCE_FOLDER_ID']
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': app.config['MAIL_USERNAME'],
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': user.email
+                    },
+                    {
+                        'Email': app.config['MAIL_USERNAME']
+                    }
+                ],
+                'Subject': 'Free resources for SAT & ACT prep',
+                'HTMLPart': render_template('email/free-resources-email.html', user=user, resource_folder_url=resource_folder_url),
+                'TextPart': render_template('email/free-resources-email.txt', user=user, resource_folder_url=resource_folder_url)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('Free resources email sent to ' + user.email)
+    else:
+        logging.info('Free resources email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
+
+
+def send_nomination_email(form_data):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': app.config['MAIL_USERNAME'],
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': app.config['MAIL_USERNAME']
+                    }
+                ],
+                'Subject': 'Nomination received for ' + form_data['student_first_name'] + ' ' + form_data['student_last_name'],
+                'ReplyTo': { 'Email': form_data['contact_email'] },
+                'HTMLPart': render_template('email/nomination-form-email.html', form_data=form_data)
+            }
+        ]
+    }
+
+
+    new_contact = {
+        'first_name': form_data['parent_first_name'] if form_data['parent_first_name'] else form_data['student_first_name'], \
+        'last_name': form_data['parent_last_name'] if form_data['parent_last_name'] else form_data['student_last_name'], \
+        'emails': [
+            {
+                'type': 'home',
+                'value': form_data['parent_email'] if form_data['parent_email'] else form_data['student_email']
+            }
+        ], \
+        'tags': ['Nominated']
+    }
+
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+
+    if crm_contact.status_code == 201:
+        logging.info('crm_contact passes')
+        new_action = {
+            'contact_id': crm_contact.json()['data']['contact']['id'],
+            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'status': 'asap',
+            'text': 'Respond to nomination form',
+        }
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        logging.info('crm_action:', crm_action)
+
+    result = mailjet.send.create(data=data)
+
+    if result.status_code == 200:
+        logging.info('Nomination email sent ')
+    else:
+        logging.info('Nomination email failed with code ' + result.status_code)
     return result.status_code
 
 
@@ -1199,6 +1292,7 @@ def act_report_submitted_email(user, attachment=None):
     else:
         logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code) + ' ' + result.reason)
     return result.status_code
+
 
 def send_changed_answers_email(score_data):
     api_key = app.config['MAILJET_KEY']
