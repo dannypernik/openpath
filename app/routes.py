@@ -1316,7 +1316,6 @@ def handle_sat_report(form, template_name, organization=None):
 
         report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
         details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
-        json_file_path = os.path.join(json_folder_path, filename + '.json')
 
         report_file.save(report_file_path)
         details_file.save(details_file_path)
@@ -1333,6 +1332,7 @@ def handle_sat_report(form, template_name, organization=None):
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
             os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
+            json_file_path = os.path.join(json_folder_path, filename + '.json')
 
             with open(json_file_path, "w") as json_file:
                 json.dump(score_data, json_file, indent=2)
