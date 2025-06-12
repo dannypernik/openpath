@@ -299,7 +299,7 @@ class FreeResourcesForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    submit = SubmitField()
+    submit = SubmitField('Get free access')
 
 class NominationForm(FlaskForm):
     student_first_name = StringField('Student first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])

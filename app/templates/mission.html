@@ -34,37 +34,21 @@
           <p>
             The resources are designed to show a student their biggest opportunities for
             improvement with a level of detail that the College Board and ACT should provide, but
-            do not. You can check out the
+            do not. Check out the
             <a class="semibold" href="https://docs.google.com/document/d/1D5pZK9UfHFxsnpL4iGatqD-R7eoYkFweIRTvEiUhxYU/" target="_blank">
               SAT<sup>&reg;</sup> Instructions
-            </a> or
+            </a> and
             <a class="semibold" href="https://docs.google.com/document/d/1H31vJDIyRS3bphtwSfcrT7zDdOE5rb7UmSkBga72u98/" target="_blank">
               ACT<sup>&reg;</sup> Instructions
             </a> to get a sense for how these tools can help you.
           </p>
-          <p class="mb-0">
-            Enter your email for free access to our test prep tools:
-          </p>
+          <button class="w-100" data-bs-toggle="modal" data-bs-target="#resources-modal">Get free access</button>
         </div>
         <div class="d-none d-lg-block col-md-6 mt-2">
           <img class="img-fluid" src="{{ url_for('static', filename='img/sample-sat-score-analysis.jpg') }}" alt="">
         </div>
       </div>
 
-      <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <div class="row mt-2">
-          <div class="col-5">
-            {{ form.first_name }}
-          </div>
-          <div class="col-7 col-lg-5">
-            {{ form.email }}
-          </div>
-          <div class="col-12 col-lg-2">
-            {{ form.submit(class="btn sm fw-bold") }}
-          </div>
-        </div>
-      </form>
       <div id="scholarship-row" class="row mt-4">
         <div class="col-12">
           <h3 class="fw-bold">Test Prep Scholarship</h3>
@@ -98,9 +82,51 @@
             be completed by the student and not required by their school.)
           </p>
           <p class="text-center">
-            <a href="{{ url_for('index', _anchor='contact', subject='Community service discount') }}" class="btn">Get in touch</a><br>
-            <a href="{{ url_for('index') }}" class="btn clr sm">Home</a>
+            <a href="{{ url_for('index', _anchor='contact', subject='Community service discount') }}" class="btn mb-3">Get in touch</a><br>
+            <a href="{{ url_for('index') }}">Home</a>
           </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="resources-modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="modal-header mt-2">
+              <h3 class="modal-title">Test prep tools</h3>
+              <span type="button" class="btn-close" data-bs-dismiss="modal">&times;</span>
+            </div>
+          </div>
+          <div class="modal-body">
+            <div class="row justify-content-center">
+              <div class="col-12 col-lg-10">
+                <p>
+                  These tools are at the foundation of our SAT<sup>&reg;</sup> and
+                  ACT<sup>&reg;</sup> prep programs. If a student is ready to dedicate
+                  time for self-study, they deserve the support to do so. Regular practice
+                  is essential for score improvement. If a student struggles to make time
+                  each week for test prep, tutoring is recommended.
+                </p>
+                <form action="" method="post">
+                  {{ form.hidden_tag() }}
+                  <div class="row justify-content-center mt-2">
+                    <div class="col-5">
+                      {{ form.first_name }}
+                    </div>
+                    <div class="col-7">
+                      {{ form.email }}
+                    </div>
+                    <div class="col-12">
+                      {{ form.submit }}
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -108,39 +134,41 @@
 {% endblock container %}
 
 {% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
   <script>
-    function adjustRowHeight() {
-      const textElement = document.getElementById('free-resources-text');
-      const rowElement = document.getElementById('free-resources-row');
-      const cloneRowElement = document.getElementById('scholarship-row');
+  //   function adjustRowHeight() {
+  //     const textElement = document.getElementById('free-resources-text');
+  //     const rowElement = document.getElementById('free-resources-row');
+  //     const cloneRowElement = document.getElementById('scholarship-row');
 
-      if (textElement && rowElement && cloneRowElement) {
+  //     if (textElement && rowElement && cloneRowElement) {
 
-        const isSmallScreen = window.innerWidth < 992; // Bootstrap's medium breakpoint is 992px
+  //       const isSmallScreen = window.innerWidth < 992; // Bootstrap's medium breakpoint is 992px
 
-        if (isSmallScreen) {
-          rowElement.style.height = 'auto'; // Reset height to auto for small screens
-          console.log('Screen is medium or smaller, row height set to auto.');
-        }
-        else {
-          // Create a temporary clone of the text content
-          const tempClone = textElement.cloneNode(true);
-          tempClone.id = 'resources-text-clone'; // Apply the CSS id for styling
-          tempClone.className = textElement.className; // Copy all classes from free-resources-text
-          tempClone.style.visibility = 'hidden'; // Hide the clone to avoid displaying it
+  //       if (isSmallScreen) {
+  //         rowElement.style.height = 'auto'; // Reset height to auto for small screens
+  //         console.log('Screen is medium or smaller, row height set to auto.');
+  //       }
+  //       else {
+  //         // Create a temporary clone of the text content
+  //         const tempClone = textElement.cloneNode(true);
+  //         tempClone.id = 'resources-text-clone'; // Apply the CSS id for styling
+  //         tempClone.className = textElement.className; // Copy all classes from free-resources-text
+  //         tempClone.style.visibility = 'hidden'; // Hide the clone to avoid displaying it
 
-          cloneRowElement.appendChild(tempClone);
+  //         cloneRowElement.appendChild(tempClone);
 
-          const textHeight = tempClone.offsetHeight; // Get the height of the text content
-          cloneRowElement.removeChild(tempClone); // Remove the temporary clone
+  //         const textHeight = tempClone.offsetHeight; // Get the height of the text content
+  //         cloneRowElement.removeChild(tempClone); // Remove the temporary clone
 
-          rowElement.style.height = `${textHeight}px`; // Set the row height
-          console.log(`Row height set to: ${textHeight}px`);
-        }
-      }
-    };
+  //         rowElement.style.height = `${textHeight}px`; // Set the row height
+  //         console.log(`Row height set to: ${textHeight}px`);
+  //       }
+  //     }
+  //   };
 
-    document.addEventListener('DOMContentLoaded', adjustRowHeight);
-    window.addEventListener('resize', adjustRowHeight);
+  //   document.addEventListener('DOMContentLoaded', adjustRowHeight);
+  //   window.addEventListener('resize', adjustRowHeight);
   </script>
 {% endblock end_scripts %}
