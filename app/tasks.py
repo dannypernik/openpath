@@ -22,7 +22,9 @@ class MyTaskBaseClass(celery.Task):
 @celery.task(name='app.tasks.create_and_send_sat_report_task', bind=True, base=MyTaskBaseClass)
 def create_and_send_sat_report_task(self, score_data, organization_dict=None):
   try:
-    print(f"Organization Dict in Celery Task: {organization_dict}")
+    logging.info(f"Student SS ID: {score_data['student_ss_id']}")
+    if organization_dict:
+      logging.info(f"Organization info: {organization_dict}")
     mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     spreadsheet_id, score_data_updated = create_sat_score_report(score_data, organization_dict)
     mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024

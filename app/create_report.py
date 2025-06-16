@@ -65,10 +65,8 @@ def create_sat_score_report(score_data, organization_dict=None):
         service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
-        print(f"Organization Dict in create_sat_score_report: {organization_dict}")
+        # Create a copy of the spreadsheet
         file_id = organization_dict['spreadsheet_id'] if organization_dict else SHEET_ID
-
-        # Create a copy of the file
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
@@ -538,7 +536,7 @@ def send_pdf_score_report(spreadsheet_id, score_data):
         # Handle response
         if response.status_code == 200:
             pdf_name = f"SAT Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf"
-            file_path = f'app/static/files/sat/pdf/{pdf_name}'
+            file_path = f'app/private/files/sat/pdf/{pdf_name}'
 
             # Save the PDF content to a file
             with open(file_path, 'wb') as f:
