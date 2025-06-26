@@ -23,6 +23,7 @@ import traceback
 #import pprint
 import logging
 import time
+import app.utils as utils
 
 # Configure logging
 error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
