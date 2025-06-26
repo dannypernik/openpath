@@ -6,11 +6,13 @@ from google.oauth2.service_account import Credentials
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'  # Adjust as needed
 
-def get_week_start(date=None):
-    """Returns the Monday of the week for the given date."""
+def get_week_start_and_end(date=None):
+    """Returns the start and end of the week for the given date."""
     if date is None:
         date = datetime.utcnow().date()
-    return (date - timedelta(days=date.weekday())).isoformat()
+    week_start = date - timedelta(days=date.weekday())
+    week_end = week_start + timedelta(days=7)
+    return week_start.isoformat(), week_end.isoformat()
 
 def parse_celery_worker_log(log_path, week_start=None, week_end=None):
     """
@@ -104,8 +106,7 @@ def batch_update_weekly_usage():
     with stats for SAT/ACT (success, failure, retry) for the week.
     """
     # Get current week start
-    week_start = get_week_start()
-    week_end = week_start + timedelta(days=7)
+    week_start, week_end = get_week_start_and_end()
     # Parse log for stats
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
