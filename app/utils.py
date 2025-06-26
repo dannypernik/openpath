@@ -22,7 +22,7 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
         week_start = today - timedelta(days=today.weekday())  # Monday
         week_end = week_start + timedelta(days=7)
 
-    lost_stats = parse_worker_lost_errors('celery_worker_error.log', week_start, week_end)
+    lost_stats = parse_worker_lost_errors(log_path, week_start, week_end)
 
 
     # Patterns for task names and statuses
@@ -105,8 +105,9 @@ def batch_update_weekly_usage():
     """
     # Get current week start
     week_start = get_week_start()
+    week_end = week_start + timedelta(days=7)
     # Parse log for stats
-    stats = parse_celery_worker_log('celery_worker_error.log')
+    stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
     # Extract counts for each column, defaulting to 0 if missing
     sat_success = stats['sat'].get('success', 0)
