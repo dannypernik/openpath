@@ -12,7 +12,7 @@ def get_week_start_and_end(date=None):
         date = datetime.utcnow().date()
     week_start = date - timedelta(days=date.weekday())
     week_end = week_start + timedelta(days=7)
-    return week_start.isoformat(), week_end.isoformat()
+    return week_start, week_end
 
 def parse_celery_worker_log(log_path, week_start=None, week_end=None):
     """
@@ -131,12 +131,12 @@ def batch_update_weekly_usage():
     # Find or create the row for this week
     row_idx = None
     for i, row in enumerate(values):
-        if row and row[0] == week_start:
+        if row and row[0] == week_start.isoformat():
             row_idx = i
             break
     if row_idx is None:
         # Add a new row for this week
-        new_row = [week_start] + ['0'] * 6
+        new_row = [week_start.isoformat()] + ['0'] * 6
         values.append(new_row)
         row_idx = len(values) - 1
 
