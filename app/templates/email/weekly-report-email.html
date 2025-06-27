@@ -55,13 +55,42 @@
     </p>
   {% endif %}
 
+  <table style="margin-top:20px; margin-bottom:20px;">
+    <thead style="font-weight: bold">
+      <tr>
+        <td></td>
+        <td>SAT</td>
+        <td>ACT</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Success</td>
+        <td>{{ weekly_data['score_reports']['sat']['success'] }}</td>
+        <td>{{ weekly_data['score_reports']['act']['success'] }}</td>
+      </tr>
+      <tr>
+        <td>Retry</td>
+        <td>{{ weekly_data['score_reports']['sat']['retry'] }}</td>
+        <td>{{ weekly_data['score_reports']['act']['retry'] }}</td>
+      </tr>
+      <tr>
+        <td>Failure</td>
+        <td>{{ weekly_data['score_reports']['sat']['failure'] }}</td>
+        <td>{{ weekly_data['score_reports']['act']['failure'] }}</td>
+      </tr>
+    </tbody>
+  </table>
+
   <table>
     <thead style="font-weight: bold">
-      <td>Week of</td>
-      <td>Daytime</td>
-      <td>Evening</td>
-      <td>Projected</td>
-      <td>Total &emsp;</td>
+      <tr>
+        <td>Week of</td>
+        <td>Daytime</td>
+        <td>Evening</td>
+        <td>Projected</td>
+        <td>Total &emsp;</td>
+      </tr>
     </thead>
     <tbody>
       {% for i in range(10) %}
