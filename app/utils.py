@@ -10,7 +10,10 @@ def get_week_start_and_end(date=None):
     """Returns the start and end of the week for the given date."""
     if date is None:
         date = datetime.utcnow().date()
-    week_start = date - timedelta(days=date.weekday())
+    if date.weekday() == 0:
+        week_start = date - timedelta(days=7)
+    else:
+        week_start = date - timedelta(days=date.weekday())
     week_end = week_start + timedelta(days=7)
     return week_start, week_end
 
@@ -155,3 +158,5 @@ def batch_update_weekly_usage():
         valueInputOption='RAW',
         body={'values': values}
     ).execute()
+
+    return stats

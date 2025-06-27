@@ -486,7 +486,7 @@ def main():
         #             messages.append(msg)
 
 
-        if day_of_week == 'Sunday':
+        if day_of_week == 'Monday':
             weekly_data['score_reports'] = utils.batch_update_weekly_usage()
             # TODO: implement unregistered_active_students and undecided_active_students
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
