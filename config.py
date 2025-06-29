@@ -31,5 +31,6 @@ class Config(object):
     ONEPAGECRM_PW = os.environ.get('ONEPAGECRM_PW')
     TODOIST_ID = os.environ.get('TODOIST_ID')
     GAS_DEPLOYMENT_ID = os.environ.get('GAS_DEPLOYMENT_ID')
-    SCORE_REPORT_SS_ID = os.environ.get('SCORE_REPORT_SS_ID')
+    SAT_REPORT_SS_ID = os.environ.get('SAT_REPORT_SS_ID')
+    ACT_REPORT_SS_ID = os.environ.get('ACT_REPORT_SS_ID')
     RESOURCE_FOLDER_ID = os.environ.get('RESOURCE_FOLDER_ID')

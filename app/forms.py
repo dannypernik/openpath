@@ -95,8 +95,8 @@ class UserForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
-        ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
+        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
@@ -129,8 +129,8 @@ class StudentForm(FlaskForm):
         validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
     student_phone = StringField('Student phone', render_kw={'placeholder': 'Student phone'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
-        ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
+        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
     parent_id = SelectField('Parent', coerce=int)
     parent_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'})
@@ -217,8 +217,8 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student\'s last name', render_kw={'placeholder': 'Student\'s last name'}, \
         validators=[InputRequired()])
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2025', '2025 (Senior)'), \
-        ('2026', '2026 (Junior)'), ('2027', '2027 (Sophomore)'), ('2028', '2028 (Freshman)'), \
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
+        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
     school = StringField('School', render_kw={'placeholder': 'Student\'s school'}, \
         validators=[InputRequired()])
@@ -230,19 +230,8 @@ class ScoreAnalysisForm(FlaskForm):
 
 
 class SATReportForm(FlaskForm):
-    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
-        validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
-        validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    # test_code = SelectField('Bluebook test number', choices=[(None, 'Bluebook test number'), ('sat1','SAT 1'),
-    #     ('sat2','SAT 2'), ('sat3','SAT 3'), ('sat4','SAT 4'), ('sat5','SAT 5'), ('sat6','SAT 6'), \
-    #     ('psat1','PSAT 1'), ('psat2','PSAT 2')], validators=[InputRequired()])
-    # rw_score = IntegerField('Reading & Writing score', render_kw={'placeholder': 'Reading & Writing score'}, \
-    #     validators=[InputRequired()])
-    # m_score = IntegerField('Math score', render_kw={'placeholder': 'Math score'}, \
-    #     validators=[InputRequired()])
     report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>')])
     details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
@@ -252,19 +241,20 @@ class SATReportForm(FlaskForm):
 
 
 class ACTReportForm(FlaskForm):
-    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'Student first name'}, \
         validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     test_code = SelectField('Test code', choices=[(None, 'Test code (Form number)'), \
         ('202206','202206 (Form E26)'), ('202212','202212 (Form F07)'),
-        ('202304','202304 (Form F11)'), ('202306','202306 (Form F12)'), ('202309','202309 (Form G01)'), \
+        ('202304','202304 (Form F11)'),  ('202304Z','202304Z (Form Z18)'), ('202306','202306 (Form F12)'), ('202309','202309 (Form G01)'), \
         ('202404','202404 (Form G19)'), ('202406','202406 (Form G20)')],
          validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
+    spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 
 

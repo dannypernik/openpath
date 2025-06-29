@@ -168,7 +168,8 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)  # URL-friendly name
-    spreadsheet_id = db.Column(db.String(255), nullable=True)
+    sat_spreadsheet_id = db.Column(db.String(255), nullable=True)
+    act_spreadsheet_id = db.Column(db.String(255), nullable=True)
     color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
     color2 = db.Column(db.String(7), nullable=True)
     color3 = db.Column(db.String(7), nullable=True)

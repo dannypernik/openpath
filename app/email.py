@@ -1179,43 +1179,49 @@ def send_nomination_email(form_data):
     return result.status_code
 
 
-def sat_report_submitted_email(score_data):
+# def send_report_submitted_email(score_data):
+#     api_key = app.config['MAILJET_KEY']
+#     api_secret = app.config['MAILJET_SECRET']
+#     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+#     with app.app_context():
+#         data = {
+#             'Messages': [
+#                 {
+#                     'From': {
+#                         'Email': app.config['MAIL_USERNAME'],
+#                         'Name': 'Open Path Tutoring'
+#                     },
+#                     'To': [
+#                         {
+#                             'Email': app.config['MAIL_USERNAME']
+#                         }
+#                     ],
+#                     'ReplyTo': { 'Email': score_data['email'] },
+#                     'Subject': 'Score report submitted for ' + score_data['student_name'],
+#                     'HTMLPart': render_template('email/sat-report-submitted-email.html', score_data=score_data)
+#                 }
+#             ]
+#         }
+
+#     result = mailjet.send.create(data=data)
+#     if result.status_code == 200:
+#         logging.info('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
+#     else:
+#         logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+#     return result.status_code
+
+
+def send_score_report_email(score_data, base64_blob):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    with app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'ReplyTo': { 'Email': score_data['email'] },
-                    'Subject': 'Score report submitted for ' + score_data['student_name'],
-                    'HTMLPart': render_template('email/sat-report-submitted-email.html', score_data=score_data),
-                }
-            ]
-        }
-
-    result = mailjet.send.create(data=data)
-    if result.status_code == 200:
-        logging.info('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
-    else:
-        logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
-    return result.status_code
-
-
-def sat_score_report_email(score_data, base64_blob):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    cc_email = []
+    bcc_email = []
+    if score_data['admin_email']:
+        cc_email.append({ 'Email': score_data['admin_email'] })
+        bcc_email.append({ 'Email': app.config.get('ADMIN_EMAIL') })
 
     with app.app_context():
         data = {
@@ -1230,8 +1236,9 @@ def sat_score_report_email(score_data, base64_blob):
                             'Email': score_data['email']
                         }
                     ],
-                    'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
-                    'Subject': score_data['test_display_name'] + ' Score Report for ' + score_data['student_name'],
+                    'Cc': cc_email,
+                    'Bcc': bcc_email,
+                    'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
                     'TextPart': render_template('email/score-report-email.txt', score_data=score_data, int=int),
                     'HTMLPart': render_template('email/score-report-email.html', score_data=score_data, int=int),
                     'Attachments': [
@@ -1249,49 +1256,49 @@ def sat_score_report_email(score_data, base64_blob):
     return result.status_code
 
 
-def act_report_submitted_email(user, attachment=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+# def act_report_submitted_email(user, attachment=None):
+#     api_key = app.config['MAILJET_KEY']
+#     api_secret = app.config['MAILJET_SECRET']
+#     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    if attachment:
-        subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted via {attachment["org_name"]}'
-    else:
-        subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted'
+#     if attachment:
+#         subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted via {attachment["org_name"]}'
+#     else:
+#         subject = f'ACT answer sheet for {user.first_name} {user.last_name} submitted'
 
-    with app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'ReplyTo': { 'Email': attachment['admin_email'] if attachment else app.config['MAIL_USERNAME'] },
-                    'Subject': subject,
-                    'HTMLPart': render_template('email/act-report-submitted-email.html', user=user, attachment=attachment),
-                    'Attachments': [
-                        {
-                            'ContentType': attachment['content_type'],
-                            'Filename': f"ACT {attachment['test_code']} answer sheet for {user.first_name} {user.last_name}.{attachment['file_extension']}",
-                            'Base64Content': attachment['blob']
-                        }
-                    ]
-                }
-            ]
-        }
+#     with app.app_context():
+#         data = {
+#             'Messages': [
+#                 {
+#                     'From': {
+#                         'Email': app.config['MAIL_USERNAME'],
+#                         'Name': 'Open Path Tutoring'
+#                     },
+#                     'To': [
+#                         {
+#                             'Email': app.config['MAIL_USERNAME']
+#                         }
+#                     ],
+#                     'ReplyTo': { 'Email': attachment['admin_email'] if attachment else app.config['MAIL_USERNAME'] },
+#                     'Subject': subject,
+#                     'HTMLPart': render_template('email/act-report-submitted-email.html', user=user, attachment=attachment),
+#                     'Attachments': [
+#                         {
+#                             'ContentType': attachment['content_type'],
+#                             'Filename': f"ACT {attachment['test_code']} answer sheet for {user.first_name} {user.last_name}.{attachment['file_extension']}",
+#                             'Base64Content': attachment['blob']
+#                         }
+#                     ]
+#                 }
+#             ]
+#         }
 
-    result = mailjet.send.create(data=data)
-    if result.status_code == 200:
-        logging.info('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
-    else:
-        logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code) + ' ' + result.reason)
-    return result.status_code
+#     result = mailjet.send.create(data=data)
+#     if result.status_code == 200:
+#         logging.info('Report submitted email sent to ' + app.config['MAIL_USERNAME'])
+#     else:
+#         logging.info('Report submitted email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code) + ' ' + result.reason)
+#     return result.status_code
 
 
 def send_changed_answers_email(score_data):

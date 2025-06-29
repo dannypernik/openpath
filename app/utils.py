@@ -63,7 +63,6 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
                     if patterns[task][status].search(line):
                         stats[task][status] += 1
                 patterns[task]['failure'] = lost_stats.get(f'app.tasks.create_and_send_{task}_report_task', 0)
-
     return stats
 
 
@@ -113,13 +112,13 @@ def batch_update_weekly_usage():
     # Parse log for stats
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
-    # Extract counts for each column, defaulting to 0 if missing
-    sat_success = stats['sat'].get('success', 0)
-    sat_failure = stats['sat'].get('failure', 0)
-    sat_retry   = stats['sat'].get('retry', 0)
-    act_success = stats['act'].get('success', 0)
-    act_failure = stats['act'].get('failure', 0)
-    act_retry   = stats['act'].get('retry', 0)
+    # Extract counts for each column, defaulting to blank if missing
+    sat_success = stats['sat'].get('success', '')
+    sat_failure = stats['sat'].get('failure', '')
+    sat_retry   = stats['sat'].get('retry', '')
+    act_success = stats['act'].get('success', '')
+    act_failure = stats['act'].get('failure', '')
+    act_retry   = stats['act'].get('retry', '')
 
     creds = Credentials.from_service_account_file(
         'service_account_key2.json',

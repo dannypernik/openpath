@@ -1,6 +1,6 @@
 import os
 from app import app
-from app.email import sat_score_report_email
+from app.email import send_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -25,8 +25,8 @@ def get_static_url(filename):
         return url_for('static', filename=filename)
 
 # Constants
-SHEET_ID = app.config['SCORE_REPORT_SS_ID'] # Your spreadsheet ID
-SCORE_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
+SHEET_ID = app.config['SAT_REPORT_SS_ID'] # Your spreadsheet ID
+SAT_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
@@ -70,7 +70,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
-            'parents': [SCORE_REPORT_FOLDER_ID],
+            'parents': [SAT_REPORT_FOLDER_ID],
             'name': f"{score_data['test_code'].upper()} Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')}.pdf"
             }
         ).execute()
@@ -509,7 +509,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         raise
 
 
-def send_pdf_score_report(spreadsheet_id, score_data):
+def send_sat_pdf_report(spreadsheet_id, score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/drive']
@@ -545,7 +545,7 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             # Create PDF in Drive
             file_metadata = {
                 'name': pdf_name,
-                'parents': [SCORE_REPORT_FOLDER_ID],
+                'parents': [SAT_REPORT_FOLDER_ID],
                 'mimeType': 'application/pdf'
             }
 
@@ -560,17 +560,16 @@ def send_pdf_score_report(spreadsheet_id, score_data):
             base64_blob = base64.b64encode(blob).decode('utf-8')
 
             # Send email with PDF attachment
-            message = f"Please find the score report for {score_data['test_code'].upper()} attached."
-            sat_score_report_email(score_data, base64_blob)
+            send_score_report_email(score_data, base64_blob)
             logging.info(f"PDF report sent to {score_data['email']}")
         else:
             logging.error(f'Failed to fetch PDF: {response.content}')
     except Exception:
-        logging.error(f'Error in send_pdf_score_report: {Exception}')
+        logging.error(f'Error in send_sat_pdf_report: {Exception}')
         raise
 
 
-def send_answers_to_student_ss(score_data):
+def sat_answers_to_student_ss(score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/spreadsheets',
@@ -780,11 +779,11 @@ def send_answers_to_student_ss(score_data):
         return score_data
 
     except Exception:
-        logging.error(f'Error in send_answers_to_student_ss: {Exception}')
+        logging.error(f'Error in sat_answers_to_student_ss: {Exception}')
         raise
 
 
-def create_custom_spreadsheet(organization):
+def create_custom_sat_spreadsheet(organization):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']

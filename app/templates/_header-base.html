@@ -11,13 +11,8 @@
       <div class="col-2 col-sm-4">
         <a id="menu-btn" data-drawer-trigger aria-controls="site-menu" aria-expanded="false">
           <div id="menu-title" class="d-none d-sm-block text-truncate">
-            {% if current_user.is_authenticated %}
-              <span class="">
-                {{ current_user.first_name }}
-                {% if current_user.last_name %}
-                  {{ current_user.last_name }}
-                {% endif %}
-              </span>
+            {% if current_first_name and current_last_name %}
+              {{ current_first_name }} {{ current_last_name }}
             {% else %}
               Menu
             {% endif %}

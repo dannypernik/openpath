@@ -15,15 +15,14 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
     send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
-    send_ntpa_email, send_fail_mail, act_report_submitted_email, send_free_resources_email, \
-    send_nomination_email
+    send_ntpa_email, send_fail_mail, send_free_resources_email, send_nomination_email
 from functools import wraps
 import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-from app.create_report import check_service_account_access, create_custom_spreadsheet
-from app.tasks import create_and_send_sat_report_task
+from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet
+from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -35,12 +34,13 @@ import base64
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.before_request
 def before_request():
-    if current_user.is_authenticated:
+    if current_user and current_user.is_authenticated:
         current_user.last_viewed = datetime.utcnow()
         db.session.commit()
 
@@ -54,7 +54,24 @@ phone = app.config['PHONE']
 
 @app.context_processor
 def inject_values():
-    return dict(last_updated=dir_last_updated('app/static'), hello=hello, phone=phone)
+    try:
+        if current_user and current_user.is_authenticated:
+            current_first_name = current_user.first_name
+            current_last_name = current_user.last_name
+        else:
+            current_first_name = None
+            current_last_name = None
+    except Exception:
+        current_first_name = None
+        current_last_name = None
+    return dict(
+        last_updated=dir_last_updated('app/static'),
+        hello=hello,
+        phone=phone,
+        current_first_name=current_first_name,
+        current_last_name=current_last_name
+    )
+
 
 def admin_required(f):
     @login_required
@@ -101,6 +118,8 @@ def get_image_info(file_path):
             file_format = img.format
             content_type = Image.MIME.get(file_format)
             file_extension = file_format.lower()
+            if file_extension == 'jpeg':
+                file_extension = 'jpg'
             return content_type, file_extension
     except Exception as e:
         print(f"Image format error: {e}")
@@ -1131,7 +1150,7 @@ def org_settings():
                 organization.logo_path = f"img/orgs/{filename}"
 
             # Generate the custom spreadsheet
-            spreadsheet_id = create_custom_spreadsheet(organization)
+            spreadsheet_id = create_custom_sat_spreadsheet(organization)
             organization.spreadsheet_id = spreadsheet_id
 
             db.session.commit()
@@ -1213,6 +1232,12 @@ def sat_report():
     return handle_sat_report(form, 'sat-report.html')
 
 
+@app.route('/act-report', methods=['GET', 'POST'])
+def act_report():
+    form = ACTReportForm()
+    return handle_act_report(form, 'act-report.html')
+
+
 @app.route('/<slug>')
 def partner_page(slug):
     organization = Organization.query.filter_by(slug=slug).first_or_404()
@@ -1221,7 +1246,6 @@ def partner_page(slug):
         'name': organization.name,
         'logo_path': organization.logo_path,
         'slug': organization.slug,
-        'spreadsheet_id': organization.spreadsheet_id,
     }
     return render_template('partner-page.html', title=organization.name, organization=organization_dict)
 
@@ -1236,7 +1260,7 @@ def custom_sat_report(slug):
         'name': organization.name,
         'logo_path': organization.logo_path,
         'slug': organization.slug,
-        'spreadsheet_id': organization.spreadsheet_id,
+        'spreadsheet_id': organization.sat_spreadsheet_id,
     }
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
@@ -1251,7 +1275,7 @@ def custom_act_report(slug):
         'name': organization.name,
         'logo_path': organization.logo_path,
         'slug': organization.slug,
-        'spreadsheet_id': organization.spreadsheet_id,
+        'spreadsheet_id': organization.act_spreadsheet_id,
     }
     return handle_act_report(form, 'org-act-report.html', organization=organization_dict)
 
@@ -1260,28 +1284,13 @@ def handle_sat_report(form, template_name, organization=None):
     form = SATReportForm()
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-    admin = {
-        'first_name': '',
-        'last_name': '',
-        'email': '',
-    }
-    if organization:
-        org = Organization.query.filter_by(slug=organization['slug']).first()
-        admin = User.query.filter_by(organization_id=org.id).first()
 
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
-
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user:
-          user.first_name = form.first_name.data
-          user.last_name = form.last_name.data
-        else:
-            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
         pdf_folder_path = 'app/private/files/sat/pdf'
         json_folder_path = 'app/private/files/sat/json'
@@ -1292,7 +1301,6 @@ def handle_sat_report(form, template_name, organization=None):
         if not os.path.exists(json_folder_path):
             os.makedirs(json_folder_path)
 
-        full_name = form.first_name.data + ' ' + form.last_name.data
         if form.spreadsheet_url.data:
             try:
                 student_ss_full_url = form.spreadsheet_url.data
@@ -1303,7 +1311,7 @@ def handle_sat_report(form, template_name, organization=None):
                     student_ss_id = student_ss_base_url
             except:
                 flash('Invalid Google Sheet URL', 'error')
-                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
         else:
             student_ss_id = None
 
@@ -1314,8 +1322,8 @@ def handle_sat_report(form, template_name, organization=None):
             flash('Only PDF files are allowed', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-        report_file_path = os.path.join(pdf_folder_path, full_name + ' CB report.pdf')
-        details_file_path = os.path.join(pdf_folder_path, full_name + ' CB details.pdf')
+        report_file_path = os.path.join(pdf_folder_path, form.email.data + ' CB report.pdf')
+        details_file_path = os.path.join(pdf_folder_path, form.email.data + ' CB details.pdf')
 
         report_file.save(report_file_path)
         details_file.save(details_file_path)
@@ -1323,11 +1331,15 @@ def handle_sat_report(form, template_name, organization=None):
         try:
             score_data = get_all_data(report_file, details_file)
             logging.info(f"Score data: {score_data}")
-            if score_data.get('student_name') is None:
-                score_data['student_name'] = full_name
             score_data['email'] = form.email.data.lower()
-            score_data['submitter_name'] = full_name
             score_data['student_ss_id'] = student_ss_id
+
+            if organization:
+                org = Organization.query.filter_by(slug=organization['slug']).first()
+                admin = User.query.filter_by(organization_id=org.id).first()
+                score_data['admin_email'] = admin.email
+            else:
+                score_data['admin_email'] = None
 
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
@@ -1337,12 +1349,12 @@ def handle_sat_report(form, template_name, organization=None):
             with open(json_file_path, "w") as json_file:
                 json.dump(score_data, json_file, indent=2)
 
-            test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
-                m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
-                type='practice', user_id=user.id)
+            # test = TestScore(test_code=score_data['test_code'], date=score_data['date'], rw_score=score_data['rw_score'],
+            #     m_score=score_data['m_score'], total_score=score_data['total_score'], json_path=json_file_path,
+            #     type='practice', user_id=user.id)
 
-            db.session.add(test)
-            db.session.commit()
+            # db.session.add(test)
+            # db.session.commit()
 
             logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
 
@@ -1351,7 +1363,8 @@ def handle_sat_report(form, template_name, organization=None):
                 if not has_access:
                     flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
                     logging.error('Service account does not have access to student spreadsheet')
-                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
             create_and_send_sat_report_task.delay(score_data, organization_dict=organization)
 
             if len(score_data['answer_key_mismatches']) > 0:
@@ -1359,9 +1372,13 @@ def handle_sat_report(form, template_name, organization=None):
 
             if organization:
                 return_route = url_for('custom_sat_report', slug=organization['slug'])
+                flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
+                Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
+                <a href="{return_route}">Submit another test</a>'), 'success')
+                return redirect(url_for('index'))
             else:
                 return_route = url_for('sat_report')
-            return render_template('sat-report-sent.html', return_route=return_route)
+                return render_template('score-report-sent.html', return_route=return_route)
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
@@ -1376,107 +1393,107 @@ def handle_sat_report(form, template_name, organization=None):
             elif 'insufficient questions answered' in str(ve):
                 flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
         except FileNotFoundError as fe:
             if 'Score Report PDF does not match expected format' in str(fe):
                 flash(Markup('Score Report PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             elif 'Score Details PDF does not match expected format' in str(fe):
                 flash(Markup('Score Details PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
         except Exception as e:
             logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
-            email = send_fail_mail('Cannot generate score report', [user.first_name, user.last_name, user.email], traceback.format_exc())
+            email = send_fail_mail('Cannot generate score report', traceback.format_exc(), form.email.data.lower())
             if email == 200:
                 flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
             else:
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
-    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
 
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-
-    admin = {
-        'first_name': '',
-        'last_name': '',
-        'email': '',
-    }
-
-    if organization:
-        org = Organization.query.filter_by(slug=organization['slug']).first()
-        admin = User.query.filter_by(organization_id=org.id).first()
 
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
-
-
-        user = User.query.filter_by(first_name=form.first_name.data, last_name=form.last_name.data).first()
-        if user:
-            user.first_name = form.first_name.data
-            user.last_name = form.last_name.data
-        else:
-            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
-
-        answer_img = request.files['answer_img']
-        file_extension = answer_img.filename.split('.')[-1].lower()
-        date = datetime.today().date().strftime('%Y.%m.%d')
-
-        img_folder_path = 'app/private/files/act/img'
-        if not os.path.exists(img_folder_path):
-            os.makedirs(img_folder_path)
-        filename = f"ACT {form.test_code.data} score analysis for {user.first_name} {user.last_name} - {date}.{file_extension}"
-
-        answer_img_path = os.path.join(img_folder_path, filename)
-        answer_img.save(answer_img_path)
-
-        if not is_valid_image(answer_img):
-            flash('Please upload an image (jpg, png, webp, or heic)', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
-
-        content_type, file_extension = get_image_info(answer_img_path)
-
-        with open(answer_img_path, "rb") as file:
-            blob = base64.b64encode(file.read()).decode('utf-8')
+            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
         try:
-            email_status = act_report_submitted_email(
-                user,
-                attachment={
-                    'path': answer_img_path,
-                    'blob': blob,
-                    'content_type': content_type,
-                    'file_extension': file_extension,
-                    'test_code': form.test_code.data,
-                    'admin_email': admin.email if organization else None,
-                    'admin_name': f"{admin.first_name} {admin.last_name}" if organization else None,
-                    'org_name': organization['name'] if organization else None
-                }
-            )
+            act_folder_path = 'app/private/files/act'
+            if not os.path.exists(act_folder_path):
+                os.makedirs(act_folder_path)
 
-            if email_status == 200:
-                if organization:
-                    return_route = url_for('custom_act_report', slug=organization['slug'])
-                    flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
-                    Results will be sent to {admin.first_name} {admin.last_name} within 48 hrs.<br> \
-                    <a href="{return_route}">Submit another test</a>'), 'success')
-                    return redirect(url_for('index'))
-                else:
-                    return_route = url_for('act_report')
-                    return render_template('act-report-sent.html', return_route=return_route)
+            user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
+
+            answer_img = request.files['answer_img']
+            date = datetime.today().date().strftime('%Y-%m-%d')
+            content_type, file_extension = get_image_info(answer_img)
+            filename = f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}"
+            answer_sheet_filename = secure_filename(filename)
+            answer_img_path = os.path.join(act_folder_path, answer_sheet_filename)
+
+            answer_img.stream.seek(0)  # Reset file pointer to the beginning
+            answer_img.save(answer_img_path)
+
+            if not is_valid_image(answer_img):
+                flash('Please upload an image (jpg, png, webp, or heic)', 'error')
+                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+            score_data = {}
+            score_data['answer_img_path'] = answer_img_path
+            score_data['act_folder_path'] = act_folder_path
+            score_data['test_code'] = form.test_code.data
+            score_data['test_display_name'] = f'ACT {score_data["test_code"]}'
+            score_data['student_name'] = f"{user.first_name} {user.last_name}"
+            score_data['email'] = form.email.data.lower()
+            score_data['student_responses'] = {}
+            score_data['date'] = date
+
+            score_data['admin_email'] = None
+            if organization:
+                org = Organization.query.filter_by(slug=organization['slug']).first()
+                admin = User.query.filter_by(organization_id=org.id).first()
+                score_data['admin_email'] = admin.email
+
+            score_data['student_ss_id'] = None
+            if form.spreadsheet_url.data:
+                try:
+                    student_ss_full_url = form.spreadsheet_url.data
+                    student_ss_base_url = student_ss_full_url.split('?')[0]
+                    if '/d/' in student_ss_base_url:
+                        score_data['student_ss_id'] = student_ss_base_url.split('/d/')[1].split('/')[0]
+                    else:
+                        score_data['student_ss_id'] = student_ss_base_url
+
+                except:
+                    flash('Invalid Google Sheet URL', 'error')
+                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+                has_access = check_service_account_access(score_data['student_ss_id'])
+                if not has_access:
+                    flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'), 'error')
+                    logging.error('Service account does not have access to student spreadsheet')
+                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+            create_and_send_act_report_task.delay(score_data, organization)
+
+            if organization:
+                return_route = url_for('custom_act_report', slug=organization['slug'])
+                flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
+                Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
+                <a href="{return_route}">Submit another test</a>'), 'success')
+                return redirect(url_for('index'))
             else:
-                flash(f'Failed to send answer sheet. Please contact {hello}.', 'error')
+                return_route = url_for('act_report')
+                return render_template('score-report-sent.html', return_route=return_route)
+
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
-            flash('An unexpected error occurred. Please try again later.', 'error')
-
-        db.session.add(current_user)
-
-    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization, admin=admin)
+            flash(f'Failed to send answer sheet. Please contact {hello}.', 'error')
+    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
 
 def TemplateRenderer(app):
