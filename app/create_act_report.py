@@ -73,7 +73,10 @@ def create_act_score_report(score_data, organization_dict):
   sheets_service = build('sheets', 'v4', credentials=creds)
 
   # 1. Copy the template spreadsheet
-  file_id = organization_dict['spreadsheet_id'] if organization_dict['spreadsheet_id'] else TEMPLATE_SS_ID
+  if organization_dict and organization_dist['spreadsheet_id']:
+    file_id = organization_dict['spreadsheet_id']
+  else:
+    file_id = TEMPLATE_SS_ID
   ss_copy = drive_service.files().copy(
       fileId=file_id,
       body={
@@ -141,7 +144,7 @@ def create_act_score_report(score_data, organization_dict):
 
   requests = []
 
-  # Add student name to analysis sheets
+  # Add student name to analysis sheet
   if organization_dict['spreadsheet_id']:
       title_row = 5 # Row B6 if custom organization
   else:
