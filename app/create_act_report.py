@@ -6,7 +6,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
-# from graderclient import GraderClient
+from graderclient import GraderClient
 from werkzeug.utils import secure_filename
 import json
 import logging
