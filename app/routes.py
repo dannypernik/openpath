@@ -148,6 +148,16 @@ def add_user_to_drive_folder(email, folder_id):
     ).execute()
 
 
+def load_act_test_codes():
+    try:
+        with open('act_test_codes.json') as f:
+            codes = json.load(f)
+        return [(code, code) for code in codes if code.strip()]
+    except Exception:
+        print("Error loading ACT test codes from JSON file.")
+        return []
+
+
 # def validate_altcha_response(token):
 #     """Validate Altcha response token."""
 #     altcha_secret_key = app.config['ALTCHA_SECRET_KEY']

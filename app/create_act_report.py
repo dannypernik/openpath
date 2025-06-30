@@ -19,6 +19,25 @@ TEMPLATE_SS_ID = app.config['ACT_REPORT_SS_ID'] # Your spreadsheet ID
 ACT_REPORT_FOLDER_ID = '1di1PnSgL4J9oyGQGjUKfg_eRhKSht3WD'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
+ACT_DATA_SS_ID = app.config['ACT_DATA_SS_ID']  # Your ACT data spreadsheet ID
+
+def get_act_test_codes():
+    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON)
+    service = build('sheets', 'v4', credentials=creds)
+    result = service.spreadsheets().values().get(
+      spreadsheetId=ACT_DATA_SS_ID,
+      range="'Test designations'!E2:I"
+    ).execute()
+    values = result.get('values', [])
+    # Only include rows where col G is "Yes", col E (test_code) and col I (form_code) are present
+    codes = [
+      [v[0].strip(), v[4].strip()]
+      for v in values
+      if v and len(v) >= 5 and v[0].strip() and v[4].strip() and v[2].strip().lower() == "yes"
+    ]
+    with open('app/act_test_codes.json', 'w') as f:
+      json.dump(codes, f)
+    return codes
 
 
 def process_act_answer_img(score_data):

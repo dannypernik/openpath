@@ -7,6 +7,8 @@ from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
 from app.models import User, TestDate, UserTestDate, TestScore
 from datetime import datetime
+import json
+import os
 
 
 def validate_email(self, email):
@@ -240,6 +242,18 @@ class SATReportForm(FlaskForm):
     submit = SubmitField()
 
 
+def load_act_test_codes():
+    try:
+        with open('app/act_test_codes.json') as f:
+            codes = json.load(f)
+        return [
+            (code[0], f"{code[0]} (Form {code[1]})")
+            for code in codes if code and code[0].strip() and code[1].strip()
+        ]
+    except Exception:
+        print("Error loading ACT test codes from act_test_codes.json")
+        return []
+
 class ACTReportForm(FlaskForm):
     first_name = StringField('First name', render_kw={'placeholder': 'Student first name'}, \
         validators=[InputRequired()])
@@ -247,11 +261,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    test_code = SelectField('Test code', choices=[(None, 'Test code (Form number)'), \
-        ('202206','202206 (Form E26)'), ('202212','202212 (Form F07)'),
-        ('202304','202304 (Form F11)'),  ('202304Z','202304Z (Form Z18)'), ('202306','202306 (Form F12)'), ('202309','202309 (Form G01)'), \
-        ('202404','202404 (Form G19)'), ('202406','202406 (Form G20)')],
-         validators=[InputRequired()])
+    test_code = SelectField('Test code', choices=load_act_test_codes(), validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
