@@ -241,18 +241,6 @@ class SATReportForm(FlaskForm):
     submit = SubmitField()
 
 
-def load_act_test_codes():
-    try:
-        with open('app/act_test_codes.json') as f:
-            codes = json.load(f)
-        return [
-            (code[0], f"{code[0]} (Form {code[1]})")
-            for code in codes if code and code[0].strip() and code[1].strip()
-        ]
-    except Exception:
-        print("Error loading ACT test codes from act_test_codes.json")
-        return []
-
 class ACTReportForm(FlaskForm):
     first_name = StringField('First name', render_kw={'placeholder': 'Student first name'}, \
         validators=[InputRequired()])
@@ -260,7 +248,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    test_code = SelectField('Test code', choices=load_act_test_codes(), validators=[InputRequired()])
+    test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})

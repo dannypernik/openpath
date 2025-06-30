@@ -150,11 +150,14 @@ def add_user_to_drive_folder(email, folder_id):
 
 def load_act_test_codes():
     try:
-        with open('act_test_codes.json') as f:
+        with open('app/act_test_codes.json') as f:
             codes = json.load(f)
-        return [(code, code) for code in codes if code.strip()]
+        return [
+            (code[0], f"{code[0]} (Form {code[1]})")
+            for code in codes if code and code[0].strip() and code[1].strip()
+        ]
     except Exception:
-        print("Error loading ACT test codes from JSON file.")
+        print("Error loading ACT test codes from act_test_codes.json")
         return []
 
 
@@ -1423,6 +1426,7 @@ def handle_sat_report(form, template_name, organization=None):
 
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
+    form.test_code.choices = load_act_test_codes()
 
     if form.validate_on_submit():
         if hcaptcha.verify():
