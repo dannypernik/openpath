@@ -8,7 +8,6 @@ from wtforms.validators import ValidationError, InputRequired, DataRequired, \
 from app.models import User, TestDate, UserTestDate, TestScore
 from datetime import datetime
 import json
-import os
 
 
 def validate_email(self, email):
