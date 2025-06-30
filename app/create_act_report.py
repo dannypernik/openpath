@@ -145,7 +145,7 @@ def create_act_score_report(score_data, organization_dict):
   requests = []
 
   # Add student name to analysis sheet
-  if organization_dict['spreadsheet_id']:
+  if organization_dict:
       title_row = 5 # Row B6 if custom organization
   else:
       title_row = 2 # Row B3 if default template
