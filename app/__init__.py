@@ -47,4 +47,5 @@ def full_name(user):
 
 from app import routes, models, errors, tasks
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 login.login_message = u'Please sign in to access this page.'
