@@ -94,6 +94,17 @@ def proper(name):
 
 register_heif_opener()
 
+def convert_heic_to_jpg(heic_path, jpg_path, quality=90):
+    """Convert a HEIC image to JPG."""
+    try:
+        with Image.open(heic_path) as img:
+            rgb_img = img.convert('RGB')
+            rgb_img.save(jpg_path, 'JPEG', quality=quality)
+        return True
+    except Exception as e:
+        print(f"Failed to convert HEIC to JPG: {e}")
+        return False
+
 def is_valid_image(file):
     try:
         img = Image.open(file)
@@ -118,7 +129,7 @@ def get_image_info(file_path):
             file_format = img.format
             content_type = Image.MIME.get(file_format)
             file_extension = file_format.lower()
-            if file_extension == 'jpeg':
+            if file_extension in ('jpeg', 'mpo'):
                 file_extension = 'jpg'
             return content_type, file_extension
     except Exception as e:

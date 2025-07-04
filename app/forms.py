@@ -250,7 +250,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
-        validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'heic'], 'Images only please (jpg, png, webp, or heic)')])
+        validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'heic', 'webp', 'tif'], 'Images only please (jpg, png, heic, webp, or tif)')])
     spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 
