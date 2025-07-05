@@ -94,13 +94,15 @@ def proper(name):
 
 register_heif_opener()
 
-def convert_heic_to_jpg(heic_path, jpg_path, quality=90):
+def convert_heic_to_jpg(heic_path, quality=90):
     """Convert a HEIC image to JPG."""
     try:
+        file_prefix = os.path.splitext(heic_path)[0]
+        jpg_path = f'{file_prefix}.jpg'
         with Image.open(heic_path) as img:
             rgb_img = img.convert('RGB')
             rgb_img.save(jpg_path, 'JPEG', quality=quality)
-        return True
+        return jpg_path
     except Exception as e:
         print(f"Failed to convert HEIC to JPG: {e}")
         return False
@@ -127,11 +129,14 @@ def get_image_info(file_path):
     try:
         with Image.open(file_path) as img:
             file_format = img.format
-            content_type = Image.MIME.get(file_format)
+            # content_type = Image.MIME.get(file_format)
             file_extension = file_format.lower()
             if file_extension in ('jpeg', 'mpo'):
                 file_extension = 'jpg'
-            return content_type, file_extension
+            elif file_extension in ('heif', 'heic'):
+                file_extension = 'heic'
+            # return content_type, file_extension
+            return file_extension
     except Exception as e:
         print(f"Image format error: {e}")
         return None, None
@@ -141,7 +146,7 @@ def add_user_to_drive_folder(email, folder_id):
     """Add a user as a viewer to a Google Drive folder without sending a notification email."""
     # Authenticate using the Service Account
     credentials = Credentials.from_service_account_file('service_account_key.json')
-    service = build('drive', 'v3', credentials=credentials)
+    service = build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
     # Create permission
     permission = {
@@ -1455,13 +1460,16 @@ def handle_act_report(form, template_name, organization=None):
 
             answer_img = request.files['answer_img']
             date = datetime.today().date().strftime('%Y-%m-%d')
-            content_type, file_extension = get_image_info(answer_img)
-            filename = f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}"
-            answer_sheet_filename = secure_filename(filename)
-            answer_img_path = os.path.join(act_folder_path, answer_sheet_filename)
 
+            file_extension = get_image_info(answer_img)
+            answer_sheet_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
+            answer_img_path = os.path.join(act_folder_path, answer_sheet_filename)
             answer_img.stream.seek(0)  # Reset file pointer to the beginning
             answer_img.save(answer_img_path)
+
+            if file_extension == 'heic':
+                answer_img_path = convert_heic_to_jpg(answer_img_path)
+            print(answer_img_path)
 
             if not is_valid_image(answer_img):
                 flash('Please upload an image (jpg, png, webp, or heic)', 'error')

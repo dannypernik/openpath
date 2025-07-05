@@ -10,8 +10,8 @@ SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/a
 
 # Authenticate and initialize services
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON, scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=creds)
-sheets_service = build('sheets', 'v4', credentials=creds)
+drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
 def create_folder(parent_folder_id, folder_name):
     """Create a new folder in Google Drive."""

@@ -124,7 +124,7 @@ def batch_update_weekly_usage():
         'service_account_key2.json',
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
-    service = build('sheets', 'v4', credentials=creds)
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     sheet = service.spreadsheets()
 
     result = sheet.values().get(spreadsheetId=USAGE_SHEET_ID, range=USAGE_SHEET_RANGE).execute()
