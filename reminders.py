@@ -106,7 +106,7 @@ def get_events_and_data():
     try:
         logging.info('Calling Calendar API')
         # Call the Calendar API
-        service_cal = build('calendar', 'v3', credentials=creds)
+        service_cal = build('calendar', 'v3', credentials=creds, cache_discovery=False)
         bimonth_end = now + datetime.timedelta(days=70)
         bimonth_end_str = bimonth_end.isoformat() + 'Z'
         bimonth_events = []
@@ -136,7 +136,7 @@ def get_events_and_data():
             try:
                 logging.info('Calling Sheets API #' + str(attempt + 1))
                 # Call the Sheets API
-                service_sheets = build('sheets', 'v4', credentials=creds)
+                service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
                 logging.info('Sheets API called')
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')

@@ -21,9 +21,18 @@ ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder 
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 ACT_DATA_SS_ID = app.config['ACT_DATA_SS_ID']  # Your ACT data spreadsheet ID
 
+all_subjects = ['english', 'math', 'reading', 'science']
+completed_subjects = []
+sub_data = {
+  'english': {'col': 2, 'max_len': 75},
+  'math': {'col': 6, 'max_len': 60},
+  'reading': {'col': 10, 'max_len': 40},
+  'science': {'col': 14, 'max_len': 40}
+}
+
 def get_act_test_codes():
     creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON)
-    service = build('sheets', 'v4', credentials=creds)
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     result = service.spreadsheets().values().get(
       spreadsheetId=ACT_DATA_SS_ID,
       range="'Test designations'!E2:I"
@@ -88,11 +97,11 @@ def create_act_score_report(score_data, organization_dict):
       SERVICE_ACCOUNT_JSON,
       scopes=['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
   )
-  drive_service = build('drive', 'v3', credentials=creds)
-  sheets_service = build('sheets', 'v4', credentials=creds)
+  drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+  sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
   # 1. Copy the template spreadsheet
-  if organization_dict and organization_dist['spreadsheet_id']:
+  if organization_dict and organization_dict['spreadsheet_id']:
     file_id = organization_dict['spreadsheet_id']
   else:
     file_id = TEMPLATE_SS_ID
@@ -105,7 +114,7 @@ def create_act_score_report(score_data, organization_dict):
   ).execute()
 
   ss_copy_id = ss_copy.get('id')
-  logging.info(f'ss_copy_id: {ss_copy_id} (copied from {TEMPLATE_SS_ID})')
+  logging.info(f'ss_copy_id: {ss_copy_id} (copied from {file_id})')
 
   ss = sheets_service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
   sheets = ss.get('sheets', [])
@@ -124,7 +133,7 @@ def create_act_score_report(score_data, organization_dict):
           data_sheet_id = sheet['properties']['sheetId']
 
   # 2. Prepare the data for batchUpdate
-  score_data['missing_subjects'] = []
+  score_data['completed_subjects'] = []
   def prep_range(col, start_row, subject, max_len):
       answers = score_data['student_responses'][subject]
       values = []
@@ -136,21 +145,21 @@ def create_act_score_report(score_data, organization_dict):
               omit_count += 1
           values.append([val])
 
-      if max_len - omit_count < 10:
-        score_data['missing_subjects'].append(subject)
-      # Convert col number to letter
-      col_letter = chr(64 + col)
-      return {
-          'range': f'Answers!{col_letter}{start_row}:{col_letter}{start_row + max_len - 1}',
-          'values': values
-      }
+      if max_len - omit_count > 10:
+        score_data['completed_subjects'].append(subject)
+        # Convert col number to letter
+        col_letter = chr(64 + col)
+        return {
+            'range': f'Answers!{col_letter}{start_row}:{col_letter}{start_row + max_len - 1}',
+            'values': values
+        }
+      return None
 
-  data = [
-    prep_range(2, 5, 'english', 75),   # B5:B79
-    prep_range(6, 5, 'math', 60),   # F5:F64
-    prep_range(10, 5, 'reading', 40),  # J5:J44
-    prep_range(14, 5, 'science', 40),  # N5:N44
-  ]
+  data = []
+  for sub in all_subjects:
+    result = prep_range(sub_data[sub]['col'], 5, sub, sub_data[sub]['max_len'])
+    if result:
+        data.append(result)
 
   # 2b. Transfer answer data to the spreadsheet
   sheets_service.spreadsheets().values().batchUpdate(
@@ -222,6 +231,33 @@ def create_act_score_report(score_data, organization_dict):
     }
   }
   requests.append(request)
+
+  hide_requests = []
+
+  if not any(sub in score_data['completed_subjects'] for sub in ['english', 'math']):
+      hide_requests.append({
+          "updateSheetProperties": {
+              "properties": {
+                  "sheetId": analysis_sheet_id,
+                  "hidden": True
+              },
+              "fields": "hidden"
+          }
+      })
+
+  if not any(sub in score_data['completed_subjects'] for sub in ['reading', 'science']):
+      hide_requests.append({
+          "updateSheetProperties": {
+              "properties": {
+                  "sheetId": analysis2_sheet_id,
+                  "hidden": True
+              },
+              "fields": "hidden"
+          }
+      })
+
+  # Add these to your requests list before the batchUpdate
+  requests.extend(hide_requests)
 
   batch_update_request = {
     'requests': requests
@@ -358,23 +394,10 @@ def act_answers_to_student_ss(score_data):
     student_answer_data = service.spreadsheets().values().get(spreadsheetId=score_data['student_ss_id'], range=student_answer_sheet_range).execute()
     student_answer_values = student_answer_data.get('values', [])
 
-    all_subjects = ['english', 'math', 'reading', 'science']
-    completed_subjects = []
-    for sub in all_subjects:
-      if sub not in score_data['missing_subjects']:
-        completed_subjects.append(sub)
-
     # Reset batch requests
     requests = []
 
-    # Enter answers into student spreadsheet
-    sub_data = {
-      'english': {'col': 2, 'max_len': 75},
-      'math': {'col': 6, 'max_len': 60},
-      'reading': {'col': 10, 'max_len': 40},
-      'science': {'col': 14, 'max_len': 40}
-    }
-    for sub in completed_subjects:
+    for sub in score_data['completed_subjects']:
       col = sub_data[sub]['col']
       max_len = sub_data[sub]['max_len']
       answers = score_data['student_responses'][sub]
