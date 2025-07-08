@@ -1105,6 +1105,7 @@ def send_free_resources_email(user):
                         'Email': app.config['MAIL_USERNAME']
                     }
                 ],
+                'ReplyTo': { 'Email': user.email },
                 'Subject': 'Free resources for SAT & ACT prep',
                 'HTMLPart': render_template('email/free-resources-email.html', user=user, resource_folder_url=resource_folder_url),
                 'TextPart': render_template('email/free-resources-email.txt', user=user, resource_folder_url=resource_folder_url)
