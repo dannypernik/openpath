@@ -1261,10 +1261,10 @@ def sat_report():
     return handle_sat_report(form, 'sat-report.html')
 
 
-@app.route('/act-report', methods=['GET', 'POST'])
-def act_report():
-    form = ACTReportForm()
-    return handle_act_report(form, 'act-report.html')
+# @app.route('/act-report', methods=['GET', 'POST'])
+# def act_report():
+#     form = ACTReportForm()
+#     return handle_act_report(form, 'act-report.html')
 
 
 @app.route('/<slug>')
