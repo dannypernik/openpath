@@ -75,7 +75,7 @@ def create_sat_score_report(score_data, organization_dict=None):
             }
         ).execute()
         ss_copy_id = ss_copy.get('id')
-        logging.info(f'ss_copy_id: {ss_copy_id} (copied from {file_id})')
+        logging.info(f'ss_copy: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {file_id})')
 
         ss = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
         sheets = ss.get('sheets', [])
@@ -592,7 +592,6 @@ def sat_answers_to_student_ss(score_data):
                 break
 
         score_data['test_sheet_id'] = str(student_answer_sheet_id)
-        logging.info('https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?gid=' + score_data['test_sheet_id'])
 
         # Process score data
         if score_data['is_rw_hard']:
@@ -801,7 +800,7 @@ def create_custom_sat_spreadsheet(organization):
     ss_copy_id = file_copy.get('id')
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {SHEET_ID})')
 
     answer_sheet_id = None
     analysis_sheet_id = None

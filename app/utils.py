@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
@@ -22,6 +23,9 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
     Parse celery_worker_error.log for SAT/ACT report task stats for the given week.
     Returns a dict: { 'sat': {'success': X, 'failure': Y, 'retry': Z}, 'act': {...} }
     """
+    if not os.path.isfile(log_path):
+        raise FileNotFoundError(f"Log file not found: {log_path}")
+
     if week_start is None or week_end is None:
         today = datetime.utcnow().date()
         week_start = today - timedelta(days=today.weekday())  # Monday
@@ -62,14 +66,17 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
                 for status in ['success', 'retry']:
                     if patterns[task][status].search(line):
                         stats[task][status] += 1
-                patterns[task]['failure'] = lost_stats.get(f'app.tasks.create_and_send_{task}_report_task', 0)
+
+    # Set failure counts from lost_stats
+    stats['sat']['failure'] = lost_stats.get('app.tasks.create_and_send_sat_report_task', 0)
+    stats['act']['failure'] = lost_stats.get('app.tasks.create_and_send_act_report_task', 0)
+
     return stats
 
 
 def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
     """
     Returns a dict with counts of WorkerLostError per task for the given week.
-    Example: {'app.tasks.create_and_send_sat_report_task': 2, 'app.tasks.create_and_send_act_report_task': 1}
     """
     from collections import defaultdict
 
@@ -78,27 +85,30 @@ def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
         week_start = today - timedelta(days=today.weekday())  # Monday
         week_end = week_start + timedelta(days=7)
 
-    last_task = None
     lost_counts = defaultdict(int)
-
     with open(log_path, 'r') as f:
-        for line in f:
-            # Extract date from log line (assumes format: [YYYY-MM-DD ...)
-            m_date = re.match(r'\[(\d{4}-\d{2}-\d{2})', line)
-            if not m_date:
-                continue
-            log_date = datetime.strptime(m_date.group(1), '%Y-%m-%d').date()
-            if not (week_start <= log_date < week_end):
-                continue
-
-            # Check for task received/started
-            m_task = re.search(r'Task (app\.tasks\.[\w_]+)\[.*\] (received|started)', line)
-            if m_task:
-                last_task = m_task.group(1)
-            # Check for WorkerLostError
-            if 'billiard.exceptions.WorkerLostError' in line and last_task:
-                lost_counts[last_task] += 1
-
+        lines = list(f)
+        for i, line in enumerate(lines):
+            # Only look for WorkerLostError lines
+            if 'billiard.exceptions.WorkerLostError' in line:
+                # Look backward for the most recent task received line within the same day
+                search_idx = i
+                found_task = None
+                while search_idx >= 0:
+                    prev_line = lines[search_idx]
+                    # Extract date from log line
+                    m_date = re.match(r'\[(\d{4}-\d{2}-\d{2})', prev_line)
+                    if m_date:
+                        log_date = datetime.strptime(m_date.group(1), '%Y-%m-%d').date()
+                        if not (week_start <= log_date < week_end):
+                            break  # Stop if we go past the week
+                    m_prev_task = re.search(r'Task (app\.tasks\.[\w_]+)\[.*\] received', prev_line)
+                    if m_prev_task:
+                        found_task = m_prev_task.group(1)
+                        break
+                    search_idx -= 1
+                if found_task:
+                    lost_counts[found_task] += 1
     return dict(lost_counts)
 
 
@@ -107,12 +117,10 @@ def batch_update_weekly_usage():
     Parse celery_worker_error.log for the current week and update the usage sheet
     with stats for SAT/ACT (success, failure, retry) for the week.
     """
-    # Get current week start
     week_start, week_end = get_week_start_and_end()
-    # Parse log for stats
+
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
-    # Extract counts for each column, defaulting to blank if missing
     sat_success = stats['sat'].get('success', '')
     sat_failure = stats['sat'].get('failure', '')
     sat_retry   = stats['sat'].get('retry', '')
@@ -130,19 +138,19 @@ def batch_update_weekly_usage():
     result = sheet.values().get(spreadsheetId=USAGE_SHEET_ID, range=USAGE_SHEET_RANGE).execute()
     values = result.get('values', [])
 
-    # Find or create the row for this week
     row_idx = None
     for i, row in enumerate(values):
         if row and row[0] == week_start.isoformat():
             row_idx = i
             break
     if row_idx is None:
-        # Add a new row for this week
         new_row = [week_start.isoformat()] + ['0'] * 6
         values.append(new_row)
         row_idx = len(values) - 1
+        print("Added new row for this week")
+    else:
+        print(f"Updating existing row at index {row_idx}")
 
-    # Set the values for all columns
     values[row_idx][1] = str(sat_success)
     values[row_idx][2] = str(sat_retry)
     values[row_idx][3] = str(sat_failure)
@@ -150,7 +158,6 @@ def batch_update_weekly_usage():
     values[row_idx][5] = str(act_retry)
     values[row_idx][6] = str(act_failure)
 
-    # Write back the updated values
     sheet.values().update(
         spreadsheetId=USAGE_SHEET_ID,
         range=USAGE_SHEET_RANGE,

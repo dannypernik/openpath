@@ -38,7 +38,7 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
     logging.info(f"Score report used {score_report_mem:.2f} MB of memory")
 
     if score_data_updated['student_ss_id']:
-      logging.info(f"Student SAT SsId: {score_data['student_ss_id']}")
+      logging.info(f"SAT student ss: https://docs.google.com/spreadsheets/d/{score_data['student_ss_id']}/edit?gid={score_data['test_sheet_id']}")
       score_data_updated = sat_answers_to_student_ss(score_data_updated)
       post_ss_mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
       student_ss_mem = post_ss_mem - mem_post_report
@@ -55,7 +55,9 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
 def create_and_send_act_report_task(self, score_data, organization_dict=None):
   try:
     if organization_dict:
-      logging.info(f"Organization info: {organization_dict}")
+      logging.info(f"Creating ACT report for {score_data['student_name']} via {organization_dict['name']}")
+    else:
+      logging.info(f"Creating ACT report for {score_data['student_name']}")
 
     score_data = process_act_answer_img(score_data)
 

@@ -390,6 +390,7 @@ def get_mod_difficulty(score_details_data):
 
   return score_details_data
 
+
 def print_answer_key(score_details_data):
   answer_key = {
     'test_code': score_details_data['test_code'],
@@ -410,6 +411,7 @@ def print_answer_key(score_details_data):
         correct_answer = score_details_data['answers'][sub][mod][q]['correct_answer'].rstrip(',')
         answer_key[sub][mod][q] = correct_answer
   pp.pprint(answer_key)
+
 
 def check_answer_key(score_details_data):
   answer_key = {
@@ -2426,4 +2428,3 @@ def get_all_data(report_path, details_path):
   # print_answer_key(data)
   # pp.pprint(data)
   return data
-
