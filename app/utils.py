@@ -126,7 +126,7 @@ def batch_update_weekly_usage(date_yyyymmddd=None):
 
     week_start, week_end = get_week_start_and_end(date_yyyymmddd)
 
-    stats = parse_celery_worker_log('/var/log/celery_worker_error.log.2', week_start, week_end)
+    stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
     sat_success = stats['sat'].get('success', '')
     sat_failure = stats['sat'].get('failure', '')
