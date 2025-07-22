@@ -1417,6 +1417,8 @@ def handle_sat_report(form, template_name, organization=None):
                 flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'missing Math questions' in str(ve):
                 flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+            elif 'PDF too narrow' in str(ve):
+                flash('Score Details error: Page too narrow. Ensure "Reading and Writing" displays on single line in answer table.', 'error')
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
             elif 'insufficient questions answered' in str(ve):

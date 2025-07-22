@@ -231,7 +231,7 @@ class ScoreAnalysisForm(FlaskForm):
 
 
 class SATReportForm(FlaskForm):
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+    email = EmailField('Email address', render_kw={'placeholder': 'Required'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>')])
@@ -246,7 +246,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+    email = EmailField('Email address', render_kw={'placeholder': 'Required'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \

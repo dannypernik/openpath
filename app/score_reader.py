@@ -77,6 +77,8 @@ def get_student_answers(score_details_file_path):
           if line.split()[1] == 'Reading':
               subject = 'rw_modules'
               correct_index = 4
+              if line.split()[3] != 'Writing':
+                raise ValueError('Error reading score details: PDF too narrow')
           elif line.split()[1] == 'Math':
             subject = 'm_modules'
             correct_index = 2
