@@ -14,9 +14,9 @@ def get_week_start_and_end(date_yyyymmddd=None):
             date = datetime.strptime(date_yyyymmddd, '%Y%m%d').date()
         except ValueError:
             raise ValueError("Invalid date format. Use YYYYMMDD.")
-
-    if date is None:
+    else:
         date = datetime.utcnow().date()
+
     if date.weekday() == 0:
         week_start = date - timedelta(days=7)
     else:
