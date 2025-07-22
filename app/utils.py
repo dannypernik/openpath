@@ -118,20 +118,13 @@ def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
     return dict(lost_counts)
 
 
-def batch_update_weekly_usage(week_start_yyyymmddd=None):
+def batch_update_weekly_usage(date_yyyymmddd=None):
     """
     Parse celery_worker_error.log for the current week and update the usage sheet
     with stats for SAT/ACT (success, failure, retry) for the week.
     """
-    if week_start_yyyymmddd:
-        try:
-            date = datetime.strptime(week_start_yyyymmddd, '%Y%m%d').date()
-        except ValueError:
-            raise ValueError("Invalid date format. Use YYYYMMDD.")
-    else:
-        date = None
 
-    week_start, week_end = get_week_start_and_end(date)
+    week_start, week_end = get_week_start_and_end(date_yyyymmddd)
 
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
