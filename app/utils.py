@@ -125,12 +125,13 @@ def batch_update_weekly_usage(week_start_yyyymmddd=None):
     """
     if week_start_yyyymmddd:
         try:
-            week_start = datetime.strptime(week_start_yyyymmddd, '%Y%m%d').date()
-            week_end = week_start + timedelta(days=7)
+            date = datetime.strptime(week_start_yyyymmddd, '%Y%m%d').date()
         except ValueError:
             raise ValueError("Invalid date format. Use YYYYMMDD.")
     else:
-        week_start, week_end = get_week_start_and_end(week_start)
+        date = None
+
+    week_start, week_end = get_week_start_and_end(date)
 
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
