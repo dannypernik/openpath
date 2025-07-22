@@ -7,8 +7,14 @@ from google.oauth2.service_account import Credentials
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'  # Adjust as needed
 
-def get_week_start_and_end(date=None):
+def get_week_start_and_end(date_yyyymmddd=None):
     """Returns the start and end of the week for the given date."""
+    if date_yyyymmddd:
+        try:
+            date = datetime.strptime(date_yyyymmddd, '%Y%m%d').date()
+        except ValueError:
+            raise ValueError("Invalid date format. Use YYYYMMDD.")
+
     if date is None:
         date = datetime.utcnow().date()
     if date.weekday() == 0:
@@ -112,12 +118,19 @@ def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
     return dict(lost_counts)
 
 
-def batch_update_weekly_usage():
+def batch_update_weekly_usage(week_start_yyyymmddd=None):
     """
     Parse celery_worker_error.log for the current week and update the usage sheet
     with stats for SAT/ACT (success, failure, retry) for the week.
     """
-    week_start, week_end = get_week_start_and_end()
+    if week_start_yyyymmddd:
+        try:
+            week_start = datetime.strptime(week_start_yyyymmddd, '%Y%m%d').date()
+            week_end = week_start + timedelta(days=7)
+        except ValueError:
+            raise ValueError("Invalid date format. Use YYYYMMDD.")
+    else:
+        week_start, week_end = get_week_start_and_end(week_start)
 
     stats = parse_celery_worker_log('/var/log/celery_worker_error.log', week_start, week_end)
 
