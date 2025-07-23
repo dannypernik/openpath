@@ -6,4 +6,7 @@ It appears that the College Board has changed the answer key for practice {{ sco
 
 Note that the scores displayed on the report are not affected by errors in the answer key.
 {% endif %}
-{% if score_data['student_ss_id'] %}Your test answers should have been added to the <a href="https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id'] }}/edit?gid={{ score_data['test_sheet_id'] }}" target="_blank">{{score_data['test_code'].upper() }} tab of your answer spreadsheet</a>. If not, please reply here for assistance. This tool is in beta, so please let us know if you find any mistakes or have any questions or suggestions. Thank you for trying it out!{% else %}This tool is in beta, so please reply to this email if you find any mistakes or have any questions or suggestions. Thank you for trying it out!{% endif %}
+{% if score_data['student_ss_id'] %}Your test answers should have been added to the {{score_data['test_code'].upper() }} tab of your answer spreadsheet:
+https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id'] }}/edit?gid={{ score_data['test_sheet_id'] }}
+
+If not, please reply here for assistance. This tool is in beta, so please let us know if you find any mistakes or have any questions or suggestions. Thank you for trying it out!{% else %}This tool is in beta, so please reply to this email if you find any mistakes or have any questions or suggestions. Thank you for trying it out!{% endif %}
