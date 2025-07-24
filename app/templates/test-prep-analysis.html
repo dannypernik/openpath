@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <header>
+    <h1 class="mb-1">Test Prep Analysis Tools</h1>
+    <h3 class="mb-4">by Open Path Tutoring</h3>
+  </header>
+
+  <section>
+    <h4 class="fw-bold">About This App</h4>
+    <p>
+      Test Prep Analysis Tools is a Google Workspace Add-on designed to help tutors and administrators efficiently manage, analyze, and update SAT/ACT student data and folders. The app automates the creation of student folders, links Google Sheets and Docs, and provides tools for updating and transferring student performance data.
+    </p>
+  </section>
+
+  <section>
+    <h4 class="fw-bold">Functionality</h4>
+    <ul class="mb-3">
+      <li>Create and organize SAT/ACT student folders in Google Drive</li>
+      <li>Copy and link Google Sheets and Docs templates for each student</li>
+      <li>Transfer and update student performance data between spreadsheets</li>
+      <li>Automate formatting, formulas, and conditional formatting in student and admin sheets</li>
+      <li>Generate and manage revision sheets and answer keys</li>
+    </ul>
+  </section>
+
+  <section>
+    <h4 class="fw-bold">Why We Request Access to Your Google Data</h4>
+    <p>
+      This app requires access to your Google Drive and Google Sheets to:
+    </p>
+    <ul>
+      <li>Create, copy, and organize student folders and files</li>
+      <li>Read and update student and admin spreadsheets</li>
+      <li>Automate data transfer and formatting between Google Sheets</li>
+      <li>Generate and store revision sheets and answer keys as PDFs</li>
+    </ul>
+    <p>
+      <u>We do not share your data with third parties.</u> All data processing is performed within your Google Workspace environment.
+    </p>
+  </section>
+
+  <section>
+    <h4 class="fw-bold">Privacy Policy</h4>
+    <p>
+      Please review our
+      <a href="{{ url_for('apps_script_privacy_policy')}}" target="_blank" data-text="Privacy Policy">Privacy Policy</a>
+      for details on how we handle your data. If you have any questions or suggestions
+      about our Privacy Policy, do not hesitate to contact us at
+      <a href="mailto:{{ hello }}">{{ hello }}</a>.
+    </p>
+  </section>
+{% endblock content %}
