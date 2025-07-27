@@ -20,8 +20,9 @@ class MyTaskBaseClass(celery.Task):
         # args (Tuple) - Original arguments for the task that failed.
         # kwargs (Dict) - Original keyword arguments for the task that failed.
         logging.error(f'Task {task_id} raised exception: {exc}')
+        score_data = args[0] if args else kwargs.get('score_data')
         if self.request.retries >= self.max_retries:
-          send_task_fail_mail(exc, task_id, args, kwargs, einfo)
+          send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
 
 @celery.task(name='app.tasks.create_and_send_sat_report_task', bind=True, base=MyTaskBaseClass)
 def create_and_send_sat_report_task(self, score_data, organization_dict=None):

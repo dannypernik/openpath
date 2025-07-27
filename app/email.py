@@ -1367,7 +1367,7 @@ def send_fail_mail(subject, error='unknown error', data=None):
     return result.status_code
 
 
-def send_task_fail_mail(exc, task_id, args, kwargs, einfo):
+def send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')

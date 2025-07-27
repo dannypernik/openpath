@@ -5,7 +5,6 @@ import re
 import pprint
 from flask import flash, Markup
 import logging
-from app.email import send_changed_answers_email
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
@@ -28,6 +27,7 @@ def get_student_answers(score_details_file_path):
       'is_m_hard': None,
       'has_omits': False,
       'answer_key_mismatches': [],
+      'missing_data': [],
       'answers': {
         'rw_modules': {
           '1': {},
@@ -2405,7 +2405,13 @@ def check_answer_key(score_details_data):
       if mod == '2' and ((sub == 'rw_modules' and score_details_data['is_rw_hard']) or (sub == 'm_modules' and score_details_data['is_m_hard'])):
         key_mod = '3'
       for q in score_details_data['answers'][sub][mod]:
-        if score_details_data['answers'][sub][mod][q]['correct_answer'] != answer_key[score_details_data['test_code']][sub][key_mod][q]:
+        if score_details_data['answers'][sub][mod][q]['correct_answer'] == 'not found':
+          score_details_data['missing_data'].append({
+            'sub': sub,
+            'mod': mod,
+            'q': q
+          })
+        elif score_details_data['answers'][sub][mod][q]['correct_answer'] != answer_key[score_details_data['test_code']][sub][key_mod][q]:
           score_details_data['answer_key_mismatches'].append({
             'sub': sub,
             'mod': mod,
