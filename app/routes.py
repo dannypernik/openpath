@@ -1312,9 +1312,10 @@ def custom_act_report(slug):
 def handle_sat_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-    ss_id = request.args.get('ssId')
-    if ss_id:
-        form.spreadsheet_url.data = ss_id
+    if request.method == 'GET':
+        ss_id = request.args.get('ssId')
+        if ss_id:
+            form.spreadsheet_url.data = ss_id
 
     if form.validate_on_submit():
         if hcaptcha.verify():
