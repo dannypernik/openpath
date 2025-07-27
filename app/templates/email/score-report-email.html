@@ -2,9 +2,25 @@
 
 {% block content %}
   <p>
-    Please find the {{ score_data['test_display_name'] }} score report for {{ score_data['student_name'] }}
-    attached.
+    Please find the {{ score_data['test_display_name'] }} score report for
+    {{ score_data['student_name'] }} attached.
   </p>
+
+  {% if score_data['missing_data'] %}
+    <p>
+      It appears that data for the following questions was missing from the Score Details PDF:
+    </p>
+    <ul>
+      {% for item in score_data['missing_data'] %}
+        <li>{{ item['sub'] }} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
+      {% endfor %}
+    </ul>
+    <p>
+      Answers for these questions will appear as "not found" on the score report. The
+      subject and overall scores are still accurate, however.
+    </p>
+  {% endif %}
+
   {% if score_data['answer_key_mismatches'] %}
     <p>
       It appears that the College Board has changed the answer key for practice {{

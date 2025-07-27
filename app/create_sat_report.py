@@ -536,7 +536,7 @@ def send_sat_pdf_report(spreadsheet_id, score_data):
         # Handle response
         if response.status_code == 200:
             pdf_name = f"SAT Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf"
-            file_path = f'app/private/files/sat/pdf/{pdf_name}'
+            file_path = f'app/private/files/sat/reports/{pdf_name}'
 
             # Save the PDF content to a file
             with open(file_path, 'wb') as f:
