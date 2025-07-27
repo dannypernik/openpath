@@ -7,7 +7,7 @@ $spacer: 2rem;
 $primary-color: rgb(0, 69, 87); //#004557;#01496d;//#1C4D65;
 $secondary-color: #f06d53; //#d35137;//e97435;
 $text-color: lighten($primary-color, 7%);
-$hover-color: #e45b39;
+$hover-color: #fe7d5e;
 $alert-color: #850017;
 $table-color: #2fb2cb;
 $grey: #888;
@@ -384,6 +384,13 @@ input[type="submit"] {
 
 a.btn {
   display: inline-block;
+}
+
+.color-primary {
+  color: $primary-color;
+}
+.color-secondary {
+  color: $secondary-color;
 }
 
 .white {
@@ -980,7 +987,7 @@ a.info-icon {
 }
 
 .modal-dialog {
-  max-width: 90rem;
+  max-width: 100rem;
 }
 
 .btn-close {
@@ -992,6 +999,37 @@ a.info-icon {
 
   &:hover {
     color: $secondary-color;
+  }
+}
+
+.next-modal-btn {
+  position: absolute;
+  top: 50%;
+  right: 5rem;
+  transform: translateY(-50%);
+  // z-index: 1051;
+  width: 10.5rem;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg circle {
+    fill: $secondary-color;
+    transition: fill 0.3s;
+  }
+
+  &:hover {
+    p {
+      font-weight: 600;
+    }
+
+    svg circle {
+      fill: $hover-color;
+    }
   }
 }
 

@@ -6187,7 +6187,7 @@ input[type=submit] {
   background-color: #f06d53;
   border-color: #f06d53;
   color: white;
-  --bs-btn-hover-bg: #e45b39;
+  --bs-btn-hover-bg: #fe7d5e;
   --bs-btn-hover-color: white;
   --bs-btn-font-size: 1.8rem;
   display: block;
@@ -6247,6 +6247,14 @@ a.btn {
   display: inline-block;
 }
 
+.color-primary {
+  color: rgb(0, 69, 87);
+}
+
+.color-secondary {
+  color: #f06d53;
+}
+
 .white {
   color: white;
 }
@@ -6286,8 +6294,8 @@ a.btn {
 button:hover,
 .btn:hover,
 input[type=submit]:hover {
-  background-color: #e45b39;
-  border-color: #e45b39;
+  background-color: #fe7d5e;
+  border-color: #fe7d5e;
   color: white;
 }
 
@@ -6802,7 +6810,7 @@ a.info-icon:hover span {
 }
 
 .modal-dialog {
-  max-width: 90rem;
+  max-width: 100rem;
 }
 
 .btn-close {
@@ -6814,6 +6822,31 @@ a.info-icon:hover span {
 }
 .btn-close:hover {
   color: #f06d53;
+}
+
+.next-modal-btn {
+  position: absolute;
+  top: 50%;
+  right: 5rem;
+  transform: translateY(-50%);
+  width: 10.5rem;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.next-modal-btn svg circle {
+  fill: #f06d53;
+  transition: fill 0.3s;
+}
+.next-modal-btn:hover p {
+  font-weight: 600;
+}
+.next-modal-btn:hover svg circle {
+  fill: #fe7d5e;
 }
 
 #ss-icon {

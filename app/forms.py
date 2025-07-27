@@ -237,7 +237,7 @@ class SATReportForm(FlaskForm):
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a>')])
     details_file = FileField('Score Details PDF', render_kw={'placeholder': 'Score Details PDF'}, \
         validators=[FileRequired('PDF upload error'), FileAllowed(['pdf'], 'PDF files only. Please see the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a>')])
-    spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
+    spreadsheet_url = StringField('Student spreadsheet URL or ID', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 
 
@@ -251,7 +251,7 @@ class ACTReportForm(FlaskForm):
     test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'heic', 'webp', 'tif'], 'Images only please (jpg, png, heic, webp, or tif)')])
-    spreadsheet_url = StringField('Student spreadsheet URL', render_kw={'placeholder': 'Optional'})
+    spreadsheet_url = StringField('Student spreadsheet URL or ID', render_kw={'placeholder': 'Optional'})
     submit = SubmitField()
 
 

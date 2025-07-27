@@ -1310,9 +1310,11 @@ def custom_act_report(slug):
 
 
 def handle_sat_report(form, template_name, organization=None):
-    form = SATReportForm()
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
+    ss_id = request.args.get('ssId')
+    if ss_id:
+        form.spreadsheet_url.data = ss_id
 
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -1321,14 +1323,16 @@ def handle_sat_report(form, template_name, organization=None):
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-        pdf_folder_path = 'app/private/files/sat/pdf'
+        uploads_folder_path = 'app/private/files/sat/uploads'
         json_folder_path = 'app/private/files/sat/json'
+        reports_folder_path = 'app/private/files/sat/reports'
 
-        if not os.path.exists(pdf_folder_path):
-            os.makedirs(pdf_folder_path)
-
+        if not os.path.exists(uploads_folder_path):
+            os.makedirs(uploads_folder_path)
         if not os.path.exists(json_folder_path):
             os.makedirs(json_folder_path)
+        if not os.path.exists(reports_folder_path):
+            os.makedirs(reports_folder_path)
 
         if form.spreadsheet_url.data:
             try:
@@ -1351,8 +1355,8 @@ def handle_sat_report(form, template_name, organization=None):
             flash('Only PDF files are allowed', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-        report_file_path = os.path.join(pdf_folder_path, form.email.data + ' CB report.pdf')
-        details_file_path = os.path.join(pdf_folder_path, form.email.data + ' CB details.pdf')
+        report_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB report.pdf')
+        details_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB details.pdf')
 
         report_file.save(report_file_path)
         details_file.save(details_file_path)
@@ -1371,8 +1375,8 @@ def handle_sat_report(form, template_name, organization=None):
                 score_data['admin_email'] = None
 
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
-            os.rename(report_file_path, os.path.join(pdf_folder_path, filename + ' CB report.pdf'))
-            os.rename(details_file_path, os.path.join(pdf_folder_path, filename + ' CB details.pdf'))
+            os.rename(report_file_path, os.path.join(uploads_folder_path, filename + ' CB report.pdf'))
+            os.rename(details_file_path, os.path.join(uploads_folder_path, filename + ' CB details.pdf'))
             json_file_path = os.path.join(json_folder_path, filename + '.json')
 
             with open(json_file_path, "w") as json_file:
@@ -1529,6 +1533,16 @@ def handle_act_report(form, template_name, organization=None):
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
             flash(f'Failed to send answer sheet. Please contact {hello}.', 'error')
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+
+@app.route('/admin-files/<path:filename>')
+@admin_required
+def admin_download(filename):
+    private_folder = os.path.join(app.root_path, 'private/files')
+    file_path = os.path.join(private_folder, filename)
+    if not os.path.isfile(file_path):
+        abort(404)
+    return send_file(file_path, as_attachment=True)
 
 
 def TemplateRenderer(app):
