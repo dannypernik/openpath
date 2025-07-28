@@ -28,7 +28,9 @@ class MyTaskBaseClass(celery.Task):
 def create_and_send_sat_report_task(self, score_data, organization_dict=None):
   try:
     if organization_dict:
-      logging.info(f"Organization info: {organization_dict}")
+      logging.info(f"SAT report started for {score_data['student_name']} via {organization_dict['name']}")
+    else:
+      logging.info(f"SAT report started for {score_data['student_name']} by {score_data['email']}")
 
     mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
@@ -56,9 +58,9 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
 def create_and_send_act_report_task(self, score_data, organization_dict=None):
   try:
     if organization_dict:
-      logging.info(f"Creating ACT report for {score_data['student_name']} via {organization_dict['name']}")
+      logging.info(f"ACT report started for {score_data['student_name']} via {organization_dict['name']}")
     else:
-      logging.info(f"Creating ACT report for {score_data['student_name']}")
+      logging.info(f"ACT report started for {score_data['student_name']} by {score_data['email']}")
 
     score_data = process_act_answer_img(score_data)
 
