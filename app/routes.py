@@ -1316,6 +1316,9 @@ def handle_sat_report(form, template_name, organization=None):
         ss_id = request.args.get('ssId')
         if ss_id:
             form.spreadsheet_url.data = ss_id
+        email = request.args.get('email')
+        if email:
+            form.email.data = email
 
     if form.validate_on_submit():
         if hcaptcha.verify():
