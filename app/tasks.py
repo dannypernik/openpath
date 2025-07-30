@@ -21,6 +21,9 @@ class MyTaskBaseClass(celery.Task):
         # kwargs (Dict) - Original keyword arguments for the task that failed.
         logging.error(f'Task {task_id} raised exception: {exc}')
         score_data = args[0] if args else kwargs.get('score_data')
+        if not score_data:
+          logging.error("Score data is missing. Cannot send failure email.")
+          return
         if self.request.retries >= self.max_retries:
           send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
 

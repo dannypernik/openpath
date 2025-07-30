@@ -61,13 +61,13 @@ def process_act_answer_img(score_data):
   process_response, uri = gc.process_image()
 
   # download the answers as json, you need to specify the destination file
-  json_filename = secure_filename(f"{score_data['student_name']} {score_data['test_display_name']} answers {score_data['date']}.json")
-  json_path = os.path.join(score_data['act_folder_path'], json_filename)
+  json_filename = secure_filename(f"{score_data['student_name']} {score_data['date']} {score_data['test_display_name']} answers.json")
+  json_path = os.path.join(score_data['act_uploads_path'], json_filename)
   download_ma_response, path = gc.download_marked_answers(json_path)
 
   # download the confirmation image, you need to specify the destination file
-  confirmation_filename = secure_filename(f"{score_data['student_name']} {score_data['test_display_name']} confirmation {score_data['date']}.jpg")
-  confirmation_path = os.path.join(score_data['act_folder_path'], confirmation_filename)
+  confirmation_filename = secure_filename(f"{score_data['student_name']} {score_data['date']} {score_data['test_display_name']} confirmation.jpg")
+  confirmation_path = os.path.join(score_data['act_reports_path'], confirmation_filename)
   download_ci_response, path = gc.download_confirmation_image(confirmation_path)
 
   # Open the JSON file saved at json_path
@@ -326,8 +326,8 @@ def send_act_pdf_report(spreadsheet_id, score_data):
 
       # Handle response
       if response.status_code == 200:
-          pdf_name = f"ACT Score Analysis for {score_data['student_name']} {score_data['date']} {score_data['test_code']}.pdf"
-          file_path = os.path.join(score_data['act_folder_path'], secure_filename(pdf_name))
+          pdf_name = f"ACT Score Analysis for {score_data['student_name']} {score_data['date']} {score_data['test_display_name']}.pdf"
+          file_path = os.path.join(score_data['act_reports_path'], secure_filename(pdf_name))
           print(file_path)
           # Save the PDF content to a file
           with open(file_path, 'wb') as f:

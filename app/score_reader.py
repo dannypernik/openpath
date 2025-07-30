@@ -13,7 +13,6 @@ def get_student_answers(score_details_file_path):
     'rw_modules': {'questions': 27},
     'm_modules': {'questions': 22}
   }
-
   pdf = pdfplumber.open(score_details_file_path)
   pages = pdf.pages
 

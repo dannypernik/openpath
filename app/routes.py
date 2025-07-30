@@ -1327,9 +1327,9 @@ def handle_sat_report(form, template_name, organization=None):
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-        uploads_folder_path = 'app/private/files/sat/uploads'
-        json_folder_path = 'app/private/files/sat/json'
-        reports_folder_path = 'app/private/files/sat/reports'
+        uploads_folder_path = 'app/private/sat/uploads'
+        json_folder_path = 'app/private/sat/json'
+        reports_folder_path = 'app/private/sat/reports'
 
         if not os.path.exists(uploads_folder_path):
             os.makedirs(uploads_folder_path)
@@ -1362,11 +1362,14 @@ def handle_sat_report(form, template_name, organization=None):
         report_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB report.pdf')
         details_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB details.pdf')
 
+        report_file.stream.seek(0)
+        details_file.stream.seek(0)
+
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
         try:
-            score_data = get_all_data(report_file, details_file)
+            score_data = get_all_data(report_file_path, details_file_path)
             logging.info(f"Score data: {score_data}")
             score_data['email'] = form.email.data.lower()
             score_data['student_ss_id'] = student_ss_id
@@ -1462,9 +1465,13 @@ def handle_act_report(form, template_name, organization=None):
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
         try:
-            act_folder_path = 'app/private/files/act'
-            if not os.path.exists(act_folder_path):
-                os.makedirs(act_folder_path)
+            act_uploads_path = 'app/private/act/uploads'
+            act_reports_path = 'app/private/act/reports'
+
+            if not os.path.exists(act_uploads_path):
+                os.makedirs(act_uploads_path)
+            if not os.path.exists(act_reports_path):
+                os.makedirs(act_reports_path)
 
             user = User(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data.lower())
 
@@ -1473,7 +1480,7 @@ def handle_act_report(form, template_name, organization=None):
 
             file_extension = get_image_info(answer_img)
             answer_sheet_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
-            answer_img_path = os.path.join(act_folder_path, answer_sheet_filename)
+            answer_img_path = os.path.join(act_uploads_path, answer_sheet_filename)
             answer_img.stream.seek(0)  # Reset file pointer to the beginning
             answer_img.save(answer_img_path)
 
@@ -1487,7 +1494,8 @@ def handle_act_report(form, template_name, organization=None):
 
             score_data = {}
             score_data['answer_img_path'] = answer_img_path
-            score_data['act_folder_path'] = act_folder_path
+            score_data['act_uploads_path'] = act_uploads_path
+            score_data['act_reports_path'] = act_reports_path
             score_data['test_code'] = form.test_code.data
             score_data['test_display_name'] = f'ACT {score_data["test_code"]}'
             score_data['student_name'] = f"{user.first_name} {user.last_name}"
@@ -1542,7 +1550,7 @@ def handle_act_report(form, template_name, organization=None):
 @app.route('/admin-files/<path:filename>')
 @admin_required
 def admin_download(filename):
-    private_folder = os.path.join(app.root_path, 'private/files')
+    private_folder = os.path.join(app.root_path, 'private')
     file_path = os.path.join(private_folder, filename)
     if not os.path.isfile(file_path):
         abort(404)
