@@ -123,6 +123,8 @@ def is_valid_pdf(file):
             return True
     except Exception:
         return False
+    finally:
+        file.stream.seek(0)
     return False
 
 def get_image_info(file_path):
@@ -140,6 +142,12 @@ def get_image_info(file_path):
     except Exception as e:
         print(f"Image format error: {e}")
         return None, None
+    finally:
+        # Reset the file pointer if it's a file-like object
+        if hasattr(file_path, 'stream'):
+            file_path.stream.seek(0)
+        else:
+            file_path.seek(0)
 
 
 def add_user_to_drive_folder(email, folder_id):
@@ -1362,9 +1370,6 @@ def handle_sat_report(form, template_name, organization=None):
         report_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB report.pdf')
         details_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB details.pdf')
 
-        report_file.stream.seek(0)
-        details_file.stream.seek(0)
-
         report_file.save(report_file_path)
         details_file.save(details_file_path)
 
@@ -1412,7 +1417,7 @@ def handle_sat_report(form, template_name, organization=None):
 
             if organization:
                 return_route = url_for('custom_sat_report', slug=organization['slug'])
-                flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
+                flash(Markup(f'Your answers have been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('index'))
@@ -1481,7 +1486,7 @@ def handle_act_report(form, template_name, organization=None):
             file_extension = get_image_info(answer_img)
             answer_sheet_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
             answer_img_path = os.path.join(act_uploads_path, answer_sheet_filename)
-            answer_img.stream.seek(0)  # Reset file pointer to the beginning
+            # answer_img.stream.seek(0)  # Reset file pointer to the beginning
             answer_img.save(answer_img_path)
 
             if file_extension == 'heic':
