@@ -1,0 +1,14 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  <p>
+    Account requested by {{ user.first_name }} {{ user.last_name }} ({{ user.email }}){% if next %}
+      after attempting to access {{ next }}
+    {% endif %}.
+  </p>
+  <p>
+    <a href="{{ url_for('request_password_reset') }}?email={{ user.email }}">
+      Send password reset link
+    </a>
+  </p>
+{% endblock content %}

@@ -15,7 +15,8 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_test_strategies_email, send_score_analysis_email, send_test_registration_email, \
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
     send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
-    send_ntpa_email, send_fail_mail, send_free_resources_email, send_nomination_email
+    send_ntpa_email, send_fail_mail, send_free_resources_email, send_nomination_email, \
+    send_signup_request_email
 from functools import wraps
 import requests
 import json
@@ -373,15 +374,16 @@ def signup():
             return redirect(url_for('signin', next=next))
         user = User(first_name=signup_form.first_name.data, last_name=signup_form.last_name.data, \
             email=signup_form.email.data.lower())
-        user.set_password(signup_form.password.data)
+        # user.set_password(signup_form.password.data)
         db.session.add(user)
         db.session.commit()
-        email_status = send_verification_email(user)
-        login_user(user)
+        # email_status = send_verification_email(user)
+        # login_user(user)
+        email_status = send_signup_request_email(user, next)
         if email_status == 200:
-            flash('Welcome! Please check your inbox to verify your email.')
+            flash('Thanks for reaching out! We\'ll be in touch.')
         else:
-            flash('Verification email failed to send, please contact ' + hello, 'error')
+            flash('Signup request email failed to send, please contact ' + hello, 'error')
 
         if next in app.view_functions:
             return redirect(url_for(next, org=org))
@@ -476,6 +478,12 @@ def verify_email(token):
 @app.route('/request-password-reset', methods=['GET', 'POST'])
 def request_password_reset():
     form = RequestPasswordResetForm()
+
+    if request.method == 'GET':
+        email = request.args.get('email')
+        if email:
+            form.email.data = email
+
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass

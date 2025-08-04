@@ -565,6 +565,62 @@ def send_signup_notification_email(user, dates):
     return result.status_code
 
 
+def send_signup_request_email(user, next):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': app.config['MAIL_USERNAME'],
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': app.config['MAIL_USERNAME']
+                    }
+                ],
+                'Subject': user.first_name + ' requested an account',
+                'HTMLPart': render_template('email/signup-request-email.html',
+                    user=user, next=next)
+            }
+        ]
+    }
+
+    new_contact = {
+        'first_name': user.first_name, 'last_name': user.last_name, \
+        'emails': [{ 'type': 'home', 'value': user.email}], \
+        'phones': [{ 'type': 'mobile', 'value': user.phone}], \
+        'tags': ['Website', next]
+    }
+
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+
+    if crm_contact.status_code == 201:
+        logging.info('crm_contact passes')
+        new_action = {
+            'contact_id': crm_contact.json()['data']['contact']['id'],
+            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'status': 'asap',
+            'text': 'Respond to OPT web form',
+            #'date': ,
+            #'exact_time': 1526472000,
+            #'position': 1
+        }
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        logging.info('crm_action:', crm_action)
+
+    result = mailjet.send.create(data=data)
+
+    if result.status_code == 200:
+        logging.info('Signup notification email sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        logging.info('Signup notification email to ' + app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+    return result.status_code
+
+
 def send_verification_email(user, page=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
