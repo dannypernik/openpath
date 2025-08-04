@@ -14,7 +14,7 @@
       <div class="row">
         <div class="col-12 col-md-5 mb-4">
           <h1>Log in</h1>
-          <form action="{{ url_for('login') }}" method="post">
+          <form action="{{ url_for('login', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
             {{ form.hidden_tag() }}
             {{ form.email }}
             {{ form.password }}
@@ -25,7 +25,7 @@
             <a href="{{ url_for('request_password_reset') }}" class="btn clr sm">Reset password</a>
           </p>
         </div>
-    
+
         <div class="col-12 col-md-5 offset-md-2">
           <h1>Create account</h1>
           <form action="{{ url_for('signup') }}" method="post">

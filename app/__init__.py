@@ -1,6 +1,6 @@
 import os
 import sentry_sdk
-from flask import Flask
+from flask import Flask, redirect, url_for, request
 from config import Config
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
@@ -17,10 +17,17 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db, render_as_batch=True, compare_type=True)
-login = LoginManager(app)
-login.login_view = 'login'
 bootstrap = Bootstrap(app)
 hcaptcha = hCaptcha(app)
+
+login = LoginManager(app)
+login.login_view = 'login'
+login.login_message = u'Please sign in to access this page.'
+
+@login.unauthorized_handler
+def unauthorized():
+    """Redirect unauthorized users to the login page."""
+    return redirect(url_for('login', next=request.endpoint, org=request.view_args.get('org')))
 
 def make_celery(app):
     celery = Celery(
@@ -48,4 +55,4 @@ def full_name(user):
 from app import routes, models, errors, tasks
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
-login.login_message = u'Please sign in to access this page.'
+

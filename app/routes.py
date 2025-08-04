@@ -82,7 +82,7 @@ def admin_required(f):
         else:
             flash('You must have administrator privileges to access this page.', 'error')
             logout_user()
-            return redirect(login_url('signin', next_url=request.url))
+            return redirect(url_for('signin', next=request.endpoint, org=request.view_args.get('org')))
     return wrap
 
 def proper(name):
@@ -382,9 +382,11 @@ def signup():
             flash('Welcome! Please check your inbox to verify your email.')
         else:
             flash('Verification email failed to send, please contact ' + hello, 'error')
-        if not next or url_parse(next).netloc != '':
+
+        if next in app.view_functions:
+            return redirect(url_for(next, org=org))
+        else:
             return redirect(url_for('start_page'))
-        return redirect(next)
     return render_template('signin.html', title='Sign in', form=form, signup_form=signup_form)
 
 
@@ -396,6 +398,8 @@ def login():
     form = LoginForm()
     signup_form = SignupForm()
     next = request.args.get('next')
+    org = request.args.get('org')
+
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -416,11 +420,22 @@ def login():
                 flash('Please check your inbox to verify your email.')
             else:
                 flash('Verification email did not send. Please contact ' + hello, 'error')
-        if not next or url_parse(next).netloc != '':
-            return redirect(url_for('start_page'))
-        return redirect(next)
+
+        if next in app.view_functions:
+            if org:
+                return redirect(url_for(next, org=org))
+            return redirect(url_for(next))
+        return redirect(url_for('start_page'))
     return render_template('signin.html', title='Sign in', form=form, signup_form=signup_form)
 
+
+@app.route('/test')
+def test():
+    next = request.args.get('next')
+    print("Full query string:", request.query_string.decode())
+    print("Request args:", request.args)
+    print("Next parameter:", next)
+    return "Check logs for query string details."
 
 @app.route('/logout')
 def logout():
@@ -1269,15 +1284,16 @@ def sat_report():
     return handle_sat_report(form, 'sat-report.html')
 
 
-# @app.route('/act-report', methods=['GET', 'POST'])
-# def act_report():
-#     form = ACTReportForm()
-#     return handle_act_report(form, 'act-report.html')
+@app.route('/act-report', methods=['GET', 'POST'])
+@login_required
+def act_report():
+    form = ACTReportForm()
+    return handle_act_report(form, 'act-report.html')
 
 
-@app.route('/<slug>')
-def partner_page(slug):
-    organization = Organization.query.filter_by(slug=slug).first_or_404()
+@app.route('/<org>')
+def partner_page(org):
+    organization = Organization.query.filter_by(slug=org).first_or_404()
     # Convert the organization object to a dictionary
     organization_dict = {
         'name': organization.name,
@@ -1287,10 +1303,10 @@ def partner_page(slug):
     return render_template('partner-page.html', title=organization.name, organization=organization_dict)
 
 
-@app.route('/<slug>/sat', methods=['GET', 'POST'])
-def custom_sat_report(slug):
+@app.route('/<org>/sat', methods=['GET', 'POST'])
+def custom_sat_report(org):
     form = SATReportForm()
-    organization = Organization.query.filter_by(slug=slug).first_or_404()
+    organization = Organization.query.filter_by(slug=org).first_or_404()
 
     # Convert the organization object to a dictionary
     organization_dict = {
@@ -1302,10 +1318,11 @@ def custom_sat_report(slug):
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
 
-@app.route('/<slug>/act', methods=['GET', 'POST'])
-def custom_act_report(slug):
+@app.route('/<org>/act', methods=['GET', 'POST'])
+@login_required
+def custom_act_report(org):
     form = ACTReportForm()
-    organization = Organization.query.filter_by(slug=slug).first_or_404()
+    organization = Organization.query.filter_by(slug=org).first_or_404()
 
     # Convert the organization object to a dictionary
     organization_dict = {
