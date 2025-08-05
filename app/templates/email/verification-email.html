@@ -6,7 +6,7 @@
     Please verify that you registered an account with Open Path Tutoring by clicking below:
   </p>
   <p>
-    <a href="{{ url_for('verify_email', token=token, _external=True) }}"
+    <a href="{{ url_for('verify_email', token=token, next=next, _external=True) }}"
       style="background-color: #1C4D65; font-size: 16px; font-family: Helvetica, Arial, sans-serif;
         font-weight: bold; text-decoration: none; padding: 7px 14px; color: #ffffff;
         display: inline-block; mso-padding-alt: 0;">

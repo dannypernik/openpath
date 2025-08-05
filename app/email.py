@@ -662,7 +662,7 @@ def send_verification_email(user, page=None):
     return result.status_code
 
 
-def send_password_reset_email(user, page=None):
+def send_password_reset_email(user, next=None):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -674,7 +674,7 @@ def send_password_reset_email(user, page=None):
         pw_type = 'reset'
 
     purpose = ''
-    if page == 'test_reminders':
+    if next == 'test_reminders':
         purpose = ' to get test reminders'
 
     data = {
@@ -690,10 +690,10 @@ def send_password_reset_email(user, page=None):
                     }
                 ],
                 'Subject': pw_type.title() + ' your password' + purpose,
-                'TextPart': render_template('email/reset-password.txt', \
-                                         user=user, token=token, pw_type=pw_type),
-                'HTMLPart': render_template('email/reset-password.html', \
-                                         user=user, token=token, pw_type=pw_type)
+                'TextPart': render_template('email/reset-password-email.txt', \
+                                         user=user, token=token, pw_type=pw_type, next=next),
+                'HTMLPart': render_template('email/reset-password-email.html', \
+                                         user=user, token=token, pw_type=pw_type, next=next)
             }
         ]
     }

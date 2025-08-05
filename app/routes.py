@@ -73,6 +73,11 @@ def inject_values():
         current_last_name=current_last_name
     )
 
+def get_next_page():
+    next_page = request.args.get('next')
+    if not next_page in app.view_functions:
+        next_page = 'start_page'
+    return next_page
 
 def admin_required(f):
     @login_required
@@ -361,7 +366,7 @@ def signin():
 def signup():
     form = LoginForm()
     signup_form = SignupForm()
-    next = request.args.get('next')
+    next = get_next_page()
     if signup_form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -382,13 +387,10 @@ def signup():
         email_status = send_signup_request_email(user, next)
         if email_status == 200:
             flash('Thanks for reaching out! We\'ll be in touch.')
+            return redirect(url_for('index'))
         else:
             flash('Signup request email failed to send, please contact ' + hello, 'error')
-
-        if next in app.view_functions:
-            return redirect(url_for(next, org=org))
-        else:
-            return redirect(url_for('start_page'))
+        return redirect(url_for(next, org=org))
     return render_template('signin.html', title='Sign in', form=form, signup_form=signup_form)
 
 
@@ -399,7 +401,7 @@ def login():
         return redirect(url_for('start_page'))
     form = LoginForm()
     signup_form = SignupForm()
-    next = request.args.get('next')
+    next = get_next_page()
     org = request.args.get('org')
 
     if form.validate_on_submit():
@@ -422,22 +424,9 @@ def login():
                 flash('Please check your inbox to verify your email.')
             else:
                 flash('Verification email did not send. Please contact ' + hello, 'error')
-
-        if next in app.view_functions:
-            if org:
-                return redirect(url_for(next, org=org))
-            return redirect(url_for(next))
-        return redirect(url_for('start_page'))
+        return redirect(url_for(next, org=org))
     return render_template('signin.html', title='Sign in', form=form, signup_form=signup_form)
 
-
-@app.route('/test')
-def test():
-    next = request.args.get('next')
-    print("Full query string:", request.query_string.decode())
-    print("Request args:", request.args)
-    print("Next parameter:", next)
-    return "Check logs for query string details."
 
 @app.route('/logout')
 def logout():
@@ -460,6 +449,7 @@ def start_page():
 def verify_email(token):
     logout_user()
     user = User.verify_email_token(token)
+    next = get_next_page()
     if user:
         login_user(user)
         user.is_verified = True
@@ -467,9 +457,9 @@ def verify_email(token):
         db.session.commit()
         flash('Thank you for verifying your account.')
         if user.password_hash:
-            return redirect(url_for('start_page'))
+            return redirect(url_for(next, org=request.view_args.get('org')))
         else:
-            return redirect(url_for('set_password', token=token))
+            return redirect(url_for('set_password', token=token, next=next))
     else:
         flash('Your verification link is expired or invalid. Log in to receive a new link.')
         return redirect(url_for('signin'))
@@ -479,6 +469,7 @@ def verify_email(token):
 def request_password_reset():
     form = RequestPasswordResetForm()
 
+    next = get_next_page()
     if request.method == 'GET':
         email = request.args.get('email')
         if email:
@@ -490,9 +481,11 @@ def request_password_reset():
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('request_password_reset'))
+
+
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user:
-            email_status = send_password_reset_email(user)
+            email_status = send_password_reset_email(user, next)
             if email_status == 200:
                 flash('Check your email for instructions to reset your password.')
             else:
@@ -506,9 +499,10 @@ def request_password_reset():
 @app.route('/set-password/<token>', methods=['GET', 'POST'])
 def set_password(token):
     user = User.verify_email_token(token)
+    next = request.args.get('next')
     if not user:
         flash('The password reset link is expired or invalid. Please try again.')
-        return redirect(url_for('request_password_reset'))
+        return redirect(url_for('request_password_reset', next=next))
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
@@ -516,7 +510,10 @@ def set_password(token):
         db.session.commit()
         login_user(user)
         flash('Your password has been saved.')
-        return redirect(url_for('start_page'))
+        if next in app.view_functions:
+            return redirect(url_for(next))
+        else:
+            return redirect(url_for('start_page'))
     return render_template('set-password.html', form=form)
 
 

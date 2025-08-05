@@ -1,6 +1,6 @@
 import os
 import sentry_sdk
-from flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, url_for, request, flash
 from config import Config
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
@@ -22,11 +22,11 @@ hcaptcha = hCaptcha(app)
 
 login = LoginManager(app)
 login.login_view = 'login'
-login.login_message = u'Please sign in to access this page.'
 
 @login.unauthorized_handler
 def unauthorized():
     """Redirect unauthorized users to the login page."""
+    flash('Please sign in to access this page.')
     return redirect(url_for('login', next=request.endpoint, org=request.view_args.get('org')))
 
 def make_celery(app):

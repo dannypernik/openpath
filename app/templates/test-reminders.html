@@ -43,7 +43,10 @@
         {% endfor %}
 
         {% if current_user.is_authenticated %}
-          <input id="submit" type="submit" name="submit" value="Save" class="mt-4">
+            <div class="text-center">
+              {{ hcaptcha }}
+            </div>
+            <input id="submit" type="submit" name="submit" value="Save">
         {% else %}
           <a href="#" class="mt-4 btn w-100" data-bs-toggle="modal" data-bs-target="#signup-modal" data-text="signup">
             Save
