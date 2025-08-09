@@ -1023,7 +1023,7 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 
 def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
     other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, unregistered_students,
-    undecided_students, result, exception=''):
+    undecided_students, payments_due, result, exception=''):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -1059,7 +1059,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                         low_scheduled_students=low_scheduled_students, unscheduled_students=unscheduled_students,
                         tutors_attention=tutors_attention, add_students_to_data=add_students_to_data,
                         cc_sessions=cc_sessions, unregistered_str=unregistered_str, undecided_str=undecided_str,
-                        exception=exception, quote=quote, author=author)
+                        payments_due=payments_due, exception=exception, quote=quote, author=author)
                 }
             ]
         }

@@ -58,13 +58,36 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
 # ID and ranges of a sample spreadsheet.
 SPREADSHEET_ID = app.config['SPREADSHEET_ID']
 SUMMARY_RANGE = 'Summary!A6:Z'
-calendars = [
-    { 'tutor': 'Danny Pernik', 'id': 'danny.pernik@openpathtutoring.com'},
-    { 'tutor': 'Sean Palermo', 'id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com' },
-    { 'tutor': 'John Vasiloff', 'id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com' },
-    { 'tutor': 'Michele Mundy', 'id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com' },
-    { 'tutor': 'Elizabeth Walker', 'id': '2f96dd1a476fb24970a6307a96fb718867066c1b8ff0c9de865a440e874cb329@group.calendar.google.com' },
-    { 'tutor': 'Hannah Gustafson', 'id': 'cc063cbfcb84d6c89d1befd047caf6377a3bdffca7f564b75fcc4c8b8141d3d1@group.calendar.google.com' }
+tutor_data = [
+    {
+        'name': 'Danny Pernik',
+        'cal_id': 'danny.pernik@openpathtutoring.com'
+    },
+    {
+        'name': 'Sean Palermo',
+        'cal_id': 'n6dbnktn1mha2t4st36h6ljocg@group.calendar.google.com',
+        'finance_ss_id': '1xAE_SiN7m6B8jYumBIOFC0zpl4PTkFXhGp1ynFYyF_4'
+    },
+    {
+        'name': 'John Vasiloff',
+        'cal_id': '47e09e4974b3dbeaace26e3e593062110f42148a9b400dd077ecbe7b2ae4dc8b@group.calendar.google.com',
+        'finance_ss_id': '1vgLg_MlqlqN68JOR8kEFinDEVb8auITINhHfj9Spb_I'
+    },
+    {
+        'name': 'Michele Mundy',
+        'cal_id': 'beb1bf9632e190e774619add16675537c871f5367f00b0260cec261dde8717b7@group.calendar.google.com',
+        'finance_ss_id': '1Y6LoD_awVY2um8gM3OqPu1wbnykrAqBZTThMp-sxP-E'
+    },
+    {
+        'name': 'Elizabeth Walker',
+        'cal_id': '2f96dd1a476fb24970a6307a96fb718867066c1b8ff0c9de865a440e874cb329@group.calendar.google.com',
+        'finance_ss_id': '1Wt6D6peAjjyTk9YT-NF3xxHcWlhDrgKXtoj-_D06ndI'
+    },
+    {
+        'name': 'Hannah Gustafson',
+        'cal_id': 'cc063cbfcb84d6c89d1befd047caf6377a3bdffca7f564b75fcc4c8b8141d3d1@group.calendar.google.com',
+        'finance_ss_id': '14qh4wsq5DB3aqFkqpt6nulUG7TLlIcB6LvVAxNHaHq8'
+    }
 ]
 
 # gspread to write to spreadsheet
@@ -110,11 +133,12 @@ def get_events_and_data():
         bimonth_end = now + datetime.timedelta(days=70)
         bimonth_end_str = bimonth_end.isoformat() + 'Z'
         bimonth_events = []
+        payments_due = []
 
         # Collect next 2 months of events for all calendars
         try:
-            for cal in calendars:
-                bimonth_cal_events = service_cal.events().list(calendarId=cal['id'], timeMin=bimonth_start_str,
+            for tutor in tutor_data:
+                bimonth_cal_events = service_cal.events().list(calendarId=tutor['cal_id'], timeMin=bimonth_start_str,
                     timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
                 bimonth_events_result = bimonth_cal_events.get('items', [])
 
@@ -122,13 +146,30 @@ def get_events_and_data():
                     if e['start'].get('dateTime'):
                         bimonth_events.append({
                             'event': e,
-                            'tutor': cal['tutor']
+                            'tutor': tutor['name']
                         })
-                logging.info(f"Events fetched for {cal['tutor']}")
+                logging.info(f"Events fetched for {tutor['name']}")
+
+                if (today - datetime.date(2025, 3, 7)).days % 14 == 0:
+                    # Fetch finance spreadsheet data for tutors other than Danny
+                    if tutor['name'] != 'Danny Pernik':
+                        service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+                        sheet = service_sheets.spreadsheets()
+                        result = sheet.values().get(spreadsheetId=tutor['finance_ss_id'],
+                            range='Summary!R3', valueRenderOption='UNFORMATTED_VALUE').execute()
+                        biweekly_due_cell = result.get('values', [])
+
+                        biweekly_due = biweekly_due_cell[0][0]
+                        if biweekly_due:
+                            payments_due.append({
+                                'tutor': tutor['name'],
+                                'amount': biweekly_due
+                            })
+                            logging.info(f"Payment due for {tutor['name']}")
 
             bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
         except Exception as e:
-            logging.error(f"Error fetching events for {cal['tutor']}: {e}", exc_info=True)
+            logging.error(f"Error fetching events for {tutor['name']}: {e}", exc_info=True)
             raise
 
         retries = 3
@@ -159,7 +200,7 @@ def get_events_and_data():
                     raise
 
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
-        return bimonth_events, summary_data, bimonth_start_tz_aware, sheet
+        return bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
@@ -167,7 +208,7 @@ def get_events_and_data():
 
 def get_upcoming_events():
     logging.info('Getting upcoming events')
-    bimonth_events, summary_data, bimonth_start_tz_aware, sheet = get_events_and_data()
+    bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
 
     events_by_week = []
     upcoming_events = []
@@ -233,7 +274,7 @@ def main():
         messages = []
 
         bimonth_events, events_by_week, upcoming_events, \
-            summary_data, sheet = get_upcoming_events()
+            summary_data, payments_due = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -419,11 +460,6 @@ def main():
                 logging.info(msg)
                 messages.append(msg)
 
-        if (today - datetime.date(2025, 3, 7)).days % 14 == 0:
-            msg = 'Biweekly payments due'
-            logging.info(msg)
-            messages.insert(0, msg)
-
         ### send registration and test reminder emails
         for u in test_reminder_users:
             for d in u.get_dates():
@@ -495,7 +531,7 @@ def main():
         else:
             send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students,
                 unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data,
-                cc_sessions, unregistered_active_students, undecided_active_students, 'succeeded')
+                cc_sessions, unregistered_active_students, undecided_active_students, payments_due, 'succeeded')
         logging.info('reminders.py succeeded')
 
     except Exception as e:

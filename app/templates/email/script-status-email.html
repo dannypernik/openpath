@@ -1,9 +1,17 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
+  {% if payments_due %}
+    <p>
+      <strong>Payments due tomorrow</strong><br>
+      {% for p in payments_due %}
+        {{ p['tutor'] }}: ${{ p['amount'] }}<br>
+      {% endfor %}
+    </p>
+  {% endif %}
   {% if cc_sessions %}
     <p>
-      Sessions to charge for tomorrow<br>
+      <strong>Sessions to charge for tomorrow</strong><br>
       {% for s in cc_sessions %}
         {{ s['name'] }}: ${{ s['payment'] }}<br>
       {% endfor %}
