@@ -229,7 +229,8 @@ def get_upcoming_events():
             else:
                 time_group = 'evening_hours'
 
-            week_num = max(1, math.ceil(((e_start - bimonth_start_tz_aware).days + 1) / 7)) - 1
+            start_of_week_0 = bimonth_start_tz_aware - datetime.timedelta(days=bimonth_start_tz_aware.weekday())
+            week_num = max(1, math.ceil(((e_start - start_of_week_0).days + 1) / 7)) - 1
 
             events_by_week.append({
                 'name': e['event'].get('summary'),
@@ -358,27 +359,31 @@ def main():
                     break
 
             if s.status in {'active', 'prospective'}:
+                hours_this_week = 0
                 for e in events_by_week:
                     if name in e['name']:
+                        if e['week_num'] == 0 and s.ss_pay_type == 'Credit card':
+                            hours_this_week += e['hours']
+
                         tutoring_events.append(e)
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
+
+                hours_due = hours_this_week - ss_hours
+                if hours_due > 0:
+                    payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
+                    if ss_hours != 0:
+                        payment = str(payment) + ' (check hours)'
+                    cc_sessions.append({
+                        'name': name,
+                        'payment': payment
+                    })
+
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
                         e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
                         if name in e['name']:
-                            if ss_pay_type == 'Credit card' and (tomorrow_start <= pytz.utc.localize(e_date) < tomorrow_end):
-                                hours_due = e['hours'] - ss_hours
-                                if hours_due > 0:
-                                    payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
-                                    if ss_hours != 0:
-                                        payment = str(payment) + ' (check hours)'
-                                    cc_sessions.append({
-                                        'name': name,
-                                        'payment': payment
-                                    })
-
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
                                 hours_this_week += e['hours']
