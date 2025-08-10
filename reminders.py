@@ -283,20 +283,20 @@ def main():
         messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
-        reminder_count = 0
-        for e in upcoming_events:
-            for student in upcoming_students:
-                name = full_name(student)
-                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
-                    reminder_count += 1
-                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
-                    logging.info(msg)
-                    messages.append(msg)
+        # reminder_count = 0
+        # for e in upcoming_events:
+        #     for student in upcoming_students:
+        #         name = full_name(student)
+        #         if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+        #             reminder_count += 1
+        #             msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
+        #             logging.info(msg)
+        #             messages.append(msg)
 
-        if reminder_count == 0:
-            msg = 'No reminders sent.'
-            logging.info(msg)
-            messages.append(msg)
+        # if reminder_count == 0:
+        #     msg = 'No reminders sent.'
+        #     logging.info(msg)
+        #     messages.append(msg)
 
         for row in summary_data:
             if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
