@@ -244,7 +244,7 @@ def get_upcoming_events():
             if tomorrow_end < e_start <= upcoming_end:
                 upcoming_events.append(e)
 
-        return bimonth_events, events_by_week, upcoming_events, summary_data, sheet
+        return bimonth_events, events_by_week, upcoming_events, summary_data, sheet, payments_due
     except Exception as e:
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
@@ -275,7 +275,7 @@ def main():
         messages = []
 
         bimonth_events, events_by_week, upcoming_events, \
-            summary_data, payments_due = get_upcoming_events()
+            summary_data, sheet, payments_due = get_upcoming_events()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -542,7 +542,7 @@ def main():
     except Exception as e:
         logging.error('reminders.py failed: %s', traceback.format_exc())
         send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-            other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, 'failed', traceback.format_exc())
+            other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, payments_due, 'failed', traceback.format_exc())
 
     finally:
         session.close()
@@ -550,7 +550,7 @@ def main():
 
 def get_student_events(full_name):
     student_events = []
-    bimonth_events, summary_data = get_events_and_data()
+    bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
 
     for event in bimonth_events:
         if full_name in event.get('summary'):
