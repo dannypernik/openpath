@@ -283,20 +283,20 @@ def main():
         messages.append(msg)
 
         # Send reminder email to students ~2 days in advance
-        # reminder_count = 0
-        # for e in upcoming_events:
-        #     for student in upcoming_students:
-        #         name = full_name(student)
-        #         if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
-        #             reminder_count += 1
-        #             msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
-        #             logging.info(msg)
-        #             messages.append(msg)
+        reminder_count = 0
+        for e in upcoming_events:
+            for student in upcoming_students:
+                name = full_name(student)
+                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+                    reminder_count += 1
+                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
+                    logging.info(msg)
+                    messages.append(msg)
 
-        # if reminder_count == 0:
-        #     msg = 'No reminders sent.'
-        #     logging.info(msg)
-        #     messages.append(msg)
+        if reminder_count == 0:
+            msg = 'No reminders sent.'
+            logging.info(msg)
+            messages.append(msg)
 
         for row in summary_data:
             if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
@@ -369,16 +369,16 @@ def main():
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
 
-                hours_due = hours_this_week - ss_hours
-                if hours_due > 0:
-                    payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
-                    if ss_hours != 0:
-                        payment = str(payment) + ' (check hours)'
-                    cc_sessions.append({
-                        'name': name,
-                        'payment': payment
-                    })
-
+                if s.ss_pay_type == 'Credit card':
+                    hours_due = hours_this_week - ss_hours
+                    if hours_due > 0:
+                        payment = round(float(ss_rate) * hours_due + (0.029 * float(ss_rate) * hours_due + 0.3 ) / 0.971, 2)
+                        if ss_hours != 0:
+                            payment = str(payment) + ' (check hours)'
+                        cc_sessions.append({
+                            'name': name,
+                            'payment': payment
+                        })
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
