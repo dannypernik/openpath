@@ -362,7 +362,7 @@ def main():
                 hours_this_week = 0
                 for e in events_by_week:
                     if name in e['name']:
-                        if e['week_num'] == 0 and s.ss_pay_type == 'Credit card':
+                        if e['week_num'] == 0 and ss_pay_type == 'Credit card':
                             hours_this_week += e['hours']
 
                         tutoring_events.append(e)
@@ -529,7 +529,6 @@ def main():
 
         if day_of_week == 'Monday':
             weekly_data['score_reports'] = utils.batch_update_weekly_usage()
-            # TODO: implement unregistered_active_students and undecided_active_students
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
                 weekly_data, add_students_to_data, cc_sessions, unregistered_active_students, undecided_active_students, now)
@@ -541,8 +540,10 @@ def main():
 
     except Exception as e:
         logging.error('reminders.py failed: %s', traceback.format_exc())
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students, unscheduled_students,
-            other_scheduled_students, tutors_attention, add_students_to_data, unregistered_active_students, undecided_active_students, payments_due, 'failed', traceback.format_exc())
+        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students,
+            unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data,
+            cc_sessions, unregistered_active_students, undecided_active_students, payments_due, 'failed',
+            traceback.format_exc())
 
     finally:
         session.close()
