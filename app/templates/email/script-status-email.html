@@ -3,7 +3,7 @@
 {% block content %}
   {% if payments_due %}
     <p>
-      <strong>Payments due tomorrow</strong><br>
+      <strong>Biweekly payments due</strong><br>
       {% for p in payments_due %}
         {{ p['tutor'] }}: ${{ p['amount'] }}<br>
       {% endfor %}
@@ -11,7 +11,7 @@
   {% endif %}
   {% if cc_sessions %}
     <p>
-      <strong>Sessions to charge for tomorrow</strong><br>
+      <strong>Sessions to charge this week</strong><br>
       {% for s in cc_sessions %}
         {{ s['name'] }}: ${{ s['payment'] }}<br>
       {% endfor %}
