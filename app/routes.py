@@ -16,7 +16,7 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
     send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
     send_ntpa_email, send_fail_mail, send_free_resources_email, send_nomination_email, \
-    send_signup_request_email
+    send_signup_request_email, send_unsubscribe_email
 from functools import wraps
 import requests
 import json
@@ -463,6 +463,30 @@ def verify_email(token):
     else:
         flash('Your verification link is expired or invalid. Log in to receive a new link.')
         return redirect(url_for('signin'))
+
+
+@app.route('/unsubscribe', methods=['GET', 'POST'])
+def unsubscribe():
+    form = RequestPasswordResetForm()  # Reuse an existing form with an email field
+
+    email = request.args.get('email')
+    if email:
+        form.email.data = email
+
+    if form.validate_on_submit():
+        email = form.email.data.lower()
+        try:
+            # Send an email notification to you
+            email_status = send_unsubscribe_email(email)
+            if email_status == 200:
+                flash('Your request has been received. We will remove you from the SAT resources folder so you don\'t receive update emails.', 'success')
+            else:
+                flash('Failed to process your request. Please contact us directly.', 'error')
+        except Exception as e:
+            flash('An error occurred while processing your request. Please try again later.', 'error')
+            logger.error(f"Error processing unsubscribe request: {e}", exc_info=True)
+        return redirect(url_for('index'))
+    return render_template('unsubscribe.html', title='Unsubscribe', form=form)
 
 
 @app.route('/request-password-reset', methods=['GET', 'POST'])

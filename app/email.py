@@ -117,6 +117,37 @@ def send_confirmation_email(user_email, message):
     return result.status_code
 
 
+def send_unsubscribe_email(email):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': app.config['MAIL_USERNAME'],
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': app.config['MAIL_USERNAME']
+                    }
+                ],
+                'Subject': 'Unsubscribe request from ' + email,
+                'HTMLPart': render_template('email/unsubscribe-email.html', email=email)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('Confirmation email sent to ' + email)
+    else:
+        logging.info('Confirmation email to ' + email + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
+
+
 def send_reminder_email(event, student, tutor):
     api_key = app.config['MAILJET_KEY']
     api_secret = app.config['MAILJET_SECRET']
