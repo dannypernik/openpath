@@ -3,7 +3,7 @@
 {% block content %}
   {% if cc_sessions %}
   <p>
-    Sessions to charge for tomorrow<br>
+    Sessions to charge this week<br>
     {% for s in cc_sessions %}
       {{ s['name'] }}: ${{ s['payment'] }}<br>
     {% endfor %}
