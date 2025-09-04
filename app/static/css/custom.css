@@ -6204,6 +6204,21 @@ input[type=submit].sec {
   border-color: rgb(0, 69, 87);
   color: white;
 }
+button.ter,
+.btn.ter,
+input[type=submit].ter {
+  background-color: #43cfe2;
+  border-color: #43cfe2;
+  color: white;
+  transition: 0.3s;
+}
+button.ter:hover,
+.btn.ter:hover,
+input[type=submit].ter:hover {
+  background-color: #6fdae9;
+  border-color: #6fdae9;
+  color: white;
+}
 button.clr,
 .btn.clr,
 input[type=submit].clr {
