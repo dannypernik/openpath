@@ -6207,16 +6207,16 @@ input[type=submit].sec {
 button.ter,
 .btn.ter,
 input[type=submit].ter {
-  background-color: #43cfe2;
-  border-color: #43cfe2;
-  color: white;
+  background-color: #c4f0f7;
+  border-color: #c4f0f7;
+  color: rgb(0, 69, 87);
   transition: 0.3s;
 }
 button.ter:hover,
 .btn.ter:hover,
 input[type=submit].ter:hover {
-  background-color: #6fdae9;
-  border-color: #6fdae9;
+  background-color: #1db9d2;
+  border-color: #1db9d2;
   color: white;
 }
 button.clr,
