@@ -1292,11 +1292,11 @@ def org_settings(org):
                 # Store the relative path in the database
                 organization.logo_path = f"img/orgs/{filename}"
 
-            if not organization.sat_spreadsheet_id:
+            if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
             style_custom_sat_spreadsheet(organization, organization.sat_spreadsheet_id)
 
-            if not organization.act_spreadsheet_id:
+            if not form.act_ss_id.data:
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
             style_custom_act_spreadsheet(organization, organization.act_spreadsheet_id)
 
