@@ -1,6 +1,6 @@
 import os
 from app import app
-from app.utils import is_dark_color, hex_to_rgb, color_matches
+from app.utils import is_dark_color, hex_to_rgb, color_svg_white_to_input
 from app.email import send_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -1550,6 +1550,32 @@ def style_custom_sat_spreadsheet(organization_data):
                             {
                                 "userEnteredValue": {
                                     "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue"
+            }
+        })
+
+    # Add partner logo to cell I82
+    if organization_data['partner_logo_path']:
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 81,  # Row 82 (zero-based)
+                    "endRowIndex": 82,    # Row 83 (exclusive)
+                    "startColumnIndex": 8,  # Column I (zero-based)
+                    "endColumnIndex": 9   # Column J (exclusive)
+                },
+                "rows": [
+                    {
+                        "values": [
+                            {
+                                "userEnteredValue": {
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
                                 }
                             }
                         ]

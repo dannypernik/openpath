@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, flash, Markup, redirect, url_for, \
     request, send_from_directory, send_file, make_response, abort
 from app import app, db, login, hcaptcha, full_name
+from app.utils import is_dark_color, color_svg_white_to_input
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
     ResetPasswordForm, TutorForm, RecapForm, NtpaForm, SATReportForm, ACTReportForm, \
@@ -22,9 +23,8 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
-    style_custom_sat_spreadsheet
-from app.create_act_report import create_custom_act_spreadsheet, style_custom_act_spreadsheet
+from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet
+from app.create_act_report import create_custom_act_spreadsheet
 from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task, \
     style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 import logging
@@ -1293,8 +1293,6 @@ def org_settings(org):
                 # Store the relative path in the database
                 organization.logo_path = f"img/orgs/{filename}"
 
-            if not form.sat_ss_id.data:
-                organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
             organization_data = {
                 'name': organization.name,
                 'logo_path': organization.logo_path,
@@ -1305,6 +1303,21 @@ def org_settings(org):
                 'color3': organization.color3,
                 'font_color': organization.font_color,
             }
+
+            # Create partner logo
+            partner_logos_dir = os.path.join(app.root_path, 'static/img/orgs/partner_logos')
+            os.makedirs(partner_logos_dir, exist_ok=True)
+            if is_dark_color(organization.color1):
+                organization_data['partner_logo_path'] = 'img/logo-header.png'
+            else:
+                svg_path = os.path.join(app.root_path, 'static/img/logo-header.svg')
+                # Ensure the partner_logos directory exists
+                partner_logo_path = f'img/orgs/partner_logos/{organization.slug}.png'
+                organization_data['partner_logo_path'] = color_svg_white_to_input(svg_path, organization.color1, partner_logo_path)
+                print(f'Created partner logo at {organization_data["partner_logo_path"]}')
+
+            if not form.sat_ss_id.data:
+                organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
 
             style_custom_sat_spreadsheet_task.delay(organization_data)
 

@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
+from cairosvg import svg2png
 
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'  # Adjust as needed
@@ -189,8 +190,26 @@ def is_dark_color(rgb):
     luma = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
     return luma < 205
 
-def color_matches(c1, c2, tol=0.01):
-    for k in ['red', 'green', 'blue']:
-        if abs(c1.get(k, 0) - c2.get(k, 0)) > tol:
-            return False
-    return True
+
+def color_svg_white_to_input(svg_path, input_color, output_path):
+    """
+    Replace all white fills and strokes in an SVG file with the input color and save as PNG.
+
+    Args:
+        svg_path (str): Path to the SVG file.
+        input_color (str): The color to replace white with (e.g., "#FF5733").
+        output_path (str): The file path to save the resulting PNG.
+    """
+    input_color = input_color.lstrip('#')
+
+    with open(svg_path, 'r', encoding='utf-8') as f:
+        svg_content = f.read()
+
+    svg_content = re.sub(r'fill="(#ffffff|#FFF|white)"', f'fill="#{input_color}"', svg_content, flags=re.IGNORECASE)
+    svg_content = re.sub(r'stroke="(#ffffff|#FFF|white)"', f'stroke="#{input_color}"', svg_content, flags=re.IGNORECASE)
+
+    svg2png(bytestring=svg_content.encode('utf-8'), write_to=output_path)
+
+    # Convert absolute path to relative path for static serving
+    rel_path = os.path.relpath(output_path, os.path.join(os.path.dirname(__file__), '..', 'static'))
+    return rel_path
