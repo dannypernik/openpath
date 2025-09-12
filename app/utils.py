@@ -173,3 +173,24 @@ def batch_update_weekly_usage(date_yyyymmddd=None):
     ).execute()
 
     return stats
+
+
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')  # Remove the '#' character
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+
+def is_dark_color(rgb):
+    """
+    Returns True if the color is considered 'dark' based on luma.
+    rgb: tuple of (r, g, b) with each value in 0-255
+    """
+    r, g, b = rgb
+    luma = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
+    return luma < 205
+
+def color_matches(c1, c2, tol=0.01):
+    for k in ['red', 'green', 'blue']:
+        if abs(c1.get(k, 0) - c2.get(k, 0)) > tol:
+            return False
+    return True

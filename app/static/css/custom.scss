@@ -29,10 +29,10 @@ $logo-font: 'Montserrat Alternates', 'Montserrat', 'Helvetica', sans-serif;
 @import "menu.css";
 
 // Mixins
-@mixin fill-color($color: $secondary-color) {
-  background-color: $color;
-  border-color: $color;
-  color: white;
+@mixin fill-color($bg-color: $secondary-color, $color: white) {
+  background-color: $bg-color;
+  border-color: $bg-color;
+  color: $color;
 }
 
 @mixin underline-link($color: $text-color) {
@@ -346,6 +346,11 @@ input[type="submit"] {
   transition: 0.3s;
   font-weight: 600;
 
+  &:hover {
+    @include fill-color(saturate($secondary-color, 20%));
+    filter: brightness(1.3);
+  }
+
   &.sec {
     @include fill-color($primary-color);
   }
@@ -358,6 +363,7 @@ input[type="submit"] {
 
     &:hover {
       @include fill-color(darken($tertiary-color, 40%));
+      filter: brightness(1);
     }
   }
 
@@ -370,6 +376,7 @@ input[type="submit"] {
 
     &:hover {
       @include fill-color($primary-color);
+      filter: brightness(1);
     }
   }
 
@@ -437,12 +444,6 @@ a.btn {
 
 .btn.alert:hover {
   @include fill-color($alert-color);
-}
-
-button:hover,
-.btn:hover,
-input[type="submit"]:hover {
-  @include fill-color($hover-color);
 }
 
 .menu-link:hover {

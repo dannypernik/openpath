@@ -1,11 +1,11 @@
 import os
 from flask import Flask, render_template, flash, Markup, redirect, url_for, \
-    request, send_from_directory, send_file, make_response
+    request, send_from_directory, send_file, make_response, abort
 from app import app, db, login, hcaptcha, full_name
 from app.forms import InquiryForm, EmailListForm, TestStrategiesForm, SignupForm, LoginForm, \
     StudentForm, ScoreAnalysisForm, TestDateForm, UserForm, RequestPasswordResetForm, \
     ResetPasswordForm, TutorForm, RecapForm, NtpaForm, SATReportForm, ACTReportForm, \
-    ReviewForm, OrgSettingsForm, FreeResourcesForm, NominationForm
+    ReviewForm, OrgSettingsForm, FreeResourcesForm, NominationForm, StudentIntakeForm
 from flask_login import current_user, login_user, logout_user, login_required, login_url
 from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from werkzeug.urls import url_parse
@@ -22,7 +22,9 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet
+from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
+    style_custom_sat_spreadsheet
+from app.create_act_report import create_custom_act_spreadsheet, style_custom_act_spreadsheet
 from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task
 import logging
 from googleapiclient.errors import HttpError
@@ -390,7 +392,7 @@ def signup():
             return redirect(url_for('index'))
         else:
             flash('Signup request email failed to send, please contact ' + hello, 'error')
-        return redirect(url_for(next, org=org))
+        return redirect(url_for(next, org=request.view_args.get('org')))
     return render_template('signin.html', title='Sign in', form=form, signup_form=signup_form)
 
 
@@ -742,6 +744,78 @@ def students():
         full_name=full_name, proper=proper)
 
 
+@app.route('/new-student', methods=['GET', 'POST'])
+def new_student():
+    form = StudentIntakeForm()
+
+    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
+    tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    registered_tests = []
+    interested_tests = []
+
+    if form.validate_on_submit():
+        if hcaptcha.verify():
+            pass
+        else:
+            flash('Captcha was unsuccessful. Please try again.', 'error')
+            return redirect(url_for('students'))
+
+        try:
+            parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
+            if parent:
+                parent.first_name = form.parent_first_name.data
+                parent.last_name = form.parent_last_name.data
+                parent.secondary_email = form.parent_email_2.data.lower()
+                parent.phone = form.parent_phone.data
+                parent.timezone = form.timezone.data
+                parent.role = 'parent'
+            else:
+                parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data, \
+                    email=form.parent_email.data.lower(), secondary_email=form.parent_email_2.data.lower(), \
+                    phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
+                    session_reminders=True, test_reminders=True)
+
+            student = User.query.filter_by(email=form.student_email.data.lower()).first()
+            if student:
+                student.first_name = form.student_first_name.data
+                student.last_name = form.student_last_name.data
+                student.phone = form.student_phone.data
+                student.timezone = form.timezone.data
+                student.role = 'student'
+                student.status = 'active'
+                student.grad_year = form.grad_year.data
+            else:
+                student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+                    email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
+                    status='prospective', role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
+
+            db.session.add(parent)
+            db.session.flush()
+            student.parent_id = parent.id
+            db.session.add(student)
+            db.session.commit()
+            test_selections = request.form.getlist('test_dates')
+            for d in upcoming_dates:
+                if str(d.id) + '-interested' in test_selections:
+                    student.interested_test_date(d)
+                elif str(d.id) + '-registered' in test_selections:
+                    student.register_test_date(d)
+
+            # email_status = send_new_student_email(student, parent, parent_2)
+            # if email_status == 200:
+            #     flash('New student form received. Thank you!')
+            #     return redirect(url_for('test_dates'))
+            # else:
+            #     flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
+            #     return redirect(url_for('new_student'))
+            # flash(student.first_name + ' added')
+        except:
+            db.session.rollback()
+            flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>', 'error'))
+            return redirect(url_for('new_student'))
+    return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests)
+
+
 @app.route('/tutors', methods=['GET', 'POST'])
 @admin_required
 def tutors():
@@ -928,30 +1002,6 @@ def test_reminders():
         return redirect(url_for('index'))
     return render_template('test-reminders.html', form=form, tests=tests, upcoming_dates=upcoming_dates, \
         imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
-
-
-@app.route('/griffin', methods=['GET', 'POST'])
-def griffin():
-    form = ScoreAnalysisForm()
-    school='Griffin School'
-    test='ACT'
-    submit_text='Send me the score analysis'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('griffin'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_score_analysis_email(student, parent, school)
-        if email_status == 200:
-            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('griffin.html', form=form, school=school, test=test, \
-        submit_text=submit_text)
 
 
 @app.route('/appamada', methods=['GET', 'POST'])
@@ -1165,55 +1215,67 @@ def cal_check():
     return ('', 200, None)
 
 
-@app.route('/org-settings', methods=['GET', 'POST'])
+@app.route('/org-settings/<org>', methods=['GET', 'POST'])
 @admin_required
-def org_settings():
+def org_settings(org):
+    if org == 'new':
+        organization = None
+    else:
+        organization = Organization.query.filter_by(slug=org).first()
+        if not organization:
+            flash('Organization not found.', 'error')
+            return redirect(url_for('org_settings', org='new'))
+
     form = OrgSettingsForm()
 
     partners = User.query.order_by(User.first_name, User.last_name).filter_by(role='partner')
     partner_list = [(0,'New partner')] + [(u.id, full_name(u)) for u in partners]
     form.partner_id.choices = partner_list
 
-    organizations = Organization.query.order_by(Organization.name)
-    org_list = [(0,'New organization')] + [(o.id, o.name) for o in organizations]
-    form.org_id.choices = org_list
+    # Prepopulate the form with the organization's data if it's a GET request
+    if organization and request.method == 'GET':
+        form.org_name.data = organization.name
+        form.slug.data = organization.slug
+        form.color1.data = organization.color1
+        form.color2.data = organization.color2
+        form.color3.data = organization.color3
+        form.font_color.data = organization.font_color
+        form.logo.data = organization.logo_path
+        form.partner_id.data = organization.partner_id
+        form.sat_ss_id.data = organization.sat_spreadsheet_id
+        form.act_ss_id.data = organization.act_spreadsheet_id
 
     if form.validate_on_submit():
-        organization_name = form.org_name.data
-        slug = organization_name.lower().replace(' ', '-')
-        brand_colors = [
-            form.color1.data,  # Hex values
-            form.color2.data,
-            form.color3.data
-        ]
-
         try:
             if form.partner_id.data == 0:
-                partner = User(first_name=form.first_name.data, last_name=form.last_name.data, \
+                partner = User(first_name=form.first_name.data, last_name=form.last_name.data,
                     email=form.email.data.lower(), role='partner',
                     session_reminders=False, test_reminders=False)
                 db.session.add(partner)
                 db.session.flush()
-                print(f"New partner created: {partner.first_name} {partner.last_name}")
             else:
                 partner = User.query.filter_by(id=form.partner_id.data).first()
-                print(f"Partner updated: {partner.first_name} {partner.last_name}")
+                form.first_name.data = partner.first_name
+                form.last_name.data = partner.last_name
+                form.email.data = partner.email
 
-            # Create or update the organization
-            if form.org_id.data == 0:
-                organization = Organization(name=organization_name, slug=slug)
+            if not organization:
+                organization = Organization(name=form.org_name.data, slug=form.slug.data)
                 db.session.add(organization)
-                db.session.flush()
             else:
-                organization = Organization.query.filter_by(id=form.org_id.data).first()
+                organization = Organization.query.filter_by(slug=org).first()
 
-            if organization_name != organization.name:
-                organization.name = organization_name
-                organization.slug = slug
+            organization.name = form.org_name.data
             organization.color1 = form.color1.data
             organization.color2 = form.color2.data
             organization.color3 = form.color3.data
-            partner.organization_id = organization.id
+            organization.font_color = form.font_color.data
+            organization.partner_id = partner.id
+            # organization.sat_spreadsheet_id = form.sat_ss_id.data
+            # organization.act_spreadsheet_id = form.act_ss_id.data
+            slug = form.slug.data
+            slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
+            organization.slug = slug
 
             # Save the uploaded logo file
             logo_file = form.logo.data
@@ -1230,18 +1292,26 @@ def org_settings():
                 # Store the relative path in the database
                 organization.logo_path = f"img/orgs/{filename}"
 
-            # Generate the custom spreadsheet
-            spreadsheet_id = create_custom_sat_spreadsheet(organization)
-            organization.spreadsheet_id = spreadsheet_id
+            if not organization.sat_spreadsheet_id:
+                organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
+            style_custom_sat_spreadsheet(organization, organization.sat_spreadsheet_id)
+
+            if not organization.act_spreadsheet_id:
+                organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
+            style_custom_act_spreadsheet(organization, organization.act_spreadsheet_id)
 
             db.session.commit()
 
-            flash('Custom spreadsheet created successfully!', 'success')
-            return redirect(url_for('org_settings'))
+            flash(Markup(f'Custom \
+                <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
+                    SAT spreadsheet</a> and \
+                <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
+                    ACT spreadsheet</a> updated successfully'), 'success')
+            return redirect(url_for('org_settings', org=slug))
         except Exception as e:
             flash(f"Error creating custom spreadsheet: {e}", 'error')
 
-    return render_template('org-settings.html', form=form)
+    return render_template('org-settings.html', form=form, organization=organization)
 
 
 @app.route('/pay')
@@ -1336,6 +1406,7 @@ def partner_page(org):
 def custom_sat_report(org):
     form = SATReportForm()
     organization = Organization.query.filter_by(slug=org).first_or_404()
+    print(f'organization.slug: {organization.slug}')
 
     # Convert the organization object to a dictionary
     organization_dict = {
@@ -1462,7 +1533,7 @@ def handle_sat_report(form, template_name, organization=None):
                 send_changed_answers_email(score_data)
 
             if organization:
-                return_route = url_for('custom_sat_report', slug=organization['slug'])
+                return_route = url_for('custom_sat_report', org=organization['slug'])
                 flash(Markup(f'Your answers have been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')
@@ -1583,7 +1654,7 @@ def handle_act_report(form, template_name, organization=None):
             create_and_send_act_report_task.delay(score_data, organization)
 
             if organization:
-                return_route = url_for('custom_act_report', slug=organization['slug'])
+                return_route = url_for('custom_act_report', org=organization['slug'])
                 flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')

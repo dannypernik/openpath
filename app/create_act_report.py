@@ -1,5 +1,6 @@
 import os
 from app import app
+from app.utils import hex_to_rgb, is_dark_color
 from app.email import send_score_report_email
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
@@ -363,7 +364,7 @@ def send_act_pdf_report(spreadsheet_id, score_data):
       logging.error(f'Error in send_pdf_score_report: {Exception}')
       raise
 
-# WIP
+
 def act_answers_to_student_ss(score_data):
   creds = service_account.Credentials.from_service_account_file(
       SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
@@ -439,218 +440,512 @@ def act_answers_to_student_ss(score_data):
     logging.error(f'Error in act_answers_to_student_ss: {Exception}')
     raise
 
-# WIP
+
 def create_custom_act_spreadsheet(organization):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     )
-    sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=SHEET_ID,
+        fileId=TEMPLATE_SS_ID,
         body={
             'parents': [ORG_FOLDER_ID],
-            'name': f'{organization.name} Template'}
+            'name': f'{organization.name} ACT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
-    ss_copy = sheets_service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
-    sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {SHEET_ID})')
 
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {TEMPLATE_SS_ID})')
+
+    return ss_copy_id
+
+
+
+def style_custom_act_spreadsheet(organization, ss_copy_id):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
+    sheets = ss_copy.get('sheets', [])
+
+    # Identify sheet IDs
     answer_sheet_id = None
     analysis_sheet_id = None
+    analysis_sheet_2_id = None
+    data_sheet_id = None
     for sheet in sheets:
         if sheet['properties']['title'] == 'Answers':
             answer_sheet_id = sheet['properties']['sheetId']
         elif sheet['properties']['title'] == 'Test analysis':
             analysis_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis 2':
+            analysis_sheet_2_id = sheet['properties']['sheetId']
         elif sheet['properties']['title'] == 'Data':
             data_sheet_id = sheet['properties']['sheetId']
 
-    print(ss_copy_id)
+    # Convert organization colors
+    rgb_color1 = hex_to_rgb(organization.color1)
+    rgb_color2 = hex_to_rgb(organization.color2)
+    rgb_color3 = hex_to_rgb(organization.color3)
+    rgb_font_color = hex_to_rgb(organization.font_color)
 
-    # Step 2: Update header colors (A1:K7) and set borders
-    requests = [
-        {
+    # Determine text color based on background color brightness
+    rgb_text1 = (255, 255, 255) if is_dark_color(rgb_color1) else rgb_font_color
+    rgb_text2 = (255, 255, 255) if is_dark_color(rgb_color2) else rgb_font_color
+    rgb_text3 = (255, 255, 255) if is_dark_color(rgb_color3) else rgb_font_color
+
+    # Prepare batch update requests
+    requests = []
+
+    # Apply color1 and borders to A1:K8 on Test analysis and Test analysis 2
+    for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
+        # Apply color1
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 8,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
+            }
+        })
+        # Borders
+        requests.append({
             "updateBorders": {
                 "range": {
-                    "sheetId": analysis_sheet_id,
+                    "sheetId": sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 7,
+                    "endRowIndex": 8,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
                 "top": {
                     "style": "SOLID",
                     "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    }
-                },
-                "bottom": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
                     }
                 },
                 "left": {
                     "style": "SOLID",
                     "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
                     }
                 },
                 "right": {
                     "style": "SOLID",
                     "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
                     }
                 }
             }
-        },
-        {
-            "repeatCell": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 0,
-                    "endRowIndex": 7,
-                    "startColumnIndex": 0,
-                    "endColumnIndex": 11
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
+        })
+
+    # Apply color1 to A1:O4 on Answer sheet
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": answer_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 4,
+                "startColumnIndex": 0,
+                "endColumnIndex": 15
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "backgroundColor": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    },
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_text1[0] / 255,
+                            "green": rgb_text1[1] / 255,
+                            "blue": rgb_text1[2] / 255
+                        },
+                        "fontSize": 10,
+                        "bold": True,
+                        "fontFamily": "Montserrat"
                     }
-                },
-                "fields": "userEnteredFormat.backgroundColor"
-            }
-        },
-        {
-            "repeatCell": {
-                "range": {
-                    "sheetId": answer_sheet_id,
-                    "startRowIndex": 1,
-                    "endRowIndex": 4,
-                    "startColumnIndex": 1,
-                    "endColumnIndex": 12
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    }
-                },
-                "fields": "userEnteredFormat.backgroundColor"
-            }
-        },
-        {
-            "repeatCell": {
-                "range": {
-                    "sheetId": answer_sheet_id,
-                    "startRowIndex": 32,
-                    "endRowIndex": 35,
-                    "startColumnIndex": 1,
-                    "endColumnIndex": 12
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    }
-                },
-                "fields": "userEnteredFormat.backgroundColor"
+                }
+            },
+            "fields": "userEnteredFormat(backgroundColor, textFormat)"
+        }
+    })
+    # Borders for A1:O4 on Answer sheet
+    requests.append({
+        "updateBorders": {
+            "range": {
+                "sheetId": answer_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 4,
+                "startColumnIndex": 0,
+                "endColumnIndex": 15
+            },
+            "top": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "bottom": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "left": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "right": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerHorizontal": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerVertical": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
             }
         }
-    ]
+    })
 
-    # Step 4: Add the logo to cell B2
-    # if organization.logo_path:
-    #     logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
-    #     requests.append({
-    #         "updateCells": {
-    #         "range": {
-    #             "sheetId": analysis_sheet_id,
-    #             "startRowIndex": 1,  # Row B2
-    #             "endRowIndex": 2,
-    #             "startColumnIndex": 1,  # Column B2
-    #             "endColumnIndex": 2
-    #         },
-    #         "rows": [
-    #             {
-    #             "values": [
-    #                 {
-    #                 "userEnteredValue": {
-    #                     "formulaValue": f'=IMAGE("{logo_url}")'
-    #                 }
-    #                 }
-    #             ]
-    #             }
-    #         ],
-    #         "fields": "userEnteredValue"
-    #         }
-    #     })
+    # Set all sides of cell borders to #a8dc98 width 2 for B3, J3, F3, and N3 of answer_sheet
+    border_color = hex_to_rgb("#a8dc98")
+    border_style = {
+        "style": "SOLID",
+        "width": 2,
+        "color": {
+            "red": border_color[0] / 255,
+            "green": border_color[1] / 255,
+            "blue": border_color[2] / 255
+        }
+    }
+    for col in [1, 5, 9, 13]:  # B, F, J, N (zero-indexed)
+        requests.append({
+            "updateBorders": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 2,
+                    "endRowIndex": 3,
+                    "startColumnIndex": col,
+                    "endColumnIndex": col + 1
+                },
+                "top": border_style,
+                "bottom": border_style,
+                "left": border_style,
+                "right": border_style
+            }
+        })
+
+    # Set background color of cell F1 to #a8dc98
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": answer_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 1,
+                "startColumnIndex": 5,
+                "endColumnIndex": 6
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "backgroundColor": {
+                        "red": border_color[0] / 255,
+                        "green": border_color[1] / 255,
+                        "blue": border_color[2] / 255
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.backgroundColor"
+        }
+    })
+
+    # Apply color1 to A1:I3 on Data sheet
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": data_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 3,
+                "startColumnIndex": 0,
+                "endColumnIndex": 9
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "backgroundColor": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    },
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_text1[0] / 255,
+                            "green": rgb_text1[1] / 255,
+                            "blue": rgb_text1[2] / 255
+                        },
+                        "fontSize": 10,
+                        "bold": True,
+                        "fontFamily": "Montserrat"
+                    }
+                }
+            },
+            "fields": "userEnteredFormat(backgroundColor, textFormat)"
+        }
+    })
+    # Borders for A1:I3 on Data sheet
+    requests.append({
+        "updateBorders": {
+            "range": {
+                "sheetId": data_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 3,
+                "startColumnIndex": 0,
+                "endColumnIndex": 9
+            },
+            "top": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "bottom": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "left": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "right": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerHorizontal": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerVertical": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            }
+        }
+    })
+
+    # Add organization logo to B3 of Test analysis and Test analysis 2
+    if organization.logo_path:
+        for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
+            requests.append({
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 2,  # Row 3 (zero-indexed)
+                        "endRowIndex": 3,
+                        "startColumnIndex": 1,  # Column B (zero-indexed)
+                        "endColumnIndex": 2
+                    },
+                    "rows": [{
+                        "values": [{
+                            "userEnteredValue": {
+                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization.logo_path}")'
+                            }
+                        }]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            })
 
     # Execute batch update
-    sheets_service.spreadsheets().batchUpdate(
+    service.spreadsheets().batchUpdate(
         spreadsheetId=ss_copy_id,
         body={"requests": requests}
     ).execute()
 
     # Step 3: Update conditional formatting rules
-    for sheet in sheets:
-        if sheet['properties']['sheetId'] == analysis_sheet_id:
-            for rule in sheet.get('conditionalFormats', []):
-                if 'booleanRule' in rule:
-                    bg_color = rule['booleanRule']['format']['backgroundColor']
-                    if bg_color == {'red': 28/255, 'green': 77/255, 'blue': 101/255}:  # #1c4d65
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color1)[0] / 255,
-                            'green': hex_to_rgb(organization.color1)[1] / 255,
-                            'blue': hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    elif bg_color == {'red': 255/255, 'green': 168/255, 'blue': 116/255}:  # #ffa874
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color2)[0] / 255,
-                            'green': hex_to_rgb(organization.color2)[1] / 255,
-                            'blue': hex_to_rgb(organization.color2)[2] / 255
-                        }
-                    elif bg_color == {'red': 196/255, 'green': 240/255, 'blue': 247/255}:  # #c4f0f7
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color3)[0] / 255,
-                            'green': hex_to_rgb(organization.color3)[1] / 255,
-                            'blue': hex_to_rgb(organization.color3)[2] / 255
-                        }
-            break
+    # Fetch current conditional formatting rules
+    current_rules = service.spreadsheets().get(
+        spreadsheetId=ss_copy_id,
+        fields='sheets.conditionalFormats'
+    ).execute()
+
+    # print('Current conditional formatting rules:', current_rules)
+
+    # Helper to update conditional formatting for a given sheet_id and colors
+    def update_conditional_formatting(sheet_id, color_list):
+        cond_formats = None
+        indices = []
+        formats = []
+        for sheet in current_rules.get('sheets', []):
+            if sheet.get('properties', {}).get('sheetId') == sheet_id:
+                cond_formats = sheet.get('conditionalFormats')
+                break
+        if cond_formats:
+            for idx, rule in enumerate(cond_formats):
+                if rule.get('ranges', [{}])[0].get('sheetId') == sheet_id:
+                    formats.append(rule)
+                    indices.append(idx)
+        updated = []
+        boolean_rules = [
+            (idx, rule) for idx, rule in zip(indices, formats)
+            if 'booleanRule' in rule
+        ]
+        for boolean_idx, (rule_idx, rule) in enumerate(boolean_rules):
+            if boolean_idx >= len(color_list):
+                continue
+            rgb_bg = color_list[boolean_idx]
+            text_rgb = (255, 255, 255) if is_dark_color(rgb_bg) else rgb_font_color
+            new_bg_color = {
+                'red': rgb_bg[0] / 255,
+                'green': rgb_bg[1] / 255,
+                'blue': rgb_bg[2] / 255
+            }
+            rule['booleanRule']['format']['backgroundColor'] = new_bg_color
+            rule['booleanRule']['format']['backgroundColorStyle'] = {
+                'rgbColor': new_bg_color
+            }
+            rule['booleanRule']['format']['textFormat'] = {
+                'foregroundColor': {
+                    'red': text_rgb[0] / 255,
+                    'green': text_rgb[1] / 255,
+                    'blue': text_rgb[2] / 255
+                }
+            }
+            updated.append({
+                "updateConditionalFormatRule": {
+                    "sheetId": sheet_id,
+                    "index": rule_idx,
+                    "rule": rule
+                }
+            })
+        return updated
+
+    updated_requests = []
+    # Update for analysis_sheet_id
+    updated_requests += update_conditional_formatting(
+        analysis_sheet_id,
+        [rgb_color1, rgb_color2, rgb_color3]
+    )
+    # Update for analysis_sheet_2_id
+    updated_requests += update_conditional_formatting(
+        analysis_sheet_2_id,
+        [rgb_color1, rgb_color2, rgb_color3]
+    )
+
+    # Execute the batch update if there are any updates
+    if updated_requests:
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=ss_copy_id,
+            body={"requests": updated_requests}
+        ).execute()
 
     return ss_copy_id

@@ -148,6 +148,29 @@ class StudentForm(FlaskForm):
     submit = SubmitField('Save')
 
 
+class StudentIntakeForm(FlaskForm):
+    student_first_name = StringField('Student first name', render_kw={'placeholder': 'First name'}, \
+        validators=[InputRequired()])
+    student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'})
+    student_email = EmailField('Student Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
+            validate_email])
+    student_phone = StringField('Student phone', render_kw={'placeholder': 'Phone'})
+    grad_year = SelectField('Graduation year', choices=[(None, 'Select'), ('2026', '2026 (Senior)'), \
+        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
+        ('college', 'College'), ('school', 'Grade school')])
+    parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
+    parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
+    parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Email address'})
+    parent_phone = StringField('Parent phone', render_kw={'placeholder': 'Phone'})
+    parent_first_name_2 = StringField('2nd parent first name', render_kw={'placeholder': 'First name'})
+    parent_last_name_2 = StringField('2nd parent last name', render_kw={'placeholder': 'Last name'})
+    parent_email_2 = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
+    parent_phone_2 = StringField('2nd parent phone', render_kw={'placeholder': 'Phone'})
+    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
+    submit = SubmitField()
+
+
 class TutorForm(FlaskForm):
     first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
@@ -265,20 +288,25 @@ class ReviewForm(FlaskForm):
     submit = SubmitField()
 
 class OrgSettingsForm(FlaskForm):
-    org_id = SelectField('Organization', coerce=int)
     org_name = StringField('Organization name', render_kw={'placeholder': 'Organization name'}, \
     validators=[InputRequired()])
+    slug = StringField('Organization slug', render_kw={'placeholder': 'Organization slug'}, \
+        validators=[InputRequired()])
     partner_id = SelectField('Partner', coerce=int)
     first_name = StringField('Partner first name', render_kw={'placeholder': 'Partner first name'})
     last_name = StringField('Partner last name', render_kw={'placeholder': 'Partner last name'})
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'})
-    color1 = ColorField('Primary color', render_kw={'placeholder': 'Primary color'}, \
+    color1 = StringField('Primary color', render_kw={'placeholder': '#ffffff'}, \
         validators=[InputRequired()])
-    color2 = ColorField('Secondary color', render_kw={'placeholder': 'Secondary color'}, \
+    color2 = StringField('Secondary color', render_kw={'placeholder': '#ffffff'}, \
         validators=[InputRequired()])
-    color3 = ColorField('Tertiary color', render_kw={'placeholder': 'Tertiary color'}, \
+    color3 = StringField('Tertiary color', render_kw={'placeholder': '#ffffff'}, \
         validators=[InputRequired()])
-    logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg'], 'Images only please (png, jpg, jpeg)')])
+    font_color = StringField('Font color', render_kw={'placeholder': '#ffffff'}, \
+        validators=[InputRequired()])
+    logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg', 'webp'], 'Images only please (png, jpg, jpeg, webp)')])
+    sat_ss_id = StringField('SAT template spreadsheet ID', render_kw={'placeholder': 'SAT template spreadsheet ID'})
+    act_ss_id = StringField('ACT template spreadsheet ID', render_kw={'placeholder': 'ACT template spreadsheet ID'})
     submit = SubmitField('Save')
 
 class FreeResourcesForm(FlaskForm):

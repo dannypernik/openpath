@@ -173,8 +173,11 @@ class Organization(db.Model):
     color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
     color2 = db.Column(db.String(7), nullable=True)
     color3 = db.Column(db.String(7), nullable=True)
+    font_color = db.Column(db.String(7), nullable=True)
     logo_path = db.Column(db.String(128), nullable=True)
-    users = db.relationship('User', backref='organization', lazy=True)
+    users = db.relationship('User', backref='organization', foreign_keys='User.organization_id', lazy=True)
+    partner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    partner = db.relationship('User', backref='partner_organization', foreign_keys=[partner_id])
 
 
 @login.user_loader

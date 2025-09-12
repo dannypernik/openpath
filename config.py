@@ -32,6 +32,7 @@ class Config(object):
     TODOIST_ID = os.environ.get('TODOIST_ID')
     GAS_DEPLOYMENT_ID = os.environ.get('GAS_DEPLOYMENT_ID')
     SAT_REPORT_SS_ID = os.environ.get('SAT_REPORT_SS_ID')
+    ORG_SAT_REPORT_SS_ID = os.environ.get('ORG_SAT_REPORT_SS_ID')
     ACT_REPORT_SS_ID = os.environ.get('ACT_REPORT_SS_ID')
     RESOURCE_FOLDER_ID = os.environ.get('RESOURCE_FOLDER_ID')
     ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')

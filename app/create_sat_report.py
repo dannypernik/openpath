@@ -1,5 +1,6 @@
 import os
 from app import app
+from app.utils import is_dark_color, hex_to_rgb, color_matches
 from app.email import send_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -26,6 +27,7 @@ def get_static_url(filename):
 
 # Constants
 SHEET_ID = app.config['SAT_REPORT_SS_ID'] # Your spreadsheet ID
+ORG_SHEET_ID = app.config['ORG_SAT_REPORT_SS_ID']  # Your organization spreadsheet ID
 SAT_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
@@ -787,17 +789,26 @@ def create_custom_sat_spreadsheet(organization):
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     )
-    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=SHEET_ID,
+        fileId=ORG_SHEET_ID,
         body={
             'parents': [ORG_FOLDER_ID],
-            'name': f'{organization.name} Template'}
+            'name': f'{organization.name} SAT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
+
+    return ss_copy_id
+
+
+def style_custom_sat_spreadsheet(organization, ss_copy_id):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
     logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {SHEET_ID})')
@@ -812,10 +823,179 @@ def create_custom_sat_spreadsheet(organization):
         elif sheet['properties']['title'] == 'Data':
             data_sheet_id = sheet['properties']['sheetId']
 
-    print(ss_copy_id)
+    rgb_color1 = hex_to_rgb(organization.color1)
+    rgb_color2 = hex_to_rgb(organization.color2)
+    rgb_color3 = hex_to_rgb(organization.color3)
+    rgb_font_color = hex_to_rgb(organization.font_color)
 
-    # Step 2: Update header colors (A1:K7) and set borders
-    requests = [
+    if is_dark_color(rgb_color1):
+        rgb_text1 = (255, 255, 255)
+    else:
+        rgb_text1 = rgb_font_color
+
+    if is_dark_color(rgb_color2):
+        rgb_text2 = (255, 255, 255)
+    else:
+        rgb_text2 = rgb_font_color
+
+    if is_dark_color(rgb_color3):
+        rgb_text3 = (255, 255, 255)
+    else:
+        rgb_text3 = rgb_font_color
+
+    # Update header colors and set borders
+    requests = []
+
+    # Set text color and font family for B1:L77 in Answers sheet
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": answer_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 77,
+                "startColumnIndex": 1,
+                "endColumnIndex": 12
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_font_color[0] / 255,
+                            "green": rgb_font_color[1] / 255,
+                            "blue": rgb_font_color[2] / 255
+                        },
+                        "fontFamily": "Montserrat"
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
+        }
+    })
+
+    # Set text color and font family for A1:K84 in Analysis sheet
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 84,
+                "startColumnIndex": 0,
+                "endColumnIndex": 11
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_font_color[0] / 255,
+                            "green": rgb_font_color[1] / 255,
+                            "blue": rgb_font_color[2] / 255
+                        },
+                        "fontFamily": "Montserrat"
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
+        }
+    })
+    requests.append(
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 7,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 13,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
+            }
+        }
+    )
+
+    # Set total score label font size
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 1,  # E2
+                "endRowIndex": 2,
+                "startColumnIndex": 4,
+                "endColumnIndex": 5
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "fontSize": 14
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat.fontSize"
+        }
+    })
+
+
+    # Set total score font size
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 2,  # E3 (row index starts at 0)
+                "endRowIndex": 3,
+                "startColumnIndex": 4,  # E (column index starts at 0)
+                "endColumnIndex": 5
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "fontSize": 30
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat.fontSize"
+        }
+    })
+
+    # Set analysis table header font size
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 5,
+                "endRowIndex": 7,
+                "startColumnIndex": 0,
+                "endColumnIndex": 11
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "fontSize": 10
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat.fontSize"
+        }
+    })
+
+    requests.append(
         {
             "updateBorders": {
                 "range": {
@@ -830,31 +1010,31 @@ def create_custom_sat_spreadsheet(organization):
                     "width": 1,
                     "colorStyle": {
                         "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
                         }
                     }
                 },
-                "bottom": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    }
-                },
+                # "bottom": {
+                #     "style": "SOLID",
+                #     "width": 1,
+                #     "colorStyle": {
+                #         "rgbColor": {
+                #             "red": rgb_color1[0] / 255,
+                #             "green": rgb_color1[1] / 255,
+                #             "blue": rgb_color1[2] / 255
+                #         }
+                #     }
+                # },
                 "left": {
                     "style": "SOLID",
                     "width": 1,
                     "colorStyle": {
                         "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
                         }
                     }
                 },
@@ -863,35 +1043,153 @@ def create_custom_sat_spreadsheet(organization):
                     "width": 1,
                     "colorStyle": {
                         "rgbColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
                         }
                     }
                 }
             }
-        },
+        }
+    )
+
+    requests.append(
         {
             "repeatCell": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 0,
-                    "endRowIndex": 7,
+                    "startRowIndex": 81,
+                    "endRowIndex": 84,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
                 "cell": {
                     "userEnteredFormat": {
                         "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
                         }
                     }
                 },
-                "fields": "userEnteredFormat.backgroundColor"
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
             }
-        },
+        }
+    )
+
+    requests.append(
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 81,            # A82:K84
+                    "endRowIndex": 84,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    requests.append(
         {
             "repeatCell": {
                 "range": {
@@ -904,15 +1202,108 @@ def create_custom_sat_spreadsheet(organization):
                 "cell": {
                     "userEnteredFormat": {
                         "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
                         }
                     }
                 },
-                "fields": "userEnteredFormat.backgroundColor"
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
             }
-        },
+        }
+    )
+
+    requests.append(
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 12
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    requests.append(
         {
             "repeatCell": {
                 "range": {
@@ -925,43 +1316,247 @@ def create_custom_sat_spreadsheet(organization):
                 "cell": {
                     "userEnteredFormat": {
                         "backgroundColor": {
-                            "red": hex_to_rgb(organization.color1)[0] / 255,
-                            "green": hex_to_rgb(organization.color1)[1] / 255,
-                            "blue": hex_to_rgb(organization.color1)[2] / 255
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
                         }
                     }
                 },
-                "fields": "userEnteredFormat.backgroundColor"
+                "fields": "userEnteredFormat.backgroundColor, userEnteredFormat.textFormat"
             }
         }
-    ]
+    )
+
+    requests.append(
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 32,
+                    "endRowIndex": 35,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 12
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    requests.append(
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 74,
+                    "endRowIndex": 77,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 13
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
+            }
+        }
+    )
+
+    requests.append(
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 74,
+                    "endRowIndex": 77,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 13
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            }
+        }
+    )
 
     # Step 4: Add the logo to cell B2
-    # if organization.logo_path:
-    #     logo_url = f"https://www.openpathtutoring.com{get_static_url(organization.logo_path)}"  # Replace with your actual domain
-    #     requests.append({
-    #         "updateCells": {
-    #         "range": {
-    #             "sheetId": analysis_sheet_id,
-    #             "startRowIndex": 1,  # Row B2
-    #             "endRowIndex": 2,
-    #             "startColumnIndex": 1,  # Column B2
-    #             "endColumnIndex": 2
-    #         },
-    #         "rows": [
-    #             {
-    #             "values": [
-    #                 {
-    #                 "userEnteredValue": {
-    #                     "formulaValue": f'=IMAGE("{logo_url}")'
-    #                 }
-    #                 }
-    #             ]
-    #             }
-    #         ],
-    #         "fields": "userEnteredValue"
-    #         }
-    #     })
+    if organization.logo_path:
+        # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 1,  # Row 2 (zero-based)
+                    "endRowIndex": 2,    # Row 3 (exclusive)
+                    "startColumnIndex": 1,  # Column B (zero-based)
+                    "endColumnIndex": 2   # Column C (exclusive)
+                },
+                "rows": [
+                    {
+                        "values": [
+                            {
+                                "userEnteredValue": {
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization.logo_path}")'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue"
+            }
+        })
 
     # Execute batch update
     service.spreadsheets().batchUpdate(
@@ -969,35 +1564,90 @@ def create_custom_sat_spreadsheet(organization):
         body={"requests": requests}
     ).execute()
 
-    # Step 3: Update conditional formatting rules
-    for sheet in sheets:
-        if sheet['properties']['sheetId'] == analysis_sheet_id:
-            for rule in sheet.get('conditionalFormats', []):
-                if 'booleanRule' in rule:
-                    bg_color = rule['booleanRule']['format']['backgroundColor']
-                    if bg_color == {'red': 28/255, 'green': 77/255, 'blue': 101/255}:  # #1c4d65
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color1)[0] / 255,
-                            'green': hex_to_rgb(organization.color1)[1] / 255,
-                            'blue': hex_to_rgb(organization.color1)[2] / 255
-                        }
-                    elif bg_color == {'red': 255/255, 'green': 168/255, 'blue': 116/255}:  # #ffa874
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color2)[0] / 255,
-                            'green': hex_to_rgb(organization.color2)[1] / 255,
-                            'blue': hex_to_rgb(organization.color2)[2] / 255
-                        }
-                    elif bg_color == {'red': 196/255, 'green': 240/255, 'blue': 247/255}:  # #c4f0f7
-                        rule['booleanRule']['format']['backgroundColor'] = {
-                            'red': hex_to_rgb(organization.color3)[0] / 255,
-                            'green': hex_to_rgb(organization.color3)[1] / 255,
-                            'blue': hex_to_rgb(organization.color3)[2] / 255
-                        }
+    # Update conditional formatting rules
+    # Fetch current conditional formatting rules
+    current_rules = service.spreadsheets().get(
+        spreadsheetId=ss_copy_id,
+        fields='sheets.conditionalFormats'
+    ).execute()
+
+    analysis_conditional_formats = []
+    analysis_conditional_indices = []
+
+    for sheet in current_rules.get('sheets', []):
+        cond_formats = sheet.get('conditionalFormats')
+        if cond_formats:
+            for idx, rule in enumerate(cond_formats):
+                if rule.get('ranges', [{}])[0].get('sheetId') == analysis_sheet_id:
+                    analysis_conditional_formats.append(rule)
+                    analysis_conditional_indices.append(idx)
             break
 
+    updated_requests = []
+
+    # Filter only boolean rules
+    boolean_rules = [
+        (idx, rule) for idx, rule in zip(analysis_conditional_indices, analysis_conditional_formats)
+        if 'booleanRule' in rule
+    ]
+
+    # Iterate over the boolean rules and update based on their index
+    for boolean_idx, (rule_idx, rule) in enumerate(boolean_rules):
+        if 'booleanRule' in rule:
+            # Determine the new background color and text color based on the rule's index
+            if boolean_idx == 0:  # First boolean rule
+                new_bg_color = {
+                    'red': rgb_color1[0] / 255,
+                    'green': rgb_color1[1] / 255,
+                    'blue': rgb_color1[2] / 255
+                }
+                text_rgb = (255, 255, 255) if is_dark_color(rgb_color1) else rgb_font_color
+            elif boolean_idx == 1:  # Second boolean rule
+                new_bg_color = {
+                    'red': rgb_color2[0] / 255,
+                    'green': rgb_color2[1] / 255,
+                    'blue': rgb_color2[2] / 255
+                }
+                text_rgb = (255, 255, 255) if is_dark_color(rgb_color2) else rgb_font_color
+            elif boolean_idx == 2:  # Third boolean rule
+                new_bg_color = {
+                    'red': rgb_color3[0] / 255,
+                    'green': rgb_color3[1] / 255,
+                    'blue': rgb_color3[2] / 255
+                }
+                text_rgb = (255, 255, 255) if is_dark_color(rgb_color3) else rgb_font_color
+            else:
+                # Skip updating rules beyond the first three
+                continue
+
+            # Update the rule's background color
+            rule['booleanRule']['format']['backgroundColor'] = new_bg_color
+            rule['booleanRule']['format']['backgroundColorStyle'] = {
+                'rgbColor': new_bg_color
+            }
+            # Update the rule's text color
+            rule['booleanRule']['format']['textFormat'] = {
+                'foregroundColor': {
+                    'red': text_rgb[0] / 255,
+                    'green': text_rgb[1] / 255,
+                    'blue': text_rgb[2] / 255
+                }
+            }
+
+            # Add the update request
+            updated_requests.append({
+                "updateConditionalFormatRule": {
+                    "sheetId": analysis_sheet_id,
+                    "index": rule_idx,
+                    "rule": rule
+                }
+            })
+
+    # Execute the batch update if there are any updates
+    if updated_requests:
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=ss_copy_id,
+            body={"requests": updated_requests}
+        ).execute()
+
     return ss_copy_id
-
-
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip('#')  # Remove the '#' character
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))

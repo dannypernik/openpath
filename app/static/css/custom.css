@@ -6197,6 +6197,14 @@ input[type=submit] {
   transition: 0.3s;
   font-weight: 600;
 }
+button:hover,
+.btn:hover,
+input[type=submit]:hover {
+  background-color: #ff6344;
+  border-color: #ff6344;
+  color: white;
+  filter: brightness(1.3);
+}
 button.sec,
 .btn.sec,
 input[type=submit].sec {
@@ -6218,6 +6226,7 @@ input[type=submit].ter:hover {
   background-color: #1db9d2;
   border-color: #1db9d2;
   color: white;
+  filter: brightness(1);
 }
 button.clr,
 .btn.clr,
@@ -6234,6 +6243,7 @@ input[type=submit].clr:hover {
   background-color: rgb(0, 69, 87);
   border-color: rgb(0, 69, 87);
   color: white;
+  filter: brightness(1);
 }
 button:disabled,
 .btn:disabled,
@@ -6303,14 +6313,6 @@ a.btn {
 .btn.alert:hover {
   background-color: #850017;
   border-color: #850017;
-  color: white;
-}
-
-button:hover,
-.btn:hover,
-input[type=submit]:hover {
-  background-color: #fe7d5e;
-  border-color: #fe7d5e;
   color: white;
 }
 
