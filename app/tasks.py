@@ -91,20 +91,20 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
 
 
 @celery.task(name='app.tasks.style_custom_sat_spreadsheet_task', bind=True, base=MyTaskBaseClass)
-def style_custom_sat_spreadsheet_task(self, organization):
+def style_custom_sat_spreadsheet_task(self, organization_data):
   try:
-    logging.info(f"Styling SAT spreadsheet for {organization.name}")
-    style_custom_sat_spreadsheet(organization, organization.sat_spreadsheet_id)
+    logging.info(f"Styling SAT spreadsheet for {organization_data['name']}")
+    style_custom_sat_spreadsheet(organization_data)
   except Exception as e:
     logging.error(f'Error styling SAT spreadsheet: {e}')
     raise e
 
 
 @celery.task(name='app.tasks.style_custom_act_spreadsheet_task', bind=True, base=MyTaskBaseClass)
-def style_custom_act_spreadsheet_task(self, organization):
+def style_custom_act_spreadsheet_task(self, organization_data):
   try:
-    logging.info(f"Styling ACT spreadsheet for {organization.name}")
-    style_custom_act_spreadsheet(organization, organization.act_spreadsheet_id)
+    logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")
+    style_custom_act_spreadsheet(organization_data)
   except Exception as e:
     logging.error(f'Error styling ACT spreadsheet: {e}')
     raise e

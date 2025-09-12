@@ -463,12 +463,12 @@ def create_custom_act_spreadsheet(organization):
 
 
 
-def style_custom_act_spreadsheet(organization):
+def style_custom_act_spreadsheet(organization_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
-    ss_copy_id = organization.act_spreadsheet_id
+    ss_copy_id = organization_data['act_ss_id']
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
@@ -489,10 +489,10 @@ def style_custom_act_spreadsheet(organization):
             data_sheet_id = sheet['properties']['sheetId']
 
     # Convert organization colors
-    rgb_color1 = hex_to_rgb(organization.color1)
-    rgb_color2 = hex_to_rgb(organization.color2)
-    rgb_color3 = hex_to_rgb(organization.color3)
-    rgb_font_color = hex_to_rgb(organization.font_color)
+    rgb_color1 = hex_to_rgb(organization_data['color1'])
+    rgb_color2 = hex_to_rgb(organization_data['color2'])
+    rgb_color3 = hex_to_rgb(organization_data['color3'])
+    rgb_font_color = hex_to_rgb(organization_data['font_color'])
 
     # Determine text color based on background color brightness
     rgb_text1 = (255, 255, 255) if is_dark_color(rgb_color1) else rgb_font_color
@@ -844,7 +844,7 @@ def style_custom_act_spreadsheet(organization):
     })
 
     # Add organization logo to B3 of Test analysis and Test analysis 2
-    if organization.logo_path:
+    if organization_data['logo_path']:
         for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
             requests.append({
                 "updateCells": {
@@ -858,7 +858,7 @@ def style_custom_act_spreadsheet(organization):
                     "rows": [{
                         "values": [{
                             "userEnteredValue": {
-                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization.logo_path}")'
+                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
                             }
                         }]
                     }],

@@ -1295,11 +1295,22 @@ def org_settings(org):
 
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
-            style_custom_sat_spreadsheet_task.delay(organization)
+            organization_data = {
+                'name': organization.name,
+                'logo_path': organization.logo_path,
+                'sat_ss_id': organization.sat_spreadsheet_id,
+                'act_ss_id': organization.act_spreadsheet_id,
+                'color1': organization.color1,
+                'color2': organization.color2,
+                'color3': organization.color3,
+                'font_color': organization.font_color,
+            }
+
+            style_custom_sat_spreadsheet_task.delay(organization_data)
 
             if not form.act_ss_id.data:
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
-            style_custom_act_spreadsheet_task.delay(organization)
+            style_custom_act_spreadsheet_task.delay(organization_data)
 
             db.session.commit()
 

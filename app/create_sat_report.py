@@ -803,12 +803,12 @@ def create_custom_sat_spreadsheet(organization):
     return ss_copy_id
 
 
-def style_custom_sat_spreadsheet(organization):
+def style_custom_sat_spreadsheet(organization_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
-    ss_copy_id = organization.sat_spreadsheet_id
+    ss_copy_id = organization_data['sat_ss_id']
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
@@ -824,10 +824,10 @@ def style_custom_sat_spreadsheet(organization):
         elif sheet['properties']['title'] == 'Data':
             data_sheet_id = sheet['properties']['sheetId']
 
-    rgb_color1 = hex_to_rgb(organization.color1)
-    rgb_color2 = hex_to_rgb(organization.color2)
-    rgb_color3 = hex_to_rgb(organization.color3)
-    rgb_font_color = hex_to_rgb(organization.font_color)
+    rgb_color1 = hex_to_rgb(organization_data['color1'])
+    rgb_color2 = hex_to_rgb(organization_data['color2'])
+    rgb_color3 = hex_to_rgb(organization_data['color3'])
+    rgb_font_color = hex_to_rgb(organization_data['font_color'])
 
     if is_dark_color(rgb_color1):
         rgb_text1 = (255, 255, 255)
@@ -1533,7 +1533,7 @@ def style_custom_sat_spreadsheet(organization):
     )
 
     # Step 4: Add the logo to cell B2
-    if organization.logo_path:
+    if organization_data['logo_path']:
         # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
         requests.append({
             "updateCells": {
@@ -1549,7 +1549,7 @@ def style_custom_sat_spreadsheet(organization):
                         "values": [
                             {
                                 "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization.logo_path}")'
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
                                 }
                             }
                         ]
