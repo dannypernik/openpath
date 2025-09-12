@@ -1215,6 +1215,11 @@ def cal_check():
         send_schedule_conflict_email(request.json)
     return ('', 200, None)
 
+@app.route('/org-settings')
+@admin_required
+def org_settings():
+    return redirect(url_for('org_settings', org='new'))
+
 
 @app.route('/org-settings/<org>', methods=['GET', 'POST'])
 @admin_required
