@@ -463,11 +463,12 @@ def create_custom_act_spreadsheet(organization):
 
 
 
-def style_custom_act_spreadsheet(organization, ss_copy_id):
+def style_custom_act_spreadsheet(organization):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
+    ss_copy_id = organization.act_spreadsheet_id
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])

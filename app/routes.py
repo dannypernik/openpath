@@ -25,7 +25,8 @@ from app.score_reader import get_all_data
 from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
     style_custom_sat_spreadsheet
 from app.create_act_report import create_custom_act_spreadsheet, style_custom_act_spreadsheet
-from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task
+from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task, \
+    style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 import logging
 from googleapiclient.errors import HttpError
 import traceback
@@ -1271,8 +1272,8 @@ def org_settings(org):
             organization.color3 = form.color3.data
             organization.font_color = form.font_color.data
             organization.partner_id = partner.id
-            # organization.sat_spreadsheet_id = form.sat_ss_id.data
-            # organization.act_spreadsheet_id = form.act_ss_id.data
+            organization.sat_spreadsheet_id = form.sat_ss_id.data
+            organization.act_spreadsheet_id = form.act_ss_id.data
             slug = form.slug.data
             slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
             organization.slug = slug
@@ -1294,11 +1295,11 @@ def org_settings(org):
 
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
-            style_custom_sat_spreadsheet(organization, organization.sat_spreadsheet_id)
+            style_custom_sat_spreadsheet_task.delay(organization)
 
             if not form.act_ss_id.data:
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
-            style_custom_act_spreadsheet(organization, organization.act_spreadsheet_id)
+            style_custom_act_spreadsheet_task.delay(organization)
 
             db.session.commit()
 

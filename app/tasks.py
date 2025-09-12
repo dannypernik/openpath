@@ -1,7 +1,9 @@
 import os
 from app import celery
-from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, sat_answers_to_student_ss
-from app.create_act_report import create_act_score_report, send_act_pdf_report, act_answers_to_student_ss, process_act_answer_img
+from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, \
+  sat_answers_to_student_ss, style_custom_sat_spreadsheet
+from app.create_act_report import create_act_score_report, send_act_pdf_report, \
+  act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet
 from app.email import send_task_fail_mail
 import logging
 import resource
@@ -85,4 +87,24 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
 
   except Exception as e:
     logging.error(f'Error creating and sending ACT report: {e}')
+    raise e
+
+
+@celery.task(name='app.tasks.style_custom_sat_spreadsheet_task', bind=True, base=MyTaskBaseClass)
+def style_custom_sat_spreadsheet_task(self, organization):
+  try:
+    logging.info(f"Styling SAT spreadsheet for {organization.name}")
+    style_custom_sat_spreadsheet(organization, organization.sat_spreadsheet_id)
+  except Exception as e:
+    logging.error(f'Error styling SAT spreadsheet: {e}')
+    raise e
+
+
+@celery.task(name='app.tasks.style_custom_act_spreadsheet_task', bind=True, base=MyTaskBaseClass)
+def style_custom_act_spreadsheet_task(self, organization):
+  try:
+    logging.info(f"Styling ACT spreadsheet for {organization.name}")
+    style_custom_act_spreadsheet(organization, organization.act_spreadsheet_id)
+  except Exception as e:
+    logging.error(f'Error styling ACT spreadsheet: {e}')
     raise e
