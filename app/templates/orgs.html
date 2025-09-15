@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h3 class="mb-3">Organizations</h3>
+  <ul>
+    {% for org in organizations %}
+      <h6 class="mb-3"><a href="{{ url_for('org_settings', org=org.slug) }}">{{ org.name }}</a></h6>
+    {% endfor %}
+  </ul>
+{% endblock content %}

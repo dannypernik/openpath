@@ -175,7 +175,7 @@ def create_act_score_report(score_data, organization_dict):
 
   # Add student name to analysis sheet
   if organization_dict:
-      title_row = 5 # Row B6 if custom organization
+      title_row = 4 # Row B5 if custom organization
   else:
       title_row = 2 # Row B3 if default template
 
@@ -843,15 +843,15 @@ def style_custom_act_spreadsheet(organization_data):
         }
     })
 
-    # Add organization logo to B3 of Test analysis and Test analysis 2
+    # Add organization logo to B2 of Test analysis and Test analysis 2
     if organization_data['logo_path']:
         for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
             requests.append({
                 "updateCells": {
                     "range": {
                         "sheetId": sheet_id,
-                        "startRowIndex": 2,  # Row 3 (zero-indexed)
-                        "endRowIndex": 3,
+                        "startRowIndex": 1,  # Row 2 (zero-indexed)
+                        "endRowIndex": 2,
                         "startColumnIndex": 1,  # Column B (zero-indexed)
                         "endColumnIndex": 2
                     },

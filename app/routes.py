@@ -1220,6 +1220,11 @@ def cal_check():
 def new_org():
     return redirect(url_for('org_settings', org='new'))
 
+@app.route('/orgs')
+@admin_required
+def orgs():
+    organizations = Organization.query.all()
+    return render_template('orgs.html', organizations=organizations)
 
 @app.route('/org-settings/<org>', methods=['GET', 'POST'])
 @admin_required
