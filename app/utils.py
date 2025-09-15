@@ -3,7 +3,8 @@ import re
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-from cairosvg import svg2png
+import tempfile
+import subprocess
 
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'  # Adjust as needed
@@ -183,9 +184,12 @@ def hex_to_rgb(hex_color):
 
 def is_dark_color(rgb):
     """
-    Returns True if the color is considered 'dark' based on luma.
-    rgb: tuple of (r, g, b) with each value in 0-255
+    Determines if a color is 'dark' based on its luma value.
+    Accepts an RGB tuple (r, g, b) or a hex color string.
     """
+    if isinstance(rgb, str):
+        rgb = hex_to_rgb(rgb)
+
     r, g, b = rgb
     luma = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
     return luma < 205
@@ -208,8 +212,15 @@ def color_svg_white_to_input(svg_path, input_color, output_path):
     svg_content = re.sub(r'fill="(#ffffff|#FFF|white)"', f'fill="#{input_color}"', svg_content, flags=re.IGNORECASE)
     svg_content = re.sub(r'stroke="(#ffffff|#FFF|white)"', f'stroke="#{input_color}"', svg_content, flags=re.IGNORECASE)
 
-    svg2png(bytestring=svg_content.encode('utf-8'), write_to=output_path)
+    # Write modified SVG to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.svg') as tmp_svg:
+        tmp_svg.write(svg_content.encode('utf-8'))
+        tmp_svg_path = tmp_svg.name
 
-    # Convert absolute path to relative path for static serving
-    rel_path = os.path.relpath(output_path, os.path.join(os.path.dirname(__file__), '..', 'static'))
-    return rel_path
+    def svg_to_png_with_rsvg(svg_path, output_path):
+        subprocess.run(['rsvg-convert', '-f', 'png', '-o', output_path, svg_path])
+
+    svg_to_png_with_rsvg(tmp_svg_path, output_path)
+
+    # Clean up temporary SVG file
+    os.remove(tmp_svg_path)

@@ -1287,7 +1287,7 @@ def org_settings(org):
             logo_file = form.logo.data
             if logo_file:
                 # Ensure the upload directory exists
-                upload_dir = os.path.join(app.root_path, 'static/img/orgs')
+                upload_dir = os.path.join(app.static_folder, 'img/orgs')
                 os.makedirs(upload_dir, exist_ok=True)
 
                 # Save the file with a secure filename
@@ -1310,16 +1310,17 @@ def org_settings(org):
             }
 
             # Create partner logo
-            partner_logos_dir = os.path.join(app.root_path, 'static/img/orgs/partner_logos')
+            partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
             os.makedirs(partner_logos_dir, exist_ok=True)
             if is_dark_color(organization.color1):
                 organization_data['partner_logo_path'] = 'img/logo-header.png'
             else:
-                svg_path = os.path.join(app.root_path, 'static/img/logo-header.svg')
+                svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
                 # Ensure the partner_logos directory exists
-                partner_logo_path = f'img/orgs/partner_logos/{organization.slug}.png'
-                organization_data['partner_logo_path'] = color_svg_white_to_input(svg_path, organization.color1, partner_logo_path)
-                print(f'Created partner logo at {organization_data["partner_logo_path"]}')
+                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
+                static_output_path = os.path.join(app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
+                color_svg_white_to_input(svg_path, organization.font_color, static_output_path)
+                print(f'Created partner logo at {static_output_path}')
 
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
@@ -1350,16 +1351,16 @@ def pay():
 
 @app.route('/download/<filename>')
 def download_file (filename):
-    path = os.path.join(app.root_path, 'static/files/')
+    path = os.path.join(app.static_folder, 'files/')
     return send_from_directory(path, filename, as_attachment=False)
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'img/favicons/favicon.ico')
+    return send_from_directory(os.path.join(app.static_folder), 'img/favicons/favicon.ico')
 
 @app.route('/manifest.webmanifest')
 def webmanifest():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'img/favicons/manifest.webmanifest')
+    return send_from_directory(os.path.join(app.static_folder), 'img/favicons/manifest.webmanifest')
 
 @app.route('/robots.txt')
 def static_from_root():
