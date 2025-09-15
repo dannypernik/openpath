@@ -1324,11 +1324,13 @@ def org_settings(org):
 
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
+                organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
 
             style_custom_sat_spreadsheet_task.delay(organization_data)
 
             if not form.act_ss_id.data:
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
+                organization_data['act_ss_id'] = organization.act_spreadsheet_id
             style_custom_act_spreadsheet_task.delay(organization_data)
 
             db.session.commit()
