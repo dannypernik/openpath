@@ -1,10 +1,22 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h3 class="mb-3">Organizations</h3>
-  <ul>
-    {% for org in organizations %}
-      <h6 class="mb-3"><a href="{{ url_for('org_settings', org=org.slug) }}">{{ org.name }}</a></h6>
-    {% endfor %}
-  </ul>
+  <h2 class="mb-3 semibold">Organizations</h2>
+  {% for org in organizations %}
+    <h3>
+      <a href="{{ url_for('org_settings', org=org.slug) }}">{{ org.name }}</a>
+      <a href="{{ url_for('delete_org', org_slug=org.slug) }}" class="delete-link ms-2" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
+    </h3>
+    <div class="mb-4">
+      {% if org.partner %}
+        <h4><a href="{{ url_for('edit_user', id=org.partner.id) }}" class="me-3">{{ org.partner.first_name }} {{ org.partner.last_name }}</a></h4>
+      {% endif %}
+      {% if org.sat_spreadsheet_id %}
+        <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5">SAT spreadsheet</a>
+      {% endif %}
+      {% if org.act_spreadsheet_id %}
+        <a href="https://docs.google.com/spreadsheets/d/{{ org.act_spreadsheet_id }}">ACT spreadsheet</a>
+      {% endif %}
+    </div>
+  {% endfor %}
 {% endblock content %}

@@ -1215,16 +1215,25 @@ def cal_check():
         send_schedule_conflict_email(request.json)
     return ('', 200, None)
 
-@app.route('/new-org')
-@admin_required
-def new_org():
-    return redirect(url_for('org_settings', org='new'))
-
 @app.route('/orgs')
 @admin_required
 def orgs():
     organizations = Organization.query.all()
     return render_template('orgs.html', organizations=organizations)
+
+@app.route('/new-org')
+@admin_required
+def new_org():
+    return redirect(url_for('org_settings', org='new'))
+
+@app.route('/delete-org/<org_slug>', methods=['POST', 'GET'])
+@admin_required
+def delete_org(org_slug):
+    org = Organization.query.filter_by(slug=org_slug).first_or_404()
+    db.session.delete(org)
+    db.session.commit()
+    flash(f'{org.name} has been deleted.', 'success')
+    return redirect(url_for('orgs'))
 
 @app.route('/org-settings/<org>', methods=['GET', 'POST'])
 @admin_required
