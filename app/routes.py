@@ -23,8 +23,9 @@ import requests
 import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
-from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet
-from app.create_act_report import create_custom_act_spreadsheet
+from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
+    update_sat_spreadsheet_logos
+from app.create_act_report import create_custom_act_spreadsheet, update_act_spreadsheet_logos
 from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task, \
     style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 import logging
@@ -1218,7 +1219,7 @@ def cal_check():
 @app.route('/orgs')
 @admin_required
 def orgs():
-    organizations = Organization.query.all()
+    organizations = Organization.query.order_by(Organization.name.asc()).all()
     return render_template('orgs.html', organizations=organizations)
 
 @app.route('/new-org')
@@ -1340,11 +1341,15 @@ def org_settings(org):
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
                 organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
 
-            style_custom_sat_spreadsheet_task.delay(organization_data)
-
             if not form.act_ss_id.data:
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
                 organization_data['act_ss_id'] = organization.act_spreadsheet_id
+
+            if form.logo.data or organization.color1 != form.color1.data:
+                update_sat_spreadsheet_logos(organization_data)
+                update_act_spreadsheet_logos(organization_data)
+
+            style_custom_sat_spreadsheet_task.delay(organization_data)
             style_custom_act_spreadsheet_task.delay(organization_data)
 
             db.session.commit()

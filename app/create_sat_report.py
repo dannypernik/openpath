@@ -834,16 +834,6 @@ def style_custom_sat_spreadsheet(organization_data):
     else:
         rgb_text1 = rgb_font_color
 
-    if is_dark_color(rgb_color2):
-        rgb_text2 = (255, 255, 255)
-    else:
-        rgb_text2 = rgb_font_color
-
-    if is_dark_color(rgb_color3):
-        rgb_text3 = (255, 255, 255)
-    else:
-        rgb_text3 = rgb_font_color
-
     # Update header colors and set borders
     requests = []
 
@@ -1532,59 +1522,6 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
-    # Step 4: Add the logo to cell B2
-    if organization_data['logo_path']:
-        # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 1,  # Row 2 (zero-based)
-                    "endRowIndex": 2,    # Row 3 (exclusive)
-                    "startColumnIndex": 1,  # Column B (zero-based)
-                    "endColumnIndex": 2   # Column C (exclusive)
-                },
-                "rows": [
-                    {
-                        "values": [
-                            {
-                                "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
-                                }
-                            }
-                        ]
-                    }
-                ],
-                "fields": "userEnteredValue"
-            }
-        })
-
-    # Add partner logo to cell I82
-    if organization_data['partner_logo_path']:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,  # Row 82 (zero-based)
-                    "endRowIndex": 82,    # Row 83 (exclusive)
-                    "startColumnIndex": 8,  # Column I (zero-based)
-                    "endColumnIndex": 9   # Column J (exclusive)
-                },
-                "rows": [
-                    {
-                        "values": [
-                            {
-                                "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
-                                }
-                            }
-                        ]
-                    }
-                ],
-                "fields": "userEnteredValue"
-            }
-        })
-
     # Execute batch update
     service.spreadsheets().batchUpdate(
         spreadsheetId=ss_copy_id,
@@ -1678,3 +1615,85 @@ def style_custom_sat_spreadsheet(organization_data):
         ).execute()
 
     return ss_copy_id
+
+
+def update_sat_spreadsheet_logos(organization_data):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    sat_ss_id = organization_data['sat_ss_id']
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
+    sheets = ss_copy.get('sheets', [])
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SHEET_ID})')
+
+    answer_sheet_id = None
+    analysis_sheet_id = None
+    for sheet in sheets:
+        if sheet['properties']['title'] == 'Answers':
+            answer_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+
+    requests = []
+
+    # Step 4: Add the logo to cell B2
+    if organization_data['logo_path']:
+        # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 1,  # Row 2 (zero-based)
+                    "endRowIndex": 2,    # Row 3 (exclusive)
+                    "startColumnIndex": 1,  # Column B (zero-based)
+                    "endColumnIndex": 2   # Column C (exclusive)
+                },
+                "rows": [
+                    {
+                        "values": [
+                            {
+                                "userEnteredValue": {
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue"
+            }
+        })
+
+    # Add partner logo to cell I82
+    if organization_data['partner_logo_path']:
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 81,  # Row 82 (zero-based)
+                    "endRowIndex": 82,    # Row 83 (exclusive)
+                    "startColumnIndex": 8,  # Column I (zero-based)
+                    "endColumnIndex": 9   # Column J (exclusive)
+                },
+                "rows": [
+                    {
+                        "values": [
+                            {
+                                "userEnteredValue": {
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue"
+            }
+        })
+
+    if requests:
+        # Execute batch update
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=sat_ss_id,
+            body={"requests": requests}
+        ).execute()

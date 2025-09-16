@@ -843,43 +843,12 @@ def style_custom_act_spreadsheet(organization_data):
         }
     })
 
-    # Add organization logo to B2 of Test analysis and Test analysis 2
-    if organization_data['logo_path']:
-        for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
-            requests.append({
-                "updateCells": {
-                    "range": {
-                        "sheetId": sheet_id,
-                        "startRowIndex": 1,  # Row 2 (zero-indexed)
-                        "endRowIndex": 2,
-                        "startColumnIndex": 1,  # Column B (zero-indexed)
-                        "endColumnIndex": 2
-                    },
-                    "rows": [{
-                        "values": [{
-                            "userEnteredValue": {
-                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
-                            }
-                        }]
-                    }],
-                    "fields": "userEnteredValue"
-                }
-            })
-
-    # Execute batch update
-    service.spreadsheets().batchUpdate(
-        spreadsheetId=ss_copy_id,
-        body={"requests": requests}
-    ).execute()
-
     # Step 3: Update conditional formatting rules
     # Fetch current conditional formatting rules
     current_rules = service.spreadsheets().get(
         spreadsheetId=ss_copy_id,
         fields='sheets.conditionalFormats'
     ).execute()
-
-    # print('Current conditional formatting rules:', current_rules)
 
     # Helper to update conditional formatting for a given sheet_id and colors
     def update_conditional_formatting(sheet_id, color_list):
@@ -950,3 +919,53 @@ def style_custom_act_spreadsheet(organization_data):
         ).execute()
 
     return ss_copy_id
+
+
+def update_act_spreadsheet_logos(organization_data):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+
+    act_ss_id = organization_data['act_ss_id']
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    act_ss = service.spreadsheets().get(spreadsheetId=act_ss_id).execute()
+    sheets = act_ss.get('sheets', [])
+
+    # Identify sheet IDs
+    analysis_sheet_id = None
+    analysis_sheet_2_id = None
+    for sheet in sheets:
+        if sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis 2':
+            analysis_sheet_2_id = sheet['properties']['sheetId']
+
+    # Add organization logo to B2 of Test analysis and Test analysis 2
+    if organization_data['logo_path']:
+        for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
+            requests.append({
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 1,  # Row 2 (zero-indexed)
+                        "endRowIndex": 2,
+                        "startColumnIndex": 1,  # Column B (zero-indexed)
+                        "endColumnIndex": 2
+                    },
+                    "rows": [{
+                        "values": [{
+                            "userEnteredValue": {
+                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                            }
+                        }]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            })
+
+    # Execute batch update
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=act_ss_id,
+        body={"requests": requests}
+    ).execute()

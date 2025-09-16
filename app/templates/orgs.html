@@ -1,22 +1,38 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2 class="mb-3 semibold">Organizations</h2>
-  {% for org in organizations %}
-    <h3>
-      <a href="{{ url_for('org_settings', org=org.slug) }}">{{ org.name }}</a>
-      <a href="{{ url_for('delete_org', org_slug=org.slug) }}" class="delete-link ms-2" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
-    </h3>
-    <div class="mb-4">
-      {% if org.partner %}
-        <h4><a href="{{ url_for('edit_user', id=org.partner.id) }}" class="me-3">{{ org.partner.first_name }} {{ org.partner.last_name }}</a></h4>
-      {% endif %}
-      {% if org.sat_spreadsheet_id %}
-        <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5">SAT spreadsheet</a>
-      {% endif %}
-      {% if org.act_spreadsheet_id %}
-        <a href="https://docs.google.com/spreadsheets/d/{{ org.act_spreadsheet_id }}">ACT spreadsheet</a>
-      {% endif %}
-    </div>
-  {% endfor %}
+  <h2 class="mb-3 semibold d-inline-block">Organizations</h2>
+  <a href="{{ url_for('new_org') }}" class="btn sm ms-5 mb-3">Add</a>
+
+  <div id="orgAccordion" class="accordion">
+    {% for org in organizations %}
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h2 class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#org-{{ loop.index }}" type="button">
+            {{ org.name }}
+          </h2>
+          <a href="{{ url_for('delete_org', org_slug=org.slug) }}" class="delete-link ms-2 text-danger fw-bold" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
+        </div>
+
+        <div id="org-{{ loop.index }}" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            {% if org.partner %}
+                <a href="{{ url_for('edit_user', id=org.partner.id) }}" class="me-5">{{ org.partner.first_name }} {{ org.partner.last_name }}</a>
+            {% endif %}
+            {% if org.sat_spreadsheet_id %}
+              <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5">SAT spreadsheet</a>
+            {% endif %}
+            {% if org.act_spreadsheet_id %}
+              <a href="https://docs.google.com/spreadsheets/d/{{ org.act_spreadsheet_id }}" class="me-5">ACT spreadsheet</a>
+            {% endif %}
+            <a href="{{ url_for('org_settings', org=org.slug) }}">Settings</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
 {% endblock content %}
+
+{% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{% endblock end_scripts %}
