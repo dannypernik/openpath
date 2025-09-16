@@ -1349,8 +1349,12 @@ def org_settings(org):
                 update_sat_spreadsheet_logos(organization_data)
                 update_act_spreadsheet_logos(organization_data)
 
-            style_custom_sat_spreadsheet_task.delay(organization_data)
-            style_custom_act_spreadsheet_task.delay(organization_data)
+            if organization.color1 != form.color1.data or organization.color2 != form.color2.data or \
+                organization.color3 != form.color3.data or organization.font_color != form.font_color.data\
+                or organization.sat_spreadsheet_id != form.sat_ss_id.data or organization.act_spreadsheet_id != form.act_ss_id.data:
+
+                style_custom_sat_spreadsheet_task.delay(organization_data)
+                style_custom_act_spreadsheet_task.delay(organization_data)
 
             db.session.commit()
 
