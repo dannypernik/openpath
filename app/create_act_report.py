@@ -941,6 +941,8 @@ def update_act_spreadsheet_logos(organization_data):
         elif sheet['properties']['title'] == 'Test analysis 2':
             analysis_sheet_2_id = sheet['properties']['sheetId']
 
+    requests = []
+
     # Add organization logo to B2 of Test analysis and Test analysis 2
     if organization_data['logo_path']:
         for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:

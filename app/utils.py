@@ -209,8 +209,11 @@ def color_svg_white_to_input(svg_path, input_color, output_path):
     with open(svg_path, 'r', encoding='utf-8') as f:
         svg_content = f.read()
 
-    svg_content = re.sub(r'fill="(#ffffff|#FFF|white)"', f'fill="#{input_color}"', svg_content, flags=re.IGNORECASE)
-    svg_content = re.sub(r'stroke="(#ffffff|#FFF|white)"', f'stroke="#{input_color}"', svg_content, flags=re.IGNORECASE)
+    # Replace white fills and strokes in various SVG attribute formats
+    svg_content = re.sub(r'fill\s*=\s*["\']?(#fff(?:fff)?|#FFF(?:FFF)?|white)["\']?', f'fill="#{input_color}"', svg_content, flags=re.IGNORECASE)
+    svg_content = re.sub(r'stroke\s*=\s*["\']?(#fff(?:fff)?|#FFF(?:FFF)?|white)["\']?', f'stroke="#{input_color}"', svg_content, flags=re.IGNORECASE)
+    svg_content = re.sub(r'fill\s*:\s*(#fff(?:fff)?|#FFF(?:FFF)?|white)', f'fill:#{input_color}', svg_content, flags=re.IGNORECASE)
+    svg_content = re.sub(r'stroke\s*:\s*(#fff(?:fff)?|#FFF(?:FFF)?|white)', f'stroke:#{input_color}', svg_content, flags=re.IGNORECASE)
 
     # Write modified SVG to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix='.svg') as tmp_svg:
