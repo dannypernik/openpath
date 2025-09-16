@@ -842,6 +842,13 @@ def style_custom_act_spreadsheet(organization_data):
             }
         }
     })
+    # Execute the batch update
+    if requests:
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=ss_copy_id,
+            body={"requests": requests}
+        ).execute()
+
 
     # Step 3: Update conditional formatting rules
     # Fetch current conditional formatting rules
