@@ -63,10 +63,12 @@
       </div>
     </div>
     <div class="my-2">
-      {{ form.sat_ss_id.label }} {{ form.sat_ss_id }}
+      {{ form.sat_ss_id.label }} <a href="https://docs.google.com/spreadsheets/d/{{ organization.sat_spreadsheet_id }}" class="ms-3" target="_blank">View</a>
+      {{ form.sat_ss_id }}
     </div>
     <div class="my-2">
-      {{ form.act_ss_id.label }} {{ form.act_ss_id }}
+      {{ form.act_ss_id.label }} <a href="https://docs.google.com/spreadsheets/d/{{ organization.act_spreadsheet_id }}" class="ms-3" target="_blank">View</a>
+      {{ form.act_ss_id }}
     </div>
     <div class="text-center">
       {{ form.submit }}
