@@ -50,13 +50,22 @@
       {{ form.font_color(class="text-center") }}
       </div>
     </div>
-    <div>
-      {{ form.logo.label }} {{ form.logo }}
+    <div class="row">
+      <div class="col-6">
+        {{ form.logo.label(class="mb-3") }} {{ form.logo }}
+      </div>
+      <div class="col-6 col-md-4">
+        {% if organization.logo_path %}
+          <div class="mb-2">
+            <img src="https://www.openpathtutoring.com/static/{{ organization.logo_path }}" alt="Organization Logo" class="img-fluid" style="max-height: 10rem;">
+          </div>
+        {% endif %}
+      </div>
     </div>
-    <div class="mb-2">
+    <div class="my-2">
       {{ form.sat_ss_id.label }} {{ form.sat_ss_id }}
     </div>
-    <div class="mb-2">
+    <div class="my-2">
       {{ form.act_ss_id.label }} {{ form.act_ss_id }}
     </div>
     <div class="text-center">
@@ -87,7 +96,7 @@
 
     document.getElementById('partner_id').addEventListener('change', function() {
       if(this.value == 0) {
-        document.getElementById('new-partner-info').style.display = 'block';
+        document.getElementById('new-partner-info').style.display = 'flex';
       }
       else {
         document.getElementById('new-partner-info').style.display = 'none';
