@@ -1286,6 +1286,28 @@ def org_settings(org):
             else:
                 organization = Organization.query.filter_by(slug=org).first()
 
+            organization_data = {
+                'name': form.org_name.data,
+                'sat_ss_id': form.sat_ss_id.data,
+                'act_ss_id': form.act_ss_id.data,
+                'color1': form.color1.data,
+                'color2': form.color2.data,
+                'color3': form.color3.data,
+                'font_color': form.font_color.data,
+            }
+
+            if (
+                organization.color1 != form.color1.data or
+                organization.color2 != form.color2.data or
+                organization.color3 != form.color3.data or
+                organization.font_color != form.font_color.data or
+                organization.sat_spreadsheet_id != form.sat_ss_id.data or
+                organization.act_spreadsheet_id != form.act_ss_id.data
+            ):
+                is_style_updated = True
+            else:
+                is_style_updated = False
+
             organization.name = form.org_name.data
             organization.color1 = form.color1.data
             organization.color2 = form.color2.data
@@ -1312,17 +1334,7 @@ def org_settings(org):
 
                 # Store the relative path in the database
                 organization.logo_path = f"img/orgs/{filename}"
-
-            organization_data = {
-                'name': organization.name,
-                'logo_path': organization.logo_path,
-                'sat_ss_id': organization.sat_spreadsheet_id,
-                'act_ss_id': organization.act_spreadsheet_id,
-                'color1': organization.color1,
-                'color2': organization.color2,
-                'color3': organization.color3,
-                'font_color': organization.font_color,
-            }
+            organization_data['logo_path'] = organization.logo_path
 
             # Create partner logo
             partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
@@ -1349,24 +1361,25 @@ def org_settings(org):
                 update_sat_spreadsheet_logos(organization_data)
                 update_act_spreadsheet_logos(organization_data)
 
-            if organization.color1 != form.color1.data or organization.color2 != form.color2.data or \
-                organization.color3 != form.color3.data or organization.font_color != form.font_color.data\
-                or organization.sat_spreadsheet_id != form.sat_ss_id.data or organization.act_spreadsheet_id != form.act_ss_id.data:
-
+            if is_style_updated:
                 style_custom_sat_spreadsheet_task.delay(organization_data)
                 style_custom_act_spreadsheet_task.delay(organization_data)
 
             db.session.commit()
 
-            flash(Markup(f'Custom \
-                <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
-                    SAT spreadsheet</a> and \
-                <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
-                    ACT spreadsheet</a> updated successfully'), 'success')
+            if is_style_updated or form.logo.data:
+                flash(Markup(f'{"Style" if is_style_updated else "Logo"} updated for \
+                    <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
+                        SAT spreadsheet</a> and \
+                    <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
+                        ACT spreadsheet</a>'), 'success')
+            else:
+                flash(f'{organization.name} saved', 'success')
             return redirect(url_for('org_settings', org=slug))
         except Exception as e:
             flash(f"Error creating custom spreadsheet: {e}", 'error')
-
+            logger.error(f"Error creating custom spreadsheet: {e}")
+            db.session.rollback()
     return render_template('org-settings.html', form=form, organization=organization)
 
 

@@ -527,7 +527,6 @@ def style_custom_act_spreadsheet(organization_data):
                                 "green": rgb_text1[1] / 255,
                                 "blue": rgb_text1[2] / 255
                             },
-                            "fontSize": 10,
                             "bold": True,
                             "fontFamily": "Montserrat"
                         }
@@ -593,6 +592,116 @@ def style_custom_act_spreadsheet(organization_data):
                 }
             }
         })
+
+        # Font sizes 13 for B5, 12 for E3, 23 for E4, 12 for H2:J6
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 4,
+                    "endRowIndex": 5,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 2
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "fontSize": 13,
+                            "bold": True,
+                            "fontFamily": "Montserrat",
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat"
+            }
+        })
+
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 2,
+                    "endRowIndex": 3,
+                    "startColumnIndex": 4,
+                    "endColumnIndex": 5
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "fontSize": 12,
+                            "bold": True,
+                            "fontFamily": "Montserrat",
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat"
+            }
+        })
+
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 3,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 4,
+                    "endColumnIndex": 5
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "fontSize": 23,
+                            "bold": True,
+                            "fontFamily": "Montserrat",
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat"
+            }
+        })
+
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": 6,
+                    "startColumnIndex": 7,
+                    "endColumnIndex": 10
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "fontSize": 12,
+                            "bold": True,
+                            "fontFamily": "Montserrat",
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat"
+            }
+        })
+
 
     # Apply color1 to A1:O4 on Answer sheet
     requests.append({
