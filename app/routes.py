@@ -1288,8 +1288,6 @@ def org_settings(org):
             else:
                 partner = User.query.filter_by(id=form.partner_id.data).first()
 
-            organization.partner_id = partner.id
-
             if (
                 organization.color1 != form.color1.data or
                 organization.color2 != form.color2.data or
