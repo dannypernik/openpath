@@ -1339,9 +1339,7 @@ def org_settings(org):
             # Create partner logo
             partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
             os.makedirs(partner_logos_dir, exist_ok=True)
-            if is_dark_color(organization.color1):
-                organization_data['partner_logo_path'] = 'img/logo-header.png'
-            else:
+            if not is_dark_color(organization.color1):
                 svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
                 # Ensure the partner_logos directory exists
                 organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
