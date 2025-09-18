@@ -67,7 +67,6 @@ class User(UserMixin, db.Model):
         backref=db.backref('user', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
-    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id', name='fk_user_organization'))  # Foreign key to Organization
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
@@ -135,6 +134,10 @@ class User(UserMixin, db.Model):
             return
         return User.query.get(id)
 
+    @property
+    def organization(self):
+        return Organization.query.filter_by(partner_id=self.id).first()
+
 
 class TestDate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -175,7 +178,6 @@ class Organization(db.Model):
     color3 = db.Column(db.String(7), nullable=True)
     font_color = db.Column(db.String(7), nullable=True)
     logo_path = db.Column(db.String(128), nullable=True)
-    users = db.relationship('User', backref='organization', foreign_keys='User.organization_id', lazy=True)
     partner_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True)
     partner = db.relationship(
         'User',

@@ -1249,10 +1249,12 @@ def org_settings(org):
 
     form = OrgSettingsForm()
 
-    if organization.partner:
-        partner_list = [(organization.partner.id, full_name(organization.partner))]
-    else:
-        partner_list = []
+    partner_list = []
+    partners = User.query.filter_by(role='partner').all()
+    for partner in partners:
+        # Include partner if not linked to any organization or matches current organization.partner_id
+        if not Organization.query.filter_by(partner_id=partner.id).first() or (organization and partner.id == organization.partner_id):
+            partner_list.append((partner.id, full_name(partner)))
     partner_list.insert(0, (0, 'New partner'))
     form.partner_id.choices = partner_list
 
@@ -1431,16 +1433,6 @@ def sitemap():
                 }
                 static_urls.append(url)
 
-    # # Dynamic routes with dynamic content
-    # dynamic_urls = list()
-    # blog_posts = Post.objects(published=True)
-    # for post in blog_posts:
-    #     url = {
-    #         'loc': f'{host_base}/blog/{post.category.name}/{post.url}',
-    #         'lastmod': post.date_published.strftime('%Y-%m-%dT%H:%M:%SZ')
-    #         }
-    #     dynamic_urls.append(url)
-
     xml_sitemap = render_template('sitemap/sitemap.xml', static_urls=static_urls, host_base=host_base) #dynamic_urls=dynamic_urls)
     response = make_response(xml_sitemap)
     response.headers['Content-Type'] = 'application/xml'
@@ -1570,7 +1562,7 @@ def handle_sat_report(form, template_name, organization=None):
 
             if organization:
                 org = Organization.query.filter_by(slug=organization['slug']).first()
-                admin = User.query.filter_by(organization_id=org.id).first()
+                admin = User.query.filter(User.id == org.partner_id).first()
                 score_data['admin_email'] = admin.email
             else:
                 score_data['admin_email'] = None
@@ -1700,7 +1692,7 @@ def handle_act_report(form, template_name, organization=None):
             score_data['admin_email'] = None
             if organization:
                 org = Organization.query.filter_by(slug=organization['slug']).first()
-                admin = User.query.filter_by(organization_id=org.id).first()
+                admin = User.query.filter(User.id == org.partner_id).first()
                 score_data['admin_email'] = admin.email
 
             score_data['student_ss_id'] = None
