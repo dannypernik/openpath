@@ -1268,33 +1268,27 @@ def org_settings(org):
 
     if form.validate_on_submit():
         try:
-            if form.partner_id.data == 0:
-                partner = User(first_name=form.first_name.data, last_name=form.last_name.data,
-                    email=form.email.data.lower(), role='partner',
-                    session_reminders=False, test_reminders=False)
-                db.session.add(partner)
-                db.session.flush()
-            else:
-                partner = User.query.filter_by(id=form.partner_id.data).first()
-                form.first_name.data = partner.first_name
-                form.last_name.data = partner.last_name
-                form.email.data = partner.email
-
             if not organization:
                 organization = Organization(name=form.org_name.data, slug=form.slug.data)
                 db.session.add(organization)
             else:
                 organization = Organization.query.filter_by(slug=org).first()
 
-            organization_data = {
-                'name': form.org_name.data,
-                'sat_ss_id': form.sat_ss_id.data,
-                'act_ss_id': form.act_ss_id.data,
-                'color1': form.color1.data,
-                'color2': form.color2.data,
-                'color3': form.color3.data,
-                'font_color': form.font_color.data,
-            }
+            if form.partner_id.data == 0:
+                partner = User(
+                    first_name=form.first_name.data,
+                    last_name=form.last_name.data,
+                    email=form.email.data.lower(),
+                    role='partner',
+                    session_reminders=False,
+                    test_reminders=False
+                )
+                db.session.add(partner)
+                db.session.flush()
+            else:
+                partner = User.query.filter_by(id=form.partner_id.data).first()
+
+            organization.partner_id = partner.id
 
             if (
                 organization.color1 != form.color1.data or
@@ -1319,6 +1313,16 @@ def org_settings(org):
             slug = form.slug.data
             slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
             organization.slug = slug
+
+            organization_data = {
+                'name': form.org_name.data,
+                'sat_ss_id': form.sat_ss_id.data,
+                'act_ss_id': form.act_ss_id.data,
+                'color1': form.color1.data,
+                'color2': form.color2.data,
+                'color3': form.color3.data,
+                'font_color': form.font_color.data,
+            }
 
             # Save the uploaded logo file
             logo_file = form.logo.data

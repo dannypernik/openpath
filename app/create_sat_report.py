@@ -943,7 +943,6 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     })
 
-
     # Set total score font size
     requests.append({
         "repeatCell": {

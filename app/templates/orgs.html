@@ -14,7 +14,7 @@
           <a href="{{ url_for('delete_org', org_slug=org.slug) }}" class="delete-link ms-2 text-danger fw-bold" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
         </div>
 
-        <div id="org-{{ loop.index }}" class="accordion-collapse collapse">
+        <div id="org-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#orgAccordion">
           <div class="accordion-body">
             <a href="{{ url_for('org_settings', org=org.slug) }}" class="me-5">Settings</a>
             {% if org.partner %}
