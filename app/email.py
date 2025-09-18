@@ -1305,11 +1305,20 @@ def send_score_report_email(score_data, base64_blob):
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
+    to_email = []
     cc_email = []
     bcc_email = []
     if score_data['admin_email']:
-        cc_email.append({ 'Email': score_data['admin_email'] })
         bcc_email.append({ 'Email': app.config.get('ADMIN_EMAIL') })
+
+        if score_data['email']:
+            to_email.append({ 'Email': score_data['email'] })
+            cc_email.append({ 'Email': score_data['admin_email'] })
+        else:
+            to_email.append({ 'Email': score_data['admin_email'] })
+    else:
+        to_email.append({ 'Email': score_data['email'] })
+
 
     with app.app_context():
         data = {
@@ -1319,11 +1328,7 @@ def send_score_report_email(score_data, base64_blob):
                         'Email': app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
-                    'To': [
-                        {
-                            'Email': score_data['email']
-                        }
-                    ],
+                    'To': to_email,
                     'Cc': cc_email,
                     'Bcc': bcc_email,
                     'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
