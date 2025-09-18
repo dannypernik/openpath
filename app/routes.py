@@ -1249,8 +1249,11 @@ def org_settings(org):
 
     form = OrgSettingsForm()
 
-    partners = User.query.order_by(User.first_name, User.last_name).filter_by(role='partner')
-    partner_list = [(0,'New partner')] + [(u.id, full_name(u)) for u in partners]
+    if organization.partner:
+        partner_list = [(organization.partner.id, full_name(organization.partner))]
+    else:
+        partner_list = []
+    partner_list.insert(0, (0, 'New partner'))
     form.partner_id.choices = partner_list
 
     # Prepopulate the form with the organization's data if it's a GET request
