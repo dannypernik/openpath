@@ -829,7 +829,6 @@ def style_custom_sat_spreadsheet(organization_data):
     else:
         rgb_text1 = rgb_font_color
 
-    # Update header colors and set borders
     requests = []
 
     # Set text color and font family for B1:L77 in Answers sheet
@@ -918,6 +917,31 @@ def style_custom_sat_spreadsheet(organization_data):
             }
         }
     )
+
+    # Set text color of pivot table filter cell (B7) to rgb_color1
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 6,  # B7
+                "endRowIndex": 7,
+                "startColumnIndex": 1,
+                "endColumnIndex": 2
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat.foregroundColor"
+        }
+    })
 
     # Set total score label font size
     requests.append({
