@@ -15,9 +15,9 @@
           {% if organization %}
             <label for="email">Student email</label>
             {{ form.email(placeholder="Optional") }}
-          {% else %}
+            {% else %}
             {{ form.email.label }}
-            {{ form.email }}
+            {{ form.email(required=True) }}
           {% endif %}
         </div>
         <div class="col-12">
