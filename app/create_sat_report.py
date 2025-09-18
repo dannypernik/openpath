@@ -863,13 +863,13 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     })
 
-    # Set text color and font family for A1:K84 in Analysis sheet
+    # Set text color and font family for A1:K85 in Analysis sheet
     requests.append({
         "repeatCell": {
             "range": {
                 "sheetId": analysis_sheet_id,
                 "startRowIndex": 0,
-                "endRowIndex": 84,
+                "endRowIndex": 85,
                 "startColumnIndex": 0,
                 "endColumnIndex": 11
             },
@@ -894,7 +894,7 @@ def style_custom_sat_spreadsheet(organization_data):
                 "range": {
                     "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 7,
+                    "endRowIndex": 8,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -970,8 +970,8 @@ def style_custom_sat_spreadsheet(organization_data):
         "repeatCell": {
             "range": {
                 "sheetId": analysis_sheet_id,
-                "startRowIndex": 5,
-                "endRowIndex": 7,
+                "startRowIndex": 6,
+                "endRowIndex": 8,
                 "startColumnIndex": 0,
                 "endColumnIndex": 11
             },
@@ -992,7 +992,7 @@ def style_custom_sat_spreadsheet(organization_data):
                 "range": {
                     "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 7,
+                    "endRowIndex": 8,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1007,17 +1007,6 @@ def style_custom_sat_spreadsheet(organization_data):
                         }
                     }
                 },
-                # "bottom": {
-                #     "style": "SOLID",
-                #     "width": 1,
-                #     "colorStyle": {
-                #         "rgbColor": {
-                #             "red": rgb_color1[0] / 255,
-                #             "green": rgb_color1[1] / 255,
-                #             "blue": rgb_color1[2] / 255
-                #         }
-                #     }
-                # },
                 "left": {
                     "style": "SOLID",
                     "width": 1,
@@ -1071,8 +1060,8 @@ def style_custom_sat_spreadsheet(organization_data):
             "repeatCell": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,
-                    "endRowIndex": 84,
+                    "startRowIndex": 82,
+                    "endRowIndex": 85,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1105,8 +1094,8 @@ def style_custom_sat_spreadsheet(organization_data):
             "updateBorders": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,            # A82:K84
-                    "endRowIndex": 84,
+                    "startRowIndex": 82,            # A83:K85
+                    "endRowIndex": 85,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1645,10 +1634,10 @@ def update_sat_spreadsheet_logos(organization_data):
             "updateCells": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 1,  # Row 2 (zero-based)
-                    "endRowIndex": 2,    # Row 3 (exclusive)
-                    "startColumnIndex": 1,  # Column B (zero-based)
-                    "endColumnIndex": 2   # Column C (exclusive)
+                    "startRowIndex": 1,
+                    "endRowIndex": 2,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 2
                 },
                 "rows": [
                     {
@@ -1665,16 +1654,16 @@ def update_sat_spreadsheet_logos(organization_data):
             }
         })
 
-    # Add partner logo to cell I82
+    # Add partner logo to cell I83
     if organization_data['partner_logo_path']:
         requests.append({
             "updateCells": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,  # Row 82 (zero-based)
-                    "endRowIndex": 82,    # Row 83 (exclusive)
-                    "startColumnIndex": 8,  # Column I (zero-based)
-                    "endColumnIndex": 9   # Column J (exclusive)
+                    "startRowIndex": 82,
+                    "endRowIndex": 83,
+                    "startColumnIndex": 8,
+                    "endColumnIndex": 9
                 },
                 "rows": [
                     {
