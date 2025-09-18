@@ -101,25 +101,20 @@ def create_sat_score_report(score_data, organization_dict=None):
                     'sheetId': answer_sheet_id,
                     'startRowIndex': 0,
                     'endRowIndex': 1,
-                    'startColumnIndex': 1,
-                    'endColumnIndex': 4
+                    'startColumnIndex': 0,
+                    'endColumnIndex': 2
                 },
                 'rows': [
                     {
                         'values': [
                             {
                                 'userEnteredValue': {
-                                    'stringValue': 'Bluebook Practice ' + score_data['test_display_name']
-                                }
-                            },
-                            {
-                                'userEnteredValue': {
-                                    'stringValue': ''
-                                }
-                            },
-                            {
-                                'userEnteredValue': {
                                     'stringValue': score_data['test_code'].upper()
+                                }
+                            },
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': 'Bluebook Practice ' + score_data['test_display_name']
                                 }
                             }
                         ]
@@ -140,8 +135,8 @@ def create_sat_score_report(score_data, organization_dict=None):
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
-                    'startRowIndex': 5,
-                    'endRowIndex': 6,
+                    'startRowIndex': 6,
+                    'endRowIndex': 7,
                     'startColumnIndex': 1,
                     'endColumnIndex': 2
                 },
@@ -451,16 +446,16 @@ def create_sat_score_report(score_data, organization_dict=None):
         requests.append(request)
 
         if organization_dict:
-            title_row = 4 # Row B5 if custom organization
+            title_row = 5 # Row B6 if custom organization
         else:
             title_row = 1 # Row B2 if default template
         request = {
             'updateCells': {
                 'range': {
                     'sheetId': analysis_sheet_id,
-                    'startRowIndex': title_row,  # Row B5 (row index starts at 0)
+                    'startRowIndex': title_row,
                     'endRowIndex': title_row + 1,
-                    'startColumnIndex': 1,  # Column B (column index starts at 0)
+                    'startColumnIndex': 1,
                     'endColumnIndex': 2
                 },
                 'rows': [
@@ -870,7 +865,7 @@ def style_custom_sat_spreadsheet(organization_data):
                 "sheetId": analysis_sheet_id,
                 "startRowIndex": 0,
                 "endRowIndex": 85,
-                "startColumnIndex": 0,
+                "startColumnIndex": 1,
                 "endColumnIndex": 11
             },
             "cell": {
@@ -888,6 +883,8 @@ def style_custom_sat_spreadsheet(organization_data):
             "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
         }
     })
+
+    # Set header background colors and text format for A1:K8 in Analysis sheet
     requests.append(
         {
             "repeatCell": {
@@ -1054,6 +1051,7 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
+    # Set footer background colors and text format for A1:K8 in Analysis sheet
     requests.append(
         {
             "repeatCell": {
@@ -1168,6 +1166,7 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
+    # Set header background colors, text format, and borders for B2:L4 in answer sheet
     requests.append(
         {
             "repeatCell": {
@@ -1201,7 +1200,6 @@ def style_custom_sat_spreadsheet(organization_data):
             }
         }
     )
-
     requests.append(
         {
             "updateBorders": {
@@ -1282,6 +1280,7 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
+    # Set header background colors, text format, and borders for B33:L35 in answer sheet
     requests.append(
         {
             "repeatCell": {
@@ -1315,7 +1314,6 @@ def style_custom_sat_spreadsheet(organization_data):
             }
         }
     )
-
     requests.append(
         {
             "updateBorders": {
@@ -1396,6 +1394,7 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
+    # Set footer background colors, text format, and borders for A75:M77 in answer sheet
     requests.append(
         {
             "repeatCell": {
@@ -1429,7 +1428,6 @@ def style_custom_sat_spreadsheet(organization_data):
             }
         }
     )
-
     requests.append(
         {
             "updateBorders": {
