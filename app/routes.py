@@ -1358,12 +1358,16 @@ def org_settings(org):
             if is_style_updated:
                 partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
                 os.makedirs(partner_logos_dir, exist_ok=True)
-                if not is_dark_color(organization.color1):
-                    svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
-                    organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
-                    static_output_path = os.path.join(app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
-                    color_svg_white_to_input(svg_path, organization.font_color, static_output_path)
-                    update_sat_partner_logo(organization_data)
+                svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
+                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
+                static_output_path = os.path.join(app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
+
+                if is_dark_color(organization.color1):
+                    logo_color = '#ffffff'
+                else:
+                    logo_color = organization.color1
+                color_svg_white_to_input(svg_path, logo_color, static_output_path)
+                update_sat_partner_logo(organization_data)
 
                 style_custom_sat_spreadsheet_task.delay(organization_data)
                 style_custom_act_spreadsheet_task.delay(organization_data)
