@@ -1122,7 +1122,7 @@ def style_custom_sat_spreadsheet(organization_data):
                 },
                 "top": {
                     "style": "SOLID",
-                    "width": 1,
+                    "width": 2,
                     "colorStyle": {
                         "rgbColor": {
                             "red": rgb_color1[0] / 255,
