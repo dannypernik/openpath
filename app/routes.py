@@ -24,8 +24,8 @@ import json
 from reminders import get_student_events
 from app.score_reader import get_all_data
 from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
-    update_sat_spreadsheet_logos
-from app.create_act_report import create_custom_act_spreadsheet, update_act_spreadsheet_logos
+    update_sat_org_logo, update_sat_partner_logo
+from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task, \
     style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 import logging
@@ -1343,17 +1343,6 @@ def org_settings(org):
                 organization.logo_path = f"img/orgs/{filename}"
             organization_data['logo_path'] = organization.logo_path
 
-            # Create partner logo
-            partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
-            os.makedirs(partner_logos_dir, exist_ok=True)
-            if not is_dark_color(organization.color1):
-                svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
-                # Ensure the partner_logos directory exists
-                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
-                static_output_path = os.path.join(app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
-                color_svg_white_to_input(svg_path, organization.font_color, static_output_path)
-                print(f'Created partner logo at {static_output_path}')
-
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
                 organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
@@ -1362,11 +1351,20 @@ def org_settings(org):
                 organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
                 organization_data['act_ss_id'] = organization.act_spreadsheet_id
 
-            if form.logo.data or organization.color1 != form.color1.data:
-                update_sat_spreadsheet_logos(organization_data)
-                update_act_spreadsheet_logos(organization_data)
+            if form.logo.data:
+                update_sat_org_logo(organization_data)
+                update_act_org_logo(organization_data)
 
             if is_style_updated:
+                partner_logos_dir = os.path.join(app.static_folder, 'img/orgs/partner-logos')
+                os.makedirs(partner_logos_dir, exist_ok=True)
+                if not is_dark_color(organization.color1):
+                    svg_path = os.path.join(app.static_folder, 'img/logo-header.svg')
+                    organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
+                    static_output_path = os.path.join(app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
+                    color_svg_white_to_input(svg_path, organization.font_color, static_output_path)
+                    update_sat_partner_logo(organization_data)
+
                 style_custom_sat_spreadsheet_task.delay(organization_data)
                 style_custom_act_spreadsheet_task.delay(organization_data)
 

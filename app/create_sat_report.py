@@ -857,13 +857,13 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     })
 
-    # Set text color and font family for A1:K85 in Analysis sheet
+    # Set text color and font family for A1:K84 in Analysis sheet
     requests.append({
         "repeatCell": {
             "range": {
                 "sheetId": analysis_sheet_id,
                 "startRowIndex": 0,
-                "endRowIndex": 85,
+                "endRowIndex": 84,
                 "startColumnIndex": 1,
                 "endColumnIndex": 11
             },
@@ -1075,14 +1075,14 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
-    # Set footer background colors and text format for A1:K8 in Analysis sheet
+    # Set footer background colors and text format for A82:K84 in Analysis sheet
     requests.append(
         {
             "repeatCell": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 82,
-                    "endRowIndex": 85,
+                    "startRowIndex": 81,
+                    "endRowIndex": 84,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1115,8 +1115,8 @@ def style_custom_sat_spreadsheet(organization_data):
             "updateBorders": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 82,            # A83:K85
-                    "endRowIndex": 85,
+                    "startRowIndex": 81,            # A82:K84
+                    "endRowIndex": 84,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1627,7 +1627,7 @@ def style_custom_sat_spreadsheet(organization_data):
     return ss_copy_id
 
 
-def update_sat_spreadsheet_logos(organization_data):
+def update_sat_org_logo(organization_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
@@ -1675,14 +1675,43 @@ def update_sat_spreadsheet_logos(organization_data):
             }
         })
 
+    if requests:
+        # Execute batch update
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=sat_ss_id,
+            body={"requests": requests}
+        ).execute()
+
+
+def update_sat_partner_logo(organization_data):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    sat_ss_id = organization_data['sat_ss_id']
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
+    sheets = ss_copy.get('sheets', [])
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SHEET_ID})')
+
+    answer_sheet_id = None
+    analysis_sheet_id = None
+    for sheet in sheets:
+        if sheet['properties']['title'] == 'Answers':
+            answer_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+
+    requests = []
+
     # Add partner logo to cell I83
     if organization_data['partner_logo_path']:
         requests.append({
             "updateCells": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 82,
-                    "endRowIndex": 83,
+                    "startRowIndex": 81,
+                    "endRowIndex": 82,
                     "startColumnIndex": 8,
                     "endColumnIndex": 9
                 },

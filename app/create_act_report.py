@@ -1037,7 +1037,7 @@ def style_custom_act_spreadsheet(organization_data):
     return ss_copy_id
 
 
-def update_act_spreadsheet_logos(organization_data):
+def update_act_org_logo(organization_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
