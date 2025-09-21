@@ -1006,30 +1006,6 @@ def test_reminders():
         imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
 
-@app.route('/appamada', methods=['GET', 'POST'])
-def appamada():
-    form = ScoreAnalysisForm()
-    school='Appamada School'
-    test='mini SAT'
-    submit_text='Send me the score analysis'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('appamada'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_score_analysis_email(student, parent, school)
-        if email_status == 200:
-            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('score-analysis-request.html', form=form, school=school, test=test, \
-        submit_text=submit_text)
-
-
 @app.route('/huntington-surrey', methods=['GET', 'POST'])
 def huntington_surrey():
     form = ScoreAnalysisForm()
@@ -1220,7 +1196,9 @@ def cal_check():
 @admin_required
 def orgs():
     organizations = Organization.query.order_by(Organization.name.asc()).all()
-    return render_template('orgs.html', organizations=organizations)
+    sat_template_id = app.config['ORG_SAT_REPORT_SS_ID']
+    act_template_id = app.config['ACT_REPORT_SS_ID']
+    return render_template('orgs.html', organizations=organizations, sat_template_id=sat_template_id, act_template_id=act_template_id)
 
 @app.route('/new-org')
 @admin_required
