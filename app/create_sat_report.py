@@ -1704,7 +1704,7 @@ def update_sat_partner_logo(organization_data):
 
     requests = []
 
-    # Add partner logo to cell I83
+    # Add partner logo to cell I82
     if organization_data['partner_logo_path']:
         requests.append({
             "updateCells": {
