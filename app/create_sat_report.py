@@ -29,7 +29,7 @@ def get_static_url(filename):
 SHEET_ID = app.config['SAT_REPORT_SS_ID'] # Your spreadsheet ID
 ORG_SHEET_ID = app.config['ORG_SAT_REPORT_SS_ID']  # Your organization spreadsheet ID
 SAT_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
-ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
+ORG_FOLDER_ID = app.config['ORG_FOLDER_ID']  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
 total_questions = {
