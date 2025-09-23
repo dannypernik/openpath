@@ -2,7 +2,9 @@
 
 {% block content %}
   <h2 class="mb-3 semibold d-inline-block">Organizations</h2>
-  <a href="{{ url_for('new_org') }}" class="btn sm ms-5 mb-3">Add</a>
+  <a href="{{ url_for('new_org') }}" class="btn sm ms-4 mb-3">Add</a>
+  <a href="https://docs.google.com/spreadsheets/d/{{ sat_template_id }}" class="ms-4 mb-3" target="_blank">View SAT Template</a>
+  <a href="https://docs.google.com/spreadsheets/d/{{ act_template_id }}" class="ms-4 mb-3" target="_blank">View ACT Template</a>
 
   <div id="orgAccordion" class="accordion">
     {% for org in organizations %}
