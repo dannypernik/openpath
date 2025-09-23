@@ -61,7 +61,7 @@ SUMMARY_RANGE = 'Summary!A6:Z'
 tutor_data = [
     {
         'name': 'Danny Pernik',
-        'cal_id': 'danny.pernik@openpathtutoring.com'
+        'cal_id': 'danny@openpathtutoring.com'
     },
     {
         'name': 'Sean Palermo',
