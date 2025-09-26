@@ -1059,28 +1059,27 @@ def update_act_org_logo(organization_data):
 
     requests = []
 
-    # Add organization logo to B2 of Test analysis and Test analysis 2
+    # Add organization logo to B2 of Test analysis sheet
     if organization_data['logo_path']:
-        for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
-            requests.append({
-                "updateCells": {
-                    "range": {
-                        "sheetId": sheet_id,
-                        "startRowIndex": 1,  # Row 2 (zero-indexed)
-                        "endRowIndex": 2,
-                        "startColumnIndex": 1,  # Column B (zero-indexed)
-                        "endColumnIndex": 2
-                    },
-                    "rows": [{
-                        "values": [{
-                            "userEnteredValue": {
-                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
-                            }
-                        }]
-                    }],
-                    "fields": "userEnteredValue"
-                }
-            })
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 1,  # Row 2 (zero-indexed)
+                    "endRowIndex": 2,
+                    "startColumnIndex": 1,  # Column B (zero-indexed)
+                    "endColumnIndex": 2
+                },
+                "rows": [{
+                    "values": [{
+                        "userEnteredValue": {
+                            "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                        }
+                    }]
+                }],
+                "fields": "userEnteredValue"
+            }
+        })
 
     # Execute batch update
     service.spreadsheets().batchUpdate(
