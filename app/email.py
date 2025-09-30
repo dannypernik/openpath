@@ -1,5 +1,6 @@
 from threading import Thread
 from app import app, full_name
+from app.utils import generate_vcard
 from mailjet_rest import Client
 from flask import render_template, url_for
 import re
@@ -1102,6 +1103,71 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
         logging.info('Script status email error:', str(result.status_code), result.reason, '\n')
     return result.status_code
 
+
+def send_new_student_email(student, parent, parent2=None):
+    api_key = app.config['MAILJET_KEY']
+    api_secret = app.config['MAILJET_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    student_vcard_base64 = generate_vcard(student)
+    parent_vcard_base64 = generate_vcard(parent)
+    parent2_vcard_base64 = generate_vcard(parent2) if parent2 else None
+
+    attachments = [
+        {
+            'ContentType': 'text/vcard',
+            'Filename': f"{full_name(student)}.vcf",
+            'Base64Content': student_vcard_base64
+        },
+        {
+            'ContentType': 'text/vcard',
+            'Filename': f"{full_name(parent)}.vcf",
+            'Base64Content': parent_vcard_base64
+        }
+    ]
+
+    if parent2_vcard_base64:  # Only include parent2 if it exists
+        attachments.append({
+            'ContentType': 'text/vcard',
+            'Filename': f"{full_name(parent2)}.vcf",
+            'Base64Content': parent2_vcard_base64
+        })
+
+    # Retrieve test dates
+    interested_tests = []
+    for test_date in student.get_dates():
+        interested_tests.append({
+            'test': test_date.test,
+            'date': test_date.date,
+            'is_registered': student.is_registered(test_date)
+        })
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': app.config['MAIL_USERNAME'],
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': app.config['MAIL_USERNAME']
+                    }
+                ],
+                'Subject': 'New student added: ' + full_name(student),
+                'HTMLPart': render_template('email/new-student-email.html',
+                    student=student, parent=parent, interested_tests=interested_tests),
+                'Attachments': attachments
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('New student email sent to ' + app.config['MAIL_USERNAME'])
+    else:
+        logging.info('New student email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+    return result.status_code
 
 def send_schedule_conflict_email(message):
     api_key = app.config['MAILJET_KEY']

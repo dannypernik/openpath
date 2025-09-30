@@ -17,7 +17,7 @@ from app.email import send_contact_email, send_verification_email, send_password
     send_prep_class_email, send_signup_notification_email, send_session_recap_email, \
     send_confirmation_email, send_changed_answers_email, send_schedule_conflict_email, \
     send_ntpa_email, send_fail_mail, send_free_resources_email, send_nomination_email, \
-    send_signup_request_email, send_unsubscribe_email
+    send_signup_request_email, send_unsubscribe_email, send_new_student_email
 from functools import wraps
 import requests
 import json
@@ -706,8 +706,6 @@ def students():
     other_students = User.query.filter((User.role=='student') & (User.status.notin_(statuses)))
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
-    registered_tests = []
-    interested_tests = []
 
     if form.validate_on_submit():
         student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
@@ -752,8 +750,6 @@ def new_student():
 
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
-    registered_tests = []
-    interested_tests = []
 
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -767,15 +763,19 @@ def new_student():
             if parent:
                 parent.first_name = form.parent_first_name.data
                 parent.last_name = form.parent_last_name.data
-                parent.secondary_email = form.parent_email_2.data.lower()
+                parent.email = form.parent_email.data.lower()
+                parent.secondary_email = form.parent2_email.data.lower()
                 parent.phone = form.parent_phone.data
                 parent.timezone = form.timezone.data
                 parent.role = 'parent'
             else:
                 parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data, \
-                    email=form.parent_email.data.lower(), secondary_email=form.parent_email_2.data.lower(), \
+                    email=form.parent_email.data.lower(), secondary_email=form.parent2_email.data.lower(), \
                     phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
                     session_reminders=True, test_reminders=True)
+
+            db.session.add(parent)
+            db.session.flush()
 
             student = User.query.filter_by(email=form.student_email.data.lower()).first()
             if student:
@@ -791,11 +791,29 @@ def new_student():
                     email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
                     status='prospective', role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
 
-            db.session.add(parent)
-            db.session.flush()
             student.parent_id = parent.id
             db.session.add(student)
+
+            if form.parent2_email.data:
+                parent2 = User.query.filter_by(email=form.parent2_email.data.lower()).first()
+                if parent2:
+                    parent2.first_name = form.parent2_first_name.data
+                    parent2.last_name = form.parent2_last_name.data
+                    parent2.secondary_email = form.parent2_email.data.lower()
+                    parent2.phone = form.parent2_phone.data
+                    parent2.timezone = form.timezone.data
+                    parent2.role = 'parent'
+                else:
+                    parent2 = User(first_name=form.parent2_first_name.data, last_name=form.parent2_last_name.data, \
+                        email=form.parent2_email.data.lower(), phone=form.parent2_phone.data, \
+                        timezone=form.timezone.data, role='parent', \
+                        session_reminders=True, test_reminders=True)
+                db.session.add(parent2)
+            else:
+                parent2 = None
+
             db.session.commit()
+
             test_selections = request.form.getlist('test_dates')
             for d in upcoming_dates:
                 if str(d.id) + '-interested' in test_selections:
@@ -803,14 +821,13 @@ def new_student():
                 elif str(d.id) + '-registered' in test_selections:
                     student.register_test_date(d)
 
-            # email_status = send_new_student_email(student, parent, parent_2)
-            # if email_status == 200:
-            #     flash('New student form received. Thank you!')
-            #     return redirect(url_for('test_dates'))
-            # else:
-            #     flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
-            #     return redirect(url_for('new_student'))
-            # flash(student.first_name + ' added')
+            email_status = send_new_student_email(student, parent, parent2)
+            if email_status == 200:
+                flash('New student form received. Thank you!')
+                return redirect(url_for('index'))
+            else:
+                flash(Markup('Email failed to send. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
+                return redirect(url_for('new_student'))
         except:
             db.session.rollback()
             flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>', 'error'))

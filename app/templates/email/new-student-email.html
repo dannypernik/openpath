@@ -1,0 +1,24 @@
+{% extends 'email/_email-base.html' %}
+
+{% block content %}
+  <p>{{ student.first_name }} {{ student.last_name }} added.</p>
+  <p><strong>Email:</strong> {{ student.email }}</p>
+  <p><strong>Phone:</strong> {{ student.phone }}</p>
+
+  {% if interested_tests %}
+    <h3>Test Dates</h3>
+    <ul>
+      {% for test in interested_tests %}
+        <li>
+          {{ test.test.upper() }} on {{ test.date.strftime('%B %d, %Y') }}
+          {% if test.is_registered %}
+            <strong>&#10003;</strong>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>None selected.</p>
+  {% endif %}
+{% endblock content %}
+

@@ -5,6 +5,11 @@ from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 import tempfile
 import subprocess
+from io import BytesIO
+import base64
+from email.mime.base import MIMEBase
+from email import encoders
+
 
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'  # Adjust as needed
@@ -227,3 +232,19 @@ def color_svg_white_to_input(svg_path, input_color, output_path):
 
     # Clean up temporary SVG file
     os.remove(tmp_svg_path)
+
+
+def generate_vcard(contact):
+    vcard = f"""BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//iPhone OS 18.5//EN
+N:{contact.last_name};{contact.first_name};;;
+FN:{contact.first_name} {contact.last_name}
+EMAIL:{contact.email}
+TEL;TYPE=CELL:{contact.phone}
+END:VCARD
+"""
+
+    vcard_bytes = vcard.strip().encode('utf-8')
+    vcard_base64 = base64.b64encode(vcard_bytes).decode('utf-8')
+    return vcard_base64

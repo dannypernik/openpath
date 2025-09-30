@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}
+  New Student Form
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <h1 class="text-center">New Student Form</h1>
+  <form method="POST" action="{{ url_for('new_student') }}">
+    {{ form.hidden_tag() }}
+
+    <h4>Student information</h4>
+    <div class="row">
+      <div class="mb-3 col-6">
+      {{ form.student_first_name }}
+      </div>
+      <div class="mb-3 col-6">
+      {{ form.student_last_name }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.student_email }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.student_phone }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.timezone }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.grad_year.label }}
+      {{ form.grad_year }}
+      </div>
+    </div>
+
+    <h4>Parent information</h4>
+    <div class="row">
+      <div class="mb-3 col-6">
+      {{ form.parent_first_name }}
+      </div>
+      <div class="mb-3 col-6">
+      {{ form.parent_last_name }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.parent_email }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.parent_phone }}
+      </div>
+    </div>
+    <h4>Additional parent information (optional)</h4>
+    <div class="row">
+      <div class="mb-3 col-6">
+      {{ form.parent2_first_name }}
+      </div>
+      <div class="mb-3 col-6">
+      {{ form.parent2_last_name }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.parent2_email }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="mb-3 col-12">
+      {{ form.parent2_phone }}
+      </div>
+    </div>
+
+    {% for t in tests %}
+      <div class="row my-4 g-0">
+        <h3 class="mb-1">{{ t.upper() }} dates:</h3>
+        <div class="d-flex flex-wrap">
+          {% for d in upcoming_dates %}
+            {% if d.test == t %}
+              <div class="test-date my-1">
+                <label for="td-{{ d.id }}" class="text-nowrap">
+                  {{ d.date.strftime('%B %-d') }}
+                </label>
+                <select id="td-{{ d.id }}" name="test_dates">
+                  <option value="{{ d.id }}-none">--</option>
+                  <option value="{{ d.id }}-interested">Interested</option>
+                  <option value="{{ d.id }}-registered">Registered</option>
+                </select>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="mb-3">
+      {{ hcaptcha }}
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </form>
+</div>
+{% endblock content %}
+
+
+{% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+{% endblock end_scripts %}

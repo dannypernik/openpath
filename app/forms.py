@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
     SubmitField, IntegerField, RadioField, SelectField, validators, FileField
-from wtforms.fields import DateField, EmailField, ColorField
+from wtforms.fields import DateField, EmailField, TelField
 from flask_wtf.file import FileRequired, FileAllowed
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length
@@ -155,18 +155,18 @@ class StudentIntakeForm(FlaskForm):
     student_email = EmailField('Student Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
-    student_phone = StringField('Student phone', render_kw={'placeholder': 'Phone'})
+    student_phone = TelField('Student phone', render_kw={'placeholder': 'Phone'})
     grad_year = SelectField('Graduation year', choices=[(None, 'Select'), ('2026', '2026 (Senior)'), \
         ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
     parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Email address'})
-    parent_phone = StringField('Parent phone', render_kw={'placeholder': 'Phone'})
-    parent_first_name_2 = StringField('2nd parent first name', render_kw={'placeholder': 'First name'})
-    parent_last_name_2 = StringField('2nd parent last name', render_kw={'placeholder': 'Last name'})
-    parent_email_2 = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
-    parent_phone_2 = StringField('2nd parent phone', render_kw={'placeholder': 'Phone'})
+    parent_phone = TelField('Parent phone', render_kw={'placeholder': 'Phone'})
+    parent2_first_name = StringField('2nd parent first name', render_kw={'placeholder': 'First name'})
+    parent2_last_name = StringField('2nd parent last name', render_kw={'placeholder': 'Last name'})
+    parent2_email = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
+    parent2_phone = TelField('2nd parent phone', render_kw={'placeholder': 'Phone'})
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     submit = SubmitField()
 
