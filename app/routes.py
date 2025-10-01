@@ -195,6 +195,39 @@ def load_act_test_codes():
         return []
 
 
+def create_crm_contact_and_action(contact_data, action_text):
+    '''Create a contact and an associated action in OnePageCRM.'''
+    '''contact_data: dict with contact details'''
+    '''action_text: str with action description'''
+    try:
+        crm_contact = requests.post(
+            'https://app.onepagecrm.com/api/v3/contacts',
+            json=contact_data,
+            auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW'])
+        )
+        if crm_contact.status_code == 201:
+            logging.info('CRM contact created successfully.')
+            new_action = {
+                'contact_id': crm_contact.json()['data']['contact']['id'],
+                'assignee_id': app.config['ONEPAGECRM_ID'],
+                'status': 'asap',
+                'text': action_text,
+            }
+            crm_action = requests.post(
+                'https://app.onepagecrm.com/api/v3/actions',
+                json=new_action,
+                auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW'])
+            )
+            logging.info(f'CRM action created: {crm_action}')
+            return True
+        else:
+            logging.error(f'Failed to create CRM contact: {crm_contact.text}')
+            return False
+    except Exception as e:
+        logging.error(f'Error creating CRM contact and action: {e}', exc_info=True)
+        return False
+
+
 # def validate_altcha_response(token):
 #     """Validate Altcha response token."""
 #     altcha_secret_key = app.config['ALTCHA_SECRET_KEY']
@@ -248,8 +281,19 @@ def index():
         #     print('crm_action:', crm_action)
 
         email_status = send_contact_email(user, message, subject)
+
+        new_contact = {
+            'first_name': user.first_name, 'last_name': 'OPT contact form', \
+            'emails': [{ 'type': 'home', 'value': user.email}], \
+            'phones': [{ 'type': 'mobile', 'value': user.phone}], \
+            'tags': ['Website']
+        }
+
+        create_crm_contact_and_action(new_contact, 'Respond to OPT contact form')
+
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
+
             if conf_status == 200:
                 flash('Thank you for reaching out! We\'ll be in touch.')
                 return redirect(url_for('index', _anchor='home'))
@@ -820,6 +864,44 @@ def new_student():
                     student.interested_test_date(d)
                 elif str(d.id) + '-registered' in test_selections:
                     student.register_test_date(d)
+
+            existing_email_matches = requests.get(f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10', auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+            if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
+                existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
+                existing_contact_id = existing_contact.get('id')
+                existing_contact['first_name'] = parent.first_name
+                existing_contact['last_name'] = parent.last_name
+                existing_contact['company_name'] = student.last_name
+                existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
+                requests.put(
+                    f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
+                    json=existing_contact,
+                    auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW'])
+                )
+                print('Contact already exists in OnePageCRM')
+
+                # Create a new CRM action for the existing contact
+                new_action = {
+                    'contact_id': existing_contact_id,
+                    'assignee_id': app.config['ONEPAGECRM_ID'],
+                    'status': 'asap',
+                    'text': f'Scheduling/followup for {student.first_name}',
+                }
+                requests.post(
+                    'https://app.onepagecrm.com/api/v3/actions',
+                    json=new_action,
+                    auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW'])
+                )
+            else:
+                new_contact = {
+                    'first_name': parent.first_name, 'last_name': parent.last_name, \
+                    'company_name': student.last_name, \
+                    'emails': [{ 'type': 'home', 'value': parent.email}], \
+                    'phones': [{ 'type': 'mobile', 'value': parent.phone}], \
+                    'tags': ['Parent']
+                }
+
+                create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
 
             email_status = send_new_student_email(student, parent, parent2)
             if email_status == 200:
