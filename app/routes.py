@@ -1442,7 +1442,7 @@ def org_settings(org):
                 if is_dark_color(organization.color1):
                     logo_color = '#ffffff'
                 else:
-                    logo_color = organization.color1
+                    logo_color = organization.font_color
                 color_svg_white_to_input(svg_path, logo_color, static_output_path)
                 update_sat_partner_logo(organization_data)
 
