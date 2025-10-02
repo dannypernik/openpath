@@ -1599,13 +1599,17 @@ def style_custom_sat_spreadsheet(organization_data):
             rule['booleanRule']['format']['backgroundColorStyle'] = {
                 'rgbColor': new_bg_color
             }
-            # Update the rule's text color
+            # Preserve original font weight (bold) if present
+            original_text_format = rule['booleanRule']['format'].get('textFormat', {})
+            is_bold = original_text_format.get('bold', False)
+            # Update the rule's text color and keep font weight
             rule['booleanRule']['format']['textFormat'] = {
                 'foregroundColor': {
                     'red': text_rgb[0] / 255,
                     'green': text_rgb[1] / 255,
                     'blue': text_rgb[2] / 255
-                }
+                },
+                'bold': is_bold
             }
 
             # Add the update request
