@@ -1105,28 +1105,28 @@ def test_reminders():
         imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
 
-@app.route('/huntington-surrey', methods=['GET', 'POST'])
-def huntington_surrey():
-    form = ScoreAnalysisForm()
-    school='Huntington-Surrey School'
-    test='SAT'
-    submit_text='Send score analysis'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('huntington_surrey'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
-            grad_year=form.grad_year.data)
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_score_analysis_email(student, parent, school)
-        if email_status == 200:
-            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
-        else:
-            flash('Email failed to send, please contact ' + hello, 'error')
-    return render_template('huntington-surrey.html', form=form, school=school, test=test,
-        submit_text=submit_text)
+# @app.route('/huntington-surrey', methods=['GET', 'POST'])
+# def huntington_surrey():
+#     form = ScoreAnalysisForm()
+#     school='Huntington-Surrey School'
+#     test='SAT'
+#     submit_text='Send score analysis'
+#     if form.validate_on_submit():
+#         if hcaptcha.verify():
+#             pass
+#         else:
+#             flash('Captcha was unsuccessful. Please try again.', 'error')
+#             return redirect(url_for('huntington_surrey'))
+#         student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
+#             grad_year=form.grad_year.data)
+#         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
+#         email_status = send_score_analysis_email(student, parent, school)
+#         if email_status == 200:
+#             return render_template('score-analysis-submitted.html', email=form.parent_email.data)
+#         else:
+#             flash('Email failed to send, please contact ' + hello, 'error')
+#     return render_template('huntington-surrey.html', form=form, school=school, test=test,
+#         submit_text=submit_text)
 
 
 @app.route('/ati-austin', methods=['GET', 'POST'])
