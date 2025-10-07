@@ -1420,6 +1420,8 @@ def org_settings(org):
                 organization.logo_path = f"img/orgs/{filename}"
             organization_data['logo_path'] = organization.logo_path
 
+            db.session.commit()
+
             if not form.sat_ss_id.data:
                 organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
                 organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
