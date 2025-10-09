@@ -20,6 +20,7 @@
           {{ form.email }}
         </div>
         <div class="col-12 my-2">
+          {{ form.test_code.label(class='me-2') }}
           {{ form.test_code }}
         </div>
         <div class="col-12">
@@ -81,16 +82,29 @@
       <div class="container-fluid">
         <div class="row">
           <div class="modal-header mt-2">
-            <h2 class="modal-title">Answer sheet instructions</h2>
+            <h2 class="modal-title">Practice test instructions</h2>
             <span type="button" class="btn-close" data-bs-dismiss="modal">&times;</span>
           </div>
         </div>
         <div class="modal-body">
           <div class="row">
             <ol class="mb-3">
-              <li>Print one of the following ACTs: {{ form.test_code }}</li>
-              <li>Print the <a href="{{ url_for('static', filename='files/act-bubble-sheet.pdf')}}" class="semibold" target="_blank">ACT bubble sheet</a> and use it as you take your practice ACT.</li>
-              <li>Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.</li>
+              <li class="mb-2">Print the free official
+                <a href="{{ url_for('static', filename='files/ACT-2176CPRE.pdf')}}" class="semibold" target="_blank">
+                  ACT practice test, Form 2176CPRE
+                </a>.<br>
+                <span class="sm">(If you completed a different practice test,
+                <a href="{{ url_for('index', _anchor='contact', subject='ACT score report inquiry') }}" class="semibold">
+                  contact us
+                </a>.)</span>
+              </li>
+              <li class="mb-2">Print the
+                <a href="{{ url_for('static', filename='files/act-bubble-sheet.pdf')}}" class="semibold" target="_blank">
+                  this bubble sheet
+                </a>
+                and use it as you take your practice ACT. The grader will not work correctly with other bubble sheets.
+              </li>
+              <li class="mb-2">Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.</li>
               <li>Upload the photo to the form on this page. Accepted file types are JPG, PNG, WEBP, and HEIC.</li>
             </ol>
           </div>

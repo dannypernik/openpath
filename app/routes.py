@@ -1722,7 +1722,8 @@ def handle_sat_report(form, template_name, organization=None):
 
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-    form.test_code.choices = load_act_test_codes()
+    # form.test_code.choices = load_act_test_codes()
+    form.test_code.choices = [["202526", "2176CPRE"]]
 
     if form.validate_on_submit():
         if hcaptcha.verify():
