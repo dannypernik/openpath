@@ -129,7 +129,7 @@ class User(UserMixin, db.Model):
     def verify_email_token(token):
         try:
             id = jwt.decode(token, app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['reset_password']
+                algorithms=['HS256'])['reset_password']
         except:
             return
         return User.query.get(id)

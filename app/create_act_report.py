@@ -390,7 +390,7 @@ def act_answers_to_student_ss(score_data):
     score_data['test_sheet_id'] = str(student_answer_sheet_id)
     logging.info('https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?gid=' + score_data['test_sheet_id'])
 
-    # After setting test code and difficulty, get values from the answer sheet
+    # After setting test code, get values from the answer sheet
     student_answer_sheet_range = f'{score_data["test_code"].upper()}!A1:P79'  # Adjust range as needed
     student_answer_data = service.spreadsheets().values().get(spreadsheetId=score_data['student_ss_id'], range=student_answer_sheet_range).execute()
     student_answer_values = student_answer_data.get('values', [])
