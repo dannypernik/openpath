@@ -912,7 +912,7 @@ def new_student():
                 return redirect(url_for('new_student'))
         except:
             db.session.rollback()
-            flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>', 'error'))
+            flash(Markup(f'Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
             return redirect(url_for('new_student'))
     return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests)
 
@@ -1723,7 +1723,7 @@ def handle_sat_report(form, template_name, organization=None):
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
     # form.test_code.choices = load_act_test_codes()
-    form.test_code.choices = [["202526", "2176CPRE"]]
+    form.test_code.choices = [["202526", "Form 25MC1"]]
 
     if form.validate_on_submit():
         if hcaptcha.verify():

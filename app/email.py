@@ -1086,29 +1086,11 @@ def send_new_student_email(student, parent, parent2=None):
     api_secret = app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    student_vcard_base64 = generate_vcard(student)
-    parent_vcard_base64 = generate_vcard(parent)
-    parent2_vcard_base64 = generate_vcard(parent2) if parent2 else None
+    contacts = [student, parent]
+    if parent2:
+        contacts.append(parent2)
 
-    attachments = [
-        {
-            'ContentType': 'text/vcard',
-            'Filename': f"{full_name(student)}.vcf",
-            'Base64Content': student_vcard_base64
-        },
-        {
-            'ContentType': 'text/vcard',
-            'Filename': f"{full_name(parent)}.vcf",
-            'Base64Content': parent_vcard_base64
-        }
-    ]
-
-    if parent2_vcard_base64:  # Only include parent2 if it exists
-        attachments.append({
-            'ContentType': 'text/vcard',
-            'Filename': f"{full_name(parent2)}.vcf",
-            'Base64Content': parent2_vcard_base64
-        })
+    vcards_base64 = generate_vcard(contacts)
 
     # Retrieve test dates
     interested_tests = []
@@ -1134,7 +1116,13 @@ def send_new_student_email(student, parent, parent2=None):
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
                     student=student, parent=parent, interested_tests=interested_tests),
-                'Attachments': attachments
+                'Attachments': [
+                    {
+                        'ContentType': 'text/vcard',
+                        'Filename': f"{full_name(student)}.vcf",
+                        'Base64Content': vcards_base64
+                    }
+                ]
             }
         ]
     }

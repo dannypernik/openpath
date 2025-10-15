@@ -234,17 +234,20 @@ def color_svg_white_to_input(svg_path, input_color, output_path):
     os.remove(tmp_svg_path)
 
 
-def generate_vcard(contact):
-    vcard = f"""BEGIN:VCARD
+def generate_vcard(contacts):
+    vcards = ''
+    for contact in contacts:
+        vcard = f"""BEGIN:VCARD
 VERSION:3.0
-PRODID:-//Apple Inc.//iPhone OS 18.5//EN
 N:{contact.last_name};{contact.first_name};;;
 FN:{contact.first_name} {contact.last_name}
 EMAIL:{contact.email}
 TEL;TYPE=CELL:{contact.phone}
+TZ;VALUE=text:{contact.timezone}
 END:VCARD
 """
+        vcards += vcard
 
-    vcard_bytes = vcard.strip().encode('utf-8')
+    vcard_bytes = vcards.strip().encode('utf-8')
     vcard_base64 = base64.b64encode(vcard_bytes).decode('utf-8')
     return vcard_base64
