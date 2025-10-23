@@ -360,7 +360,7 @@ def nominate():
         elif form_data['is_caregiver_nomination']:
             form_data['contact_email'] = form_data['parent_email']
         else:
-            form_data['contact_email'] = form_data['nominator_email']
+            form_data['contact_email'] = form.nominator_email.data
             form_data['nominator_first_name'] = form.nominator_first_name.data
             form_data['nominator_last_name'] = form.nominator_last_name.data
             form_data['nominator_email'] = form.nominator_email.data

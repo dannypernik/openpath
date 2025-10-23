@@ -322,9 +322,9 @@ class NominationForm(FlaskForm):
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'}, validators=[DataRequired()])
     parent_email = StringField('Parent Email', render_kw={'placeholder': 'Email'}, validators=[DataRequired(), Email()])
-    nominator_first_name = StringField('Your first name', render_kw={'placeholder': 'First name'}, validators=[DataRequired()])
-    nominator_last_name = StringField('Your last name', render_kw={'placeholder': 'Last name'}, validators=[DataRequired()])
-    nominator_email = StringField('Your email', render_kw={'placeholder': 'Email'}, validators=[DataRequired(), Email()])
+    nominator_first_name = StringField('Your first name', render_kw={'placeholder': 'First name'})
+    nominator_last_name = StringField('Your last name', render_kw={'placeholder': 'Last name'})
+    nominator_email = StringField('Your email', render_kw={'placeholder': 'Email'})
     nomination_text = TextAreaField(
         'Nomination text',
         render_kw={'placeholder': 'Why does this student deserve a test prep scholarship?', 'rows': '5'},

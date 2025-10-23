@@ -71,7 +71,7 @@
           {{ form.nominator_last_name }}
         </div>
         <div class="col-12">
-          {{ form.nominator_email }}
+          {{ form.nominator_email(type='email') }}
         </div>
       </div>
     </div>
@@ -91,52 +91,36 @@
       const parentInfoSection = document.querySelector('#parent-info');
       const nominatorInfoSection = document.querySelector('#nominator-info');
 
-      const parentFirstName = document.querySelector('#parent_first_name');
-      const parentLastName = document.querySelector('#parent_last_name');
-      const parentEmail = document.querySelector('#parent_email');
-
       const yourFirstName = document.querySelector('#nominator_first_name');
       const yourLastName = document.querySelector('#nominator_last_name');
       const yourEmail = document.querySelector('#nominator_email');
 
       function toggleSections() {
-      // if (isCaregiverCheckbox.checked) {
-      //   parentInfoSection.style.display = 'none';
-      //   parentFirstName.required = false;
-      //   parentLastName.required = false;
-      //   parentEmail.required = false;
-      // } else {
-      //   parentInfoSection.style.display = 'block';
-      //   parentFirstName.required = true;
-      //   parentLastName.required = true;
-      //   parentEmail.required = true;
-      // }
-
-      if (isSelfNominationCheckbox.checked || isCaregiverCheckbox.checked) {
-        nominatorInfoSection.style.display = 'none';
-        yourFirstName.required = false;
-        yourLastName.required = false;
-        yourEmail.required = false;
-      } else {
-        nominatorInfoSection.style.display = 'block';
-        yourFirstName.required = true;
-        yourLastName.required = true;
-        yourEmail.required = true;
-      }
+        if (isSelfNominationCheckbox.checked || isCaregiverCheckbox.checked) {
+          nominatorInfoSection.style.display = 'none';
+          yourFirstName.required = false;
+          yourLastName.required = false;
+          yourEmail.required = false;
+        } else {
+          nominatorInfoSection.style.display = 'block';
+          yourFirstName.required = true;
+          yourLastName.required = true;
+          yourEmail.required = true;
+        }
       }
 
       isCaregiverCheckbox.addEventListener('change', function () {
-      if (isCaregiverCheckbox.checked) {
-        isSelfNominationCheckbox.checked = false;
-      }
-      toggleSections();
+        if (isCaregiverCheckbox.checked) {
+          isSelfNominationCheckbox.checked = false;
+        }
+        toggleSections();
       });
 
       isSelfNominationCheckbox.addEventListener('change', function () {
-      if (isSelfNominationCheckbox.checked) {
-        isCaregiverCheckbox.checked = false;
-      }
-      toggleSections();
+        if (isSelfNominationCheckbox.checked) {
+          isCaregiverCheckbox.checked = false;
+        }
+        toggleSections();
       });
     });
   </script>
