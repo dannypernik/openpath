@@ -1,9 +1,11 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
-  <p>{{ student.first_name }} {{ student.last_name }} added.</p>
-  <p><strong>Email:</strong> {{ student.email }}</p>
-  <p><strong>Phone:</strong> {{ student.phone }}</p>
+  <p><strong>{{ student.first_name}} {{ student.last_name }}:</strong> {{ student.email }}, {{ student.phone }}</p>
+  <p><strong>{{ parent.first_name}} {{ parent.last_name }}:</strong> {{ parent.email }}, {{ parent.phone }}</p>
+  {% if parent2 %}
+    <p><strong>{{ parent2.first_name}} {{ parent2.last_name }}:</strong> {{ parent2.email }}, {{ parent2.phone }}</p>
+  {% endif %}
 
   {% if interested_tests %}
     <h3>Test Dates</h3>
@@ -18,7 +20,7 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p>None selected.</p>
+    <p>No test dates selected.</p>
   {% endif %}
 {% endblock content %}
 

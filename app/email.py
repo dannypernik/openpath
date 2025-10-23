@@ -1115,7 +1115,7 @@ def send_new_student_email(student, parent, parent2=None):
                 ],
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
-                    student=student, parent=parent, interested_tests=interested_tests),
+                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests),
                 'Attachments': [
                     {
                         'ContentType': 'text/vcard',

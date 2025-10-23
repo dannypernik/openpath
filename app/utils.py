@@ -242,8 +242,9 @@ VERSION:3.0
 N:{contact.last_name};{contact.first_name};;;
 FN:{contact.first_name} {contact.last_name}
 EMAIL:{contact.email}
+ORG:{contact.role.title()}
 TEL;TYPE=CELL:{contact.phone}
-TZ;VALUE=text:{contact.timezone}
+NOTE:Timezone: {contact.timezone}
 END:VCARD
 """
         vcards += vcard
