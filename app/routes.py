@@ -45,7 +45,7 @@ logging.basicConfig(filename='logs/info.log', level=logging.INFO, format='%(asct
 
 @app.before_request
 def before_request():
-    if current_user and current_user.is_authenticated:
+    if current_user.is_authenticated:
         current_user.last_viewed = datetime.utcnow()
         db.session.commit()
 
@@ -60,7 +60,7 @@ phone = app.config['PHONE']
 @app.context_processor
 def inject_values():
     try:
-        if current_user and current_user.is_authenticated:
+        if current_user.is_authenticated:
             current_first_name = current_user.first_name
             current_last_name = current_user.last_name
         else:
@@ -1529,7 +1529,6 @@ def sat_report():
 
 
 @app.route('/act-report', methods=['GET', 'POST'])
-@login_required
 def act_report():
     form = ACTReportForm()
     return handle_act_report(form, 'act-report.html')
@@ -1564,7 +1563,6 @@ def custom_sat_report(org):
 
 
 @app.route('/<org>/act', methods=['GET', 'POST'])
-@login_required
 def custom_act_report(org):
     form = ACTReportForm()
     organization = Organization.query.filter_by(slug=org).first_or_404()
@@ -1722,8 +1720,10 @@ def handle_sat_report(form, template_name, organization=None):
 
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-    # form.test_code.choices = load_act_test_codes()
-    form.test_code.choices = [["202526", "Form 25MC1"]]
+    if current_user.is_authenticated:
+        form.test_code.choices = load_act_test_codes()
+    else:
+        form.test_code.choices = [["2025MC1", "Form 25MC1"]]
 
     if form.validate_on_submit():
         if hcaptcha.verify():
