@@ -35,9 +35,17 @@
       </div>
     </div>
     <div class="row">
-      <div class="mb-3 col-12">
-      {{ form.grad_year.label }}
-      {{ form.grad_year }}
+      <div class="mb-3 col-12 col-md-4">
+        {{ form.grad_year.label }}<br>
+        {{ form.grad_year }}
+      </div>
+      <div class="mb-3 col-12 col-md-4 {% if not current_user.is_admin %}d-none{% endif %}">
+        {{ form.tutor.label }}<br>
+        {{ form.tutor }}
+      </div>
+      <div class="mb-3 col-12 col-md-4 {% if not current_user.is_admin %}d-none{% endif %}">
+        {{ form.status.label }}<br>
+        {{ form.status }}
       </div>
     </div>
 
@@ -79,6 +87,7 @@
       {{ form.parent2_phone }}
       </div>
     </div>
+
 
     {% for t in tests %}
       <div class="row my-4 g-0">

@@ -794,6 +794,9 @@ def new_student():
 
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    tutors = User.query.filter_by(role='tutor')
+    tutor_list = [(u.id, full_name(u)) for u in tutors]
+    form.tutor.choices = tutor_list
 
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -828,12 +831,14 @@ def new_student():
                 student.phone = form.student_phone.data
                 student.timezone = form.timezone.data
                 student.role = 'student'
-                student.status = 'active'
+                student.status = form.status.data
+                student.tutor_id = form.tutor.data
                 student.grad_year = form.grad_year.data
             else:
                 student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
                     email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
-                    status='prospective', role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
+                    status=form.status.data, role='student', grad_year=form.grad_year.data, tutor_id=form.tutor.data, \
+                    session_reminders=True, test_reminders=True)
 
             student.parent_id = parent.id
             db.session.add(student)

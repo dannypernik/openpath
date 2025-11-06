@@ -168,6 +168,9 @@ class StudentIntakeForm(FlaskForm):
     parent2_email = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
     parent2_phone = TelField('2nd parent phone', render_kw={'placeholder': 'Phone'})
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
+    tutor = SelectField('Tutor', coerce=int)
+    status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
+        ('paused','Paused'),('inactive','Inactive')])
     submit = SubmitField()
 
 
