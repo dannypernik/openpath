@@ -87,6 +87,11 @@ tutor_data = [
         'name': 'Hannah Gustafson',
         'cal_id': 'cc063cbfcb84d6c89d1befd047caf6377a3bdffca7f564b75fcc4c8b8141d3d1@group.calendar.google.com',
         'finance_ss_id': '14qh4wsq5DB3aqFkqpt6nulUG7TLlIcB6LvVAxNHaHq8'
+    },
+    {
+        'name': 'Jessica Ball',
+        'cal_id': '9d581473f34ba690876c7373e64bc33e31da958d9678cdcb5b848f5f907803cb@group.calendar.google.com',
+        'finance_ss_id': '1SyN3x3c5E8hCUlyE5-68i2oy1hHfON_IZ5GSyTIn4js'
     }
 ]
 
@@ -468,7 +473,11 @@ def main():
         ### send registration and test reminder emails
         for u in test_reminder_users:
             for d in u.get_dates():
-                if d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                if d.date == today and u.is_registered(d):
+                    msg = f'{full_name(u)} was registered for today\'s {d.test}'
+                    logging.info(msg)
+                    messages.append(msg)
+                elif d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
                     msg = send_registration_reminder_email(u, d)
                     logging.info(msg)
                     messages.append(msg)
