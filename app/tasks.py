@@ -7,7 +7,7 @@ from app.create_act_report import create_act_score_report, send_act_pdf_report, 
 from app.email import send_task_fail_mail
 import logging
 import resource
-from app.new_student_folders import create_test_prep_folder
+# from app.new_student_folders import create_test_prep_folder
 
 
 class MyTaskBaseClass(celery.Task):
