@@ -324,6 +324,7 @@ def main():
             for i, row in enumerate(summary_data):
                 if row[0] == name:
                     initial_status = s.status
+                    update_ss_status = False
                     # update DB status based on spreadsheet status
                     if row[1] != s.status.title():
                         s.status = row[1].lower()
@@ -331,6 +332,7 @@ def main():
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
                         s.status = 'active'
+                        update_ss_status = True
                         msg = name + ' is scheduled soon. Status changed to Active.'
                     if s.status != initial_status:
                         try:
@@ -407,6 +409,7 @@ def main():
                     'row': i + 6,         # summary_data starts from A6
                     'hours': ss_hours,
                     'rate': ss_rate,
+                    'update_ss_status': update_ss_status,
                     'status': s.status.title(),
                     'tutors': ss_tutors,
                     'pay_type': ss_pay_type,
@@ -425,10 +428,11 @@ def main():
             for attempt in range(retries):
                 try:
                     cell_updates = [
-                        {'range': f'B{s["row"]}', 'values': [[s['status']]]},
+                        *([{'range': f'B{s["row"]}', 'values': [[s['status']]]}] if s['update_ss_status'] else []),
                         {'range': f'J{s["row"]}', 'values': [[s['next_session']]]},
                         {'range': f'K{s["row"]}', 'values': [[s['deadline']]]}
                     ]
+
                     batch_updates.extend(cell_updates)
                     break
                 except gspread.exceptions.APIError as e:
