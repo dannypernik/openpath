@@ -7,12 +7,14 @@ from app.create_act_report import create_act_score_report, send_act_pdf_report, 
 from app.email import send_task_fail_mail
 import logging
 import resource
+from app.new_student_folders import create_test_prep_folder
 
 
 class MyTaskBaseClass(celery.Task):
     autoretry_for = (Exception,)
     retry_backoff = 10
     retry_kwargs = {'max_retries': 3}
+    acks_late = True
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
       logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')
@@ -107,4 +109,13 @@ def style_custom_act_spreadsheet_task(self, organization_data):
     style_custom_act_spreadsheet(organization_data)
   except Exception as e:
     logging.error(f'Error styling ACT spreadsheet: {e}')
+    raise e
+
+@celery.task(name='app.tasks.create_test_prep_folder_task', bind=True, base=MyTaskBaseClass)
+def create_test_prep_folder_task(self, student_name):
+  try:
+    logging.info(f"Creating test prep folder for {student_data.get('student_name', 'unknown student')}")
+    create_test_prep_folder(student_data)
+  except Exception as e:
+    logging.error(f'Error creating test prep folder: {e}')
     raise e
