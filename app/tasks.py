@@ -14,7 +14,7 @@ class MyTaskBaseClass(celery.Task):
     autoretry_for = (Exception,)
     retry_backoff = 10
     retry_kwargs = {'max_retries': 3}
-    # acks_late = True
+    acks_late = True
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
       logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')

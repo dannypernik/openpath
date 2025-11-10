@@ -1726,13 +1726,13 @@ def handle_sat_report(form, template_name, organization=None):
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-    # if request.method == 'GET':
-    #     ss_id = request.args.get('ssId')
-    #     if ss_id:
-    #         form.spreadsheet_url.data = ss_id
-    #     email = request.args.get('email')
-    #     if email:
-    #         form.email.data = email
+    if request.method == 'GET':
+        ss_id = request.args.get('ssId')
+        if ss_id:
+            form.spreadsheet_url.data = ss_id
+        email = request.args.get('email')
+        if email:
+            form.email.data = email
 
     if current_user.is_authenticated:
         form.test_code.choices = load_act_test_codes()
