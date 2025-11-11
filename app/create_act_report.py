@@ -69,7 +69,9 @@ def process_act_answer_img(score_data):
   # download the confirmation image, you need to specify the destination file
   confirmation_filename = secure_filename(f"{score_data['student_name']} {score_data['date']} {score_data['test_display_name']} confirmation.jpg")
   confirmation_path = os.path.join(score_data['act_reports_path'], confirmation_filename)
-  download_ci_response, path = gc.download_confirmation_image(confirmation_path)
+  download_ci_response, score_data['conf_img_path'] = gc.download_confirmation_image(confirmation_path)
+
+  print(f"Confirmation image saved to {score_data['conf_img_path']}")
 
   # Open the JSON file saved at json_path
   with open(json_path, "r") as j:
@@ -84,221 +86,281 @@ def process_act_answer_img(score_data):
 
 
 def create_act_score_report(score_data, organization_dict):
-  """
-  Copies a template spreadsheet and fills in answers from json_data.
-  - "e" answers go to B5:B79 (Answers sheet)
-  - "m" answers go to F5:F64
-  - "r" answers go to J5:J44
-  - "s" answers go to N5:N44
-  - test_code goes to B1
-  If answer is blank, writes "-"
-  """
-  # Authenticate
-  creds = Credentials.from_service_account_file(
-      SERVICE_ACCOUNT_JSON,
-      scopes=['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-  )
-  drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-  sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    """
+    Copies a template spreadsheet and fills in answers from json_data.
+    - "e" answers go to B5:B79 (Answers sheet)
+    - "m" answers go to F5:F64
+    - "r" answers go to J5:J44
+    - "s" answers go to N5:N44
+    - test_code goes to B1
+    If answer is blank, writes "-"
+    """
+    # Authenticate
+    creds = Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+    )
+    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+    sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
-  # 1. Copy the template spreadsheet
-  if organization_dict and organization_dict['spreadsheet_id']:
-    file_id = organization_dict['spreadsheet_id']
-  else:
-    file_id = TEMPLATE_SS_ID
-  ss_copy = drive_service.files().copy(
-      fileId=file_id,
-      body={
-        'parents': [ACT_REPORT_FOLDER_ID],
-        'name': f'{score_data["student_name"]} {score_data["test_display_name"]} Score Analysis - {score_data["date"]}'
-      }
-  ).execute()
-
-  ss_copy_id = ss_copy.get('id')
-  logging.info(f'ss_copy_id: {ss_copy_id} (copied from {file_id})')
-
-  ss = sheets_service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
-  sheets = ss.get('sheets', [])
-  # pp.pprint(ss)
-
-  answer_sheet_id = None
-  analysis_sheet_id = None
-  for sheet in sheets:
-      if sheet['properties']['title'] == 'Answers':
-          answer_sheet_id = sheet['properties']['sheetId']
-      elif sheet['properties']['title'] == 'Test analysis':
-          analysis_sheet_id = sheet['properties']['sheetId']
-      elif sheet['properties']['title'] == 'Test analysis 2':
-          analysis2_sheet_id = sheet['properties']['sheetId']
-      elif sheet['properties']['title'] == 'Data':
-          data_sheet_id = sheet['properties']['sheetId']
-
-  # 2. Prepare the data for batchUpdate
-  score_data['completed_subjects'] = []
-  def prep_range(col, start_row, subject, max_len):
-      answers = score_data['student_responses'][subject]
-      values = []
-      omit_count = 0
-      for i in range(max_len):
-          val = answers.get(str(i+1), "-")
-          if not val:
-              val = "-"
-              omit_count += 1
-          values.append([val])
-
-      if max_len - omit_count > 10:
-        score_data['completed_subjects'].append(subject)
-        # Convert col number to letter
-        col_letter = chr(64 + col)
-        return {
-            'range': f'Answers!{col_letter}{start_row}:{col_letter}{start_row + max_len - 1}',
-            'values': values
+    # 1. Copy the template spreadsheet
+    if organization_dict and organization_dict['spreadsheet_id']:
+        file_id = organization_dict['spreadsheet_id']
+    else:
+        file_id = TEMPLATE_SS_ID
+    ss_copy = drive_service.files().copy(
+        fileId=file_id,
+        body={
+          'parents': [ACT_REPORT_FOLDER_ID],
+          'name': f'{score_data["student_name"]} {score_data["test_display_name"]} Score Analysis - {score_data["date"]}'
         }
-      return None
+    ).execute()
 
-  data = []
-  for sub in all_subjects:
-    result = prep_range(sub_data[sub]['col'], 5, sub, sub_data[sub]['max_len'])
-    if result:
-        data.append(result)
+    ss_copy_id = ss_copy.get('id')
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {file_id})')
 
-  # 2b. Transfer answer data to the spreadsheet
-  sheets_service.spreadsheets().values().batchUpdate(
-    spreadsheetId=ss_copy_id,
-    body={
-      'valueInputOption': 'USER_ENTERED',
-      'data': data
+    ss = sheets_service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
+    sheets = ss.get('sheets', [])
+    # pp.pprint(ss)
+
+    answer_sheet_id = None
+    enhanced_sheet_id = None
+    analysis_sheet_id = None
+    for sheet in sheets:
+        if score_data.get('test_code', '').startswith('2025MC'):
+            if sheet['properties']['title'] == 'Enhanced':
+                answer_sheet_id = sheet['properties']['sheetId']
+                answer_sheet_name = 'Enhanced'
+            elif sheet['properties']['title'] == 'Answers':
+                hidden_sheet_id = sheet['properties']['sheetId']
+        else:
+            if sheet['properties']['title'] == 'Answers':
+                answer_sheet_id = sheet['properties']['sheetId']
+                answer_sheet_name = 'Answers'
+            elif sheet['properties']['title'] == 'Enhanced':
+                hidden_sheet_id = sheet['properties']['sheetId']
+
+        if sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Test analysis 2':
+            analysis2_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Data':
+            data_sheet_id = sheet['properties']['sheetId']
+
+    # 2. Prepare the data for batchUpdate
+    score_data['completed_subjects'] = []
+    def prep_range(col, start_row, subject, max_len):
+        answers = score_data['student_responses'][subject]
+        values = []
+        omit_count = 0
+        for i in range(max_len):
+            val = answers.get(str(i+1), "-")
+            if not val:
+                val = "-"
+                omit_count += 1
+            values.append([val])
+
+        if max_len - omit_count > 10:
+            score_data['completed_subjects'].append(subject)
+            # Convert col number to letter
+            col_letter = chr(64 + col)
+            return {
+                'range': f'{answer_sheet_name}!{col_letter}{start_row}:{col_letter}{start_row + max_len - 1}',
+                'values': values
+            }
+        return None
+
+    data = []
+    for sub in all_subjects:
+        result = prep_range(sub_data[sub]['col'], 5, sub, sub_data[sub]['max_len'])
+        if result:
+            data.append(result)
+
+    # 2b. Transfer answer data to the spreadsheet
+    sheets_service.spreadsheets().values().batchUpdate(
+        spreadsheetId=ss_copy_id,
+        body={
+            'valueInputOption': 'USER_ENTERED',
+            'data': data
+        }
+    ).execute()
+
+    requests = []
+
+
+    # Set Enhanced sheet visible and Answers sheet hidden
+    requests.append({
+        "updateSheetProperties": {
+            "properties": {
+                "sheetId": answer_sheet_id,
+                "hidden": False
+            },
+            "fields": "hidden"
+        }
+    })
+    requests.append({
+        "updateSheetProperties": {
+            "properties": {
+                "sheetId": hidden_sheet_id,
+                "hidden": True
+            },
+            "fields": "hidden"
+        }
+    })
+
+    # Add student name to analysis sheet
+    if organization_dict:
+        title_row = 4 # Row B5 if custom organization
+    else:
+        title_row = 1 # Row B2 if default template
+
+    # Add student name to analysis sheet
+    request = {
+        'updateCells': {
+            'range': {
+                'sheetId': analysis_sheet_id,
+                'startRowIndex': title_row,
+                'endRowIndex': title_row + 1,
+                'startColumnIndex': 1,  # Column B (column index starts at 0)
+                'endColumnIndex': 2
+            },
+            'rows': [
+                {
+                    'values': [
+                        {
+                            'userEnteredValue': {
+                                'stringValue': f"ACT Score Analysis for {score_data['student_name']}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            'fields': 'userEnteredValue'
+        }
     }
-  ).execute()
+    requests.append(request)
 
-  requests = []
+    # Set Data!A1 = to answer_sheet_name
+    request = {
+        'updateCells': {
+            'range': {
+                'sheetId': data_sheet_id,
+                'startRowIndex': 0,
+                'endRowIndex': 1,
+                'startColumnIndex': 0,  # Column A
+                'endColumnIndex': 1
+            },
+            'rows': [
+                {
+                    'values': [
+                        {
+                            'userEnteredValue': {
+                                'stringValue': answer_sheet_name
+                            }
+                        }
+                    ]
+                }
+            ],
+            'fields': 'userEnteredValue'
+        }
+    }
+    requests.append(request)
 
-  # Add student name to analysis sheet
-  if organization_dict:
-      title_row = 4 # Row B5 if custom organization
-  else:
-      title_row = 2 # Row B3 if default template
+    # Add test code to answer sheet
+    test_code = score_data['test_code']
+    if str(test_code).isdigit():
+        value_field = {'numberValue': int(test_code)}
+    else:
+        value_field = {'stringValue': str(test_code)}
+    request = {
+        'updateCells': {
+            'range': {
+            'sheetId': answer_sheet_id,
+            'startRowIndex': 0,
+            'endRowIndex': 1,
+            'startColumnIndex': 1,
+            'endColumnIndex': 2
+            },
+            'rows': [
+                {
+                    'values': [
+                        {
+                            'userEnteredValue': value_field
+                        }
+                    ]
+                }
+            ],
+            'fields': 'userEnteredValue'
+        }
+    }
+    requests.append(request)
 
-  request = {
-      'updateCells': {
-          'range': {
-              'sheetId': analysis_sheet_id,
-              'startRowIndex': title_row,
-              'endRowIndex': title_row + 1,
-              'startColumnIndex': 1,  # Column B (column index starts at 0)
-              'endColumnIndex': 2
+    hide_requests = []
+
+    if not any(sub in score_data['completed_subjects'] for sub in ['english', 'math']):
+        hide_requests.append({
+            "updateSheetProperties": {
+                "properties": {
+                    "sheetId": analysis_sheet_id,
+                    "hidden": True
+                },
+                "fields": "hidden"
+            }
+        })
+
+    if not any(sub in score_data['completed_subjects'] for sub in ['reading', 'science']):
+        hide_requests.append({
+            "updateSheetProperties": {
+                "properties": {
+                    "sheetId": analysis2_sheet_id,
+                    "hidden": True
+                },
+                "fields": "hidden"
+            }
+        })
+
+    # Add these to your requests list before the batchUpdate
+    requests.extend(hide_requests)
+
+    batch_update_request = {
+      'requests': requests
+    }
+
+    # 3. Batch update the sheet
+    sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=ss_copy_id,
+        body=batch_update_request
+    ).execute()
+
+    # Filter Data sheet to show only Incorrect and Omitted questions
+    filter_request = {
+      "setBasicFilter": {
+        "filter": {
+          "range": {
+            "sheetId": data_sheet_id,
+            "startRowIndex": 2,
+            "startColumnIndex": 0,
+            "endColumnIndex": 9  # Adjust if your data has more columns
           },
-          'rows': [
-              {
-                  'values': [
-                      {
-                          'userEnteredValue': {
-                              'stringValue': f"ACT Score Analysis for {score_data['student_name']}"
-                          }
-                      }
-                  ]
+          "criteria": {
+            8: {  # Column I = "Correct?"
+              "condition": {
+                "type": "CUSTOM_FORMULA",
+                "values": [
+                  {"userEnteredValue": '=or(I4="Incorrect", I4="Omitted")'}
+                ]
               }
-          ],
-          'fields': 'userEnteredValue'
-      }
-  }
-  requests.append(request)
-
-  # Add test code to answer sheet
-  test_code = score_data['test_code']
-  if str(test_code).isdigit():
-    value_field = {'numberValue': int(test_code)}
-  else:
-    value_field = {'stringValue': str(test_code)}
-  request = {
-    'updateCells': {
-      'range': {
-        'sheetId': answer_sheet_id,
-        'startRowIndex': 0,
-        'endRowIndex': 1,
-        'startColumnIndex': 1,
-        'endColumnIndex': 2
-      },
-      'rows': [
-        {
-          'values': [
-            {
-              'userEnteredValue': value_field
             }
-          ]
+          }
         }
-      ],
-      'fields': 'userEnteredValue'
+      }
     }
-  }
-  requests.append(request)
-
-  hide_requests = []
-
-  if not any(sub in score_data['completed_subjects'] for sub in ['english', 'math']):
-      hide_requests.append({
-          "updateSheetProperties": {
-              "properties": {
-                  "sheetId": analysis_sheet_id,
-                  "hidden": True
-              },
-              "fields": "hidden"
-          }
-      })
-
-  if not any(sub in score_data['completed_subjects'] for sub in ['reading', 'science']):
-      hide_requests.append({
-          "updateSheetProperties": {
-              "properties": {
-                  "sheetId": analysis2_sheet_id,
-                  "hidden": True
-              },
-              "fields": "hidden"
-          }
-      })
-
-  # Add these to your requests list before the batchUpdate
-  requests.extend(hide_requests)
-
-  batch_update_request = {
-    'requests': requests
-  }
-
-  # 3. Batch update the sheet
-  sheets_service.spreadsheets().batchUpdate(
+    sheets_service.spreadsheets().batchUpdate(
       spreadsheetId=ss_copy_id,
-      body=batch_update_request
-  ).execute()
+      body={"requests": [filter_request]}
+    ).execute()
 
-  # Filter Data sheet to show only Incorrect and Omitted questions
-  filter_request = {
-    "setBasicFilter": {
-      "filter": {
-        "range": {
-          "sheetId": data_sheet_id,
-          "startRowIndex": 0,
-          "startColumnIndex": 0,
-          "endColumnIndex": 9  # Adjust if your data has more columns
-        },
-        "criteria": {
-          8: {  # Assuming column L (index 11) is "Status" or similar
-            "condition": {
-              "type": "CUSTOM_FORMULA",
-              "values": [
-                {"userEnteredValue": '=or(I2="Incorrect", I2="Omitted")'}
-              ]
-            }
-          }
-        }
-      }
-    }
-  }
-  sheets_service.spreadsheets().batchUpdate(
-    spreadsheetId=ss_copy_id,
-    body={"requests": [filter_request]}
-  ).execute()
-
-  return ss_copy_id, score_data
+    return ss_copy_id, score_data
 
 
 def send_act_pdf_report(spreadsheet_id, score_data):
@@ -347,16 +409,15 @@ def send_act_pdf_report(spreadsheet_id, score_data):
           # file_id = file.get('id')
           # Read the PDF file as a blob
           with open(file_path, 'rb') as f:
-              blob = f.read()
+              pdf_blob = f.read()
+          pdf_base64 = base64.b64encode(pdf_blob).decode('utf-8')
 
-          print(blob[:20])  # Print the first 20 bytes of the blob
-
-          base64_blob = base64.b64encode(blob).decode('utf-8')
-
-          print(base64_blob[:100])  # Print the first 100 characters of the base64 string
+          with open(score_data['conf_img_path'], 'rb') as f:
+                conf_img_blob = f.read()
+          conf_img_base64 = base64.b64encode(conf_img_blob).decode('utf-8')
 
           # Send email with PDF attachment
-          send_score_report_email(score_data, base64_blob)
+          send_score_report_email(score_data, pdf_base64, conf_img_base64)
           logging.info(f"PDF report sent to {score_data['email']}")
       else:
           logging.error(f'Failed to fetch PDF: {response.content}')
@@ -479,6 +540,7 @@ def style_custom_act_spreadsheet(organization_data):
     analysis_sheet_2_id = None
     data_sheet_id = None
     for sheet in sheets:
+
         if sheet['properties']['title'] == 'Answers':
             answer_sheet_id = sheet['properties']['sheetId']
         elif sheet['properties']['title'] == 'Test analysis':

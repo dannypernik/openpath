@@ -36,6 +36,14 @@
     </p>
   {% endif %}
 
+  {% if score_data['act_uploads_path'] %}
+    <p>
+      Please check the attached verification image for any errors in grading your bubble sheet. The
+      red squares indicate which answer choices the auto grader tool identified as marked.
+      If you find any errors, reply here for an updated report.
+    </p>
+  {% endif %}
+
   {% if score_data['student_ss_id'] %}
     <p>
       Your{% if score_data['rw_questions_answered'] and score_data['rw_questions_answered'] < 5 %}
@@ -43,18 +51,19 @@
       {% elif score_data['m_questions_answered'] and score_data['m_questions_answered'] < 5 %}
       Reading & Writing
       {% else %} test
-      {% endif %}answers should have been added to the
+      {% endif %}answers should be available in the
       <a href="https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id']}}/edit?gid={{ score_data['test_sheet_id'] }}"
       target="_blank">{{score_data['test_code'].upper() }} tab of your answer spreadsheet</a>.
-      If not, please reply here for assistance. This tool is in beta, so please let us
-      know if you find any mistakes or have any questions or suggestions. Thank you for
-      trying it out!
-    </p>
-  {% else %}
-    <p>
-      This tool is in beta, so please reply to this email if you find any mistakes or have
-      any questions or suggestions. Thank you for trying it out!
+      If not, reply here for assistance.
     </p>
   {% endif %}
+
+  <p>
+    Thank you for allowing us to be a part of your test prep journey! Please let us
+    know if you have any questions, feedback, or suggestions.
+  </p>
+  <p>
+    Team OPT
+  </p>
 {% endblock content %}
 

@@ -26,7 +26,7 @@ from app.score_reader import get_all_data
 from app.create_sat_report import check_service_account_access, create_custom_sat_spreadsheet, \
     update_sat_org_logo, update_sat_partner_logo
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
-from app.tasks import create_and_send_sat_report_task, create_and_send_act_report_task, \
+from app.tasks import sat_report_workflow_task, act_report_workflow_task, \
     style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 import logging
 from googleapiclient.errors import HttpError
@@ -1675,7 +1675,7 @@ def handle_sat_report(form, template_name, organization=None):
                     logging.error('Service account does not have access to student spreadsheet')
                     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-            create_and_send_sat_report_task.delay(score_data, organization_dict=organization)
+            sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
             if len(score_data['answer_key_mismatches']) > 0:
                 send_changed_answers_email(score_data)
@@ -1811,7 +1811,7 @@ def handle_act_report(form, template_name, organization=None):
                     logging.error('Service account does not have access to student spreadsheet')
                     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
-            create_and_send_act_report_task.delay(score_data, organization)
+            act_report_workflow_task.delay(score_data, organization_dict=organization)
 
             if organization:
                 return_route = url_for('custom_act_report', org=organization['slug'])
