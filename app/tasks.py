@@ -68,7 +68,7 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
 
     mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     score_report_mem = mem_post_report - mem_start
-    logging.info(f"Score report used {score_report_mem:.2f} MB of memory")
+    logging.info(f"SAT score report used {score_report_mem:.2f} MB of memory")
 
     send_sat_pdf_report(ss_copy_id, score_data_updated)
 
@@ -87,7 +87,7 @@ def send_sat_answers_to_ss_task(self, score_data):
     score_data = sat_answers_to_student_ss(score_data)
     post_ss_mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     student_ss_mem = post_ss_mem - mem_post_report
-    logging.info(f"Student SS import used {student_ss_mem:.2f} MB of memory")
+    logging.info(f"SAT student SS import used {student_ss_mem:.2f} MB of memory")
 
   return score_data
 
@@ -115,7 +115,7 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
 
     mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     score_report_mem = mem_post_report - mem_start
-    logging.info(f"Score report used {score_report_mem:.2f} MB of memory")
+    logging.info(f"ACT score report used {score_report_mem:.2f} MB of memory")
 
     send_act_pdf_report(ss_copy_id, score_data)
 
@@ -135,7 +135,7 @@ def send_act_answers_to_ss_task(self, score_data):
     score_data = act_answers_to_student_ss(score_data)
     post_ss_mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     student_ss_mem = post_ss_mem - mem_post_report
-    logging.info(f"Student SS import used {student_ss_mem:.2f} MB of memory")
+    logging.info(f"ACT student SS import used {student_ss_mem:.2f} MB of memory")
 
   return score_data
 
