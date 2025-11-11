@@ -50,12 +50,12 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
     # Patterns for task names and statuses
     patterns = {
       'sat': {
-        'success': re.compile(r'Task app\.tasks\.create_and_send_sat_report_task\[.*\] succeeded'),
-        'retry': re.compile(r'Retrying #\d+.*app\.tasks\.create_and_send_sat_report_task'),
+        'success': re.compile(r'Task app\.tasks\.sat_report_workflow_task\[.*\] succeeded'),
+        'retry': re.compile(r'Retrying #\d+.*app\.tasks\.sat_report_workflow_task'),
       },
       'act': {
-        'success': re.compile(r'Task app\.tasks\.create_and_send_act_report_task\[.*\] succeeded'),
-        'retry': re.compile(r'Retrying #\d+.*app\.tasks\.create_and_send_act_report_task'),
+        'success': re.compile(r'Task app\.tasks\.act_report_workflow_task\[.*\] succeeded'),
+        'retry': re.compile(r'Retrying #\d+.*app\.tasks\.act_report_workflow_task'),
       }
     }
 
@@ -81,8 +81,8 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
                         stats[task][status] += 1
 
     # Set failure counts from lost_stats
-    stats['sat']['failure'] = lost_stats.get('app.tasks.create_and_send_sat_report_task', 0)
-    stats['act']['failure'] = lost_stats.get('app.tasks.create_and_send_act_report_task', 0)
+    stats['sat']['failure'] = lost_stats.get('app.tasks.sat_report_workflow_task', 0)
+    stats['act']['failure'] = lost_stats.get('app.tasks.act_report_workflow_task', 0)
 
     return stats
 
