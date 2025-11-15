@@ -101,6 +101,7 @@ file = gspread.authorize(service_creds)
 workbook = file.open_by_key(SPREADSHEET_ID)
 sheet = workbook.sheet1
 
+@profile
 def get_events_and_data():
     '''
     '''
@@ -143,8 +144,14 @@ def get_events_and_data():
         # Collect next 2 months of events for all calendars
         try:
             for tutor in tutor_data:
-                bimonth_cal_events = service_cal.events().list(calendarId=tutor['cal_id'], timeMin=bimonth_start_str,
-                    timeMax=bimonth_end_str, singleEvents=True, orderBy='startTime', timeZone='UTC').execute()
+                bimonth_cal_events = service_cal.events().list(
+                    calendarId=tutor['cal_id'],
+                    timeMin=bimonth_start_str,
+                    timeMax=bimonth_end_str,
+                    singleEvents=True,
+                    orderBy='startTime',
+                    timeZone='UTC'
+                ).execute()
                 bimonth_events_result = bimonth_cal_events.get('items', [])
 
                 for e in bimonth_events_result:
@@ -186,8 +193,11 @@ def get_events_and_data():
                 logging.info('Sheets API called')
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
-                result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                        range=SUMMARY_RANGE, valueRenderOption='UNFORMATTED_VALUE').execute()
+                result = sheet.values().get(
+                    spreadsheetId=SPREADSHEET_ID,
+                    range=SUMMARY_RANGE,
+                    valueRenderOption='UNFORMATTED_VALUE'
+                ).execute()
                 summary_data = result.get('values', [])
 
                 if not summary_data:
@@ -211,6 +221,7 @@ def get_events_and_data():
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
         raise
 
+@profile
 def get_upcoming_events():
     logging.info('Getting upcoming events')
     bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
@@ -254,7 +265,7 @@ def get_upcoming_events():
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
 
-
+@profile
 def main():
     try:
         logging.info('reminders.py started')
@@ -459,7 +470,10 @@ def main():
                 'valueInputOption': 'USER_ENTERED',
                 'data': batch_updates
             }
-            sheet.values().batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
+            sheet.values().batchUpdate(
+                spreadsheetId=SPREADSHEET_ID,
+                body=body
+            ).execute()
             logging.info('Successfully updated student schedule data')
 
         low_scheduled_students = sorted(low_scheduled_students, key=lambda s: s['rep_date'])
