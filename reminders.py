@@ -24,7 +24,7 @@ import traceback
 import logging
 import time
 import app.utils as utils
-from memory_profiler import profile
+# from memory_profiler import profile
 
 # Configure logging
 error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
@@ -102,7 +102,7 @@ file = gspread.authorize(service_creds)
 workbook = file.open_by_key(SPREADSHEET_ID)
 sheet = workbook.sheet1
 
-@profile
+# @profile
 def get_events_and_data():
     '''
     '''
@@ -222,7 +222,7 @@ def get_events_and_data():
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
         raise
 
-@profile
+# @profile
 def get_upcoming_events():
     logging.info('Getting upcoming events')
     bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
@@ -266,7 +266,7 @@ def get_upcoming_events():
         logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
         raise
 
-@profile
+# @profile
 def main():
     try:
         logging.info('reminders.py started')
