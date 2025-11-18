@@ -878,8 +878,10 @@ div.alert {
   overflow: hidden;
 }
 
-#sponsor-container div {
-  padding: 2rem 5rem;
+@media screen and (min-width: 800px) {
+  #sponsor-container div {
+    padding: 2rem 5rem;
+  }
 }
 
 // Reviews page //

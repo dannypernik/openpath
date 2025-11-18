@@ -6728,10 +6728,11 @@ div.alert a:hover {
   overflow: hidden;
 }
 
-#sponsor-container div {
-  padding: 2rem 5rem;
+@media screen and (min-width: 800px) {
+  #sponsor-container div {
+    padding: 2rem 5rem;
+  }
 }
-
 .review-img {
   height: 100px;
   margin-bottom: 2rem;
