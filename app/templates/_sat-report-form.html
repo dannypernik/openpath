@@ -11,17 +11,7 @@
       <div class="row justify-content-center mt-3">
         <div class="col-12">
           {{ form.hidden_tag() }}
-
-          {% if organization %}
-            <label for="email">Student email</label>
-            {{ form.email(placeholder="Optional") }}
-            {% else %}
-            {{ form.email.label }}
-            {{ form.email(required=True) }}
-          {% endif %}
-        </div>
-        <div class="col-12">
-          {{ form.report_file.label(class='mt-2') }}
+          {{ form.report_file.label }}
           <a class="info-icon" href="#" data-bs-toggle="modal" data-bs-target="#report-modal" title="Instructions">
             <svg
               width="18"
@@ -61,6 +51,15 @@
             <span>Instructions</span>
           </a>
           {{ form.details_file(accept='.pdf') }}
+        </div>
+        <div class="col-12 mt-2">
+          {% if organization %}
+            <label for="email">Student email</label>
+            {{ form.email(placeholder="Optional") }}
+          {% else %}
+            {{ form.email.label }}
+            {{ form.email(required=True) }}
+          {% endif %}
         </div>
         <div id="ss-url-input" class="col-12">
           {{ form.spreadsheet_url.label(class='mt-2') }}

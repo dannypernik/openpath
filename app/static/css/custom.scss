@@ -3,7 +3,6 @@ $font-size-base: 1.8rem;
 $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
-$spacer: 2rem;
 $primary-color: rgb(0, 69, 87); //#004557;#01496d;//#1C4D65;
 $secondary-color: #f06d53; //#d35137;//e97435;
 $tertiary-color: #c4f0f7;
@@ -880,6 +879,9 @@ div.alert {
 
 @media screen and (min-width: 800px) {
   #sponsor-container div {
+    display: flex;
+    align-items: center;
+    min-height: 10rem;
     padding: 2rem 5rem;
   }
 }

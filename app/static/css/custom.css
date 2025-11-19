@@ -111,7 +111,7 @@ body {
 }
 
 hr {
-  margin: 2rem 0;
+  margin: 1rem 0;
   color: inherit;
   border: 0;
   border-top: 1px solid;
@@ -120,7 +120,7 @@ hr {
 
 h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
   line-height: 1.2;
 }
@@ -1371,7 +1371,7 @@ progress {
 }
 
 .m-5 {
-  margin: 6rem !important;
+  margin: 5rem !important;
 }
 
 .m-auto {
@@ -1404,8 +1404,8 @@ progress {
 }
 
 .mx-5 {
-  margin-right: 6rem !important;
-  margin-left: 6rem !important;
+  margin-right: 5rem !important;
+  margin-left: 5rem !important;
 }
 
 .mx-auto {
@@ -1439,8 +1439,8 @@ progress {
 }
 
 .my-5 {
-  margin-top: 6rem !important;
-  margin-bottom: 6rem !important;
+  margin-top: 5rem !important;
+  margin-bottom: 5rem !important;
 }
 
 .my-auto {
@@ -1469,7 +1469,7 @@ progress {
 }
 
 .mt-5 {
-  margin-top: 6rem !important;
+  margin-top: 5rem !important;
 }
 
 .mt-auto {
@@ -1497,7 +1497,7 @@ progress {
 }
 
 .me-5 {
-  margin-right: 6rem !important;
+  margin-right: 5rem !important;
 }
 
 .me-auto {
@@ -1525,7 +1525,7 @@ progress {
 }
 
 .mb-5 {
-  margin-bottom: 6rem !important;
+  margin-bottom: 5rem !important;
 }
 
 .mb-auto {
@@ -1553,7 +1553,7 @@ progress {
 }
 
 .ms-5 {
-  margin-left: 6rem !important;
+  margin-left: 5rem !important;
 }
 
 .ms-auto {
@@ -1581,7 +1581,7 @@ progress {
 }
 
 .p-5 {
-  padding: 6rem !important;
+  padding: 5rem !important;
 }
 
 .px-0 {
@@ -1610,8 +1610,8 @@ progress {
 }
 
 .px-5 {
-  padding-right: 6rem !important;
-  padding-left: 6rem !important;
+  padding-right: 5rem !important;
+  padding-left: 5rem !important;
 }
 
 .py-0 {
@@ -1640,8 +1640,8 @@ progress {
 }
 
 .py-5 {
-  padding-top: 6rem !important;
-  padding-bottom: 6rem !important;
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
 }
 
 .pt-0 {
@@ -1665,7 +1665,7 @@ progress {
 }
 
 .pt-5 {
-  padding-top: 6rem !important;
+  padding-top: 5rem !important;
 }
 
 .pe-0 {
@@ -1689,7 +1689,7 @@ progress {
 }
 
 .pe-5 {
-  padding-right: 6rem !important;
+  padding-right: 5rem !important;
 }
 
 .pb-0 {
@@ -1713,7 +1713,7 @@ progress {
 }
 
 .pb-5 {
-  padding-bottom: 6rem !important;
+  padding-bottom: 5rem !important;
 }
 
 .ps-0 {
@@ -1737,7 +1737,7 @@ progress {
 }
 
 .ps-5 {
-  padding-left: 6rem !important;
+  padding-left: 5rem !important;
 }
 
 .gap-0 {
@@ -1761,7 +1761,7 @@ progress {
 }
 
 .gap-5 {
-  gap: 6rem !important;
+  gap: 5rem !important;
 }
 
 .font-monospace {
@@ -2335,7 +2335,7 @@ progress {
     margin: 3rem !important;
   }
   .m-sm-5 {
-    margin: 6rem !important;
+    margin: 5rem !important;
   }
   .m-sm-auto {
     margin: auto !important;
@@ -2361,8 +2361,8 @@ progress {
     margin-left: 3rem !important;
   }
   .mx-sm-5 {
-    margin-right: 6rem !important;
-    margin-left: 6rem !important;
+    margin-right: 5rem !important;
+    margin-left: 5rem !important;
   }
   .mx-sm-auto {
     margin-right: auto !important;
@@ -2389,8 +2389,8 @@ progress {
     margin-bottom: 3rem !important;
   }
   .my-sm-5 {
-    margin-top: 6rem !important;
-    margin-bottom: 6rem !important;
+    margin-top: 5rem !important;
+    margin-bottom: 5rem !important;
   }
   .my-sm-auto {
     margin-top: auto !important;
@@ -2412,7 +2412,7 @@ progress {
     margin-top: 3rem !important;
   }
   .mt-sm-5 {
-    margin-top: 6rem !important;
+    margin-top: 5rem !important;
   }
   .mt-sm-auto {
     margin-top: auto !important;
@@ -2433,7 +2433,7 @@ progress {
     margin-right: 3rem !important;
   }
   .me-sm-5 {
-    margin-right: 6rem !important;
+    margin-right: 5rem !important;
   }
   .me-sm-auto {
     margin-right: auto !important;
@@ -2454,7 +2454,7 @@ progress {
     margin-bottom: 3rem !important;
   }
   .mb-sm-5 {
-    margin-bottom: 6rem !important;
+    margin-bottom: 5rem !important;
   }
   .mb-sm-auto {
     margin-bottom: auto !important;
@@ -2475,7 +2475,7 @@ progress {
     margin-left: 3rem !important;
   }
   .ms-sm-5 {
-    margin-left: 6rem !important;
+    margin-left: 5rem !important;
   }
   .ms-sm-auto {
     margin-left: auto !important;
@@ -2496,7 +2496,7 @@ progress {
     padding: 3rem !important;
   }
   .p-sm-5 {
-    padding: 6rem !important;
+    padding: 5rem !important;
   }
   .px-sm-0 {
     padding-right: 0 !important;
@@ -2519,8 +2519,8 @@ progress {
     padding-left: 3rem !important;
   }
   .px-sm-5 {
-    padding-right: 6rem !important;
-    padding-left: 6rem !important;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
   }
   .py-sm-0 {
     padding-top: 0 !important;
@@ -2543,8 +2543,8 @@ progress {
     padding-bottom: 3rem !important;
   }
   .py-sm-5 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
   .pt-sm-0 {
     padding-top: 0 !important;
@@ -2562,7 +2562,7 @@ progress {
     padding-top: 3rem !important;
   }
   .pt-sm-5 {
-    padding-top: 6rem !important;
+    padding-top: 5rem !important;
   }
   .pe-sm-0 {
     padding-right: 0 !important;
@@ -2580,7 +2580,7 @@ progress {
     padding-right: 3rem !important;
   }
   .pe-sm-5 {
-    padding-right: 6rem !important;
+    padding-right: 5rem !important;
   }
   .pb-sm-0 {
     padding-bottom: 0 !important;
@@ -2598,7 +2598,7 @@ progress {
     padding-bottom: 3rem !important;
   }
   .pb-sm-5 {
-    padding-bottom: 6rem !important;
+    padding-bottom: 5rem !important;
   }
   .ps-sm-0 {
     padding-left: 0 !important;
@@ -2616,7 +2616,7 @@ progress {
     padding-left: 3rem !important;
   }
   .ps-sm-5 {
-    padding-left: 6rem !important;
+    padding-left: 5rem !important;
   }
   .gap-sm-0 {
     gap: 0 !important;
@@ -2634,7 +2634,7 @@ progress {
     gap: 3rem !important;
   }
   .gap-sm-5 {
-    gap: 6rem !important;
+    gap: 5rem !important;
   }
   .text-sm-start {
     text-align: left !important;
@@ -2831,7 +2831,7 @@ progress {
     margin: 3rem !important;
   }
   .m-md-5 {
-    margin: 6rem !important;
+    margin: 5rem !important;
   }
   .m-md-auto {
     margin: auto !important;
@@ -2857,8 +2857,8 @@ progress {
     margin-left: 3rem !important;
   }
   .mx-md-5 {
-    margin-right: 6rem !important;
-    margin-left: 6rem !important;
+    margin-right: 5rem !important;
+    margin-left: 5rem !important;
   }
   .mx-md-auto {
     margin-right: auto !important;
@@ -2885,8 +2885,8 @@ progress {
     margin-bottom: 3rem !important;
   }
   .my-md-5 {
-    margin-top: 6rem !important;
-    margin-bottom: 6rem !important;
+    margin-top: 5rem !important;
+    margin-bottom: 5rem !important;
   }
   .my-md-auto {
     margin-top: auto !important;
@@ -2908,7 +2908,7 @@ progress {
     margin-top: 3rem !important;
   }
   .mt-md-5 {
-    margin-top: 6rem !important;
+    margin-top: 5rem !important;
   }
   .mt-md-auto {
     margin-top: auto !important;
@@ -2929,7 +2929,7 @@ progress {
     margin-right: 3rem !important;
   }
   .me-md-5 {
-    margin-right: 6rem !important;
+    margin-right: 5rem !important;
   }
   .me-md-auto {
     margin-right: auto !important;
@@ -2950,7 +2950,7 @@ progress {
     margin-bottom: 3rem !important;
   }
   .mb-md-5 {
-    margin-bottom: 6rem !important;
+    margin-bottom: 5rem !important;
   }
   .mb-md-auto {
     margin-bottom: auto !important;
@@ -2971,7 +2971,7 @@ progress {
     margin-left: 3rem !important;
   }
   .ms-md-5 {
-    margin-left: 6rem !important;
+    margin-left: 5rem !important;
   }
   .ms-md-auto {
     margin-left: auto !important;
@@ -2992,7 +2992,7 @@ progress {
     padding: 3rem !important;
   }
   .p-md-5 {
-    padding: 6rem !important;
+    padding: 5rem !important;
   }
   .px-md-0 {
     padding-right: 0 !important;
@@ -3015,8 +3015,8 @@ progress {
     padding-left: 3rem !important;
   }
   .px-md-5 {
-    padding-right: 6rem !important;
-    padding-left: 6rem !important;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
   }
   .py-md-0 {
     padding-top: 0 !important;
@@ -3039,8 +3039,8 @@ progress {
     padding-bottom: 3rem !important;
   }
   .py-md-5 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
   .pt-md-0 {
     padding-top: 0 !important;
@@ -3058,7 +3058,7 @@ progress {
     padding-top: 3rem !important;
   }
   .pt-md-5 {
-    padding-top: 6rem !important;
+    padding-top: 5rem !important;
   }
   .pe-md-0 {
     padding-right: 0 !important;
@@ -3076,7 +3076,7 @@ progress {
     padding-right: 3rem !important;
   }
   .pe-md-5 {
-    padding-right: 6rem !important;
+    padding-right: 5rem !important;
   }
   .pb-md-0 {
     padding-bottom: 0 !important;
@@ -3094,7 +3094,7 @@ progress {
     padding-bottom: 3rem !important;
   }
   .pb-md-5 {
-    padding-bottom: 6rem !important;
+    padding-bottom: 5rem !important;
   }
   .ps-md-0 {
     padding-left: 0 !important;
@@ -3112,7 +3112,7 @@ progress {
     padding-left: 3rem !important;
   }
   .ps-md-5 {
-    padding-left: 6rem !important;
+    padding-left: 5rem !important;
   }
   .gap-md-0 {
     gap: 0 !important;
@@ -3130,7 +3130,7 @@ progress {
     gap: 3rem !important;
   }
   .gap-md-5 {
-    gap: 6rem !important;
+    gap: 5rem !important;
   }
   .text-md-start {
     text-align: left !important;
@@ -3327,7 +3327,7 @@ progress {
     margin: 3rem !important;
   }
   .m-lg-5 {
-    margin: 6rem !important;
+    margin: 5rem !important;
   }
   .m-lg-auto {
     margin: auto !important;
@@ -3353,8 +3353,8 @@ progress {
     margin-left: 3rem !important;
   }
   .mx-lg-5 {
-    margin-right: 6rem !important;
-    margin-left: 6rem !important;
+    margin-right: 5rem !important;
+    margin-left: 5rem !important;
   }
   .mx-lg-auto {
     margin-right: auto !important;
@@ -3381,8 +3381,8 @@ progress {
     margin-bottom: 3rem !important;
   }
   .my-lg-5 {
-    margin-top: 6rem !important;
-    margin-bottom: 6rem !important;
+    margin-top: 5rem !important;
+    margin-bottom: 5rem !important;
   }
   .my-lg-auto {
     margin-top: auto !important;
@@ -3404,7 +3404,7 @@ progress {
     margin-top: 3rem !important;
   }
   .mt-lg-5 {
-    margin-top: 6rem !important;
+    margin-top: 5rem !important;
   }
   .mt-lg-auto {
     margin-top: auto !important;
@@ -3425,7 +3425,7 @@ progress {
     margin-right: 3rem !important;
   }
   .me-lg-5 {
-    margin-right: 6rem !important;
+    margin-right: 5rem !important;
   }
   .me-lg-auto {
     margin-right: auto !important;
@@ -3446,7 +3446,7 @@ progress {
     margin-bottom: 3rem !important;
   }
   .mb-lg-5 {
-    margin-bottom: 6rem !important;
+    margin-bottom: 5rem !important;
   }
   .mb-lg-auto {
     margin-bottom: auto !important;
@@ -3467,7 +3467,7 @@ progress {
     margin-left: 3rem !important;
   }
   .ms-lg-5 {
-    margin-left: 6rem !important;
+    margin-left: 5rem !important;
   }
   .ms-lg-auto {
     margin-left: auto !important;
@@ -3488,7 +3488,7 @@ progress {
     padding: 3rem !important;
   }
   .p-lg-5 {
-    padding: 6rem !important;
+    padding: 5rem !important;
   }
   .px-lg-0 {
     padding-right: 0 !important;
@@ -3511,8 +3511,8 @@ progress {
     padding-left: 3rem !important;
   }
   .px-lg-5 {
-    padding-right: 6rem !important;
-    padding-left: 6rem !important;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
   }
   .py-lg-0 {
     padding-top: 0 !important;
@@ -3535,8 +3535,8 @@ progress {
     padding-bottom: 3rem !important;
   }
   .py-lg-5 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
   .pt-lg-0 {
     padding-top: 0 !important;
@@ -3554,7 +3554,7 @@ progress {
     padding-top: 3rem !important;
   }
   .pt-lg-5 {
-    padding-top: 6rem !important;
+    padding-top: 5rem !important;
   }
   .pe-lg-0 {
     padding-right: 0 !important;
@@ -3572,7 +3572,7 @@ progress {
     padding-right: 3rem !important;
   }
   .pe-lg-5 {
-    padding-right: 6rem !important;
+    padding-right: 5rem !important;
   }
   .pb-lg-0 {
     padding-bottom: 0 !important;
@@ -3590,7 +3590,7 @@ progress {
     padding-bottom: 3rem !important;
   }
   .pb-lg-5 {
-    padding-bottom: 6rem !important;
+    padding-bottom: 5rem !important;
   }
   .ps-lg-0 {
     padding-left: 0 !important;
@@ -3608,7 +3608,7 @@ progress {
     padding-left: 3rem !important;
   }
   .ps-lg-5 {
-    padding-left: 6rem !important;
+    padding-left: 5rem !important;
   }
   .gap-lg-0 {
     gap: 0 !important;
@@ -3626,7 +3626,7 @@ progress {
     gap: 3rem !important;
   }
   .gap-lg-5 {
-    gap: 6rem !important;
+    gap: 5rem !important;
   }
   .text-lg-start {
     text-align: left !important;
@@ -3823,7 +3823,7 @@ progress {
     margin: 3rem !important;
   }
   .m-xl-5 {
-    margin: 6rem !important;
+    margin: 5rem !important;
   }
   .m-xl-auto {
     margin: auto !important;
@@ -3849,8 +3849,8 @@ progress {
     margin-left: 3rem !important;
   }
   .mx-xl-5 {
-    margin-right: 6rem !important;
-    margin-left: 6rem !important;
+    margin-right: 5rem !important;
+    margin-left: 5rem !important;
   }
   .mx-xl-auto {
     margin-right: auto !important;
@@ -3877,8 +3877,8 @@ progress {
     margin-bottom: 3rem !important;
   }
   .my-xl-5 {
-    margin-top: 6rem !important;
-    margin-bottom: 6rem !important;
+    margin-top: 5rem !important;
+    margin-bottom: 5rem !important;
   }
   .my-xl-auto {
     margin-top: auto !important;
@@ -3900,7 +3900,7 @@ progress {
     margin-top: 3rem !important;
   }
   .mt-xl-5 {
-    margin-top: 6rem !important;
+    margin-top: 5rem !important;
   }
   .mt-xl-auto {
     margin-top: auto !important;
@@ -3921,7 +3921,7 @@ progress {
     margin-right: 3rem !important;
   }
   .me-xl-5 {
-    margin-right: 6rem !important;
+    margin-right: 5rem !important;
   }
   .me-xl-auto {
     margin-right: auto !important;
@@ -3942,7 +3942,7 @@ progress {
     margin-bottom: 3rem !important;
   }
   .mb-xl-5 {
-    margin-bottom: 6rem !important;
+    margin-bottom: 5rem !important;
   }
   .mb-xl-auto {
     margin-bottom: auto !important;
@@ -3963,7 +3963,7 @@ progress {
     margin-left: 3rem !important;
   }
   .ms-xl-5 {
-    margin-left: 6rem !important;
+    margin-left: 5rem !important;
   }
   .ms-xl-auto {
     margin-left: auto !important;
@@ -3984,7 +3984,7 @@ progress {
     padding: 3rem !important;
   }
   .p-xl-5 {
-    padding: 6rem !important;
+    padding: 5rem !important;
   }
   .px-xl-0 {
     padding-right: 0 !important;
@@ -4007,8 +4007,8 @@ progress {
     padding-left: 3rem !important;
   }
   .px-xl-5 {
-    padding-right: 6rem !important;
-    padding-left: 6rem !important;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
   }
   .py-xl-0 {
     padding-top: 0 !important;
@@ -4031,8 +4031,8 @@ progress {
     padding-bottom: 3rem !important;
   }
   .py-xl-5 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
   .pt-xl-0 {
     padding-top: 0 !important;
@@ -4050,7 +4050,7 @@ progress {
     padding-top: 3rem !important;
   }
   .pt-xl-5 {
-    padding-top: 6rem !important;
+    padding-top: 5rem !important;
   }
   .pe-xl-0 {
     padding-right: 0 !important;
@@ -4068,7 +4068,7 @@ progress {
     padding-right: 3rem !important;
   }
   .pe-xl-5 {
-    padding-right: 6rem !important;
+    padding-right: 5rem !important;
   }
   .pb-xl-0 {
     padding-bottom: 0 !important;
@@ -4086,7 +4086,7 @@ progress {
     padding-bottom: 3rem !important;
   }
   .pb-xl-5 {
-    padding-bottom: 6rem !important;
+    padding-bottom: 5rem !important;
   }
   .ps-xl-0 {
     padding-left: 0 !important;
@@ -4104,7 +4104,7 @@ progress {
     padding-left: 3rem !important;
   }
   .ps-xl-5 {
-    padding-left: 6rem !important;
+    padding-left: 5rem !important;
   }
   .gap-xl-0 {
     gap: 0 !important;
@@ -4122,7 +4122,7 @@ progress {
     gap: 3rem !important;
   }
   .gap-xl-5 {
-    gap: 6rem !important;
+    gap: 5rem !important;
   }
   .text-xl-start {
     text-align: left !important;
@@ -4319,7 +4319,7 @@ progress {
     margin: 3rem !important;
   }
   .m-xxl-5 {
-    margin: 6rem !important;
+    margin: 5rem !important;
   }
   .m-xxl-auto {
     margin: auto !important;
@@ -4345,8 +4345,8 @@ progress {
     margin-left: 3rem !important;
   }
   .mx-xxl-5 {
-    margin-right: 6rem !important;
-    margin-left: 6rem !important;
+    margin-right: 5rem !important;
+    margin-left: 5rem !important;
   }
   .mx-xxl-auto {
     margin-right: auto !important;
@@ -4373,8 +4373,8 @@ progress {
     margin-bottom: 3rem !important;
   }
   .my-xxl-5 {
-    margin-top: 6rem !important;
-    margin-bottom: 6rem !important;
+    margin-top: 5rem !important;
+    margin-bottom: 5rem !important;
   }
   .my-xxl-auto {
     margin-top: auto !important;
@@ -4396,7 +4396,7 @@ progress {
     margin-top: 3rem !important;
   }
   .mt-xxl-5 {
-    margin-top: 6rem !important;
+    margin-top: 5rem !important;
   }
   .mt-xxl-auto {
     margin-top: auto !important;
@@ -4417,7 +4417,7 @@ progress {
     margin-right: 3rem !important;
   }
   .me-xxl-5 {
-    margin-right: 6rem !important;
+    margin-right: 5rem !important;
   }
   .me-xxl-auto {
     margin-right: auto !important;
@@ -4438,7 +4438,7 @@ progress {
     margin-bottom: 3rem !important;
   }
   .mb-xxl-5 {
-    margin-bottom: 6rem !important;
+    margin-bottom: 5rem !important;
   }
   .mb-xxl-auto {
     margin-bottom: auto !important;
@@ -4459,7 +4459,7 @@ progress {
     margin-left: 3rem !important;
   }
   .ms-xxl-5 {
-    margin-left: 6rem !important;
+    margin-left: 5rem !important;
   }
   .ms-xxl-auto {
     margin-left: auto !important;
@@ -4480,7 +4480,7 @@ progress {
     padding: 3rem !important;
   }
   .p-xxl-5 {
-    padding: 6rem !important;
+    padding: 5rem !important;
   }
   .px-xxl-0 {
     padding-right: 0 !important;
@@ -4503,8 +4503,8 @@ progress {
     padding-left: 3rem !important;
   }
   .px-xxl-5 {
-    padding-right: 6rem !important;
-    padding-left: 6rem !important;
+    padding-right: 5rem !important;
+    padding-left: 5rem !important;
   }
   .py-xxl-0 {
     padding-top: 0 !important;
@@ -4527,8 +4527,8 @@ progress {
     padding-bottom: 3rem !important;
   }
   .py-xxl-5 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
   .pt-xxl-0 {
     padding-top: 0 !important;
@@ -4546,7 +4546,7 @@ progress {
     padding-top: 3rem !important;
   }
   .pt-xxl-5 {
-    padding-top: 6rem !important;
+    padding-top: 5rem !important;
   }
   .pe-xxl-0 {
     padding-right: 0 !important;
@@ -4564,7 +4564,7 @@ progress {
     padding-right: 3rem !important;
   }
   .pe-xxl-5 {
-    padding-right: 6rem !important;
+    padding-right: 5rem !important;
   }
   .pb-xxl-0 {
     padding-bottom: 0 !important;
@@ -4582,7 +4582,7 @@ progress {
     padding-bottom: 3rem !important;
   }
   .pb-xxl-5 {
-    padding-bottom: 6rem !important;
+    padding-bottom: 5rem !important;
   }
   .ps-xxl-0 {
     padding-left: 0 !important;
@@ -4600,7 +4600,7 @@ progress {
     padding-left: 3rem !important;
   }
   .ps-xxl-5 {
-    padding-left: 6rem !important;
+    padding-left: 5rem !important;
   }
   .gap-xxl-0 {
     gap: 0 !important;
@@ -4618,7 +4618,7 @@ progress {
     gap: 3rem !important;
   }
   .gap-xxl-5 {
-    gap: 6rem !important;
+    gap: 5rem !important;
   }
   .text-xxl-start {
     text-align: left !important;
@@ -4781,7 +4781,7 @@ progress {
 }
 
 .blockquote {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   font-size: calc(1.35rem + 1.2vw);
 }
 @media (min-width: 1200px) {
@@ -4794,8 +4794,8 @@ progress {
 }
 
 .blockquote-footer {
-  margin-top: -2rem;
-  margin-bottom: 2rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
   font-size: 0.875em;
   color: #6c757d;
 }
@@ -5200,7 +5200,7 @@ progress {
 .modal {
   --bs-modal-zindex: 1055;
   --bs-modal-width: 500px;
-  --bs-modal-padding: 2rem;
+  --bs-modal-padding: 1rem;
   --bs-modal-margin: 0.5rem;
   --bs-modal-color: ;
   --bs-modal-bg: #fff;
@@ -5209,9 +5209,9 @@ progress {
   --bs-modal-border-radius: 0.5rem;
   --bs-modal-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   --bs-modal-inner-border-radius: calc(0.5rem - 1px);
-  --bs-modal-header-padding-x: 2rem;
-  --bs-modal-header-padding-y: 2rem;
-  --bs-modal-header-padding: 2rem 2rem;
+  --bs-modal-header-padding-x: 1rem;
+  --bs-modal-header-padding-y: 1rem;
+  --bs-modal-header-padding: 1rem 1rem;
   --bs-modal-header-border-color: var(--bs-border-color);
   --bs-modal-header-border-width: 1px;
   --bs-modal-title-line-height: 1.5;
@@ -5532,7 +5532,7 @@ progress {
   --bs-table-hover-color: #2fb2cb;
   --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: var(--bs-table-color);
   vertical-align: top;
   border-color: var(--bs-table-border-color);
@@ -6730,6 +6730,9 @@ div.alert a:hover {
 
 @media screen and (min-width: 800px) {
   #sponsor-container div {
+    display: flex;
+    align-items: center;
+    min-height: 10rem;
     padding: 2rem 5rem;
   }
 }
