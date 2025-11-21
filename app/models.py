@@ -110,11 +110,6 @@ class User(UserMixin, db.Model):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).count() > 0
 
-    def not_registered(self, test_date):
-        return self.test_dates.filter(
-            UserTestDate.test_date_id == test_date.id).filter(
-            UserTestDate.is_registered).count() == 0
-
     def is_registered(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).filter(

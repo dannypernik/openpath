@@ -273,8 +273,11 @@ def main():
         students = session.query(User).order_by(User.first_name).filter(User.role == 'student')
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
-        test_reminder_users = session.query(User).order_by(User.first_name).filter(
-            User.test_dates).filter(User.test_reminders)
+        test_reminder_users = session.query(User).options(
+                joinedload(User.test_dates).joinedload(UserTestDate.test_date)
+            ).order_by(User.first_name).filter(
+                User.test_dates
+            ).filter(User.test_reminders)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
         unregistered_active_students = students.filter(User.status == 'active').filter(User.test_dates.any(UserTestDate.is_registered == False))
@@ -496,11 +499,11 @@ def main():
                     msg = f'{full_name(u)} was registered for today\'s {d.test}'
                     logging.info(msg)
                     messages.append(msg)
-                elif d.reg_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                elif d.reg_date == today + datetime.timedelta(days=5) and not u.is_registered(d):
                     msg = send_registration_reminder_email(u, d)
                     logging.info(msg)
                     messages.append(msg)
-                elif d.late_date == today + datetime.timedelta(days=5) and u.not_registered(d):
+                elif d.late_date == today + datetime.timedelta(days=5) and not u.is_registered(d):
                     msg = send_late_registration_reminder_email(u, d)
                     logging.info(msg)
                     messages.append(msg)
