@@ -414,7 +414,7 @@ def main():
                                 if ss_last_session and next_date.date() != ss_last_session_epoch.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
-                            if bimonth_hours > ss_hours and repurchase_deadline == '':
+                            if ss_hours and bimonth_hours > ss_hours and not repurchase_deadline:
                                 rep_date = e_date
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
                                 break
