@@ -274,7 +274,7 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).options(
-                joinedload(User.test_dates).joinedload(UserTestDate.test_date)
+                joinedload(User.test_dates).joinedload(UserTestDate.test_dates)
             ).order_by(User.first_name).filter(
                 User.test_dates
             ).filter(User.test_reminders)
