@@ -30,7 +30,7 @@ def get_template_ss_id():
 
 
 def get_act_data_ss_id():
-    return current_app.config['get_act_data_ss_id()']
+    return current_app.config['ACT_DATA_SS_ID']
 
 
 all_subjects = ['english', 'math', 'reading', 'science']

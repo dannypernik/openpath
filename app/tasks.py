@@ -163,10 +163,10 @@ def style_custom_act_spreadsheet_task(self, organization_data):
     raise e
 
 @celery.task(name='app.tasks.create_test_prep_folder_task', bind=True, base=MyTaskBaseClass)
-def create_test_prep_folder_task(self, student_name):
+def create_test_prep_folder_task(self, student_data):
   try:
     logging.info(f"Creating test prep folder for {student_data.get('student_name', 'unknown student')}")
-    create_test_prep_folder(student_data)
+    # create_test_prep_folder(student_data)  # Commented out - function not imported
   except Exception as e:
     logging.error(f'Error creating test prep folder: {e}')
     raise e

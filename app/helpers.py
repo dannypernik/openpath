@@ -33,7 +33,7 @@ def admin_required(f):
 def get_next_page():
     """Get the next page to redirect to after login."""
     next_page = request.args.get('next')
-    if next_page not in current_app.view_functions:
+    if not next_page or next_page not in current_app.view_functions:
         next_page = 'auth.start_page'
     return next_page
 

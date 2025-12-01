@@ -32,7 +32,7 @@ def get_org_sheet_id():
 
 
 def get_org_folder_id():
-    return current_app.config['get_org_folder_id()']
+    return current_app.config['ORG_FOLDER_ID']
 
 
 # Constants
