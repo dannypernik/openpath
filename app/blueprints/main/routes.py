@@ -556,6 +556,9 @@ def new_student():
 
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
+    parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
+    form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, full_name(u)) for u in tutors]
     form.tutor.choices = tutor_list
@@ -569,7 +572,12 @@ def new_student():
 
         try:
             parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
-            if parent:
+            if form.parent_id.data == 0 and not parent:
+                parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data,
+                              email=form.parent_email.data.lower(), secondary_email=form.parent2_email.data.lower(),
+                              phone=form.parent_phone.data, timezone=form.timezone.data, role='parent',
+                              session_reminders=True, test_reminders=True)
+            else:
                 parent.first_name = form.parent_first_name.data
                 parent.last_name = form.parent_last_name.data
                 parent.email = form.parent_email.data.lower()
@@ -577,11 +585,6 @@ def new_student():
                 parent.phone = form.parent_phone.data
                 parent.timezone = form.timezone.data
                 parent.role = 'parent'
-            else:
-                parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data,
-                              email=form.parent_email.data.lower(), secondary_email=form.parent2_email.data.lower(),
-                              phone=form.parent_phone.data, timezone=form.timezone.data, role='parent',
-                              session_reminders=True, test_reminders=True)
 
             db.session.add(parent)
             db.session.flush()
@@ -594,13 +597,14 @@ def new_student():
                 student.timezone = form.timezone.data
                 student.role = 'student'
                 student.status = form.status.data
+                student.subject = form.subject.data
                 student.tutor_id = form.tutor.data
                 student.grad_year = form.grad_year.data
             else:
                 student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data,
-                               email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data,
-                               status=form.status.data, role='student', grad_year=form.grad_year.data, tutor_id=form.tutor.data,
-                               session_reminders=True, test_reminders=True)
+                    email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data,
+                    status=form.status.data, role='student', grad_year=form.grad_year.data, subject=form.subject.data,
+                    tutor_id=form.tutor.data, session_reminders=True, test_reminders=True)
 
             student.parent_id = parent.id
             db.session.add(student)
@@ -616,9 +620,9 @@ def new_student():
                     parent2.role = 'parent'
                 else:
                     parent2 = User(first_name=form.parent2_first_name.data, last_name=form.parent2_last_name.data,
-                                   email=form.parent2_email.data.lower(), phone=form.parent2_phone.data,
-                                   timezone=form.timezone.data, role='parent',
-                                   session_reminders=True, test_reminders=True)
+                        email=form.parent2_email.data.lower(), phone=form.parent2_phone.data,
+                        timezone=form.timezone.data, role='parent',
+                        session_reminders=True, test_reminders=True)
                 db.session.add(parent2)
             else:
                 parent2 = None
