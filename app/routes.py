@@ -734,58 +734,53 @@ def edit_user(id):
 @app.route('/students', methods=['GET', 'POST'])
 @admin_required
 def students():
-    form = StudentForm()
+    # form = StudentForm()
     students = User.query.order_by(User.first_name, User.last_name).filter_by(role='student')
-    parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
-    parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
-    form.parent_id.choices = parent_list
-    tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(u.id, full_name(u)) for u in tutors]
-    form.tutor_id.choices = tutor_list
-    status_order = ['prospective', 'active', 'paused', 'inactive']
-    statuses = []
-    for s in status_order:
-        if User.query.filter(User.status == s).first():
-            statuses.append(s)
+    # parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
+    # parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
+    # form.parent_id.choices = parent_list
+    # tutors = User.query.filter_by(role='tutor')
+    # tutor_list = [(u.id, full_name(u)) for u in tutors]
+    # form.tutor_id.choices = tutor_list
+    statuses = ['prospective', 'active', 'paused', 'inactive']
     other_students = User.query.filter((User.role=='student') & (User.status.notin_(statuses)))
-    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
-    tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    # upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
+    # tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
 
-    if form.validate_on_submit():
-        student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
-            email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
-            location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data, \
-            role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
-        if form.parent_id.data == 0:
-            parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
-                email=form.parent_email.data.lower(), secondary_email=form.secondary_email.data.lower(), \
-                phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
-                session_reminders=True, test_reminders=True)
-        else:
-            parent = User.query.filter_by(id=form.parent_id.data).first()
+    # if form.validate_on_submit():
+    #     student = User(first_name=form.student_name.data, last_name=form.student_last_name.data, \
+    #         email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
+    #         location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data, \
+    #         role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
+    #     if form.parent_id.data == 0:
+    #         parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data, \
+    #             email=form.parent_email.data.lower(), secondary_email=form.secondary_email.data.lower(), \
+    #             phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
+    #             session_reminders=True, test_reminders=True)
+    #     else:
+    #         parent = User.query.filter_by(id=form.parent_id.data).first()
 
 
-        try:
-            db.session.add(parent)
-            db.session.flush()
-            student.parent_id = parent.id
-            db.session.add(student)
-            db.session.commit()
-            test_selections = request.form.getlist('test_dates')
-            for d in upcoming_dates:
-                if str(d.id) + '-interested' in test_selections:
-                    student.interested_test_date(d)
-                elif str(d.id) + '-registered' in test_selections:
-                    student.register_test_date(d)
-        except:
-            db.session.rollback()
-            flash(student.first_name + ' could not be added', 'error')
-            return redirect(url_for('students'))
-        flash(student.first_name + ' added')
-        return redirect(url_for('students'))
-    return render_template('students.html', title='Students', form=form, students=students, \
-        statuses=statuses, upcoming_dates=upcoming_dates, tests=tests, other_students=other_students, \
-        full_name=full_name, proper=proper)
+    #     try:
+    #         db.session.add(parent)
+    #         db.session.flush()
+    #         student.parent_id = parent.id
+    #         db.session.add(student)
+    #         db.session.commit()
+    #         test_selections = request.form.getlist('test_dates')
+    #         for d in upcoming_dates:
+    #             if str(d.id) + '-interested' in test_selections:
+    #                 student.interested_test_date(d)
+    #             elif str(d.id) + '-registered' in test_selections:
+    #                 student.register_test_date(d)
+    #     except:
+    #         db.session.rollback()
+    #         flash(student.first_name + ' could not be added', 'error')
+    #         return redirect(url_for('students'))
+    #     flash(student.first_name + ' added')
+    #     return redirect(url_for('students'))
+    return render_template('students.html', title='Students', students=students, statuses=statuses, \
+        other_students=other_students, full_name=full_name, proper=proper)
 
 
 @app.route('/new-student', methods=['GET', 'POST'])
@@ -794,6 +789,9 @@ def new_student():
 
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
+    parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
+    parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
+    form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, full_name(u)) for u in tutors]
     form.tutor.choices = tutor_list
@@ -807,19 +805,17 @@ def new_student():
 
         try:
             parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
-            if parent:
-                parent.first_name = form.parent_first_name.data
-                parent.last_name = form.parent_last_name.data
-                parent.email = form.parent_email.data.lower()
-                parent.secondary_email = form.parent2_email.data.lower()
-                parent.phone = form.parent_phone.data
-                parent.timezone = form.timezone.data
-                parent.role = 'parent'
-            else:
+            if form.parent_id.data == 0 and not parent:
                 parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data, \
                     email=form.parent_email.data.lower(), secondary_email=form.parent2_email.data.lower(), \
                     phone=form.parent_phone.data, timezone=form.timezone.data, role='parent', \
                     session_reminders=True, test_reminders=True)
+            else:
+                parent = User.query.filter_by(id=form.parent_id.data).first()
+                parent.secondary_email = form.parent2_email.data.lower()
+                parent.phone = form.parent_phone.data
+                parent.timezone = form.timezone.data
+                parent.role = 'parent'
 
             db.session.add(parent)
             db.session.flush()
@@ -830,6 +826,7 @@ def new_student():
                 student.last_name = form.student_last_name.data
                 student.phone = form.student_phone.data
                 student.timezone = form.timezone.data
+                student.subject = form.subject.data
                 student.role = 'student'
                 student.status = form.status.data
                 student.tutor_id = form.tutor.data
@@ -837,8 +834,8 @@ def new_student():
             else:
                 student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data, \
                     email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data, \
-                    status=form.status.data, role='student', grad_year=form.grad_year.data, tutor_id=form.tutor.data, \
-                    session_reminders=True, test_reminders=True)
+                    status=form.status.data, role='student', grad_year=form.grad_year.data, subject=form.subject.data, \
+                    tutor_id=form.tutor.data, session_reminders=True, test_reminders=True)
 
             student.parent_id = parent.id
             db.session.add(student)

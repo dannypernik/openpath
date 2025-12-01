@@ -142,7 +142,7 @@ class StudentForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
-    status = SelectField('Status', choices=[('active', 'Active'),('prospective','Prospective'), \
+    status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
         ('paused','Paused'),('inactive','Inactive')])
     tutor_id = SelectField('Tutor', coerce=int)
     submit = SubmitField('Save')
@@ -156,9 +156,12 @@ class StudentIntakeForm(FlaskForm):
         validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
     student_phone = TelField('Student phone', render_kw={'placeholder': 'Phone'})
-    grad_year = SelectField('Graduation year', choices=[(None, 'Select'), ('2026', '2026 (Senior)'), \
+    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
+    location = StringField('Location', render_kw={'placeholder': 'Location'})
+    grad_year = SelectField('Graduation year', choices=[(None, '--'), ('2026', '2026 (Senior)'), \
         ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
+    parent_id = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
     parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Email address'})
@@ -167,10 +170,10 @@ class StudentIntakeForm(FlaskForm):
     parent2_last_name = StringField('2nd parent last name', render_kw={'placeholder': 'Last name'})
     parent2_email = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
     parent2_phone = TelField('2nd parent phone', render_kw={'placeholder': 'Phone'})
-    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     tutor = SelectField('Tutor', coerce=int)
     status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
         ('paused','Paused'),('inactive','Inactive')])
+    subject = StringField('Primary subject', render_kw={'placeholder': 'Primary subject'})
     submit = SubmitField()
 
 

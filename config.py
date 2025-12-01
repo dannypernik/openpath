@@ -37,3 +37,4 @@ class Config(object):
     RESOURCE_FOLDER_ID = os.environ.get('RESOURCE_FOLDER_ID')
     ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
     ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
+    SAT_DATA_SS_ID = os.environ.get('SAT_DATA_SS_ID')
