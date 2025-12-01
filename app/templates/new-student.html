@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container">
   <h1 class="text-center">New Student Form</h1>
-  <form method="POST" action="{{ url_for('new_student') }}">
+  <form method="POST" action="{{ url_for('main.new_student') }}">
     {{ form.hidden_tag() }}
 
     <h4>Student information</h4>

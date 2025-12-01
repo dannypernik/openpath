@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-10 col-sm-8">
         {% block logo_link %}
-          <a href="{{ url_for('index') }}">
+          <a href="{{ url_for('main.index') }}">
         {% endblock logo_link %}
           <img id="nav-img" src="{{ url_for('static', filename='img/logo-header.svg') }}" alt="Open Path Tutoring">
         </a>
@@ -37,7 +37,7 @@
     </div>
     <div class="drawer__content">
       {% block home_link %}
-        <a href="{{ url_for('index') }}">
+        <a href="{{ url_for('main.index') }}">
       {% endblock home_link %}
         <div class="menu-link">
           <p>Home</p>
@@ -50,52 +50,52 @@
               <p>Admin</p>
             </div>
           </a> -->
-          <a href="{{ url_for('users') }}">
+          <a href="{{ url_for('admin.users') }}">
             <div class="menu-link">
               <p>Users</p>
             </div>
           </a>
-          <a href="{{ url_for('students') }}">
+          <a href="{{ url_for('admin.students') }}">
             <div class="menu-link">
               <p>Students</p>
             </div>
           </a>
-          <a href="{{ url_for('tutors') }}">
+          <a href="{{ url_for('admin.tutors') }}">
             <div class="menu-link">
               <p>Tutors</p>
             </div>
           </a>
-          <a href="{{ url_for('orgs') }}">
+          <a href="{{ url_for('admin.orgs') }}">
             <div class="menu-link">
               <p>Organizations</p>
             </div>
           </a>
       {% endif %}
 
-      <a href="{{ url_for('reviews') }}">
+      <a href="{{ url_for('main.reviews') }}">
         <div class="menu-link">
           <p>Reviews</p>
         </div>
       </a>
 
-      <a href="{{ url_for('team') }}">
+      <a href="{{ url_for('main.team') }}">
         <div class="menu-link">
           <p>Our Team</p>
         </div>
       </a>
 
-      <a href="{{ url_for('mission') }}">
+      <a href="{{ url_for('main.mission') }}">
         <div class="menu-link">
           <p>Test Prep For All</p>
         </div>
       </a>
 
-      <a href="{{ url_for('sat_report') }}">
+      <a href="{{ url_for('main.sat_report') }}">
         <div class="menu-link">
             <p>Free Practice SAT<sup>&reg;</sup> Analysis</p>
         </div>
       </a>
-      <a href="{{ url_for('test_dates') }}">
+      <a href="{{ url_for('main.test_dates') }}">
         <div class="menu-link">
           <p>Test dates</p>
         </div>
@@ -103,7 +103,7 @@
 
 
       {% block contact_link %}
-        <a href="{{ url_for('index', _anchor='contact') }}">
+        <a href="{{ url_for('main.index', _anchor='contact') }}">
           <div class="menu-link">
             <p>Contact</p>
           </div>
@@ -111,13 +111,13 @@
       {% endblock contact_link %}
 
       {% if current_user.is_authenticated %}
-        <a href="{{ url_for('logout') }}">
+        <a href="{{ url_for('auth.logout') }}">
           <div class="menu-link">
             <p>Log out</p>
           </div>
         </a>
       {% else %}
-        <a href="{{ url_for('signin') }}">
+        <a href="{{ url_for('auth.signin') }}">
           <div class="menu-link">
             <p>Sign in</p>
           </div>

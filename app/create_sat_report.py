@@ -1,5 +1,5 @@
 import os
-from app import app
+from flask import current_app
 from app.utils import is_dark_color, hex_to_rgb, color_svg_white_to_input
 from app.email import send_score_report_email
 from google.oauth2 import service_account
@@ -13,23 +13,30 @@ import pprint
 import base64
 import logging
 
-info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[
-        logging.FileHandler('logs/info.log'),
-        logging.StreamHandler()
-    ])
+logger = logging.getLogger(__name__)
 
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
+
 def get_static_url(filename):
-    with app.app_context():  # Ensure an application context is available
-        return url_for('static', filename=filename)
+    """Get URL for static file."""
+    return url_for('static', filename=filename)
+
+
+def get_sheet_id():
+    return current_app.config['SAT_REPORT_SS_ID']
+
+
+def get_org_sheet_id():
+    return current_app.config['ORG_SAT_REPORT_SS_ID']
+
+
+def get_org_folder_id():
+    return current_app.config['get_org_folder_id()']
+
 
 # Constants
-SHEET_ID = app.config['SAT_REPORT_SS_ID'] # Your spreadsheet ID
-ORG_SHEET_ID = app.config['ORG_SAT_REPORT_SS_ID']  # Your organization spreadsheet ID
 SAT_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
-ORG_FOLDER_ID = app.config['ORG_FOLDER_ID']  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
 total_questions = {
@@ -68,7 +75,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the spreadsheet
-        file_id = organization_dict['spreadsheet_id'] if organization_dict else SHEET_ID
+        file_id = organization_dict['spreadsheet_id'] if organization_dict else get_sheet_id()
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
@@ -788,9 +795,9 @@ def create_custom_sat_spreadsheet(organization):
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=ORG_SHEET_ID,
+        fileId=get_org_sheet_id(),
         body={
-            'parents': [ORG_FOLDER_ID],
+            'parents': [get_org_folder_id()],
             'name': f'{organization.name} SAT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
@@ -807,7 +814,7 @@ def style_custom_sat_spreadsheet(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {SHEET_ID})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {get_sheet_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1640,7 +1647,7 @@ def update_sat_org_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SHEET_ID})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sheet_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1696,7 +1703,7 @@ def update_sat_partner_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SHEET_ID})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sheet_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None

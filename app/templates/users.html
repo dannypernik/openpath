@@ -84,7 +84,7 @@
                   {% if u.role == role[0] %}
                     <div class="row student">
                       <div class="col-3">
-                        <a href="{{ url_for('edit_user', id=u.id) }}">
+                        <a href="{{ url_for('admin.edit_user', id=u.id) }}">
                           {{ full_name(u) }}
                         </a>
                         {% if u.is_admin %}
@@ -104,7 +104,7 @@
                         {{ u.status }}
                       </div>
                       <div class="col-3">
-                        <a href="{{ url_for('request_password_reset', email=u.email) }}">
+                        <a href="{{ url_for('auth.request_password_reset', email=u.email) }}">
                           {% if u.password_hash %}
                             Yes
                           {% else %}

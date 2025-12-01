@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
+
 class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    """Base configuration class with common settings."""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -20,8 +22,6 @@ class Config(object):
     HCAPTCHA_SECRET_KEY = os.environ.get('HCAPTCHA_SECRET_KEY')
     MAILJET_KEY = os.environ.get('MAILJET_KEY')
     MAILJET_SECRET = os.environ.get('MAILJET_SECRET')
-    # MOM_EMAIL = os.environ.get('MOM_EMAIL')
-    # DAD_EMAIL = os.environ.get('DAD_EMAIL')
     ADMINS = [os.environ.get('ADMINS')]
     HELLO_EMAIL = os.environ.get('HELLO_EMAIL')
     PHONE = os.environ.get('PHONE')
@@ -37,3 +37,34 @@ class Config(object):
     RESOURCE_FOLDER_ID = os.environ.get('RESOURCE_FOLDER_ID')
     ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
     ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
+    TEMPLATES_AUTO_RELOAD = True
+
+
+class DevelopmentConfig(Config):
+    """Development configuration."""
+    DEBUG = True
+    TESTING = False
+
+
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+    HCAPTCHA_SITE_KEY = 'test-site-key'
+    HCAPTCHA_SECRET_KEY = 'test-secret-key'
+
+
+class ProductionConfig(Config):
+    """Production configuration."""
+    DEBUG = False
+    TESTING = False
+
+
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

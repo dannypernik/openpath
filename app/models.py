@@ -1,7 +1,8 @@
 from datetime import datetime
 from time import time
 import jwt
-from app import db, login, app
+from flask import current_app
+from app.extensions import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
@@ -38,15 +39,15 @@ class User(UserMixin, db.Model):
     timezone = db.Column(db.String(32))
     location = db.Column(db.String(128))
     title = db.Column(db.String(128))
-    status = db.Column(db.String(24), default = 'active', index=True)
+    status = db.Column(db.String(24), default='active', index=True)
     tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     students = db.relationship('User',
         backref=db.backref('tutor', lazy='joined', remote_side=[id]),
-        primaryjoin=(id==tutor_id),
+        primaryjoin=(id == tutor_id),
         foreign_keys=[tutor_id])
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     children = db.relationship('User',
-        primaryjoin=(id==parent_id),
+        primaryjoin=(id == parent_id),
         backref=db.backref('parent', lazy='joined', remote_side=[id]),
         foreign_keys=[parent_id],
         post_update=True)
@@ -80,7 +81,7 @@ class User(UserMixin, db.Model):
     def get_email_verification_token(self, expires_in=3600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
-            app.config['SECRET_KEY'], algorithm='HS256')
+            current_app.config['SECRET_KEY'], algorithm='HS256')
 
     def interested_test_date(self, test_date):
         if self.is_testing(test_date):
@@ -123,7 +124,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_email_token(token):
         try:
-            id = jwt.decode(token, app.config['SECRET_KEY'],
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
                 algorithms=['HS256'])['reset_password']
         except:
             return
@@ -138,7 +139,7 @@ class TestDate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     test = db.Column(db.String(24))
-    status = db.Column(db.String(24), default = 'confirmed')
+    status = db.Column(db.String(24), default='confirmed')
     reg_date = db.Column(db.Date)
     late_date = db.Column(db.Date)
     other_date = db.Column(db.Date)
@@ -152,7 +153,6 @@ class TestDate(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     review = db.Column(db.String(1024))
     author = db.Column(db.String(64))
     photo_path = db.Column(db.String(128))
@@ -165,10 +165,10 @@ class Review(db.Model):
 class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    slug = db.Column(db.String(255), unique=True, nullable=False)  # URL-friendly name
+    slug = db.Column(db.String(255), unique=True, nullable=False)
     sat_spreadsheet_id = db.Column(db.String(255), nullable=True)
     act_spreadsheet_id = db.Column(db.String(255), nullable=True)
-    color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
+    color1 = db.Column(db.String(7), nullable=True)
     color2 = db.Column(db.String(7), nullable=True)
     color3 = db.Column(db.String(7), nullable=True)
     font_color = db.Column(db.String(7), nullable=True)

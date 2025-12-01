@@ -9,7 +9,7 @@ Unsubscribe
   <div class="col-11 col-lg-10">
     <h1 class="text-center">Unsubscribe from SAT Resources</h1>
     <p class="text-center">Your email will be removed from the shared SAT Resources folder.</p>
-    <form method="POST" action="{{ url_for('unsubscribe') }}">
+    <form method="POST" action="{{ url_for('auth.unsubscribe') }}">
       {{ form.hidden_tag() }}
       <div class="mb-3">
         {{ form.email(class="form-control") }}

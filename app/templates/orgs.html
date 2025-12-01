@@ -2,7 +2,7 @@
 
 {% block content %}
   <h2 class="mb-3 semibold d-inline-block">Organizations</h2>
-  <a href="{{ url_for('new_org') }}" class="btn sm ms-4 mb-3">Add</a>
+  <a href="{{ url_for('admin.new_org') }}" class="btn sm ms-4 mb-3">Add</a>
   <a href="https://docs.google.com/spreadsheets/d/{{ sat_template_id }}" class="ms-4 mb-3" target="_blank">View SAT Template</a>
   <a href="https://docs.google.com/spreadsheets/d/{{ act_template_id }}" class="ms-4 mb-3" target="_blank">View ACT Template</a>
 
@@ -18,9 +18,9 @@
 
         <div id="org-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#orgAccordion">
           <div class="accordion-body">
-            <a href="{{ url_for('org_settings', org=org.slug) }}" class="me-5">Settings</a>
+            <a href="{{ url_for('admin.org_settings', org=org.slug) }}" class="me-5">Settings</a>
             {% if org.partner %}
-                <a href="{{ url_for('edit_user', id=org.partner.id) }}" class="me-5">{{ org.partner.first_name }} {{ org.partner.last_name }}</a>
+                <a href="{{ url_for('admin.edit_user', id=org.partner.id) }}" class="me-5">{{ org.partner.first_name }} {{ org.partner.last_name }}</a>
             {% endif %}
             {% if org.sat_spreadsheet_id %}
               <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5" target="_blank">SAT spreadsheet</a>

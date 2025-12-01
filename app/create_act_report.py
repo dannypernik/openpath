@@ -1,5 +1,5 @@
 import os
-from app import app
+from flask import current_app
 from app.utils import hex_to_rgb, is_dark_color
 from app.email import send_score_report_email
 from googleapiclient.discovery import build
@@ -7,20 +7,31 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
-from graderclient import GraderClient
 from werkzeug.utils import secure_filename
 import json
 import logging
 import requests
 import base64
 
+try:
+    from graderclient import GraderClient
+except ImportError:
+    GraderClient = None
 
-# Constants
-TEMPLATE_SS_ID = app.config['ACT_REPORT_SS_ID'] # Your spreadsheet ID
+
+# Constants - Note: get_template_ss_id() and get_act_data_ss_id() are accessed via current_app.config at runtime
 ACT_REPORT_FOLDER_ID = '1di1PnSgL4J9oyGQGjUKfg_eRhKSht3WD'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
-ACT_DATA_SS_ID = app.config['ACT_DATA_SS_ID']  # Your ACT data spreadsheet ID
+
+
+def get_template_ss_id():
+    return current_app.config['ACT_REPORT_SS_ID']
+
+
+def get_act_data_ss_id():
+    return current_app.config['get_act_data_ss_id()']
+
 
 all_subjects = ['english', 'math', 'reading', 'science']
 completed_subjects = []
@@ -35,7 +46,7 @@ def get_act_test_codes():
     creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON)
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     result = service.spreadsheets().values().get(
-      spreadsheetId=ACT_DATA_SS_ID,
+      spreadsheetId=get_act_data_ss_id(),
       range="'Test designations'!E2:I"
     ).execute()
     values = result.get('values', [])
@@ -107,7 +118,7 @@ def create_act_score_report(score_data, organization_dict):
     if organization_dict and organization_dict['spreadsheet_id']:
         file_id = organization_dict['spreadsheet_id']
     else:
-        file_id = TEMPLATE_SS_ID
+        file_id = get_template_ss_id()
     ss_copy = drive_service.files().copy(
         fileId=file_id,
         body={
@@ -511,14 +522,14 @@ def create_custom_act_spreadsheet(organization):
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=TEMPLATE_SS_ID,
+        fileId=get_template_ss_id(),
         body={
             'parents': [ORG_FOLDER_ID],
             'name': f'{organization.name} ACT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
 
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {TEMPLATE_SS_ID})')
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {get_template_ss_id()})')
 
     return ss_copy_id
 

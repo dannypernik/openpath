@@ -14,7 +14,7 @@
       <div class="row">
         <div class="col-12 col-md-5 mb-4">
           <h1>Log in</h1>
-          <form action="{{ url_for('login', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
+          <form action="{{ url_for('auth.login', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
             {{ form.hidden_tag() }}
             {{ form.email }}
             {{ form.password }}
@@ -22,13 +22,13 @@
             {{ form.submit }}
           </form>
           <p class="mt-3 text-center">
-            <a href="{{ url_for('request_password_reset', next=request.args.get('next')) }}" class="btn clr sm">Reset password</a>
+            <a href="{{ url_for('auth.request_password_reset', next=request.args.get('next')) }}" class="btn clr sm">Reset password</a>
           </p>
         </div>
 
         <div class="col-12 col-md-5 offset-md-2">
           <h1>Request account</h1>
-          <form action="{{ url_for('signup', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
+          <form action="{{ url_for('auth.signup', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
             {{ signup_form.hidden_tag() }}
             {{ signup_form.first_name }}
             {{ signup_form.last_name }}
