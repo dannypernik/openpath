@@ -102,17 +102,19 @@ h1,
 .h1 {
   font-size: calc(2.3rem + 1vw);
   margin-bottom: 2rem;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 h2,
 .h2 {
   font-size: calc(2.2rem + 0.5vw);
+  font-weight: bold;
 }
 
 h3,
 .h3 {
   font-size: calc(2rem + 0.5vw);
+  font-weight: bold;
 }
 
 h4,
@@ -149,7 +151,7 @@ textarea {
 
 input:focus,
 textarea:focus {
-  border-bottom: 1px solid $primary-color;
+  border-bottom: 1px solid $secondary-color;
 }
 
 input[type='checkbox'] {
@@ -269,6 +271,9 @@ select {
   padding: 0.5rem;
   font-size: 1.6rem;
   height: 4rem;
+  margin: 0.5rem 1rem 0 0;
+  box-sizing: border-box;
+  outline-color: $secondary-color;
 
   &.select-header {
     display: inline-block;
@@ -959,16 +964,6 @@ td {
   height: 0px;
   transition: height 0.5s ease-out;
   overflow: hidden;
-}
-
-#tz-container {
-  width: 100%;
-  display: flex;
-}
-
-#tz-select {
-  margin: 0.5rem 1rem 0 0;
-  box-sizing: border-box;
 }
 
 .slide-toggle {

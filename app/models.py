@@ -54,6 +54,7 @@ class User(UserMixin, db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
     role = db.Column(db.String(24), index=True)
+    subject = db.Column(db.String(64))
     is_admin = db.Column(db.Boolean, default=False)
     is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)

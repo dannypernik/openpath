@@ -4,11 +4,11 @@
   <div class="mt-4 row justify-content-center">
     <div class="col-12 col-md-10">
       <div class="mb-2">
-        <button id="add-student" class="mb-4 me-2 btn d-inline-block">+ Add student</button>
+        <a href="{{ url_for('new_student') }}" class="mb-4 me-2 btn">+ Add student</a>
       </div>
 
 
-      <form id="add-student-form" class="hidden-block" action="" method="post">
+<!-- {#      <form id="add-student-form" class="hidden-block" action="" method="post">
         <h2 class="mb-3 me-2 d-inline-block">Add student</h2>
         <a id="hide-form" href="#">Hide</a>
 
@@ -74,7 +74,7 @@
         </div>
         {{ form.submit }}
       </form>
-
+#} -->
       <div id="student-list" class="accordion no-decoration">
         {% for status in statuses %}
           <div class="accordion-item">
