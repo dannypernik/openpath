@@ -1,18 +1,25 @@
 import os
-from app import app
+import logging
+from flask import current_app
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
 from google.oauth2.service_account import Credentials
 import datetime
 
+logger = logging.getLogger(__name__)
+
 # Constants
 SOURCE_FOLDER_ID = '1rz0xXMvtklwUuvGTkqs9cuNfQyY7-8-s'
 PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'
 SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com'
-SAT_DATA_SS_ID = app.config['SAT_DATA_SS_ID']
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+
+
+def get_sat_data_ss_id():
+    """Get SAT data spreadsheet ID from config at runtime."""
+    return current_app.config['SAT_DATA_SS_ID']
 
 # Authenticate and initialize services
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON, scopes=SCOPES)
@@ -298,8 +305,9 @@ def remove_sat_protections(sheets_service, admin_ss_id):
 
 def get_sat_test_codes(sheets_service):
     """Retrieve SAT test codes from the SAT data spreadsheet."""
+    sat_data_ss_id = get_sat_data_ss_id()
     # Get all sheets in the spreadsheet
-    spreadsheet = sheets_service.spreadsheets().get(spreadsheetId=SAT_DATA_SS_ID).execute()
+    spreadsheet = sheets_service.spreadsheets().get(spreadsheetId=sat_data_ss_id).execute()
     sheets = spreadsheet.get('sheets', [])
 
     # Filter sheets that start with 'Practice test data updated' and find the alphabetically last one
@@ -325,7 +333,7 @@ def get_sat_test_codes(sheets_service):
     latest_sheet = max(matching_sheets, key=extract_date)
 
     result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=SAT_DATA_SS_ID,
+        spreadsheetId=sat_data_ss_id,
         range=f'{latest_sheet}!A2:A'
     ).execute()
 
