@@ -16,6 +16,13 @@ from app.helpers import full_name
 
 # Celery instance - created outside of factory for use by tasks module
 celery = Celery(__name__)
+celery.conf.update(
+        broker_url='redis://localhost:6379/0',
+        result_backend='redis://localhost:6379/0',
+        worker_max_tasks_per_child=1,
+        task_acks_late=True,
+        broker_connection_retry_on_startup=False
+    )
 
 
 def create_app(config_name=None):
@@ -68,13 +75,6 @@ def create_app(config_name=None):
 
 def configure_celery(app):
     """Configure Celery with the Flask app."""
-    celery.conf.update(
-        broker_url='redis://localhost:6379/0',
-        result_backend='redis://localhost:6379/0',
-        worker_max_tasks_per_child=1,
-        task_acks_late=True,
-        broker_connection_retry_on_startup=False
-    )
     celery.conf.update(app.config)
 
     class ContextTask(celery.Task):
