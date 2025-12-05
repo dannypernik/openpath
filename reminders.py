@@ -317,10 +317,11 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).options(
-                joinedload(User.test_dates).joinedload(UserTestDate.test_dates)
-            ).order_by(User.first_name).filter(
-                User.test_dates
-            ).filter(User.test_reminders)
+            selectinload(User.test_dates).selectinload(UserTestDate.test_date)
+        ).filter(
+            User.test_dates.any(),
+            User.test_reminders == True
+        ).order_by(User.first_name)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
         unregistered_active_students = students.filter(User.status == 'active').filter(User.test_dates.any(UserTestDate.is_registered == False))
