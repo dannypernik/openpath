@@ -24,16 +24,37 @@ from sqlalchemy.orm import joinedload, sessionmaker
 import requests
 import traceback
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 import app.utils as utils
 
-# Configure logging
-error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
-logging.basicConfig(filename=error_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+# Create logs directory if it doesn't exist
+logs_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs')
+os.makedirs(logs_dir, exist_ok=True)
 
-info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-#pp = pprint.PrettyPrinter(indent=2)
+# Set up root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Capture INFO and above
+
+# Error log handler
+error_handler = RotatingFileHandler(
+    os.path.join(logs_dir, 'errors.log'),
+    maxBytes=10485760,  # 10MB
+    backupCount=5
+)
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(error_handler)
+
+# Info log handler
+info_handler = RotatingFileHandler(
+    os.path.join(logs_dir, 'info.log'),
+    maxBytes=10485760,  # 10MB
+    backupCount=5
+)
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(info_handler)
 
 # Create a new session
 session = db.session
