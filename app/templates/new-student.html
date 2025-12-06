@@ -6,7 +6,6 @@
 
 {% block content %}
 <div class="container">
-  <h1 class="text-center">New Student Form</h1>
   <form method="POST" action="{{ url_for('main.new_student') }}">
     {{ form.hidden_tag() }}
 
@@ -40,8 +39,7 @@
         <div>
           {{ form.subject.label }}<br>
           <select id="subject-select">
-            <option value="-" selected disabled>--</option>
-            <option value="test-prep">SAT/ACT prep</option>
+            <option value="sat/act">SAT/ACT prep</option>
             <option value="sat">SAT prep</option>
             <option value="act">ACT prep</option>
             <option value="math">Math</option>
@@ -54,6 +52,10 @@
         </div>
         <div>
           {{ form.subject(class="d-none mb-0") }}
+        </div>
+        <div id="create-folder-div" class="align-self-end mb-2 ms-3 {% if not current_user.is_admin %}d-none{% endif %}">
+          {{ form.create_student_folder }}
+          {{ form.create_student_folder.label }}
         </div>
       </div>
     </div>
@@ -77,27 +79,29 @@
       </div>
     </div>
 
-    {% if current_user.is_admin %}
-      <div class="row align-items-end">
-        <div class="mb-2 col-12 col-md-4">
-          {{ form.status.label }}<br>
-          {{ form.status }}
-        </div>
-        <div class="mb-2 col-12 col-md-4">
-          {{ form.tutor.label }}<br>
-          {{ form.tutor }}
-        </div>
-        <div class="col-12 col-md-4">
-          {{ form.location }}
-        </div>
+    <div class="row align-items-end {% if not current_user.is_admin %}d-none{% endif %}">
+      <div class="mb-2 col-12 col-md-3">
+        {{ form.tutor.label }}<br>
+        <select id="tutor" name="tutor" class="form-control">
+          {% for tutor in tutors %}
+            <option value="{{ tutor.id }}" data-location="{{ tutor.location }}">{{ full_name(tutor) }}</option>
+          {% endfor %}
+        </select>
       </div>
-    {% endif %}
+      <div class="col-12 col-md-5">
+        {{ form.location }}
+      </div>
+      <div class="mb-2 col-12 col-md-3 offset-md-1">
+        {{ form.status.label }}<br>
+        {{ form.status }}
+      </div>
+    </div>
 
     <div class="row">
       <div class="col-12">
         {% for t in tests %}
           <div class="row my-4 g-0">
-            <h4 class="mb-1">Target {{ t.upper() }} dates (leave blank if unknown)</h4>
+            <h4 class="mb-1">Target {{ t.upper() }} dates</h4>
             <div class="d-flex flex-wrap">
               {% for d in upcoming_dates %}
                 {% if d.test == t %}
@@ -119,8 +123,15 @@
       </div>
     </div>
 
+    <div class="row">
+      <div class="col-12">
+        <h4>{{ form.notes.label }}</h4>
+        {{ form.notes }}
+      </div>
+    </div>
 
-    <h3>Parent information</h3>
+
+    <h3 class="fw-bold">Parent information</h3>
     <div class="row">
       <div class="col-12">
         {{ form.parent_id(class="my-2") }}
@@ -148,7 +159,7 @@
       </div>
     </div>
 
-    <h3 class="mt-3">Additional parent information (optional)</h3>
+    <h3 class="mt-3 fw-bold">Additional parent information (optional)</h3>
     <div class="row">
       <div class="mb-3 col-6">
       {{ form.parent2_first_name }}
@@ -200,6 +211,8 @@
 
     const subjectSelect = document.getElementById('subject-select');
     const subjectText = document.getElementById('subject');
+    const createFolderDiv = document.getElementById('create-folder-div');
+    const studentFolderCheckbox = document.getElementById('create_student_folder');
 
     subjectSelect.addEventListener('change', function() {
       const selectedValue = subjectSelect.value;
@@ -210,6 +223,12 @@
       else {
         subjectText.classList.add('d-none');
       }
+
+      if (selectedValue === "sat/act" || selectedValue === "sat" || selectedValue === "act") {
+        studentFolderCheckbox.checked = true;
+      } else {
+        studentFolderCheckbox.checked = false;
+      }
     });
 
     document.getElementById('parent_id').addEventListener('change', function() {
@@ -219,6 +238,20 @@
       else {
         document.getElementById('new-parent-info').style.display = 'none';
       }
+    });
+
+    const tutorSelect = document.getElementById('tutor');
+
+    // Set initial location from default tutor
+    const initialOption = tutorSelect.options[tutorSelect.selectedIndex];
+    const initialLocation = initialOption.getAttribute('data-location');
+    document.getElementById('location').value = initialLocation;
+
+    // Update location when tutor changes
+    tutorSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const location = selectedOption.getAttribute('data-location');
+      document.getElementById('location').value = location;
     });
   </script>
 {% endblock end_scripts %}
