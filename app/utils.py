@@ -142,8 +142,20 @@ def batch_update_weekly_usage(date_yyyymmddd=None):
     act_failure = stats['act'].get('failure', '')
     act_retry   = stats['act'].get('retry', '')
 
+    # Conditionally load credentials
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'service_account_key2.json')
+    should_init_google = (
+        not os.getenv('TESTING', '').lower() in ('1', 'true')
+        and not os.getenv('CI')
+        and os.path.exists(sa_path)
+    )
+    
+    if not should_init_google:
+        print('Skipping Google Sheets update: TESTING/CI or missing service account file')
+        return stats
+
     creds = Credentials.from_service_account_file(
-        'service_account_key2.json',
+        sa_path,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)

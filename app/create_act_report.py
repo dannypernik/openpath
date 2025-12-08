@@ -32,7 +32,18 @@ sub_data = {
 }
 
 def get_act_test_codes():
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON)
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', SERVICE_ACCOUNT_JSON)
+    should_init_google = (
+        not os.getenv('TESTING', '').lower() in ('1', 'true')
+        and not os.getenv('CI')
+        and os.path.exists(sa_path)
+    )
+    
+    if not should_init_google:
+        print('Skipping ACT test codes retrieval: TESTING/CI or missing service account file')
+        return []
+    
+    creds = Credentials.from_service_account_file(sa_path)
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     result = service.spreadsheets().values().get(
       spreadsheetId=ACT_DATA_SS_ID,

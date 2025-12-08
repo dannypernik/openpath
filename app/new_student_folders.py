@@ -1,26 +1,48 @@
 import os
+import logging
 from app import app
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from googleapiclient.errors import HttpError
 from google.oauth2.service_account import Credentials
 import datetime
+
+logger = logging.getLogger(__name__)
 
 # Constants
 SOURCE_FOLDER_ID = '1rz0xXMvtklwUuvGTkqs9cuNfQyY7-8-s'
 PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'
 SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com'
-SAT_DATA_SS_ID = app.config['SAT_DATA_SS_ID']
+SAT_DATA_SS_ID = app.config.get('SAT_DATA_SS_ID')
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 
-# Authenticate and initialize services
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON, scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+# Authenticate and initialize services conditionally
+# Skip initialization if TESTING is True, CI is set, or service account file doesn't exist
+sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', SERVICE_ACCOUNT_JSON)
+should_init_google = (
+    not app.config.get('TESTING', False)
+    and not os.getenv('CI')
+    and os.path.exists(sa_path)
+)
+
+if should_init_google:
+    creds = Credentials.from_service_account_file(sa_path, scopes=SCOPES)
+    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+    sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+else:
+    logger.info('Skipping Google credentials initialization: TESTING=%s, CI=%s, file_exists=%s',
+                app.config.get('TESTING', False), bool(os.getenv('CI')), os.path.exists(sa_path))
+    drive_service = None
+    sheets_service = None
 
 
 def create_test_prep_folder(student_name, test_type='all'):
     """Create a test prep folder and copy/link files."""
+    if drive_service is None:
+        logger.warning('Cannot create test prep folder: Google Drive service not initialized')
+        return None
+    
     new_folder_id = create_folder(f"{student_name}", PARENT_FOLDER_ID)
 
     query = f"'{SOURCE_FOLDER_ID}' in parents and trashed=false"
@@ -36,6 +58,10 @@ def create_test_prep_folder(student_name, test_type='all'):
 
 def create_folder(folder_name, parent_folder_id):
     """Create a new folder in Google Drive."""
+    if drive_service is None:
+        logger.warning('Cannot create folder: Google Drive service not initialized')
+        return None
+        
     folder_metadata = {
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder',
