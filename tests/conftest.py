@@ -29,10 +29,18 @@ def mock_service_account_file(monkeypatch):
         from google.oauth2 import service_account
         import google.auth._service_account_info as _sai
 
+        def from_service_account_file_mock(cls, filename, *args, **kwargs):
+            """Mock factory for creating credentials without reading a file."""
+            return DummyCreds()
+
+        def from_filename_mock(filename):
+            """Mock function to avoid reading service account info from file."""
+            return {}
+
         monkeypatch.setattr(
             service_account.Credentials,
             "from_service_account_file",
-            classmethod(lambda cls, filename, *a, **kw: DummyCreds()),
+            classmethod(from_service_account_file_mock),
             raising=False,
         )
 
@@ -40,7 +48,7 @@ def mock_service_account_file(monkeypatch):
         monkeypatch.setattr(
             _sai,
             "from_filename",
-            lambda filename: {},
+            from_filename_mock,
             raising=False,
         )
     except (ImportError, ModuleNotFoundError):
