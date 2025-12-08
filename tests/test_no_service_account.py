@@ -6,6 +6,13 @@ import sys
 import importlib.util
 
 
+def _get_app_module_path(module_name):
+    """Helper to get the path to an app module relative to this test file."""
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(test_dir)
+    return os.path.join(repo_root, 'app', f'{module_name}.py')
+
+
 def test_new_student_folders_module_without_service_account(monkeypatch):
     """Test that new_student_folders module handles missing service_account_key2.json file."""
     # Set environment variables before any imports
@@ -18,9 +25,10 @@ def test_new_student_folders_module_without_service_account(monkeypatch):
         del sys.modules[mod]
     
     # Load the new_student_folders module file directly to avoid full app initialization
+    module_path = _get_app_module_path('new_student_folders')
     spec = importlib.util.spec_from_file_location(
         "new_student_folders",
-        "/home/runner/work/openpath/openpath/app/new_student_folders.py"
+        module_path
     )
     
     # To avoid the "from app import app" at the top of new_student_folders.py
@@ -34,10 +42,14 @@ def test_new_student_folders_module_without_service_account(monkeypatch):
     
     # Create a minimal app module
     import types
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(test_dir)
+    app_dir = os.path.join(repo_root, 'app')
+    
     app_module = types.ModuleType('app')
     app_module.app = flask_app
-    app_module.__file__ = '/home/runner/work/openpath/openpath/app/__init__.py'
-    app_module.__path__ = ['/home/runner/work/openpath/openpath/app']
+    app_module.__file__ = os.path.join(app_dir, '__init__.py')
+    app_module.__path__ = [app_dir]
     app_module.__package__ = 'app'
     sys.modules['app'] = app_module
     
@@ -73,17 +85,22 @@ def test_new_student_folders_with_ci_variable(monkeypatch):
     flask_app.config.from_object(Config)
     
     import types
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(test_dir)
+    app_dir = os.path.join(repo_root, 'app')
+    
     app_module = types.ModuleType('app')
     app_module.app = flask_app
-    app_module.__file__ = '/home/runner/work/openpath/openpath/app/__init__.py'
-    app_module.__path__ = ['/home/runner/work/openpath/openpath/app']
+    app_module.__file__ = os.path.join(app_dir, '__init__.py')
+    app_module.__path__ = [app_dir]
     app_module.__package__ = 'app'
     sys.modules['app'] = app_module
     
     # Load the module
+    module_path = _get_app_module_path('new_student_folders')
     spec = importlib.util.spec_from_file_location(
         "new_student_folders",
-        "/home/runner/work/openpath/openpath/app/new_student_folders.py"
+        module_path
     )
     new_student_folders = importlib.util.module_from_spec(spec)
     

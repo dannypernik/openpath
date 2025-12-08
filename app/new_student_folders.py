@@ -72,6 +72,10 @@ def create_folder(folder_name, parent_folder_id):
 
 def copy_item(item_id, new_name, new_folder_id, test_type='all', student_name=None):
     """Copy a file or folder in Google Drive."""
+    if drive_service is None:
+        logger.warning('Cannot copy item: Google Drive service not initialized')
+        return None
+        
     item = drive_service.files().get(fileId=item_id, fields='id, name, mimeType, shortcutDetails').execute()
     mime_type = item['mimeType']
 
@@ -122,6 +126,10 @@ def copy_item(item_id, new_name, new_folder_id, test_type='all', student_name=No
 
 def update_admin_spreadsheet(admin_ss_id, student_ss_id, student_name, test_type):
     """Update spreadsheet data."""
+    if drive_service is None or sheets_service is None:
+        logger.warning('Cannot update admin spreadsheet: Google services not initialized')
+        return None
+        
     drive_service.permissions().create(
         fileId=admin_ss_id,
         body={'type': 'user', 'role': 'writer', 'emailAddress': SERVICE_ACCOUNT_EMAIL}
@@ -215,6 +223,9 @@ def update_admin_spreadsheet(admin_ss_id, student_ss_id, student_name, test_type
 
 def link_sheets(folder_id, student_name, test_type='all'):
     """Link sheets and update data."""
+    if drive_service is None or sheets_service is None:
+        logger.warning('Cannot link sheets: Google services not initialized')
+        return {}, {}
 
     files = get_all_files(folder_id)
 
@@ -255,6 +266,10 @@ def link_sheets(folder_id, student_name, test_type='all'):
 
 # Recursively get all files in folder_id and nested subfolders
 def get_all_files(folder_id):
+    if drive_service is None:
+        logger.warning('Cannot get files: Google Drive service not initialized')
+        return []
+        
     all_files = []
     query = f"'{folder_id}' in parents and trashed=false"
     items = drive_service.files().list(q=query, fields='files(id, name, mimeType)').execute().get('files', [])
@@ -297,6 +312,10 @@ def make_public_view(drive_service, file_id: str):
 
 def remove_sat_protections(sheets_service, admin_ss_id):
     """Remove protections from SAT admin spreadsheet."""
+    if sheets_service is None:
+        logger.warning('Cannot remove SAT protections: Google Sheets service not initialized')
+        return
+        
     test_codes = get_sat_test_codes(sheets_service)
     test_codes.extend(['Reading & Writing', 'Math', 'SLT Uniques'])
     protected_sheets = []
@@ -323,6 +342,10 @@ def remove_sat_protections(sheets_service, admin_ss_id):
 
 def get_sat_test_codes(sheets_service):
     """Retrieve SAT test codes from the SAT data spreadsheet."""
+    if sheets_service is None:
+        logger.warning('Cannot get SAT test codes: Google Sheets service not initialized')
+        return []
+        
     # Get all sheets in the spreadsheet
     spreadsheet = sheets_service.spreadsheets().get(spreadsheetId=SAT_DATA_SS_ID).execute()
     sheets = spreadsheet.get('sheets', [])
@@ -362,6 +385,10 @@ def get_sat_test_codes(sheets_service):
 
 def update_sat_student_spreadsheet(sheets_service, sat_files, student_name):
     """Update student spreadsheet with student name."""
+    if sheets_service is None:
+        logger.warning('Cannot update SAT student spreadsheet: Google Sheets service not initialized')
+        return
+        
     # Get the sheet ID of the sheet named 'Student info'
     sheet_metadata = sheets_service.spreadsheets().get(spreadsheetId=sat_files.get('student')).execute()
     sheets = sheet_metadata.get('sheets', [])
@@ -423,6 +450,10 @@ def update_sat_student_spreadsheet(sheets_service, sat_files, student_name):
 
 def add_student_sheet_to_rev_data(sheets_service, admin_ss_id, student_name):
     """Add student answer sheet link to Rev sheet backend."""
+    if sheets_service is None:
+        logger.warning('Cannot add student sheet to rev data: Google Sheets service not initialized')
+        return
+        
     # Get the sheet ID of the sheet named 'Rev sheet backend'
     sheet_metadata = sheets_service.spreadsheets().get(spreadsheetId=admin_ss_id).execute()
     sheets = sheet_metadata.get('sheets', [])
