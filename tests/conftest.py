@@ -9,9 +9,11 @@ class DummyCreds:
     def __init__(self, *args, **kwargs):
         self.token = "test-token"
         self.project_id = "test-project"
+
     def refresh(self, request=None):
         # No-op for tests; if refreshed by callers, leave token as-is.
         return None
+
     def with_scopes(self, scopes):
         return self
 
@@ -41,7 +43,7 @@ def mock_service_account_file(monkeypatch):
             lambda filename: {},
             raising=False,
         )
-    except Exception:
+    except (ImportError, ModuleNotFoundError):
         # If google auth libs are not present, nothing to mock.
         pass
 
