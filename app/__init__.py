@@ -15,6 +15,11 @@ from celery import Celery
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Check for TESTING environment variable and set config accordingly
+if os.getenv('TESTING', '').lower() in ('1', 'true') or os.getenv('CI'):
+    app.config['TESTING'] = True
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db, render_as_batch=True, compare_type=True)
 bootstrap = Bootstrap(app)

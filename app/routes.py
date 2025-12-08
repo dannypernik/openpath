@@ -163,7 +163,18 @@ def get_image_info(file_path):
 def add_user_to_drive_folder(email, folder_id):
     """Add a user as a viewer to a Google Drive folder without sending a notification email."""
     # Authenticate using the Service Account
-    credentials = Credentials.from_service_account_file('service_account_key.json')
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'service_account_key2.json')
+    should_init_google = (
+        not os.getenv('TESTING', '').lower() in ('1', 'true')
+        and not os.getenv('CI')
+        and os.path.exists(sa_path)
+    )
+    
+    if not should_init_google:
+        logger.warning('Cannot add user to Drive folder: service account not available')
+        return None
+        
+    credentials = Credentials.from_service_account_file(sa_path)
     service = build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
     # Create permission
