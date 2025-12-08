@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, blueprints ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        pip install -i https://test.pypi.org/simple/ actgrader-client-0.0.0==0.0.4
+        pip install -r requirements.txt
+
+    - name: Create dummy service account key for tests
+      run: |
+        echo '{}' > service_account_key2.json
+        # ensure file is readable
+        ls -l service_account_key2.json || true
+
+    - name: Run tests
+      env:
+        FLASK_CONFIG: testing
+        SECRET_KEY: test-secret-key
+      run: |
+        pytest tests/ -v
+
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+
+    - name: Run flake8
+      run: |
+        flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 app/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
