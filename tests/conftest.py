@@ -30,7 +30,11 @@ def mock_service_account_file(monkeypatch):
         import google.auth._service_account_info as _sai
 
         def from_service_account_file_mock(cls, filename, *args, **kwargs):
-            """Mock factory for creating credentials without reading a file."""
+            """Mock factory for creating credentials without reading a file.
+            
+            Note: Intentionally returns DummyCreds instead of cls() to avoid
+            instantiating real Credentials objects that might have other dependencies.
+            """
             return DummyCreds()
 
         def from_filename_mock(filename):
