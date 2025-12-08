@@ -1,7 +1,49 @@
 """Test configuration and fixtures."""
 
+from __future__ import annotations
 import pytest
 import os
+
+
+class DummyCreds:
+    def __init__(self, *args, **kwargs):
+        self.token = "test-token"
+        self.project_id = "test-project"
+    def refresh(self, request=None):
+        # No-op for tests; if refreshed by callers, leave token as-is.
+        return None
+    def with_scopes(self, scopes):
+        return self
+
+
+@pytest.fixture(autouse=True)
+def mock_service_account_file(monkeypatch):
+    """Autouse fixture to prevent tests from trying to read a real service account file.
+
+    Replaces Credentials.from_service_account_file with a no-file-required factory that
+    returns DummyCreds. Also stubs google.auth._service_account_info.from_filename.
+    """
+    try:
+        from google.oauth2 import service_account
+        import google.auth._service_account_info as _sai
+
+        monkeypatch.setattr(
+            service_account.Credentials,
+            "from_service_account_file",
+            classmethod(lambda cls, filename, *a, **kw: DummyCreds()),
+            raising=False,
+        )
+
+        # Some call paths go through google.auth._service_account_info
+        monkeypatch.setattr(
+            _sai,
+            "from_filename",
+            lambda filename: {},
+            raising=False,
+        )
+    except Exception:
+        # If google auth libs are not present, nothing to mock.
+        pass
 
 
 @pytest.fixture
