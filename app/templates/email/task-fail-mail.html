@@ -3,9 +3,13 @@
 {% block content %}
   <h1>Task failed</h1>
   <p><h3>Submitter info</h3>
-  <p>{{ score_data['email'] }}</p>
+    {% if task_data['email'] %}
+      <p>{{ task_data['email'] }}</p>
+    {% endif %}
   <p>
-    <a href="https://www.openpathtutoring.com/admin-files/sat/uploads/{{score_data['student_name']}} {{score_data['date']}} {{score_data['test_display_name']}} CB details.pdf">Score details PDF</a>
+    {% if task_data['test_display_name'] %}
+      <a href="https://www.openpathtutoring.com/admin-files/sat/uploads/{{task_data['student_name']}} {{task_data['date']}} {{task_data['test_display_name']}} CB details.pdf">Score details PDF</a>
+    {% endif %}
   </p>
   <p>
     exc: {{ exc }}
@@ -18,6 +22,9 @@
   </p>
   <p>
     kwargs: {{ kwargs }}
+  </p>
+  <p>
+    Task data: {{ task_data }}
   </p>
 {% endblock content %}
 

@@ -50,12 +50,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
       input.value = formattedValue.trim();
     });
-
-    input.addEventListener('blur', function () {
-      // Ensure the input is valid when the user leaves the field
-      if (!input.value.match(/^\+\d{1,3} \(\d{3}\) \d{3}-\d{4}$/)) {
-        input.value = ''; // Clear the input if it doesn't match the required format
-      }
-    });
   });
 });

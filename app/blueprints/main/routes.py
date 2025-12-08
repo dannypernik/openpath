@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 from markupsafe import Markup
 from flask import (
-    render_template, flash, redirect, url_for,
+    render_template, flash, redirect, url_for, g,
     request, send_from_directory, send_file, make_response, abort, current_app
 )
 from flask_login import current_user, login_required
@@ -24,7 +24,7 @@ import requests
 
 from app.blueprints.main import main_bp
 from app.extensions import db, hcaptcha
-from app.helpers import full_name, dir_last_updated
+from app.helpers import full_name, dir_last_updated, hello_email
 from app.forms import (
     InquiryForm, EmailListForm, TestStrategiesForm, TestDateForm,
     ScoreAnalysisForm, ReviewForm, FreeResourcesForm, NominationForm,
@@ -43,13 +43,12 @@ from app.create_sat_report import (
     update_sat_org_logo, update_sat_partner_logo
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
-from app.tasks import sat_report_workflow_task, act_report_workflow_task
-
+from app.new_student_folders import create_folder
+from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
 
 logger = logging.getLogger(__name__)
 
 register_heif_opener()
-
 
 def create_crm_contact_and_action(contact_data, action_text):
     '''Create a contact and an associated action in OnePageCRM.'''
@@ -172,6 +171,7 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_viewed = datetime.utcnow()
         db.session.commit()
+    g.hello = hello_email()
 
 
 @main_bp.app_context_processor
@@ -188,7 +188,7 @@ def inject_values():
         current_last_name = None
     return dict(
         last_updated=dir_last_updated('app/static'),
-        hello=current_app.config['HELLO_EMAIL'],
+        hello=g.hello,
         phone=current_app.config['PHONE'],
         current_first_name=current_first_name,
         current_last_name=current_last_name
@@ -200,7 +200,6 @@ def inject_values():
 def index():
     form = InquiryForm()
     altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -227,7 +226,7 @@ def index():
             if conf_status == 200:
                 flash('Thank you for reaching out! We\'ll be in touch.')
                 return redirect(url_for('main.index', _anchor='home'))
-        flash('Email failed to send, please contact ' + hello, 'error')
+        flash('Email failed to send, please contact ' + g.hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'), altcha_site_key=altcha_site_key)
 
 
@@ -240,7 +239,6 @@ def team():
 @main_bp.route('/mission', methods=['GET', 'POST'])
 def mission():
     form = FreeResourcesForm()
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if not user:
@@ -261,7 +259,7 @@ def mission():
             if email_status == 200:
                 flash('Your free resources are on their way to your inbox!', 'success')
             else:
-                flash(Markup('Email failed to send. Please contact <a href="mailto:' + hello + '" target="_blank">' + hello + '</a>'), 'error')
+                flash(Markup(f'Email failed to send. Please contact <a href="mailto:{g.hello}" target="_blank">{g.hello}</a>'), 'error')
         except Exception as e:
             logger.error(f"Error adding user to Google Drive folder: {e}", exc_info=True)
             flash('An error occurred while granting access to resources. Please try again later.', 'error')
@@ -271,7 +269,6 @@ def mission():
 @main_bp.route('/nominate', methods=['GET', 'POST'])
 def nominate():
     form = NominationForm()
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         form_data = {
             'student_first_name': form.student_first_name.data,
@@ -302,7 +299,7 @@ def nominate():
             flash('Thank you for your nomination! We will be in touch.')
             return redirect(url_for('main.index'))
         else:
-            flash('An error occurred. Please contact ' + hello, 'error')
+            flash(f'An error occurred. Please contact {g.hello}', 'error')
             logging.error(f"Error processing nomination. Email status {email_status}")
     return render_template('nominate.html', form=form)
 
@@ -343,9 +340,15 @@ def test_dates():
         (User.role == 'student') & (User.status == 'active') | (User.status == 'prospective'))
     undecided_students = User.query.filter(~User.test_dates.any(TestDate.id.in_(upcoming_date_ids)) & (User.role == 'student') & (User.status == 'active') | (User.status == 'prospective'))
     if form.validate_on_submit():
-        date = TestDate(test=form.test.data, date=form.date.data, reg_date=form.reg_date.data,
-                        late_date=form.late_date.data, other_date=form.other_date.data,
-                        score_date=form.score_date.data, status=form.status.data)
+        date = TestDate(
+            test=form.test.data,
+            date=form.date.data,
+            reg_date=form.reg_date.data,
+            late_date=form.late_date.data,
+            other_date=form.other_date.data,
+            score_date=form.score_date.data,
+            status=form.status.data
+        )
         try:
             db.session.add(date)
             db.session.commit()
@@ -371,7 +374,6 @@ def test_reminders():
         (TestDate.late_date > today) & (TestDate.late_date <= reminder_cutoff))
     selected_date_ids = []
     selected_date_strs = []
-    hello = current_app.config['HELLO_EMAIL']
     if current_user.is_authenticated:
         user = User.query.filter_by(id=current_user.id).first()
         selected_dates = user.get_dates().all()
@@ -411,10 +413,10 @@ def test_reminders():
                 if email_status == 200:
                     flash('Test dates updated. Please check your inbox to verify your email.')
                 else:
-                    flash('Verification email did not send. Please contact ' + hello, 'error')
+                    flash(f'Verification email did not send. Please contact {g.hello}', 'error')
         except:
             db.session.rollback()
-            flash('Test dates were not updated, please contact ' + hello, 'error')
+            flash(f'Test dates were not updated, please contact {g.hello}', 'error')
         return redirect(url_for('main.index'))
     return render_template('test-reminders.html', form=form, tests=tests, upcoming_dates=upcoming_dates,
                            imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
@@ -426,21 +428,23 @@ def ati_austin():
     school = 'ATI Austin'
     test = 'SAT'
     submit_text = 'Submit'
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.ati_austin'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data,
-                       grad_year=form.grad_year.data)
+        student = User(
+            first_name=form.student_first_name.data,
+            last_name=form.student_last_name.data,
+            grad_year=form.grad_year.data
+        )
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
         if email_status == 200:
             return render_template('score-analysis-submitted.html', email=form.parent_email.data)
         else:
-            flash('Email failed to send, please contact ' + hello, 'error')
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
     return render_template('ati.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
@@ -450,21 +454,23 @@ def kaps():
     school = 'Katherine Anne Porter School'
     test = 'SAT'
     submit_text = 'Request score analysis'
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.kaps'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data,
-                       grad_year=form.grad_year.data)
+        student = User(
+            first_name=form.student_first_name.data,
+            last_name=form.student_last_name.data,
+            grad_year=form.grad_year.data
+        )
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_prep_class_email(student, parent, school, test)
         if email_status == 200:
             return render_template('registration-confirmed.html', email=form.parent_email.data)
         else:
-            flash('Email failed to send, please contact ' + hello, 'error')
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
     return render_template('kaps.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
@@ -478,21 +484,23 @@ def centerville():
     location = 'Centerville High School Room West 126'
     contact_info = 'Tom at 513-519-6784'
     submit_text = 'Register'
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.centerville'))
-        student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data,
-                       grad_year=form.grad_year.data)
+        student = User(
+            first_name=form.student_first_name.data,
+            last_name=form.student_last_name.data,
+            grad_year=form.grad_year.data
+        )
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
         if email_status == 200:
             return render_template('test-registration-submitted.html', email=parent.email, student=student, test=test)
         else:
-            flash('Email failed to send, please contact ' + hello, 'error')
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
     return render_template('centerville.html', form=form, school=school, test=test,
                            date=date, time=time, location=location, submit_text=submit_text)
 
@@ -505,7 +513,6 @@ def sat_act_data():
 @main_bp.route('/test-strategies', methods=['GET', 'POST'])
 def test_strategies():
     form = TestStrategiesForm()
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -523,14 +530,13 @@ def test_strategies():
         if email_status == 200:
             return render_template('test-strategies-sent.html', email=form.email.data, relation=relation)
         else:
-            flash('Email failed to send, please contact ' + hello, 'error')
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
     return render_template('test-strategies.html', form=form)
 
 
 @main_bp.route('/ntpa', methods=['GET', 'POST'])
 def ntpa():
     form = NtpaForm()
-    hello = current_app.config['HELLO_EMAIL']
     if form.validate_on_submit():
         first_name = form.first_name.data
         last_name = form.last_name.data
@@ -546,7 +552,7 @@ def ntpa():
         if email_status == 200:
             flash('We\'ve received your request and will be in touch!')
         else:
-            flash('Request did not send, please retry or contact ' + hello, 'error')
+            flash(f'Request did not send, please retry or contact {g.hello}', 'error')
     return render_template('ntpa.html', form=form)
 
 
@@ -571,16 +577,23 @@ def new_student():
             return redirect(url_for('admin.students'))
 
         try:
-            parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
+            parent = User.query.filter_by(id=form.parent_id.data).first()
             if form.parent_id.data == 0 and not parent:
-                parent = User(first_name=form.parent_first_name.data, last_name=form.parent_last_name.data,
-                              email=form.parent_email.data.lower(), secondary_email=form.parent2_email.data.lower(),
-                              phone=form.parent_phone.data, timezone=form.timezone.data, role='parent',
-                              session_reminders=True, test_reminders=True)
+                parent = User(
+                    first_name=form.parent_first_name.data,
+                    last_name=form.parent_last_name.data,
+                    email=form.parent_email.data.lower(),
+                    secondary_email=form.parent2_email.data.lower(),
+                    phone=form.parent_phone.data,
+                    timezone=form.timezone.data,
+                    role='parent',
+                    session_reminders=True,
+                    test_reminders=True
+                )
             else:
-                parent.first_name = form.parent_first_name.data
-                parent.last_name = form.parent_last_name.data
-                parent.email = form.parent_email.data.lower()
+                parent.first_name = form.parent_first_name.data or parent.first_name
+                parent.last_name = form.parent_last_name.data or parent.last_name
+                parent.email = form.parent_email.data.lower() or parent.email or None
                 parent.secondary_email = form.parent2_email.data.lower()
                 parent.phone = form.parent_phone.data
                 parent.timezone = form.timezone.data
@@ -589,40 +602,57 @@ def new_student():
             db.session.add(parent)
             db.session.flush()
 
-            student = User.query.filter_by(email=form.student_email.data.lower()).first()
-            if student:
-                student.first_name = form.student_first_name.data
-                student.last_name = form.student_last_name.data
-                student.phone = form.student_phone.data
-                student.timezone = form.timezone.data
-                student.role = 'student'
-                student.status = form.status.data
-                student.subject = form.subject.data
-                student.tutor_id = form.tutor.data
-                student.grad_year = form.grad_year.data
-            else:
-                student = User(first_name=form.student_first_name.data, last_name=form.student_last_name.data,
-                    email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data,
-                    status=form.status.data, role='student', grad_year=form.grad_year.data, subject=form.subject.data,
-                    tutor_id=form.tutor.data, session_reminders=True, test_reminders=True)
+            # student = User.query.filter_by(email=form.student_email.data.lower()).first()
+            # if student:
+            #     student.first_name = form.student_first_name.data
+            #     student.last_name = form.student_last_name.data
+            #     student.phone = form.student_phone.data
+            #     student.timezone = form.timezone.data
+            #     student.role = 'student'
+            #     student.status = form.status.data
+            #     student.subject = form.subject.data
+            #     student.tutor_id = form.tutor.data
+            #     student.grad_year = form.grad_year.data
+            # else:
+            student_email = form.student_email.data.lower() or None
+            student = User(
+                first_name=form.student_first_name.data,
+                last_name=form.student_last_name.data,
+                email=student_email,
+                phone=form.student_phone.data,
+                timezone=form.timezone.data,
+                status=form.status.data,
+                role='student',
+                grad_year=form.grad_year.data,
+                subject=form.subject.data,
+                tutor_id=form.tutor.data,
+                session_reminders=True,
+                test_reminders=True
+            )
+            db.session.add(student)
 
             student.parent_id = parent.id
-            db.session.add(student)
 
             if form.parent2_email.data:
                 parent2 = User.query.filter_by(email=form.parent2_email.data.lower()).first()
                 if parent2:
                     parent2.first_name = form.parent2_first_name.data
                     parent2.last_name = form.parent2_last_name.data
-                    parent2.secondary_email = form.parent2_email.data.lower()
+                    parent2.email = form.parent2_email.data.lower()
                     parent2.phone = form.parent2_phone.data
                     parent2.timezone = form.timezone.data
                     parent2.role = 'parent'
                 else:
-                    parent2 = User(first_name=form.parent2_first_name.data, last_name=form.parent2_last_name.data,
-                        email=form.parent2_email.data.lower(), phone=form.parent2_phone.data,
-                        timezone=form.timezone.data, role='parent',
-                        session_reminders=True, test_reminders=True)
+                    parent2 = User(
+                        first_name=form.parent2_first_name.data,
+                        last_name=form.parent2_last_name.data,
+                        email=form.parent2_email.data.lower(),
+                        phone=form.parent2_phone.data,
+                        timezone=form.timezone.data,
+                        role='parent',
+                        session_reminders=True,
+                        test_reminders=True
+                    )
                 db.session.add(parent2)
             else:
                 parent2 = None
@@ -636,57 +666,113 @@ def new_student():
                 elif str(d.id) + '-registered' in test_selections:
                     student.register_test_date(d)
 
-            existing_email_matches = requests.get(
-                f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10',
-                auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            )
-            if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
-                existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
-                existing_contact_id = existing_contact.get('id')
-                existing_contact['first_name'] = parent.first_name
-                existing_contact['last_name'] = parent.last_name
-                existing_contact['company_name'] = student.last_name
-                existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
-                requests.put(
-                    f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
-                    json=existing_contact,
-                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-                )
-                print('Contact already exists in OnePageCRM')
+            # existing_email_matches = requests.get(
+            #     f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10',
+            #     auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+            # )
+            # if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
+            #     existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
+            #     existing_contact_id = existing_contact.get('id')
+            #     existing_contact['first_name'] = parent.first_name
+            #     existing_contact['last_name'] = parent.last_name
+            #     existing_contact['company_name'] = student.last_name
+            #     existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
+            #     requests.put(
+            #         f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
+            #         json=existing_contact,
+            #         auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+            #     )
+            #     print('Contact already exists in OnePageCRM')
 
-                new_action = {
-                    'contact_id': existing_contact_id,
-                    'assignee_id': current_app.config['ONEPAGECRM_ID'],
-                    'status': 'asap',
-                    'text': f'Scheduling/followup for {student.first_name}',
-                }
-                requests.post(
-                    'https://app.onepagecrm.com/api/v3/actions',
-                    json=new_action,
-                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-                )
-            else:
-                new_contact = {
-                    'first_name': parent.first_name, 'last_name': parent.last_name,
-                    'company_name': student.last_name,
-                    'emails': [{'type': 'home', 'value': parent.email}],
-                    'phones': [{'type': 'mobile', 'value': parent.phone}],
-                    'tags': ['Parent']
-                }
-                create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
+            #     new_action = {
+            #         'contact_id': existing_contact_id,
+            #         'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            #         'status': 'asap',
+            #         'text': f'Scheduling/followup for {student.first_name}',
+            #     }
+            #     requests.post(
+            #         'https://app.onepagecrm.com/api/v3/actions',
+            #         json=new_action,
+            #         auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+            #     )
+            # else:
+            #     new_contact = {
+            #         'first_name': parent.first_name, 'last_name': parent.last_name,
+            #         'company_name': student.last_name,
+            #         'emails': [{'type': 'home', 'value': parent.email}],
+            #         'phones': [{'type': 'mobile', 'value': parent.phone}],
+            #         'tags': ['Parent']
+            #     }
+            #     create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
 
-            email_status = send_new_student_email(student, parent, parent2)
+            # if 'sat' in form.subject.data.lower() or 'act' in form.subject.data.lower():
+            #     student.subject = student.subject.upper()
+            # else:
+            #     student.subject = form.subject.data.title()
+
+            if form.create_student_folder.data:
+                tutor = User.query.filter_by(id=form.tutor.data).first()
+                contact_data = {
+                    'student': {
+                        'first_name': student.first_name,
+                        'last_name': student.last_name,
+                        'email': student.email,
+                        'phone': student.phone,
+                        'timezone': student.timezone,
+                        'subject': student.subject,
+                        'grad_year': student.grad_year
+                    },
+                    'parent': {
+                        'first_name': parent.first_name,
+                        'last_name': parent.last_name,
+                        'email': parent.email,
+                        'phone': parent.phone,
+                        'timezone': student.timezone
+                    } if parent else None,
+                    'parent2': {
+                        'first_name': parent2.first_name,
+                        'last_name': parent2.last_name,
+                        'email': parent2.email,
+                        'phone': parent2.phone,
+                        'timezone': student.timezone
+                    } if parent2 else None,
+                    'tutor': {
+                        'first_name': tutor.first_name,
+                        'last_name': tutor.last_name,
+                        'email': tutor.email,
+                        'phone': tutor.phone
+                    } if tutor else None,
+                    'notes': form.notes.data
+                }
+
+                contact_data['interested_dates'] = []
+                for test_date in student.get_dates():
+                    contact_data['interested_dates'].append({
+                        'test': test_date.test,
+                        'date': test_date.date.strftime('%B %d'),
+                        'is_registered': student.is_registered(test_date)
+                    })
+
+                contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
+
+                new_student_task.delay(contact_data)
+
+            email_status = send_new_student_email(contact_data)
             if email_status == 200:
-                flash('New student form received. Thank you!')
-                return redirect(url_for('main.index'))
+                flash('New student information received. Thank you!')
+                if current_user.is_authenticated and current_user.role == 'admin':
+                    return redirect(url_for('admin.students'))
+                else:
+                    return redirect(url_for('main.index'))
             else:
                 flash(Markup('Email failed to send. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
                 return redirect(url_for('main.new_student'))
-        except:
+        except Exception as e:
             db.session.rollback()
+            logger.error(f"Error creating new student: {e}", exc_info=True)
             flash(Markup('Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
             return redirect(url_for('main.new_student'))
-    return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests)
+    return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests, tutors=tutors, full_name=full_name)
 
 
 @main_bp.route('/pay')
@@ -791,7 +877,6 @@ def custom_act_report(org):
 
 def handle_sat_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-    hello = current_app.config['HELLO_EMAIL']
 
     if request.method == 'GET':
         ss_id = request.args.get('ssId')
@@ -867,8 +952,6 @@ def handle_sat_report(form, template_name, organization=None):
             with open(json_file_path, "w") as json_file:
                 json.dump(score_data, json_file, indent=2)
 
-            logger.debug(f"Score data being sent: {json.dumps(score_data, indent=2)}")
-
             if student_ss_id:
                 has_access = check_service_account_access(student_ss_id)
                 if not has_access:
@@ -926,7 +1009,6 @@ def handle_sat_report(form, template_name, organization=None):
 
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-    hello = current_app.config['HELLO_EMAIL']
 
     if request.method == 'GET':
         ss_id = request.args.get('ssId')
@@ -969,7 +1051,6 @@ def handle_act_report(form, template_name, organization=None):
 
             if file_extension == 'heic':
                 answer_img_path = convert_heic_to_jpg(answer_img_path)
-            print(answer_img_path)
 
             if not is_valid_image(answer_img):
                 flash('Please upload an image (jpg, png, webp, or heic)', 'error')
@@ -1025,5 +1106,5 @@ def handle_act_report(form, template_name, organization=None):
 
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
-            flash(f'Failed to send answer sheet. Please contact {hello}.', 'error')
+            flash(f'Failed to send answer sheet. Please contact {g.hello}.', 'error')
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)

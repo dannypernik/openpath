@@ -12,7 +12,7 @@ class UserTestDate(db.Model):
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
     is_registered = db.Column(db.Boolean, default=False)
     users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'))
-    test_dates = db.relationship('TestDate', backref=db.backref('users_interested', lazy='dynamic'))
+    test_dates = db.relationship('TestDate', backref=db.backref('users_interested'))
 
 
 class TestScore(db.Model):
@@ -31,7 +31,6 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(32), index=True)
     last_name = db.Column(db.String(32), index=True)
-    grad_year = db.Column(db.String(16))
     email = db.Column(db.String(64), unique=True, index=True)
     phone = db.Column(db.String(32), index=True)
     secondary_email = db.Column(db.String(64))
@@ -54,15 +53,18 @@ class User(UserMixin, db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
     role = db.Column(db.String(24), index=True)
+    school = db.Column(db.String(64))
+    grad_year = db.Column(db.String(16))
     subject = db.Column(db.String(64))
     is_admin = db.Column(db.Boolean, default=False)
     is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
-    test_dates = db.relationship('UserTestDate',
+    test_dates = db.relationship(
+        'UserTestDate',
         foreign_keys=[UserTestDate.user_id],
         backref=db.backref('user', lazy='joined'),
-        lazy='dynamic',
+        lazy='select',
         cascade='all, delete-orphan')
     test_scores = db.relationship('TestScore',
         foreign_keys=[TestScore.user_id],
@@ -85,37 +87,38 @@ class User(UserMixin, db.Model):
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
     def interested_test_date(self, test_date):
-        if self.is_testing(test_date):
-            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
+        t = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
+        if t:
             t.is_registered = False
         else:
             t = UserTestDate(user_id=self.id, test_date_id=test_date.id, is_registered=False)
-        db.session.add(t)
+            db.session.add(t)
         db.session.commit()
 
     def remove_test_date(self, test_date):
-        f = self.test_dates.filter_by(test_date_id=test_date.id).first()
+        f = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
         if f:
             db.session.delete(f)
+            db.session.commit()
 
     def register_test_date(self, test_date):
-        if self.is_testing(test_date):
-            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
-        else:
-            t = UserTestDate(user_id=self.id, test_date_id=test_date.id)
-        if not t.is_registered:
-            t.is_registered = True
+        t = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
+        if not t:
+            t = UserTestDate(user_id=self.id, test_date_id=test_date.id, is_registered=True)
             db.session.add(t)
-            db.session.commit()
+        else:
+            if not t.is_registered:
+                t.is_registered = True
+        db.session.commit()
 
     def is_testing(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).count() > 0
 
     def is_registered(self, test_date):
-        return self.test_dates.filter(
-            UserTestDate.test_date_id == test_date.id).filter(
-            UserTestDate.is_registered).count() > 0
+        return UserTestDate.query.filter_by(
+            user_id=self.id, test_date_id=test_date.id, is_registered=True
+        ).count() > 0
 
     def get_dates(self):
         return TestDate.query.join(

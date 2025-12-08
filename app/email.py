@@ -1081,25 +1081,23 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
     return result.status_code
 
 
-def send_new_student_email(student, parent, parent2=None):
+def send_new_student_email(contact_data):
     api_key = current_app.config['MAILJET_KEY']
     api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    student = contact_data['student']
+    parent = contact_data['parent']
+    parent2 = contact_data.get('parent2', None)
+    interested_tests = contact_data.get('interested_tests', [])
+    notes = contact_data.get('notes', '')
+    folder_id = contact_data.get('folder_id', None)
 
     contacts = [student, parent]
     if parent2:
         contacts.append(parent2)
 
     vcards_base64 = generate_vcard(contacts)
-
-    # Retrieve test dates
-    interested_tests = []
-    for test_date in student.get_dates():
-        interested_tests.append({
-            'test': test_date.test,
-            'date': test_date.date,
-            'is_registered': student.is_registered(test_date)
-        })
 
     data = {
         'Messages': [
@@ -1115,7 +1113,8 @@ def send_new_student_email(student, parent, parent2=None):
                 ],
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
-                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests),
+                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests,
+                    full_name=full_name, notes=notes, folder_id=folder_id),
                 'Attachments': [
                     {
                         'ContentType': 'text/vcard',
@@ -1421,7 +1420,7 @@ def send_fail_mail(subject, error='unknown error', data=None):
     return result.status_code
 
 
-def send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo):
+def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
     api_key = current_app.config['MAILJET_KEY']
     api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -1440,8 +1439,8 @@ def send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo):
                         }
                     ],
                     'Subject': 'Error with task ' + task_id,
-                    'HTMLPart': render_template('email/task-fail-mail.html', exc=exc, \
-                        task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
+                    'HTMLPart': render_template('email/task-fail-mail.html', task_data=task_data, \
+                        exc=exc, task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
                 }
             ]
         }

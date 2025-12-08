@@ -8,12 +8,34 @@ from flask_login import current_user, login_required, logout_user
 
 
 def full_name(user):
-    """Return full name of user, handling None last_name."""
-    if user.last_name == '' or user.last_name is None:
-        name = user.first_name
+    """Return full name of user, handling None last_name.
+
+    Args:
+        user: User object with first_name and last_name attributes,
+              or dict with 'first_name' and 'last_name' keys.
+    """
+    if isinstance(user, dict):
+        first_name = user.get('first_name', '')
+        last_name = user.get('last_name', '')
     else:
-        name = user.first_name + ' ' + user.last_name
+        first_name = user.first_name
+        last_name = user.last_name
+
+    if last_name == '' or last_name is None:
+        name = first_name
+    else:
+        name = first_name + ' ' + last_name
     return name
+
+
+def hello_email():
+    """Return HELLO_EMAIL from the active Flask app config (safe at runtime).
+    Falls back to environment variable if no app context is present.
+    """
+    try:
+        return current_app.config.get('HELLO_EMAIL')
+    except RuntimeError:
+        return os.environ.get('HELLO_EMAIL')
 
 
 def admin_required(f):

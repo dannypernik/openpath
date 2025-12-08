@@ -5,8 +5,9 @@ Application factory for the Flask application.
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+import time
 
-from flask import Flask, redirect, url_for, request, flash
+from flask import Flask, redirect, url_for, request, flash, g
 from celery import Celery
 
 from config import config, Config
@@ -23,6 +24,30 @@ celery.conf.update(
         task_acks_late=True,
         broker_connection_retry_on_startup=False
     )
+
+# Create a Flask app for Celery workers to use
+def make_celery_app():
+    """Create a minimal Flask app for Celery workers."""
+    from flask import Flask
+    flask_app = Flask(__name__)
+    # Load minimal config needed for tasks
+    config_name = os.environ.get('FLASK_CONFIG') or os.environ.get('FLASK_ENV') or 'development'
+    flask_app.config.from_object(config[config_name])
+
+    # Initialize only what's needed for tasks (db, etc.)
+    from app.extensions import db
+    db.init_app(flask_app)
+
+    return flask_app
+
+_celery_app = make_celery_app()
+
+class ContextTask(celery.Task):
+    def __call__(self, *args, **kwargs):
+        with _celery_app.app_context():
+            return self.run(*args, **kwargs)
+
+celery.Task = ContextTask
 
 
 def create_app(config_name=None):
@@ -45,9 +70,6 @@ def create_app(config_name=None):
     # Initialize extensions
     init_extensions(app)
 
-    # Configure Celery
-    configure_celery(app)
-
     # Setup login manager unauthorized handler
     @login.unauthorized_handler
     def unauthorized():
@@ -64,6 +86,36 @@ def create_app(config_name=None):
     # Setup logging
     setup_logging(app)
 
+    # # Default request logging for all routes
+    # @app.before_request
+    # def _log_request_start():
+    #     g._req_start = time.time()
+    #     app.logger.info(
+    #         "REQUEST START: %s %s from %s",
+    #         request.method,
+    #         request.path,
+    #         request.remote_addr or 'unknown'
+    #     )
+
+    # @app.after_request
+    # def _log_request_end(response):
+    #     start = getattr(g, "_req_start", None)
+    #     duration_ms = (time.time() - start) * 1000 if start else -1
+    #     app.logger.info(
+    #         "REQUEST END: %s %s %s %d %.2fms",
+    #         request.method,
+    #         request.path,
+    #         request.environ.get('SERVER_PROTOCOL', ''),
+    #         response.status_code,
+    #         duration_ms
+    #     )
+    #     return response
+
+    @app.teardown_request
+    def _log_request_teardown(exc):
+        if exc:
+            app.logger.exception("REQUEST ERROR during %s %s: %s", request.method, request.path, exc)
+
     # Setup Jinja environment
     app.jinja_env.auto_reload = True
 
@@ -71,18 +123,6 @@ def create_app(config_name=None):
     register_template_routes(app)
 
     return app
-
-
-def configure_celery(app):
-    """Configure Celery with the Flask app."""
-    celery.conf.update(app.config)
-
-    class ContextTask(celery.Task):
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return self.run(*args, **kwargs)
-
-    celery.Task = ContextTask
 
 
 def register_blueprints(app):
@@ -119,16 +159,19 @@ def register_error_handlers(app):
 
 def setup_logging(app):
     """Setup application logging."""
-    if not app.debug and not app.testing:
-        if not os.path.exists('logs'):
-            os.mkdir('logs')
-        file_handler = RotatingFileHandler('logs/openpath.log', maxBytes=10240, backupCount=10)
-        file_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
-        app.logger.setLevel(logging.INFO)
-        app.logger.info('OpenPath startup')
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/openpath.log', maxBytes=51200, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    werk = logging.getLogger('werkzeug')
+    werk.setLevel(logging.DEBUG)
+    werk.propagate = False
+    for h in app.logger.handlers:
+        werk.addHandler(h)
+    app.logger.info('OPT startup')
 
 
 def register_template_routes(app):

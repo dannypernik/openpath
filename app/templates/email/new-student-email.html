@@ -1,19 +1,46 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
-  <p><strong>{{ student.first_name}} {{ student.last_name }}:</strong> {{ student.email }}, {{ student.phone }}</p>
-  <p><strong>{{ parent.first_name}} {{ parent.last_name }}:</strong> {{ parent.email }}, {{ parent.phone }}</p>
+  <p><strong>{{ full_name(student) }}:</strong> {{ student['email'] }}, {{ student['phone'] }}</p>
+  <p><strong>{{ full_name(parent) }}:</strong> {{ parent['email'] }}, {{ parent['phone'] }}</p>
   {% if parent2 %}
-    <p><strong>{{ parent2.first_name}} {{ parent2.last_name }}:</strong> {{ parent2.email }}, {{ parent2.phone }}</p>
+    <p><strong>{{ full_name(parent2) }}:</strong> {{ parent2['email'] }}, {{ parent2['phone'] }}</p>
   {% endif %}
 
+  <ul>
+    {% if student.subject %}
+      <li><strong>Subject:</strong> {{ student['subject'] }}</li>
+    {% endif %}
+
+    {% if student.grad_year %}
+      <li><strong>Graduation year:</strong> {{ student['grad_year'] }}</li>
+    {% endif %}
+
+    {% if student.timezone %}
+      <li><strong>Timezone:</strong> {{ student['timezone'] }}</li>
+    {% endif %}
+
+
+    {% if student.tutor %}
+      <li><strong>Tutor:</strong> {{ full_name(tutor) }}</li>
+    {% endif %}
+
+    {% if student.status %}
+      <li><strong>Status:</strong> {{ student['status'] }}</li>
+    {% endif %}
+
+    {% if folder_id %}
+      <li><a href="https://drive.google.com/drive/u/0/folders/{{ folder_id }}">{{ full_name(student) }} {{ student['subject'] }} folder</a></li>
+    {% endif %}
+  </ul>
+
+  <h3>Test dates (<strong>&#10003;</strong> = registered)</h3>
   {% if interested_tests %}
-    <h3>Test Dates</h3>
     <ul>
       {% for test in interested_tests %}
         <li>
-          {{ test.test.upper() }} on {{ test.date.strftime('%B %d, %Y') }}
-          {% if test.is_registered %}
+          {{ test['test'].upper() }} on {{ test['date'] }}
+          {% if test['is_registered'] %}
             <strong>&#10003;</strong>
           {% endif %}
         </li>
@@ -21,6 +48,11 @@
     </ul>
   {% else %}
     <p>No test dates selected.</p>
+  {% endif %}
+
+  {% if notes %}
+    <h3>Additional notes</h3>
+    <p>{{ notes }}</p>
   {% endif %}
 {% endblock content %}
 
