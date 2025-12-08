@@ -34,7 +34,12 @@ jobs:
       run: |
         echo '{}' > service_account_key2.json
         # verify file was created
-        test -f service_account_key2.json && echo 'File created successfully' || echo 'File creation failed'
+        if test -f service_account_key2.json; then
+          echo 'File created successfully'
+        else
+          echo 'File creation failed'
+          exit 1
+        fi
 
     - name: Run tests
       env:
