@@ -602,18 +602,6 @@ def new_student():
             db.session.add(parent)
             db.session.flush()
 
-            # student = User.query.filter_by(email=form.student_email.data.lower()).first()
-            # if student:
-            #     student.first_name = form.student_first_name.data
-            #     student.last_name = form.student_last_name.data
-            #     student.phone = form.student_phone.data
-            #     student.timezone = form.timezone.data
-            #     student.role = 'student'
-            #     student.status = form.status.data
-            #     student.subject = form.subject.data
-            #     student.tutor_id = form.tutor.data
-            #     student.grad_year = form.grad_year.data
-            # else:
             student_email = form.student_email.data.lower() or None
             student = User(
                 first_name=form.student_first_name.data,
@@ -666,49 +654,45 @@ def new_student():
                 elif str(d.id) + '-registered' in test_selections:
                     student.register_test_date(d)
 
-            # existing_email_matches = requests.get(
-            #     f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10',
-            #     auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            # )
-            # if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
-            #     existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
-            #     existing_contact_id = existing_contact.get('id')
-            #     existing_contact['first_name'] = parent.first_name
-            #     existing_contact['last_name'] = parent.last_name
-            #     existing_contact['company_name'] = student.last_name
-            #     existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
-            #     requests.put(
-            #         f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
-            #         json=existing_contact,
-            #         auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            #     )
-            #     print('Contact already exists in OnePageCRM')
+            existing_email_matches = requests.get(
+                f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10',
+                auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+            )
+            if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
+                existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
+                existing_contact_id = existing_contact.get('id')
+                existing_contact['first_name'] = parent.first_name
+                existing_contact['last_name'] = parent.last_name
+                existing_contact['company_name'] = student.last_name
+                existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
+                requests.put(
+                    f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
+                    json=existing_contact,
+                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+                )
+                print('Contact already exists in OnePageCRM')
 
-            #     new_action = {
-            #         'contact_id': existing_contact_id,
-            #         'assignee_id': current_app.config['ONEPAGECRM_ID'],
-            #         'status': 'asap',
-            #         'text': f'Scheduling/followup for {student.first_name}',
-            #     }
-            #     requests.post(
-            #         'https://app.onepagecrm.com/api/v3/actions',
-            #         json=new_action,
-            #         auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            #     )
-            # else:
-            #     new_contact = {
-            #         'first_name': parent.first_name, 'last_name': parent.last_name,
-            #         'company_name': student.last_name,
-            #         'emails': [{'type': 'home', 'value': parent.email}],
-            #         'phones': [{'type': 'mobile', 'value': parent.phone}],
-            #         'tags': ['Parent']
-            #     }
-            #     create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
+                new_action = {
+                    'contact_id': existing_contact_id,
+                    'assignee_id': current_app.config['ONEPAGECRM_ID'],
+                    'status': 'asap',
+                    'text': f'Scheduling/followup for {student.first_name}',
+                }
+                requests.post(
+                    'https://app.onepagecrm.com/api/v3/actions',
+                    json=new_action,
+                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
+                )
+            else:
+                new_contact = {
+                    'first_name': parent.first_name, 'last_name': parent.last_name,
+                    'company_name': student.last_name,
+                    'emails': [{'type': 'home', 'value': parent.email}],
+                    'phones': [{'type': 'mobile', 'value': parent.phone}],
+                    'tags': ['Parent']
+                }
 
-            # if 'sat' in form.subject.data.lower() or 'act' in form.subject.data.lower():
-            #     student.subject = student.subject.upper()
-            # else:
-            #     student.subject = form.subject.data.title()
+                create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
 
             if form.create_student_folder.data:
                 tutor = User.query.filter_by(id=form.tutor.data).first()
