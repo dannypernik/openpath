@@ -33,8 +33,8 @@ jobs:
     - name: Create dummy service account key for tests
       run: |
         echo '{}' > service_account_key2.json
-        # ensure file is readable
-        ls -l service_account_key2.json || true
+        # verify file was created
+        test -f service_account_key2.json && echo 'File created successfully' || echo 'File creation failed'
 
     - name: Run tests
       env:
