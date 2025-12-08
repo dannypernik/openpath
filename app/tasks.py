@@ -169,13 +169,8 @@ def style_custom_act_spreadsheet_task(self, organization_data):
 def new_student_task(self, contact_data):
   try:
     student = contact_data['student']
-    subject = student.get('subject', '').lower()
+    test_type = student.get('subject', '').lower()
     logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
-
-    # if subject == 'sat/act':
-    #   test_type = 'all'
-    # else:
-    #   test_type = subject
 
     create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
     folder_link = f'https://drive.google.com/drive/u/0/folders/{contact_data.get("folder_id")}'
