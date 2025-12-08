@@ -36,20 +36,10 @@ os.makedirs(logs_dir, exist_ok=True)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Capture INFO and above
 
-# Error log handler
-error_handler = RotatingFileHandler(
-    os.path.join(logs_dir, 'errors.log'),
-    maxBytes=10485760,  # 10MB
-    backupCount=5
-)
-error_handler.setLevel(logging.ERROR)
-error_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-logger.addHandler(error_handler)
-
 # Info log handler
 info_handler = RotatingFileHandler(
     os.path.join(logs_dir, 'info.log'),
-    maxBytes=10485760,  # 10MB
+    maxBytes=51200,  # 50KB
     backupCount=5
 )
 info_handler.setLevel(logging.INFO)

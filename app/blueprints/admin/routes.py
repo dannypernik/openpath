@@ -25,9 +25,7 @@ from app.create_act_report import create_custom_act_spreadsheet, update_act_org_
 from app.tasks import style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 from reminders import get_student_events
 
-
 logger = logging.getLogger(__name__)
-
 
 @admin_bp.route('/users', methods=['GET', 'POST'])
 @admin_required

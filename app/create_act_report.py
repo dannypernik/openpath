@@ -402,7 +402,6 @@ def send_act_pdf_report(spreadsheet_id, score_data):
       if response.status_code == 200:
           pdf_name = f"ACT Score Analysis for {score_data['student_name']} {score_data['date']} {score_data['test_display_name']}.pdf"
           file_path = os.path.join(score_data['act_reports_path'], secure_filename(pdf_name))
-          print(file_path)
           # Save the PDF content to a file
           with open(file_path, 'wb') as f:
               f.write(response.content)
