@@ -27,22 +27,26 @@ app/
 ## Setup
 
 1. Create a virtual environment:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 2. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Set up environment variables (copy .env.example to .env and configure):
+
 ```bash
 cp .env.example .env
 ```
 
 4. Initialize the database:
+
 ```bash
 flask db upgrade
 ```
@@ -75,6 +79,7 @@ The application supports multiple configuration modes:
 - `production` - Optimized for production
 
 Set the configuration using environment variables:
+
 - `FLASK_CONFIG` - Configuration name (development, testing, production)
 - `FLASK_ENV` - Alternative way to set configuration
 
@@ -101,6 +106,7 @@ celery -A app.celery worker --loglevel=info
 The application uses Flask Blueprints with the following URL patterns:
 
 - **Main Blueprint** (`/`): Public pages
+
   - `/` - Home page
   - `/team` - Team page
   - `/mission` - Mission page
@@ -109,6 +115,7 @@ The application uses Flask Blueprints with the following URL patterns:
   - `/act-report` - ACT score report
 
 - **Auth Blueprint** (`/`): Authentication
+
   - `/signin` - Sign in page
   - `/signup` - Sign up page
   - `/login` - Login handler
@@ -116,6 +123,7 @@ The application uses Flask Blueprints with the following URL patterns:
   - `/request-password-reset` - Password reset request
 
 - **Admin Blueprint** (`/`): Administrative functions (requires login)
+
   - `/users` - User management
   - `/students` - Student management
   - `/tutors` - Tutor management

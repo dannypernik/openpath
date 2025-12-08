@@ -45,8 +45,19 @@ total_questions = {
 }
 
 def check_service_account_access(spreadsheet_id):
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', SERVICE_ACCOUNT_JSON)
+    should_init_google = (
+        not os.getenv('TESTING', '').lower() in ('1', 'true')
+        and not os.getenv('CI')
+        and os.path.exists(sa_path)
+    )
+    
+    if not should_init_google:
+        print('Skipping service account access check: TESTING/CI or missing service account file')
+        return False
+    
     creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+        sa_path,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
     try:

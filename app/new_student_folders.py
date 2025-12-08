@@ -12,6 +12,8 @@ import random
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
 # Constants
 SOURCE_FOLDER_ID = '1rz0xXMvtklwUuvGTkqs9cuNfQyY7-8-s'
 PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
@@ -94,6 +96,10 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
 
 def create_folder(folder_name, parent_folder_id=PARENT_FOLDER_ID):
     """Create a new folder in Google Drive."""
+    if drive_service is None:
+        logger.warning('Cannot create folder: Google Drive service not initialized')
+        return None
+
     folder_metadata = {
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder',
@@ -599,6 +605,10 @@ def update_homework_ss(file_ids, contact_data):
 
 # Recursively get all files in folder_id and nested subfolders
 def get_all_files(folder_id):
+    if drive_service is None:
+        logger.warning('Cannot get files: Google Drive service not initialized')
+        return []
+
     all_files = []
     query = f"'{folder_id}' in parents and trashed=false"
     items = execute_with_retries(lambda: drive_service.files().list(q=query, fields='files(id, name, mimeType)').execute()).get('files', [])
@@ -642,6 +652,10 @@ def make_public_view(drive_service, file_id: str):
 
 def remove_sat_protections(sheets_service, admin_ss_id):
     """Remove protections from SAT admin spreadsheet."""
+    if sheets_service is None:
+        logger.warning('Cannot remove SAT protections: Google Sheets service not initialized')
+        return
+
     test_codes = get_sat_test_codes(sheets_service)
     test_codes.extend(['Reading & Writing', 'Math', 'SLT Uniques'])
     protected_sheets = []
@@ -708,6 +722,10 @@ def get_sat_test_codes(sheets_service):
 
 def update_sat_student_spreadsheet(sheets_service, ss_ids, student_name):
     """Update student spreadsheet with student name."""
+    if sheets_service is None:
+        logger.warning('Cannot update SAT student spreadsheet: Google Sheets service not initialized')
+        return
+
     # Get the sheet ID of the sheet named 'Student info'
     sheet_metadata = execute_with_retries(lambda: sheets_service.spreadsheets().get(spreadsheetId=ss_ids.get('sat_student')).execute())
     sheets = sheet_metadata.get('sheets', [])
@@ -769,6 +787,10 @@ def update_sat_student_spreadsheet(sheets_service, ss_ids, student_name):
 
 def add_student_sheet_to_rev_data(sheets_service, admin_ss_id, student_name):
     """Add student answer sheet link to Rev sheet backend."""
+    if sheets_service is None:
+        logger.warning('Cannot add student sheet to rev data: Google Sheets service not initialized')
+        return
+
     # Get the sheet ID of the sheet named 'Rev sheet backend'
     sheet_metadata = execute_with_retries(lambda: sheets_service.spreadsheets().get(spreadsheetId=admin_ss_id).execute())
     sheets = sheet_metadata.get('sheets', [])
