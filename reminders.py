@@ -3,7 +3,7 @@ import datetime
 from dateutil.parser import parse, isoparse
 from dateutil import tz
 import pytz
-import os.path
+import os
 import math
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -11,7 +11,6 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from flask import current_app
 from app import create_app
 from app.extensions import db
 from app.helpers import full_name
@@ -20,34 +19,20 @@ from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_weekly_report_email, send_script_status_email, send_tutor_email
-from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.orm import sessionmaker, selectinload
 import requests
 import traceback
 import logging
-from logging.handlers import RotatingFileHandler
+from app.logging_config import configure_logging
 import time
 import app.utils as utils
 
-# Create logs directory if it doesn't exist
-logs_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs')
-os.makedirs(logs_dir, exist_ok=True)
+# session will be initialized inside `main()` after an app context is created
+session = None
 
-# Set up root logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)  # Capture INFO and above
-
-# Info log handler
-info_handler = RotatingFileHandler(
-    os.path.join(logs_dir, 'info.log'),
-    maxBytes=51200,  # 50KB
-    backupCount=5
-)
-info_handler.setLevel(logging.INFO)
-info_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-logger.addHandler(info_handler)
-
-# Create a new session
-session = db.session
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
+configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
 
 now = datetime.datetime.utcnow()
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
@@ -61,20 +46,13 @@ day_of_week = datetime.datetime.strftime(now, format='%A')
 tomorrow_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
 tomorrow_end = upcoming_start
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
-
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/spreadsheets']
 
 # ID and ranges of a sample spreadsheet.
-SPREADSHEET_ID = None  # Will be set at runtime via get_spreadsheet_id()
+SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
 SUMMARY_RANGE = 'Summary!A6:Z'
-
-
-def get_spreadsheet_id():
-    return current_app.config['SPREADSHEET_ID']
 
 
 tutor_data = [
@@ -129,7 +107,7 @@ def init_gspread():
         if os.path.exists(service_account_path):
             service_creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scopes=SCOPES)
             file = gspread.authorize(service_creds)
-            workbook = file.open_by_key(get_spreadsheet_id())
+            workbook = file.open_by_key(SPREADSHEET_ID)
             sheet = workbook.sheet1
         else:
             logging.warning("service_account_key.json not found, gspread functionality disabled")
@@ -228,7 +206,7 @@ def get_events_and_data():
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
                 result = sheet.values().get(
-                    spreadsheetId=get_spreadsheet_id(),
+                    spreadsheetId=SPREADSHEET_ID,
                     range=SUMMARY_RANGE,
                     valueRenderOption='UNFORMATTED_VALUE'
                 ).execute()
@@ -303,6 +281,11 @@ def get_upcoming_events():
 def main():
     try:
         logging.info('reminders.py started')
+
+        global session
+        if session is None:
+            session = db.session
+
         students = session.query(User).order_by(User.first_name).filter(User.role == 'student')
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
@@ -509,7 +492,7 @@ def main():
                 'data': batch_updates
             }
             sheet.values().batchUpdate(
-                spreadsheetId=get_spreadsheet_id(),
+                spreadsheetId=SPREADSHEET_ID,
                 body=body
             ).execute()
             logging.info('Successfully updated student schedule data')
@@ -632,4 +615,6 @@ def get_tutor_from_name(tutors, name):
 
 
 if __name__ == '__main__':
-    main()
+    app = create_app()
+    with app.app_context():
+        main()
