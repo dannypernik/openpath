@@ -243,7 +243,7 @@ def index():
                     flash('Thank you for reaching out! We\'ll be in touch.')
                     return redirect(url_for('main.index', _anchor='home'))
         flash('Email failed to send, please contact ' + g.hello, 'error')
-    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'), altcha_site_key=altcha_site_key)
+    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))#, altcha_site_key=altcha_site_key)
 
 
 @main_bp.route('/team', methods=['GET', 'POST'])
