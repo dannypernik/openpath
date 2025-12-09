@@ -87,31 +87,6 @@ def create_app(config_name=None):
     # Setup logging
     setup_logging(app)
 
-    # # Default request logging for all routes
-    # @app.before_request
-    # def _log_request_start():
-    #     g._req_start = time.time()
-    #     app.logger.info(
-    #         "REQUEST START: %s %s from %s",
-    #         request.method,
-    #         request.path,
-    #         request.remote_addr or 'unknown'
-    #     )
-
-    # @app.after_request
-    # def _log_request_end(response):
-    #     start = getattr(g, "_req_start", None)
-    #     duration_ms = (time.time() - start) * 1000 if start else -1
-    #     app.logger.info(
-    #         "REQUEST END: %s %s %s %d %.2fms",
-    #         request.method,
-    #         request.path,
-    #         request.environ.get('SERVER_PROTOCOL', ''),
-    #         response.status_code,
-    #         duration_ms
-    #     )
-    #     return response
-
     @app.teardown_request
     def _log_request_teardown(exc):
         if exc:
@@ -159,52 +134,17 @@ def register_error_handlers(app):
 
 
 def setup_logging(app):
-    """Setup application logging."""
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/openpath.log', maxBytes=51200, backupCount=10)
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s'))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    # Filter to ignore static asset access logs so terminal stays focused
-    class IgnoreStaticFilter(logging.Filter):
-        def filter(self, record):
-            try:
-                msg = record.getMessage()
-                # Filter requests for static assets and common static endpoints
-                if '/static/' in msg or '/favicon.ico' in msg or '/manifest.webmanifest' in msg:
-                    return False
-            except Exception:
-                pass
-            return True
+    """Setup application logging via the canonical logging configuration.
 
-    # Configure werkzeug logger to use the same handlers but ignore static assets
-    werk = logging.getLogger('werkzeug')
-    werk.setLevel(logging.INFO)
-    werk.propagate = False
-    static_filter = IgnoreStaticFilter()
-    for h in app.logger.handlers:
-        # attach filter to handlers so static messages are filtered out
-        h.addFilter(static_filter)
-        werk.addHandler(h)
-    werk.addFilter(static_filter)
-
-
+    This delegates to `app.logging_config.configure_logging` to ensure a single
+    canonical setup for both the app and stand-alone scripts.
+    """
     try:
-        def _base_log_request(self, code='-', size='-'):
-            # Use the werkzeug logger so the configured handlers/formatters are used
-            logger = logging.getLogger('werkzeug')
-            # address_string may be slow; use self.address_string()
-            try:
-                addr = self.address_string()
-            except Exception:
-                addr = '-'
-            logger.info('%s - "%s" %s', addr, self.requestline, str(code))
-
-        WSGIRequestHandler.log_request = _base_log_request
+        from app.logging_config import configure_logging
+        # Use the default log file under logs/openpath.log and enable console
+        configure_logging()
     except Exception:
-        # If Werkzeug internals change or import fails, skip the override silently
+        # If logging config fails for any reason, fall back silently.
         pass
 
 
