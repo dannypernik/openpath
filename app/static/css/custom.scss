@@ -107,7 +107,8 @@ h1,
 
 h2,
 .h2 {
-  font-size: calc(2.2rem + 0.5vw);
+  font-size: calc(2.2rem + 0.75vw);
+  font-weight: bold;
 }
 
 h3,
@@ -267,10 +268,10 @@ select {
   color: $primary-color;
   border: 2px solid $primary-color;
   border-radius: 10px;
-  padding: 0.5rem;
+  padding: 0.25rem;
   font-size: 1.6rem;
   height: 4rem;
-  margin: 0.5rem 1rem 0 0;
+  margin: 0.5rem 0.5rem 0 0;
   box-sizing: border-box;
   outline-color: $secondary-color;
 
@@ -729,6 +730,10 @@ div.alert {
   min-height: 100vh;
   overflow: auto;
   padding-top: calc(3rem + 2vw);
+
+  h2 {
+    font-weight: normal;
+  }
 }
 
 .home-section.end {
@@ -801,6 +806,13 @@ div.alert {
 .role-radio {
   display: inline-block;
   min-width: 7rem;
+}
+
+.role-label {
+  width: fit-content;
+  margin: 0 3rem 1rem 1rem;
+  white-space: nowrap;
+  font-weight: 600;
 }
 
 // About & School pages //

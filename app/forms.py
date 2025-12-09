@@ -29,7 +29,7 @@ class InquiryForm(FlaskForm):
     subject = StringField('Subject', render_kw={'placeholder': 'Subject'}, default='Message')
     message = TextAreaField('Message', render_kw={'placeholder': 'Message'}, \
         validators=[InputRequired()])
-    role = RadioField('I am a:', choices=[('parent','Parent'),('student','Student'),('tutor','Tutor'),('other','Other')], \
+    role = RadioField('I am a:', choices=[('parent','Parent'),('student','Student'),('tutor','Tutor'),('other','Nuicance')], \
         default='parent', validators=[InputRequired()])
     submit = SubmitField('Submit')
 

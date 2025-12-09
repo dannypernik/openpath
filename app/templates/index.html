@@ -185,8 +185,8 @@
           in the work.
         </h2>
         <h2 class="mb-4">
-          The only way to know is to try. That's why we offer a
-          <b>free tutor-student intro meeting</b> upon request with no purchase necessary.
+          The only way to know is to try. <strong>That's why
+          we give students a free 30-min intro session</strong> upon request.
         </h2>
         <div class="text-center">
           <a class="request-trial btn lead my-2" href="#contact">
@@ -244,17 +244,19 @@
           ></altcha-widget> -->
 
           <div class="row">
-            <div class="d-md-flex justify-content-center">
-              <div class="text-nowrap ms-4 d-lg-inline-block semibold">I am a:</div>
+            <div class="d-md-flex ps-3 justify-content-center">
+              <div class="role-label d-lg-inline-block">I am a</div>
               {% for role in form.role %}
-                  <div class="role-radio mx-5 mx-md-4 mx-lg-5">
-                    {{ role }}
-                    {{ role.label }}
-                  </div>
+              <div class="role-radio mx-4 mx-md-3 mx-lg-4">
+                {{ role }}
+                {{ role.label }}
+              </div>
               {% endfor %}
+              <div class="role-label d-sm-none mt-2 mb-0">and</div>
             </div>
-            <div class="text-center mt-3">
-                {{ hcaptcha }}
+            <div class="d-flex justify-content-center align-items-center mt-2">
+                <div class="role-label d-none d-sm-inline-block">and</div>
+                <div class="d-inline-block">{{ hcaptcha }}</div>
             </div>
             {{ form.submit }}
           </div>
