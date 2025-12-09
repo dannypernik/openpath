@@ -199,7 +199,7 @@ def inject_values():
 @main_bp.route('/index', methods=['GET', 'POST'])
 def index():
     form = InquiryForm()
-    altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
+    # altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
     if form.validate_on_submit():
         if hcaptcha.verify():
             pass
@@ -218,20 +218,20 @@ def index():
 
         email_status = send_contact_email(user, message, subject)
 
-        try:
-            new_contact = {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'emails': [{'type': 'home', 'value': user.email}],
-                'phones': [{'type': 'mobile', 'value': user.phone}],
-                'tags': ['Website']
-            }
+        # try:
+        #     new_contact = {
+        #         'first_name': user.first_name,
+        #         'last_name': user.last_name,
+        #         'emails': [{'type': 'home', 'value': user.email}],
+        #         'phones': [{'type': 'mobile', 'value': user.phone}],
+        #         'tags': ['Website']
+        #     }
 
-            create_crm_contact_and_action(new_contact, f'Respond to {subject.lower()}')
-        except:
-            logger.error('Error creating CRM contact and action', exc_info=True)
-            send_fail_mail('Error creating CRM contact and action', traceback.format_exc())
-            pass
+        #     create_crm_contact_and_action(new_contact, f'Respond to {subject.lower()}')
+        # except:
+        #     logger.error('Error creating CRM contact and action', exc_info=True)
+        #     send_fail_mail('Error creating CRM contact and action', traceback.format_exc())
+        #     pass
 
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
