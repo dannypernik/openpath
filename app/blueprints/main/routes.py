@@ -236,8 +236,12 @@ def index():
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
             if conf_status == 200:
-                flash('Thank you for reaching out! We\'ll be in touch.')
-                return redirect(url_for('main.index', _anchor='home'))
+                if user.role == 'parent' or user.role == 'student':
+                    flash('Your message has been received. Thank you for reaching out!')
+                    return redirect(url_for('main.new_student'))
+                else:
+                    flash('Thank you for reaching out! We\'ll be in touch.')
+                    return redirect(url_for('main.index', _anchor='home'))
         flash('Email failed to send, please contact ' + g.hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'), altcha_site_key=altcha_site_key)
 
