@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 import pdfplumber
 import re
 import pprint
-from flask import flash, Markup
+from markupsafe import Markup
+from flask import flash
 import logging
 
 pp = pprint.PrettyPrinter(indent=2, width=100)

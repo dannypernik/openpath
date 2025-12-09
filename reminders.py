@@ -11,7 +11,10 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from app import app, db, full_name
+from flask import current_app
+from app import create_app
+from app.extensions import db
+from app.helpers import full_name
 from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
 from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
@@ -20,19 +23,28 @@ from app.email import get_quote, send_reminder_email, send_test_reminder_email, 
 from sqlalchemy.orm import joinedload, sessionmaker
 import requests
 import traceback
-#import pprint
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 import app.utils as utils
-# from memory_profiler import profile
 
-# Configure logging
-error_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/errors.log')
-logging.basicConfig(filename=error_file_path, level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+# Create logs directory if it doesn't exist
+logs_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs')
+os.makedirs(logs_dir, exist_ok=True)
 
-info_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logs/info.log')
-logging.basicConfig(filename=info_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-#pp = pprint.PrettyPrinter(indent=2)
+# Set up root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Capture INFO and above
+
+# Info log handler
+info_handler = RotatingFileHandler(
+    os.path.join(logs_dir, 'info.log'),
+    maxBytes=51200,  # 50KB
+    backupCount=5
+)
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(info_handler)
 
 # Create a new session
 session = db.session
@@ -57,8 +69,14 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/spreadsheets']
 
 # ID and ranges of a sample spreadsheet.
-SPREADSHEET_ID = app.config['SPREADSHEET_ID']
+SPREADSHEET_ID = None  # Will be set at runtime via get_spreadsheet_id()
 SUMMARY_RANGE = 'Summary!A6:Z'
+
+
+def get_spreadsheet_id():
+    return current_app.config['SPREADSHEET_ID']
+
+
 tutor_data = [
     {
         'name': 'Danny Pernik',
@@ -96,11 +114,26 @@ tutor_data = [
     }
 ]
 
-# gspread to write to spreadsheet
-service_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'service_account_key.json'), scopes=SCOPES)
-file = gspread.authorize(service_creds)
-workbook = file.open_by_key(SPREADSHEET_ID)
-sheet = workbook.sheet1
+# gspread to write to spreadsheet - initialized lazily
+service_creds = None
+file = None
+workbook = None
+sheet = None
+
+
+def init_gspread():
+    """Initialize gspread credentials and workbook lazily."""
+    global service_creds, file, workbook, sheet
+    if service_creds is None:
+        service_account_path = os.path.join(basedir, 'service_account_key.json')
+        if os.path.exists(service_account_path):
+            service_creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scopes=SCOPES)
+            file = gspread.authorize(service_creds)
+            workbook = file.open_by_key(get_spreadsheet_id())
+            sheet = workbook.sheet1
+        else:
+            logging.warning("service_account_key.json not found, gspread functionality disabled")
+
 
 # @profile
 def get_events_and_data():
@@ -195,7 +228,7 @@ def get_events_and_data():
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
                 result = sheet.values().get(
-                    spreadsheetId=SPREADSHEET_ID,
+                    spreadsheetId=get_spreadsheet_id(),
                     range=SUMMARY_RANGE,
                     valueRenderOption='UNFORMATTED_VALUE'
                 ).execute()
@@ -274,10 +307,11 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).options(
-                joinedload(User.test_dates).joinedload(UserTestDate.test_dates)
-            ).order_by(User.first_name).filter(
-                User.test_dates
-            ).filter(User.test_reminders)
+            selectinload(User.test_dates).selectinload(UserTestDate.test_date)
+        ).filter(
+            User.test_dates.any(),
+            User.test_reminders == True
+        ).order_by(User.first_name)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
         unregistered_active_students = students.filter(User.status == 'active').filter(User.test_dates.any(UserTestDate.is_registered == False))
@@ -475,7 +509,7 @@ def main():
                 'data': batch_updates
             }
             sheet.values().batchUpdate(
-                spreadsheetId=SPREADSHEET_ID,
+                spreadsheetId=get_spreadsheet_id(),
                 body=body
             ).execute()
             logging.info('Successfully updated student schedule data')

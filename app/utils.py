@@ -251,12 +251,12 @@ def generate_vcard(contacts):
     for contact in contacts:
         vcard = f"""BEGIN:VCARD
 VERSION:3.0
-N:{contact.last_name};{contact.first_name};;;
-FN:{contact.first_name} {contact.last_name}
-EMAIL:{contact.email}
-ORG:{contact.role.title()}
-TEL;TYPE=CELL:{contact.phone}
-NOTE:Timezone: {contact.timezone}
+N:{contact.get('first_name', '')};{contact.get('last_name', '')};;;
+FN:{contact.get('first_name', '')} {contact.get('last_name', '')}
+EMAIL:{contact.get('email', '')}
+ORG:{contact.get('role', '').title()}
+TEL;TYPE=CELL:{contact.get('phone', '')}
+NOTE:Timezone: {contact.get('timezone', '')}
 END:VCARD
 """
         vcards += vcard

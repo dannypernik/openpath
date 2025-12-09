@@ -1,8 +1,8 @@
 from threading import Thread
-from app import app, full_name
+from flask import render_template, url_for, current_app
+from app.helpers import full_name
 from app.utils import generate_vcard
 from mailjet_rest import Client
-from flask import render_template, url_for
 import re
 import datetime
 from zoneinfo import ZoneInfo
@@ -28,20 +28,20 @@ message, author, quote_header = get_quote()
 
 
 def send_contact_email(user, message, subject):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'Open Path Tutoring: ' + subject + ' from ' + user.first_name,
@@ -64,15 +64,15 @@ def send_contact_email(user, message, subject):
 
 
 def send_confirmation_email(user_email, message):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -96,20 +96,20 @@ def send_confirmation_email(user_email, message):
 
 
 def send_unsubscribe_email(email):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'Unsubscribe request from ' + email,
@@ -127,8 +127,8 @@ def send_unsubscribe_email(email):
 
 
 def send_reminder_email(event, student, tutor):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     cc_email = []
@@ -145,7 +145,7 @@ def send_reminder_email(event, student, tutor):
         if tutor.session_reminders:
             cc_email.append({ 'Email': tutor.email })
     if not reply_email:
-        reply_email = app.config['MAIL_USERNAME']
+        reply_email = current_app.config['MAIL_USERNAME']
 
     dt = datetime.datetime
 
@@ -170,24 +170,24 @@ def send_reminder_email(event, student, tutor):
     else:
         event_type = 'session'
 
-    location = event['event'].get('location')
+    location = event['event'].get('location').strip()
     warnings = []
     warnings_str = ''
 
     if location != student.location:
         warnings.append('Event location != DB location')
         warnings.append('Event location missing')
-    if location is None:
-        location = student.location
+    if not location:
+        location = tutor.location
     if warnings.__len__() > 0:
         warnings_str = '(' + (', ').join(warnings) + ')'
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
@@ -220,8 +220,8 @@ def send_reminder_email(event, student, tutor):
 
 
 def send_session_recap_email(student, events):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     cc_email = []
@@ -239,7 +239,7 @@ def send_session_recap_email(student, events):
 
         reply_email = tutor.email
         if reply_email == '':
-            reply_email = app.config['MAIL_USERNAME']
+            reply_email = current_app.config['MAIL_USERNAME']
 
     tz_difference = student.timezone - tutor.timezone
 
@@ -304,7 +304,7 @@ def send_session_recap_email(student, events):
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -331,20 +331,20 @@ def send_session_recap_email(student, events):
 
 
 def send_notification_email(alerts):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'Open Path Tutoring notification',
@@ -356,16 +356,16 @@ def send_notification_email(alerts):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Notification email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Notification email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Notification email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
 def send_registration_reminder_email(user, test_date):
-    with app.app_context():
-        api_key = app.config['MAILJET_KEY']
-        api_secret = app.config['MAILJET_SECRET']
+    with current_app.app_context():
+        api_key = current_app.config['MAILJET_KEY']
+        api_secret = current_app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -391,14 +391,14 @@ def send_registration_reminder_email(user, test_date):
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         { 'Email': user.email }
                     ],
                     'Cc': cc_email,
-                    'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
+                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
                     'Subject': 'Registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + reg_dl_day,
                     'HTMLPart': render_template('email/registration-reminder.html', \
                         user=user, test_date=test_date, td=td, reg_dl=reg_dl, late_dl=late_dl),
@@ -418,9 +418,9 @@ def send_registration_reminder_email(user, test_date):
 
 
 def send_late_registration_reminder_email(user, test_date):
-    with app.app_context():
-        api_key = app.config['MAILJET_KEY']
-        api_secret = app.config['MAILJET_SECRET']
+    with current_app.app_context():
+        api_key = current_app.config['MAILJET_KEY']
+        api_secret = current_app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -441,14 +441,14 @@ def send_late_registration_reminder_email(user, test_date):
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         { 'Email': user.email }
                     ],
                     'Cc': cc_email,
-                    'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
+                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
                     'Subject': 'Late registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + late_dl_day,
                     'HTMLPart': render_template('email/late-registration-reminder.html', \
                         user=user, test_date=test_date, td=td, late_dl=late_dl),
@@ -468,9 +468,9 @@ def send_late_registration_reminder_email(user, test_date):
 
 
 def send_test_reminder_email(user, test_date):
-    with app.app_context():
-        api_key = app.config['MAILJET_KEY']
-        api_secret = app.config['MAILJET_SECRET']
+    with current_app.app_context():
+        api_key = current_app.config['MAILJET_KEY']
+        api_secret = current_app.config['MAILJET_SECRET']
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -490,14 +490,14 @@ def send_test_reminder_email(user, test_date):
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         { 'Email': user.email }
                     ],
                     'Cc': cc_email,
-                    'ReplyTo': { 'Email': app.config['MAIL_USERNAME'] },
+                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
                     'Subject': 'Things to remember for your ' + test_date.test.upper() + ' on ' + td_day + ', ' + td,
                     'HTMLPart': render_template('email/test-reminders.html', \
                         user=user, test_date=test_date, td=td),
@@ -517,8 +517,8 @@ def send_test_reminder_email(user, test_date):
 
 
 def send_signup_notification_email(user, dates):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     date_series = ', '.join(dates)
@@ -527,12 +527,12 @@ def send_signup_notification_email(user, dates):
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': user.first_name + ' signed up for test reminders',
@@ -549,46 +549,46 @@ def send_signup_notification_email(user, dates):
         'tags': ['Website']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'assignee_id': current_app.config['ONEPAGECRM_ID'],
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info('Signup notification email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Signup notification email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Signup notification email to ' + app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
     return result.status_code
 
 
 def send_signup_request_email(user, next):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': user.first_name + ' requested an account',
@@ -605,34 +605,34 @@ def send_signup_request_email(user, next):
         'tags': ['Website', next]
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'assignee_id': current_app.config['ONEPAGECRM_ID'],
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info('Signup notification email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Signup notification email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Signup notification email to ' + app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
     return result.status_code
 
 
 def send_verification_email(user, page=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     token = user.get_email_verification_token()
@@ -645,7 +645,7 @@ def send_verification_email(user, page=None):
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -672,8 +672,8 @@ def send_verification_email(user, page=None):
 
 
 def send_password_reset_email(user, next=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     token = user.get_email_verification_token()
@@ -690,7 +690,7 @@ def send_password_reset_email(user, next=None):
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -716,8 +716,8 @@ def send_password_reset_email(user, next=None):
 
 
 def send_test_strategies_email(student, parent, relation):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     filename = 'SAT-ACT-strategies.pdf'
@@ -733,11 +733,11 @@ def send_test_strategies_email(student, parent, relation):
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': to_email,
-                'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
                 'Subject': '10 Strategies to Master the SAT & ACT',
                 'HTMLPart': render_template('email/test-strategies.html', relation=relation, student=student, parent=parent, link=link),
                 'TextPart': render_template('email/test-strategies.txt', relation=relation, student=student, parent=parent, link=link)
@@ -752,20 +752,20 @@ def send_test_strategies_email(student, parent, relation):
         'tags': ['Website']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'assignee_id': current_app.config['ONEPAGECRM_ID'],
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -777,15 +777,15 @@ def send_test_strategies_email(student, parent, relation):
 
 
 def send_test_registration_email(student, parent, school, test, date, time, location, contact_info):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -793,7 +793,7 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
                     'Email': parent.email
                     }
                 ],
-                'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
                 'Subject': full_name(student) + ' is registered for the practice ACT on ' + date,
                 'TextPart': render_template('email/test-registration-email.txt',
                             student=student, parent=parent, school=school, test=test, \
@@ -814,15 +814,15 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
 
 
 def send_prep_class_email(student, parent, school, test, time, location, cost):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -830,7 +830,7 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
                     'Email': parent.email
                     }
                 ],
-                'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
                 'Subject': full_name(student) + ' is registered for ' + test + ' Study Club',
                 'TextPart': render_template('email/prep-class-email.txt',
                             student=student, parent=parent, school=school, test=test, \
@@ -851,15 +851,15 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
 
 
 def send_score_analysis_email(student, parent, school):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -868,7 +868,7 @@ def send_score_analysis_email(student, parent, school):
                     }
                 ],
                 'ReplyTo': { 'Email': parent.email },
-                'Bcc': [{'Email': app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
                 'Subject': 'Score analysis request received',
                 'TextPart': render_template('email/score-analysis-email.txt',
                                          student=student, parent=parent, school=school),
@@ -885,20 +885,20 @@ def send_score_analysis_email(student, parent, school):
         'lead_source': 'Practice test'
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'assignee_id': current_app.config['ONEPAGECRM_ID'],
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -911,8 +911,8 @@ def send_score_analysis_email(student, parent, school):
 
 def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students,
     paused_students, unregistered_students, undecided_students):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     my_low_students = []
@@ -947,12 +947,12 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     else:
         action_str = ''
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['ADMIN_EMAIL'],
+                        'Email': current_app.config['ADMIN_EMAIL'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
@@ -982,8 +982,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
     unregistered_students, undecided_students, now):
 
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     dt = datetime.datetime
@@ -997,17 +997,17 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
         paused.append(full_name(s))
     paused_str = (', ').join(paused)
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         {
-                            'Email': app.config['MAIL_USERNAME']
+                            'Email': current_app.config['MAIL_USERNAME']
                         },
                     ],
                     'Subject': 'reminders.py succeeded - Admin tutoring report',
@@ -1033,8 +1033,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
     other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, unregistered_students,
     undecided_students, payments_due, result, exception=''):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     quote, author, header = get_quote()
@@ -1049,17 +1049,17 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
         undecided.append(full_name(s))
     undecided_str = (', ').join(undecided)
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         {
-                            'Email': app.config['MAIL_USERNAME']
+                            'Email': current_app.config['MAIL_USERNAME']
                         }
                     ],
                     'Subject': name + ' ' + result,
@@ -1081,10 +1081,17 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
     return result.status_code
 
 
-def send_new_student_email(student, parent, parent2=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+def send_new_student_email(contact_data):
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    student = contact_data['student']
+    parent = contact_data['parent']
+    parent2 = contact_data.get('parent2', None)
+    interested_tests = contact_data.get('interested_tests', [])
+    notes = contact_data.get('notes', '')
+    folder_id = contact_data.get('folder_id', None)
 
     contacts = [student, parent]
     if parent2:
@@ -1092,30 +1099,22 @@ def send_new_student_email(student, parent, parent2=None):
 
     vcards_base64 = generate_vcard(contacts)
 
-    # Retrieve test dates
-    interested_tests = []
-    for test_date in student.get_dates():
-        interested_tests.append({
-            'test': test_date.test,
-            'date': test_date.date,
-            'is_registered': student.is_registered(test_date)
-        })
-
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                        'Email': app.config['MAIL_USERNAME']
+                        'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
-                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests),
+                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests,
+                    full_name=full_name, notes=notes, folder_id=folder_id),
                 'Attachments': [
                     {
                         'ContentType': 'text/vcard',
@@ -1129,26 +1128,26 @@ def send_new_student_email(student, parent, parent2=None):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('New student email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('New student email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('New student email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('New student email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 def send_schedule_conflict_email(message):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'Schedule conflict email',
@@ -1162,27 +1161,27 @@ def send_schedule_conflict_email(message):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Schedule conflict email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Schedule conflict email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Schedule conflict email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Schedule conflict email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
 def send_ntpa_email(first_name, last_name, biz_name, email):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'ReplyTo': { 'Email': email },
@@ -1195,24 +1194,24 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('NTPA email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('NTPA email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('NTPA email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('NTPA email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
 def send_free_resources_email(user):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    resource_folder_url = 'https://drive.google.com/drive/folders/' + app.config['RESOURCE_FOLDER_ID']
+    resource_folder_url = 'https://drive.google.com/drive/folders/' + current_app.config['RESOURCE_FOLDER_ID']
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -1220,7 +1219,7 @@ def send_free_resources_email(user):
                         'Email': user.email
                     },
                     {
-                        'Email': app.config['MAIL_USERNAME']
+                        'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'ReplyTo': { 'Email': user.email },
@@ -1240,20 +1239,20 @@ def send_free_resources_email(user):
 
 
 def send_nomination_email(form_data):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': app.config['MAIL_USERNAME'],
+                    'Email': current_app.config['MAIL_USERNAME'],
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': app.config['MAIL_USERNAME']
+                    'Email': current_app.config['MAIL_USERNAME']
                     }
                 ],
                 'Subject': 'Nomination received for ' + form_data['student_first_name'] + ' ' + form_data['student_last_name'],
@@ -1276,17 +1275,17 @@ def send_nomination_email(form_data):
         'tags': ['Nominated']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': app.config['ONEPAGECRM_ID'],
+            'assignee_id': current_app.config['ONEPAGECRM_ID'],
             'status': 'asap',
             'text': 'Respond to nomination form',
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(app.config['ONEPAGECRM_ID'], app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -1299,15 +1298,15 @@ def send_nomination_email(form_data):
 
 
 def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     to_email = []
     cc_email = []
     bcc_email = []
     if score_data['admin_email']:
-        bcc_email.append({ 'Email': app.config.get('ADMIN_EMAIL') })
+        bcc_email.append({ 'Email': current_app.config.get('ADMIN_EMAIL') })
 
         if score_data['email']:
             to_email.append({ 'Email': score_data['email'] })
@@ -1333,12 +1332,12 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
     })
 
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': to_email,
@@ -1357,21 +1356,21 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
 
 
 def send_changed_answers_email(score_data):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         {
-                            'Email': app.config['MAIL_USERNAME']
+                            'Email': current_app.config['MAIL_USERNAME']
                         }
                     ],
                     'Subject': 'Changed answers for ' + score_data['test_display_name'],
@@ -1382,28 +1381,28 @@ def send_changed_answers_email(score_data):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Changed answer email sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Changed answer email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Changed answer email to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Changed answer email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
 def send_fail_mail(subject, error='unknown error', data=None):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         {
-                            'Email': app.config['MAIL_USERNAME']
+                            'Email': current_app.config['MAIL_USERNAME']
                         }
                     ],
                     'Subject': 'Error: ' + subject,
@@ -1415,40 +1414,40 @@ def send_fail_mail(subject, error='unknown error', data=None):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Fail mail sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Fail mail sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
-def send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo):
-    api_key = app.config['MAILJET_KEY']
-    api_secret = app.config['MAILJET_SECRET']
+def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
+    api_key = current_app.config['MAILJET_KEY']
+    api_secret = current_app.config['MAILJET_SECRET']
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-    with app.app_context():
+    with current_app.app_context():
         data = {
             'Messages': [
                 {
                     'From': {
-                        'Email': app.config['MAIL_USERNAME'],
+                        'Email': current_app.config['MAIL_USERNAME'],
                         'Name': 'Open Path Tutoring'
                     },
                     'To': [
                         {
-                            'Email': app.config['MAIL_USERNAME']
+                            'Email': current_app.config['MAIL_USERNAME']
                         }
                     ],
                     'Subject': 'Error with task ' + task_id,
-                    'HTMLPart': render_template('email/task-fail-mail.html', exc=exc, \
-                        task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
+                    'HTMLPart': render_template('email/task-fail-mail.html', task_data=task_data, \
+                        exc=exc, task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
                 }
             ]
         }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Task fail mail sent to ' + app.config['MAIL_USERNAME'])
+        logging.info('Task fail mail sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Task fail mail to ' + app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Task fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code

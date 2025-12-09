@@ -53,7 +53,7 @@
                   {% if t.status == status[0] %}
                     <div class="row student">
                       <div class="col-3">
-                        <a class="semibold" href="{{ url_for('edit_user', id=t.id) }}">
+                        <a class="semibold" href="{{ url_for('admin.edit_user', id=t.id) }}">
                           {{ full_name(t) }}
                         </a>
                       </div>
@@ -65,7 +65,7 @@
                       <div class="col-6">
                         {% for s in t.students %}
                           {% if s.status == 'active' or s.status == 'prospective' %}
-                            <a href="{{ url_for('edit_user', id=s.id) }}">
+                            <a href="{{ url_for('admin.edit_user', id=s.id) }}">
                               {{ full_name(s)}}{{ "" if loop.last else ", " }}
                             </a>
                           {% endif %}

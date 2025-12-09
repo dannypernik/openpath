@@ -1,7 +1,8 @@
 from datetime import datetime
 from time import time
 import jwt
-from app import db, login, app
+from flask import current_app
+from app.extensions import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
@@ -11,7 +12,7 @@ class UserTestDate(db.Model):
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
     is_registered = db.Column(db.Boolean, default=False)
     users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'))
-    test_dates = db.relationship('TestDate', backref=db.backref('users_interested', lazy='dynamic'))
+    test_dates = db.relationship('TestDate', backref=db.backref('users_interested'))
 
 
 class TestScore(db.Model):
@@ -30,7 +31,6 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(32), index=True)
     last_name = db.Column(db.String(32), index=True)
-    grad_year = db.Column(db.String(16))
     email = db.Column(db.String(64), unique=True, index=True)
     phone = db.Column(db.String(32), index=True)
     secondary_email = db.Column(db.String(64))
@@ -38,30 +38,33 @@ class User(UserMixin, db.Model):
     timezone = db.Column(db.String(32))
     location = db.Column(db.String(128))
     title = db.Column(db.String(128))
-    status = db.Column(db.String(24), default = 'active', index=True)
+    status = db.Column(db.String(24), default='active', index=True)
     tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     students = db.relationship('User',
         backref=db.backref('tutor', lazy='joined', remote_side=[id]),
-        primaryjoin=(id==tutor_id),
+        primaryjoin=(id == tutor_id),
         foreign_keys=[tutor_id])
     parent_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     children = db.relationship('User',
-        primaryjoin=(id==parent_id),
+        primaryjoin=(id == parent_id),
         backref=db.backref('parent', lazy='joined', remote_side=[id]),
         foreign_keys=[parent_id],
         post_update=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
     role = db.Column(db.String(24), index=True)
+    school = db.Column(db.String(64))
+    grad_year = db.Column(db.String(16))
     subject = db.Column(db.String(64))
     is_admin = db.Column(db.Boolean, default=False)
     is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
-    test_dates = db.relationship('UserTestDate',
+    test_dates = db.relationship(
+        'UserTestDate',
         foreign_keys=[UserTestDate.user_id],
         backref=db.backref('user', lazy='joined'),
-        lazy='dynamic',
+        lazy='select',
         cascade='all, delete-orphan')
     test_scores = db.relationship('TestScore',
         foreign_keys=[TestScore.user_id],
@@ -81,40 +84,41 @@ class User(UserMixin, db.Model):
     def get_email_verification_token(self, expires_in=3600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
-            app.config['SECRET_KEY'], algorithm='HS256')
+            current_app.config['SECRET_KEY'], algorithm='HS256')
 
     def interested_test_date(self, test_date):
-        if self.is_testing(test_date):
-            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
+        t = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
+        if t:
             t.is_registered = False
         else:
             t = UserTestDate(user_id=self.id, test_date_id=test_date.id, is_registered=False)
-        db.session.add(t)
+            db.session.add(t)
         db.session.commit()
 
     def remove_test_date(self, test_date):
-        f = self.test_dates.filter_by(test_date_id=test_date.id).first()
+        f = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
         if f:
             db.session.delete(f)
+            db.session.commit()
 
     def register_test_date(self, test_date):
-        if self.is_testing(test_date):
-            t = self.test_dates.filter_by(test_date_id=test_date.id).first()
-        else:
-            t = UserTestDate(user_id=self.id, test_date_id=test_date.id)
-        if not t.is_registered:
-            t.is_registered = True
+        t = UserTestDate.query.filter_by(user_id=self.id, test_date_id=test_date.id).first()
+        if not t:
+            t = UserTestDate(user_id=self.id, test_date_id=test_date.id, is_registered=True)
             db.session.add(t)
-            db.session.commit()
+        else:
+            if not t.is_registered:
+                t.is_registered = True
+        db.session.commit()
 
     def is_testing(self, test_date):
         return self.test_dates.filter(
             UserTestDate.test_date_id == test_date.id).count() > 0
 
     def is_registered(self, test_date):
-        return self.test_dates.filter(
-            UserTestDate.test_date_id == test_date.id).filter(
-            UserTestDate.is_registered).count() > 0
+        return UserTestDate.query.filter_by(
+            user_id=self.id, test_date_id=test_date.id, is_registered=True
+        ).count() > 0
 
     def get_dates(self):
         return TestDate.query.join(
@@ -124,7 +128,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_email_token(token):
         try:
-            id = jwt.decode(token, app.config['SECRET_KEY'],
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
                 algorithms=['HS256'])['reset_password']
         except:
             return
@@ -139,7 +143,7 @@ class TestDate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     test = db.Column(db.String(24))
-    status = db.Column(db.String(24), default = 'confirmed')
+    status = db.Column(db.String(24), default='confirmed')
     reg_date = db.Column(db.Date)
     late_date = db.Column(db.Date)
     other_date = db.Column(db.Date)
@@ -153,7 +157,6 @@ class TestDate(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     review = db.Column(db.String(1024))
     author = db.Column(db.String(64))
     photo_path = db.Column(db.String(128))
@@ -166,10 +169,10 @@ class Review(db.Model):
 class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    slug = db.Column(db.String(255), unique=True, nullable=False)  # URL-friendly name
+    slug = db.Column(db.String(255), unique=True, nullable=False)
     sat_spreadsheet_id = db.Column(db.String(255), nullable=True)
     act_spreadsheet_id = db.Column(db.String(255), nullable=True)
-    color1 = db.Column(db.String(7), nullable=True)  # Hex value (e.g., #FF0000)
+    color1 = db.Column(db.String(7), nullable=True)
     color2 = db.Column(db.String(7), nullable=True)
     color3 = db.Column(db.String(7), nullable=True)
     font_color = db.Column(db.String(7), nullable=True)

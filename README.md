@@ -1,78 +1,133 @@
 # Open Path Tutoring
 
-A tutoring services web application.
+A Flask web application for tutoring services.
+
+## Project Structure
+
+This application uses the Flask application factory pattern with Blueprints for modular route organization:
+
+```
+app/
+├── __init__.py          # Application factory (create_app)
+├── extensions.py        # Flask extension instances
+├── helpers.py           # Shared utility functions
+├── models.py            # SQLAlchemy models
+├── forms.py             # WTForms form classes
+├── email.py             # Email sending functions
+├── tasks.py             # Celery background tasks
+├── blueprints/
+│   ├── main/            # Public routes (index, team, mission, etc.)
+│   ├── auth/            # Authentication routes (login, signup, etc.)
+│   ├── admin/           # Admin routes (users, students, tutors, etc.)
+│   └── api/             # API endpoints
+├── templates/           # Jinja2 templates
+└── static/              # Static files (CSS, JS, images)
+```
 
 ## Setup
 
-1. Install dependencies:
+1. Create a virtual environment:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Set up environment variables (create a .env file):
+3. Set up environment variables (copy .env.example to .env and configure):
+
 ```bash
-SECRET_KEY=your_secret_key
-# ... other environment variables
+cp .env.example .env
 ```
 
-3. Initialize the database:
+4. Initialize the database:
+
 ```bash
 flask db upgrade
 ```
 
-4. (Production only) Set up Google Service Account credentials:
-   - Obtain `service_account_key2.json` from your Google Cloud project
-   - Place it in the root directory of the project
-   - This file is gitignored and not required for testing/CI
-
-## Google Service Account
-
-The application uses Google Drive and Sheets APIs through a service account for various features:
-- Creating student folders
-- Generating score reports
-- Accessing spreadsheet data
-
-### Development and Testing
-
-**The service account file (`service_account_key2.json`) is NOT required for tests or CI.**
-
-The application automatically skips Google API initialization when:
-- `app.config['TESTING']` is set to `True`
-- The `CI` environment variable is set
-- The service account file doesn't exist
-
-To run tests locally without the service account file:
-```bash
-export TESTING=1  # or set CI=1
-pytest tests/
-```
-
-### Production
-
-In production, the service account file must be present for full functionality:
-1. Obtain the service account JSON key from your Google Cloud Console
-2. Save it as `service_account_key2.json` in the project root
-3. Ensure the service account has appropriate permissions for Drive and Sheets APIs
-
-You can override the default file path using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable:
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service_account.json
-```
-
 ## Running the Application
 
-```bash
-# Development
-python run.py
+### Development Server
 
-# Production
+```bash
+# Using Flask CLI
+export FLASK_CONFIG=development  # or set FLASK_ENV=development
+flask run
+
+# Or using the run script
+python run.py
+```
+
+### Production (with Gunicorn)
+
+```bash
 gunicorn wsgi:app
 ```
+
+## Configuration
+
+The application supports multiple configuration modes:
+
+- `development` - Debug enabled, auto-reload
+- `testing` - For running tests
+- `production` - Optimized for production
+
+Set the configuration using environment variables:
+
+- `FLASK_CONFIG` - Configuration name (development, testing, production)
+- `FLASK_ENV` - Alternative way to set configuration
 
 ## Running Tests
 
 ```bash
+# Install pytest if not already installed
+pip install pytest
+
+# Run tests
 pytest tests/ -v
 ```
 
-Tests will run successfully without the service account file.
+## Celery Workers
+
+For background task processing:
+
+```bash
+celery -A app.celery worker --loglevel=info
+```
+
+## URL Structure
+
+The application uses Flask Blueprints with the following URL patterns:
+
+- **Main Blueprint** (`/`): Public pages
+
+  - `/` - Home page
+  - `/team` - Team page
+  - `/mission` - Mission page
+  - `/reviews` - Reviews page
+  - `/sat-report` - SAT score report
+  - `/act-report` - ACT score report
+
+- **Auth Blueprint** (`/`): Authentication
+
+  - `/signin` - Sign in page
+  - `/signup` - Sign up page
+  - `/login` - Login handler
+  - `/logout` - Logout handler
+  - `/request-password-reset` - Password reset request
+
+- **Admin Blueprint** (`/`): Administrative functions (requires login)
+
+  - `/users` - User management
+  - `/students` - Student management
+  - `/tutors` - Tutor management
+  - `/orgs` - Organization management
+
+- **API Blueprint** (`/`): API endpoints
+  - `/cal-check` - Calendar check endpoint

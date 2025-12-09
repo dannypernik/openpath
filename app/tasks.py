@@ -1,14 +1,17 @@
 import os
-from app import celery
-from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, \
-  sat_answers_to_student_ss, style_custom_sat_spreadsheet
-from app.create_act_report import create_act_score_report, send_act_pdf_report, \
-  act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet
-from app.email import send_task_fail_mail
 import logging
 import resource
 from celery import chain
-# from app.new_student_folders import create_test_prep_folder
+
+from app import celery
+from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, \
+    sat_answers_to_student_ss, style_custom_sat_spreadsheet
+from app.create_act_report import create_act_score_report, send_act_pdf_report, \
+    act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet
+from app.new_student_folders import create_test_prep_folder
+from app.models import User
+from app.helpers import full_name
+from app.email import send_task_fail_mail, send_new_student_email
 
 
 class MyTaskBaseClass(celery.Task):
@@ -17,41 +20,36 @@ class MyTaskBaseClass(celery.Task):
     retry_kwargs = {'max_retries': 3}
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
-      logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')
+        logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        # exc (Exception) - The exception raised by the task.
-        # args (Tuple) - Original arguments for the task that failed.
-        # kwargs (Dict) - Original keyword arguments for the task that failed.
         logging.error(f'Task {task_id} raised exception: {exc}')
         score_data = args[0] if args else kwargs.get('score_data')
         if not score_data:
-          logging.error("Score data is missing. Cannot send failure email.")
-          return
+            logging.error("Score data is missing. Cannot send failure email.")
+            return
         if self.request.retries >= self.max_retries:
-          send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+            send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+
 
 class SsUpdateTaskClass(celery.Task):
     autoretry_for = (Exception,)
     retry_backoff = 10
     retry_kwargs = {'max_retries': 3}
     acks_late = True
-    reject_on_worker_lost=True
+    reject_on_worker_lost = True
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
-      logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')
+        logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        # exc (Exception) - The exception raised by the task.
-        # args (Tuple) - Original arguments for the task that failed.
-        # kwargs (Dict) - Original keyword arguments for the task that failed.
         logging.error(f'Task {task_id} raised exception: {exc}')
         score_data = args[0] if args else kwargs.get('score_data')
         if not score_data:
-          logging.error("Score data is missing. Cannot send failure email.")
-          return
+            logging.error("Score data is missing. Cannot send failure email.")
+            return
         if self.request.retries >= self.max_retries:
-          send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+            send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
 
 
 @celery.task(name='app.tasks.create_and_send_sat_report_task', bind=True, base=MyTaskBaseClass)
@@ -167,11 +165,19 @@ def style_custom_act_spreadsheet_task(self, organization_data):
     logging.error(f'Error styling ACT spreadsheet: {e}')
     raise e
 
-@celery.task(name='app.tasks.create_test_prep_folder_task', bind=True, base=MyTaskBaseClass)
-def create_test_prep_folder_task(self, student_name):
+@celery.task(name='app.tasks.new_student_task', bind=True)
+def new_student_task(self, contact_data):
   try:
-    logging.info(f"Creating test prep folder for {student_data.get('student_name', 'unknown student')}")
-    create_test_prep_folder(student_data)
+    student = contact_data['student']
+    test_type = student.get('subject', '').lower()
+    logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
+
+    create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
+    folder_link = f'https://drive.google.com/drive/u/0/folders/{contact_data.get("folder_id")}'
+
+    return folder_link
+
   except Exception as e:
     logging.error(f'Error creating test prep folder: {e}')
+    send_task_fail_mail(contact_data, e, self.request.id, [contact_data], {}, None)
     raise e

@@ -4,13 +4,15 @@ from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
 from wtforms.fields import DateField, EmailField, TelField
 from flask_wtf.file import FileRequired, FileAllowed
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
-    Email, EqualTo, Length
+    Email, EqualTo, Length, Optional
 from app.models import User, TestDate, UserTestDate, TestScore
 from datetime import datetime
 import json
 
 
 def validate_email(self, email):
+    if not email.data:
+        return
     user = User.query.filter_by(email=email.data).first()
     if user is not None:
         raise ValidationError('An account already exists for ' + user.email + '.')
@@ -153,11 +155,11 @@ class StudentIntakeForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'})
     student_email = EmailField('Student Email address', render_kw={'placeholder': 'Email address'}, \
-        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
-            validate_email])
+        validators=[InputRequired(), Email(message='Please enter a valid email address'), validate_email])
     student_phone = TelField('Student phone', render_kw={'placeholder': 'Phone'})
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
+    school = StringField('School', render_kw={'placeholder': 'School'})
     grad_year = SelectField('Graduation year', choices=[(None, '--'), ('2026', '2026 (Senior)'), \
         ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
@@ -173,7 +175,9 @@ class StudentIntakeForm(FlaskForm):
     tutor = SelectField('Tutor', coerce=int)
     status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
         ('paused','Paused'),('inactive','Inactive')])
-    subject = StringField('Primary subject', render_kw={'placeholder': 'Primary subject'})
+    subject = StringField('Primary subject', render_kw={'placeholder': 'Subject'})
+    create_student_folder = BooleanField('Create student folder', default=True)
+    notes = TextAreaField('Additional notes (optional)', render_kw={'placeholder': 'Personality, learning style, strengths/opportunities, etc', 'rows': '4'})
     submit = SubmitField()
 
 

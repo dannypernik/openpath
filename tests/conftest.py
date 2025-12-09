@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 import pytest
-import os
+from app import create_app
+from app.extensions import db
 
 
 class DummyCreds:
@@ -63,23 +64,14 @@ def mock_service_account_file(monkeypatch):
 @pytest.fixture
 def app():
     """Create application for testing."""
-    # Set TESTING environment variable before importing app
-    os.environ['TESTING'] = '1'
-    
-    from app import app as flask_app
-    flask_app.config['TESTING'] = True
-    flask_app.config['WTF_CSRF_ENABLED'] = False
-    
-    from app import db
-    
-    with flask_app.app_context():
+    app = create_app('testing')
+    app.config['TESTING'] = True
+    app.config['WTF_CSRF_ENABLED'] = False
+
+    with app.app_context():
         db.create_all()
-        yield flask_app
+        yield app
         db.drop_all()
-    
-    # Clean up environment variable
-    if 'TESTING' in os.environ:
-        del os.environ['TESTING']
 
 
 @pytest.fixture
