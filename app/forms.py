@@ -19,14 +19,18 @@ def validate_email(self, email):
 
 
 class InquiryForm(FlaskForm):
-    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+    first_name = StringField('First name', render_kw={'placeholder': 'First name', 'autocomplete': 'given-name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name', 'autocomplete': 'family-name'}, \
+        validators=[InputRequired()])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address', 'autocomplete': 'email'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    phone = StringField('Phone number (optional)', render_kw={'placeholder': 'Phone number (optional)'})
+    phone = StringField('Phone number', render_kw={'placeholder': 'Phone number', 'autocomplete': 'tel'})
     subject = StringField('Subject', render_kw={'placeholder': 'Subject'}, default='Message')
     message = TextAreaField('Message', render_kw={'placeholder': 'Message'}, \
         validators=[InputRequired()])
+    role = RadioField('I am a:', choices=[('parent','Parent'),('student','Student'),('tutor','Tutor'),('other','Other')], \
+        default='parent', validators=[InputRequired()])
     submit = SubmitField('Submit')
 
 

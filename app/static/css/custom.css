@@ -6073,6 +6073,7 @@ input[type=checkbox]:focus + label::before {
 input[type=radio] {
   opacity: 0;
   width: 0;
+  vertical-align: top;
 }
 input[type=radio] + label {
   position: relative;
@@ -6086,7 +6087,7 @@ input[type=radio] + label::before {
   display: inline-block;
   left: -2.2rem;
   /* This will be adjusted */
-  top: 0.1rem;
+  top: 0.4rem;
   width: 2rem;
   height: 2rem;
   background: transparent;
@@ -6098,7 +6099,7 @@ input[type=radio] + label::after {
   position: absolute;
   display: inline-block;
   left: -1.7rem;
-  top: 0.6rem;
+  top: 0.9rem;
   border-radius: 50%;
   width: 1rem;
   height: 1rem;
@@ -6107,7 +6108,7 @@ input[type=radio]:checked + label::after {
   background: rgb(0, 69, 87);
 }
 input[type=radio]:focus + label::before {
-  box-shadow: 0 0px 8px rgb(0, 69, 87);
+  box-shadow: 0 0px 4px rgb(0, 69, 87);
 }
 
 .radio-wrapper {
@@ -6592,9 +6593,6 @@ div.alert a:hover {
   overflow: auto;
   padding-top: calc(3rem + 2vw);
 }
-.home-section h1, .home-section .h1 {
-  font-weight: normal;
-}
 
 .home-section.end {
   min-height: calc(100vh - 27rem);
@@ -6653,6 +6651,11 @@ div.alert a:hover {
   height: 7rem;
   fill: #ffa68c;
   margin-bottom: 2rem;
+}
+
+.role-radio {
+  display: inline-block;
+  min-width: 7rem;
 }
 
 .profile-pic,

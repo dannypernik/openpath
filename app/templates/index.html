@@ -80,17 +80,9 @@
     </div>
     <div class="row justify-content-center">
       <div class="col col-sm-11">
-        <a id="request-trial" class="btn lead" href="?subject=Tutor%20intro%20meeting#contact">
+        <a class="request-trial btn lead" href="#contact">
           Meet your tutor for free
         </a>
-        <!-- <a class="btn lead mx-2"
-          onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=1'});return false;">
-          Free Test Prep session
-        </a>
-        <a class="btn lead mx-2"
-          onclick="Calendly.initPopupWidget({url: 'https://calendly.com/openpathtutoring/hello?hide_event_type_details=1&a1=2'});return false;">
-          Free Power session
-        </a> -->
 
         <div class="home-next">
           <a href="#benefits">
@@ -113,7 +105,7 @@
     <div class="row text-center justify-content-center">
       <div class="col-10">
         <div class="row justify-content-center">
-          <h1>Why choose Open Path Tutoring?</h1>
+          <h1 class="mb-5">Why choose Open Path Tutoring?</h1>
         </div>
         <div class="row g-5 justify-content-center">
           <div class="usp col-md-4">
@@ -197,7 +189,7 @@
           <b>free tutor-student intro meeting</b> upon request with no purchase necessary.
         </h2>
         <div class="text-center">
-          <a id="request-trial" class="btn lead my-2" href="?subject=Tutor%20intro%20meeting#contact">
+          <a class="request-trial btn lead my-2" href="#contact">
             Meet your tutor for free
           </a>
         </div>
@@ -223,23 +215,49 @@
 
         <form id="inquiry-form" action="" method="post">
           {{ form.hidden_tag() }}
-          {{ form.first_name }}
-          {{ form.email }}
-          {{ form.phone }}
-          {{ form.subject(class="d-none") }}
-          <div class="d-md-flex">
-            {{ form.message(rows='2', class="flex-grow-1") }}
-            <!-- <altcha-widget
-              challengeurl="https://us.altcha.org/api/v1/challenge?apiKey={{ altcha_site_key }}"
-              class="mt-3 ms-3 mb-2"
-              debug
-            ></altcha-widget> -->
-            <div class="mt-md-3 ms-md-3">
-              {{ hcaptcha }}
-            </div>
-          </div>
 
-          {{ form.submit }}
+          <div class="row">
+            <div class="col-6">
+              {{ form.first_name }}
+            </div>
+            <div class="col-6">
+              {{ form.last_name }}
+            </div>
+            <div class="col-12">
+              {{ form.email }}
+            </div>
+            <div class="col-12">
+              {{ form.phone }}
+            </div>
+            <div class="col-12">
+              {{ form.subject(class="d-none") }}
+            </div>
+            <div class="col-12">
+              {{ form.message(rows='3', class="flex-grow-1") }}
+            </div>
+
+          </div>
+          <!-- <altcha-widget
+            challengeurl="https://us.altcha.org/api/v1/challenge?apiKey={{ altcha_site_key }}"
+            class="mt-3 ms-3 mb-2"
+            debug
+          ></altcha-widget> -->
+
+          <div class="row">
+            <div class="d-md-flex justify-content-center">
+              <div class="text-nowrap ms-4 d-lg-inline-block semibold">I am a:</div>
+              {% for role in form.role %}
+                  <div class="role-radio mx-5 mx-md-4 mx-lg-5">
+                    {{ role }}
+                    {{ role.label }}
+                  </div>
+              {% endfor %}
+            </div>
+            <div class="text-center mt-3">
+                {{ hcaptcha }}
+            </div>
+            {{ form.submit }}
+          </div>
         </form>
       </div>
     </div>
@@ -266,6 +284,16 @@
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
     }
+
+    // Set subject field when request-trial link is clicked
+    document.querySelectorAll('.request-trial').forEach(link => {
+      link.addEventListener('click', () => {
+        const subjectField = document.getElementById('subject');
+        if (subjectField) {
+          subjectField.value = 'Tutor intro request';
+        }
+      });
+    });
 
     // Autofill the name input if query parameter exists
     window.addEventListener('DOMContentLoaded', () => {

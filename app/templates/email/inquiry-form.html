@@ -1,8 +1,8 @@
 {% extends 'email/_email-base.html' %}
- 
+
 {% block content %}
   <p>
-    {{ user.first_name }} ({{ user.email }}{% if user.phone %}, {{ user.phone }}{% endif %})
+    {{ user.first_name }} {{ user.last_name }} ({{ user.email }}{% if user.phone %}; {{ user.phone }}{% endif %}{% if user.role and user.role != 'parent' %}; {{ user.role.title() }}{% endif %})
     has sent you a message:
   </p>
   <p style="white-space: pre-wrap;">

@@ -206,20 +206,32 @@ def index():
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.index', _anchor='home'))
-        user = User(first_name=form.first_name.data, email=form.email.data, phone=form.phone.data)
+        user = User(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            role=form.role.data
+        )
         message = form.message.data
         subject = form.subject.data
 
         email_status = send_contact_email(user, message, subject)
 
-        new_contact = {
-            'first_name': user.first_name, 'last_name': 'OPT contact form',
-            'emails': [{'type': 'home', 'value': user.email}],
-            'phones': [{'type': 'mobile', 'value': user.phone}],
-            'tags': ['Website']
-        }
+        try:
+            new_contact = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'emails': [{'type': 'home', 'value': user.email}],
+                'phones': [{'type': 'mobile', 'value': user.phone}],
+                'tags': ['Website']
+            }
 
-        create_crm_contact_and_action(new_contact, 'Respond to OPT contact form')
+            create_crm_contact_and_action(new_contact, f'Respond to {subject.lower()}')
+        except:
+            logger.error('Error creating CRM contact and action', exc_info=True)
+            send_fail_mail('Error creating CRM contact and action', traceback.format_exc())
+            pass
 
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
