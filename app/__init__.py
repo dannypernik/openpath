@@ -3,9 +3,10 @@ Application factory for the Flask application.
 """
 
 import os
+import time
 import logging
 from logging.handlers import RotatingFileHandler
-import time
+from werkzeug.serving import WSGIRequestHandler
 
 from flask import Flask, redirect, url_for, request, flash, g
 from celery import Celery
@@ -163,15 +164,48 @@ def setup_logging(app):
         os.mkdir('logs')
     file_handler = RotatingFileHandler('logs/openpath.log', maxBytes=51200, backupCount=10)
     file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+        '%(asctime)s %(levelname)s: %(message)s'))
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
+    # Filter to ignore static asset access logs so terminal stays focused
+    class IgnoreStaticFilter(logging.Filter):
+        def filter(self, record):
+            try:
+                msg = record.getMessage()
+                # Filter requests for static assets and common static endpoints
+                if '/static/' in msg or '/favicon.ico' in msg or '/manifest.webmanifest' in msg:
+                    return False
+            except Exception:
+                pass
+            return True
+
+    # Configure werkzeug logger to use the same handlers but ignore static assets
     werk = logging.getLogger('werkzeug')
-    werk.setLevel(logging.DEBUG)
+    werk.setLevel(logging.INFO)
     werk.propagate = False
+    static_filter = IgnoreStaticFilter()
     for h in app.logger.handlers:
+        # attach filter to handlers so static messages are filtered out
+        h.addFilter(static_filter)
         werk.addHandler(h)
-    app.logger.info('OPT startup')
+    werk.addFilter(static_filter)
+
+
+    try:
+        def _base_log_request(self, code='-', size='-'):
+            # Use the werkzeug logger so the configured handlers/formatters are used
+            logger = logging.getLogger('werkzeug')
+            # address_string may be slow; use self.address_string()
+            try:
+                addr = self.address_string()
+            except Exception:
+                addr = '-'
+            logger.info('%s - "%s" %s', addr, self.requestline, str(code))
+
+        WSGIRequestHandler.log_request = _base_log_request
+    except Exception:
+        # If Werkzeug internals change or import fails, skip the override silently
+        pass
 
 
 def register_template_routes(app):

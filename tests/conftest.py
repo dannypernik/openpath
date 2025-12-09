@@ -18,6 +18,9 @@ class DummyCreds:
     def with_scopes(self, scopes):
         return self
 
+    def authorize(self, request):
+        return request
+
 
 @pytest.fixture(autouse=True)
 def mock_service_account_file(monkeypatch):
@@ -32,7 +35,7 @@ def mock_service_account_file(monkeypatch):
 
         def from_service_account_file_mock(cls, filename, *args, **kwargs):
             """Mock factory for creating credentials without reading a file.
-            
+
             Note: Intentionally returns DummyCreds instead of cls() to avoid
             instantiating real Credentials objects that might have other dependencies.
             """
