@@ -12,6 +12,7 @@ from app.new_student_folders import create_test_prep_folder
 from app.models import User
 from app.helpers import full_name
 from app.email import send_task_fail_mail, send_new_student_email
+from app.utils import create_crm_action
 
 
 class MyTaskBaseClass(celery.Task):
@@ -169,8 +170,18 @@ def style_custom_act_spreadsheet_task(self, organization_data):
 def new_student_task(self, contact_data):
   try:
     student = contact_data['student']
+    parent = contact_data['parent']
     test_type = student.get('subject', '').lower()
     logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
+
+    crm_data = {
+      'first_name': parent.get('first_name'),
+      'last_name': parent.get('last_name'),
+      'email': parent.get('email'),
+      'company_name': student.get('last_name', '')
+    }
+
+    create_crm_action(crm_data)
 
     create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
     folder_link = f'https://drive.google.com/drive/u/0/folders/{contact_data.get("folder_id")}'

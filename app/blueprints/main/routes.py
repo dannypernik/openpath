@@ -20,7 +20,6 @@ from pillow_heif import register_heif_opener
 from pypdf import PdfReader
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-import requests
 
 from app.blueprints.main import main_bp
 from app.extensions import db, hcaptcha
@@ -49,36 +48,6 @@ from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_st
 logger = logging.getLogger(__name__)
 
 register_heif_opener()
-
-def create_crm_contact_and_action(contact_data, action_text):
-    '''Create a contact and an associated action in OnePageCRM.'''
-    try:
-        crm_contact = requests.post(
-            'https://app.onepagecrm.com/api/v3/contacts',
-            json=contact_data,
-            auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-        )
-        if crm_contact.status_code == 201:
-            logging.info('CRM contact created successfully.')
-            new_action = {
-                'contact_id': crm_contact.json()['data']['contact']['id'],
-                'assignee_id': current_app.config['ONEPAGECRM_ID'],
-                'status': 'asap',
-                'text': action_text,
-            }
-            crm_action = requests.post(
-                'https://app.onepagecrm.com/api/v3/actions',
-                json=new_action,
-                auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            )
-            logging.info(f'CRM action created: {crm_action}')
-            return True
-        else:
-            logging.error(f'Failed to create CRM contact: {crm_contact.text}')
-            return False
-    except Exception as e:
-        logging.error(f'Error creating CRM contact and action: {e}', exc_info=True)
-        return False
 
 
 def convert_heic_to_jpg(heic_path, quality=90):
@@ -238,7 +207,7 @@ def index():
             if conf_status == 200:
                 if user.role == 'parent' or user.role == 'student':
                     flash('Your message has been received. Thank you for reaching out!')
-                    return redirect(url_for('main.new_student'))
+                    return redirect(url_for('main.new_student', id=user.id))
                 else:
                     flash('Thank you for reaching out! We\'ll be in touch.')
                     return redirect(url_for('main.index', _anchor='home'))
@@ -576,7 +545,7 @@ def ntpa():
 def new_student():
     form = StudentIntakeForm()
 
-    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
+    upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= datetime.today().date())
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
     parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
@@ -584,6 +553,31 @@ def new_student():
     tutors = User.query.filter_by(role='tutor')
     tutor_list = [(u.id, full_name(u)) for u in tutors]
     form.tutor.choices = tutor_list
+
+    if request.method == 'GET':
+        user_id = request.args.get('id')
+
+        user = None
+        if user_id:
+            user = User.query.filter_by(id=int(user_id)).first()
+
+        if user:
+            # If the user is a parent, prefill parent fields and set parent_id
+            if user.role == 'parent':
+                form.parent_first_name.data = user.first_name
+                form.parent_last_name.data = user.last_name
+                form.parent_email.data = user.email
+                form.parent_phone.data = user.phone
+                form.timezone.data = user.timezone
+                # set the select to the existing parent id (must set after .choices)
+                form.parent_id.data = user.id
+            # If the user is a student, prefill student fields
+            elif user.role == 'student':
+                form.student_first_name.data = user.first_name
+                form.student_last_name.data = user.last_name
+                form.student_email.data = user.email
+                form.student_phone.data = user.phone
+                form.timezone.data = user.timezone
 
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -593,8 +587,8 @@ def new_student():
             return redirect(url_for('admin.students'))
 
         try:
-            parent = User.query.filter_by(id=form.parent_id.data).first()
-            if form.parent_id.data == 0 and not parent:
+            parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
+            if not parent:
                 parent = User(
                     first_name=form.parent_first_name.data,
                     last_name=form.parent_last_name.data,
@@ -606,16 +600,16 @@ def new_student():
                     session_reminders=True,
                     test_reminders=True
                 )
+                db.session.add(parent)
             else:
-                parent.first_name = form.parent_first_name.data or parent.first_name
-                parent.last_name = form.parent_last_name.data or parent.last_name
-                parent.email = form.parent_email.data.lower() or parent.email or None
+                parent.first_name = form.parent_first_name.data
+                parent.last_name = form.parent_last_name.data
+                parent.email = form.parent_email.data.lower()
                 parent.secondary_email = form.parent2_email.data.lower()
                 parent.phone = form.parent_phone.data
                 parent.timezone = form.timezone.data
                 parent.role = 'parent'
 
-            db.session.add(parent)
             db.session.flush()
 
             student_email = form.student_email.data.lower() or None
@@ -657,58 +651,25 @@ def new_student():
                         session_reminders=True,
                         test_reminders=True
                     )
-                db.session.add(parent2)
+                    db.session.add(parent2)
             else:
                 parent2 = None
 
             db.session.commit()
 
             test_selections = request.form.getlist('test_dates')
-            for d in upcoming_dates:
-                if str(d.id) + '-interested' in test_selections:
-                    student.interested_test_date(d)
-                elif str(d.id) + '-registered' in test_selections:
-                    student.register_test_date(d)
-
-            existing_email_matches = requests.get(
-                f'https://app.onepagecrm.com/api/v3/contacts?email={parent.email}&page=1&per_page=10',
-                auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-            )
-            if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
-                existing_contact = existing_email_matches.json()['data']['contacts'][0].get('contact', {})
-                existing_contact_id = existing_contact.get('id')
-                existing_contact['first_name'] = parent.first_name
-                existing_contact['last_name'] = parent.last_name
-                existing_contact['company_name'] = student.last_name
-                existing_contact['tags'] = list(set(existing_contact.get('tags', []) + ['Parent']))
-                requests.put(
-                    f'https://app.onepagecrm.com/api/v3/contacts/{existing_contact_id}',
-                    json=existing_contact,
-                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-                )
-                print('Contact already exists in OnePageCRM')
-
-                new_action = {
-                    'contact_id': existing_contact_id,
-                    'assignee_id': current_app.config['ONEPAGECRM_ID'],
-                    'status': 'asap',
-                    'text': f'Scheduling/followup for {student.first_name}',
-                }
-                requests.post(
-                    'https://app.onepagecrm.com/api/v3/actions',
-                    json=new_action,
-                    auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW'])
-                )
+            if current_user.is_authenticated and current_user.is_admin:
+                # Admin view: process select dropdowns (interested/registered/none)
+                for d in upcoming_dates:
+                    if str(d.id) + '-interested' in test_selections:
+                        student.interested_test_date(d)
+                    elif str(d.id) + '-registered' in test_selections:
+                        student.register_test_date(d)
             else:
-                new_contact = {
-                    'first_name': parent.first_name, 'last_name': parent.last_name,
-                    'company_name': student.last_name,
-                    'emails': [{'type': 'home', 'value': parent.email}],
-                    'phones': [{'type': 'mobile', 'value': parent.phone}],
-                    'tags': ['Parent']
-                }
-
-                create_crm_contact_and_action(new_contact, f'Scheduling/followup for {student.first_name}')
+                # Regular user view: process checkboxes for interested dates only
+                for d in upcoming_dates:
+                    if str(d.id) in test_selections:
+                        student.interested_test_date(d)
 
             if form.create_student_folder.data:
                 tutor = User.query.filter_by(id=form.tutor.data).first()
@@ -749,9 +710,13 @@ def new_student():
                 for test_date in student.get_dates():
                     contact_data['interested_dates'].append({
                         'test': test_date.test,
-                        'date': test_date.date.strftime('%B %d'),
+                        'date': test_date.date,
                         'is_registered': student.is_registered(test_date)
                     })
+
+                contact_data['interested_dates'].sort(key=lambda x: x['date'])
+                for date in contact_data['interested_dates']:
+                    date['date'] = date['date'].strftime('%b %d')
 
                 contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
 
@@ -772,7 +737,7 @@ def new_student():
             logger.error(f"Error creating new student: {e}", exc_info=True)
             flash(Markup('Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
             return redirect(url_for('main.new_student'))
-    return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests, tutors=tutors, full_name=full_name)
+    return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests, tutors=tutors, full_name=full_name, parents=parents)
 
 
 @main_bp.route('/pay')
