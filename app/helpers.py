@@ -46,8 +46,7 @@ def admin_required(f):
         if current_user.is_admin:
             return f(*args, **kwargs)
         else:
-            flash('You must have administrator privileges to access this page.', 'error')
-            logout_user()
+            flash(f'You must have administrator privileges to access openpathtutoring.com{request.path}', 'error')
             return redirect(url_for('auth.signin', next=request.endpoint, org=request.view_args.get('org')))
     return wrap
 
