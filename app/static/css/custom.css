@@ -6267,7 +6267,7 @@ input[type=submit].clr:hover {
 button:disabled,
 .btn:disabled,
 input[type=submit]:disabled {
-  background-color: #999999;
+  background-color: #f49582;
   border: 0;
   color: white;
   cursor: default;
@@ -6275,8 +6275,7 @@ input[type=submit]:disabled {
 button:disabled:hover,
 .btn:disabled:hover,
 input[type=submit]:disabled:hover {
-  background-color: #999999;
-  border: 0;
+  filter: brightness(1);
 }
 
 .lead {
@@ -6814,6 +6813,10 @@ td {
 
 .test-date {
   width: 177px;
+}
+
+.date-checkbox {
+  min-width: 24rem;
 }
 
 .hidden-block {

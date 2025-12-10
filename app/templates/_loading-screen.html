@@ -1,0 +1,17 @@
+<div class="loading-screen">
+  <div class="loader">
+    <div class="loading"></div>
+  </div>
+  <div class="loading-message">Loading...</div>
+</div>
+
+<script>
+  // Disable submit button on form submit and show loading screen
+  const form = document.querySelector('form');
+  const submitButton = form.querySelector('input[type=submit]');
+  form.addEventListener('submit', function () {
+    submitButton.setAttribute('disabled', 'true');
+    // window.setTimeout('this.disabled=true', 0);
+    // document.querySelector('.loading-screen').style.display = 'block';
+  });
+</script>

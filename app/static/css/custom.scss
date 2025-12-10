@@ -389,14 +389,13 @@ input[type="submit"] {
   }
 
   &:disabled {
-    background-color: #999999;
+    background-color: lighten($secondary-color, 10%);
     border: 0;
     color: white;
     cursor: default;
 
     &:hover {
-      background-color: #999999;
-      border: 0;
+      filter: brightness(1)
     }
   }
 }
@@ -968,6 +967,10 @@ td {
 
 .test-date {
   width: 177px;
+}
+
+.date-checkbox {
+  min-width: 24rem;
 }
 
 // Hidden fields to be revealed //
