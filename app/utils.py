@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+import requests
 from datetime import datetime, timedelta
 from dateutil.parser import parse as dateparse
 from app import db
@@ -493,8 +494,13 @@ def create_crm_action(contact_data: dict, action_text: str):
             contact_id = contact.get('id')
             contact['first_name'] = contact_data.get('first_name', contact.get('first_name')  )
             contact['last_name'] = contact_data.get('last_name', contact.get('last_name'))
-            contact['company_name'] = contact_data.get('company_name', contact.get('company_name'))
             contact['tags'] = list(set(contact.get('tags', []) + ['Parent']))
+
+            if contact_data.get('company_name'):
+                contact['company_name'] = contact_data.get('company_name', contact.get('company_name'))
+            if contact_data.get('phone'):
+                contact['phones'] = [{'type': 'mobile', 'value': contact_data.get('phone')}]
+
             requests.put(
                 f'https://app.onepagecrm.com/api/v3/contacts/{contact_id}',
                 json=contact,
@@ -511,7 +517,7 @@ def create_crm_action(contact_data: dict, action_text: str):
                 'last_name': contact_data.get('last_name', ''),
                 'company_name': contact_data.get('company_name', ''),
                 'emails': [{'type': 'home', 'value': contact_data.get('email')}],
-                'phones': [{'type': 'mobile', 'value': contact_data.get('phones')[0].get("value")}],
+                'phones': [{'type': 'mobile', 'value': contact_data.get('phone')}],
                 'tags': ['Parent']
             }
 
@@ -530,7 +536,7 @@ def create_crm_action(contact_data: dict, action_text: str):
 
         new_action = {
             'contact_id': contact_id,
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.getenv('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': action_text
         }
@@ -541,8 +547,12 @@ def create_crm_action(contact_data: dict, action_text: str):
             auth=(os.getenv('ONEPAGECRM_ID'), os.getenv('ONEPAGECRM_PW'))
         )
 
-        logging.info(f'CRM action {crm_action}')
-        return True
+        if crm_action.status_code == 201:
+            logging.info(f'CRM action created successfully.')
+            return True
+        else:
+            logging.info(f'Failed to create CRM action: {crm_action.text}')
+            return False
 
     except Exception as e:
         logging.error(f'Error creating CRM contact and action: {e}', exc_info=True)

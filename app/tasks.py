@@ -172,17 +172,18 @@ def new_student_task(self, contact_data):
     student = contact_data['student']
     parent = contact_data['parent']
     test_type = student.get('subject', '').lower()
-    logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
 
     crm_data = {
       'first_name': parent.get('first_name'),
       'last_name': parent.get('last_name'),
       'email': parent.get('email'),
+      'phone': parent.get('phone', ''),
       'company_name': student.get('last_name', '')
     }
+    logging.info(f"Creating CRM action for {parent.get('first_name', '')} {parent.get('last_name', '')}")
+    create_crm_action(crm_data, f'Scheduling/followup for {student.get("first_name", "")}')
 
-    create_crm_action(crm_data)
-
+    logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
     create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
     folder_link = f'https://drive.google.com/drive/u/0/folders/{contact_data.get("folder_id")}'
 
