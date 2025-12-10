@@ -12,6 +12,7 @@
       {% if current_user.is_admin %}
         <div>
           <a id="add-date" class="btn d-inline-block mt-2 me-2">Add date</a>
+          <a href="{{ url_for('admin.add_test_dates') }}" class="btn ter d-inline-block mt-2 me-2">Add all dates</a>
         </div>
 
         <form id="add-date-form" class="hidden-block" action="" method="post">
@@ -47,7 +48,7 @@
       {% endif %}
 
       {% for t in main_tests %}
-        <h1 class="mt-4 mb-2">{{ t.upper() }}<sup class="h4">&#174;</sup> dates</h1>
+        <h1 class="mt-4 mb-2">Upcoming {{ t.upper() }}<sup class="h4">&#174;</sup> dates</h1>
 
         <div class="table-container mb-3">
           <table class="table m-0">

@@ -17,7 +17,7 @@ from app.forms import (
 )
 from app.models import User, TestDate, UserTestDate, Organization
 from app.email import send_session_recap_email, send_verification_email
-from app.utils import is_dark_color, color_svg_white_to_input
+from app.utils import is_dark_color, color_svg_white_to_input, add_test_dates_from_ss
 from app.create_sat_report import (
     create_custom_sat_spreadsheet, update_sat_org_logo, update_sat_partner_logo
 )
@@ -296,6 +296,15 @@ def edit_date(id):
         form.status.data = date.status
     return render_template('edit-date.html', title='Edit date', form=form, date=date,
                            students=students)
+
+
+@admin_bp.route('/add-test-dates', methods=['GET', 'POST'])
+@admin_required
+def add_test_dates():
+    add_test_dates_from_ss()
+    flash('Test dates added/updated from spreadsheet')
+    return redirect(url_for('main.test_dates'))
+
 
 
 @admin_bp.route('/recap', methods=['GET', 'POST'])
