@@ -281,6 +281,7 @@ def get_upcoming_events():
 def main():
     try:
         logging.info('reminders.py started')
+        messages = []
 
         global session
         if session is None:
@@ -290,7 +291,7 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).options(
-            selectinload(User.test_dates).selectinload(UserTestDate.test_date)
+            selectinload(User.test_dates).selectinload(UserTestDate.test_dates)
         ).filter(
             User.test_dates.any(),
             User.test_reminders == True
@@ -309,7 +310,6 @@ def main():
         my_tutoring_events = []
         cc_sessions = []
         add_students_to_data = []
-        messages = []
 
         bimonth_events, events_by_week, upcoming_events, \
             summary_data, sheet, payments_due = get_upcoming_events()
