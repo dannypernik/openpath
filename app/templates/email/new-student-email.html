@@ -35,12 +35,12 @@
   </ul>
 
   <h3>Test dates (<strong>&#10003;</strong> = registered)</h3>
-  {% if interested_tests %}
+  {% if interested_dates %}
     <ul>
-      {% for test in interested_tests %}
+      {% for date in interested_dates %}
         <li>
-          {{ test['test'].upper() }} on {{ test['date'] }}
-          {% if test['is_registered'] %}
+          {{ date['test'].upper() }} on {{ date['date'] }}
+          {% if date['is_registered'] %}
             <strong>&#10003;</strong>
           {% endif %}
         </li>

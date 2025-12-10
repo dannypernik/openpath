@@ -1089,7 +1089,7 @@ def send_new_student_email(contact_data):
     student = contact_data['student']
     parent = contact_data['parent']
     parent2 = contact_data.get('parent2', None)
-    interested_tests = contact_data.get('interested_tests', [])
+    interested_dates = contact_data.get('interested_dates', [])
     notes = contact_data.get('notes', '')
     folder_id = contact_data.get('folder_id', None)
 
@@ -1113,7 +1113,7 @@ def send_new_student_email(contact_data):
                 ],
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
-                    student=student, parent=parent, parent2=parent2, interested_tests=interested_tests,
+                    student=student, parent=parent, parent2=parent2, interested_dates=interested_dates,
                     full_name=full_name, notes=notes, folder_id=folder_id),
                 'Attachments': [
                     {
