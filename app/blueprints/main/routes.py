@@ -157,7 +157,7 @@ def inject_values():
         current_last_name = None
     return dict(
         last_updated=dir_last_updated('app/static'),
-        hello=g.hello,
+        hello=(getattr(g, 'hello', None) or hello_email()),
         phone=current_app.config['PHONE'],
         current_first_name=current_first_name,
         current_last_name=current_last_name
