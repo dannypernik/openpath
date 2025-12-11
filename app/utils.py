@@ -16,210 +16,10 @@ from email import encoders
 from app.models import TestDate
 logger = logging.getLogger(__name__)
 
-def add_test_dates_from_ss():
-    """Import test dates from the configured spreadsheet into the TestDate table."""
-    # Initialize Sheets API client
-    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'service_account_key2.json')
-    if not os.path.exists(sa_path):
-        print('Service account file not found, skipping sheet import')
-        return
-    creds = Credentials.from_service_account_file(
-        sa_path,
-        scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
-    )
-    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
-    sheet = service.spreadsheets()
-    SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
-    if not SPREADSHEET_ID:
-        print('Spreadsheet ID not found, skipping sheet import')
-        return
 
-    # --- SAT table (new layout) ---
-    # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date), E (score release)
-    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A10').execute().get('values', [])
-    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B10').execute().get('values', [])
-    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C10').execute().get('values', [])
-    sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D10').execute().get('values', [])
-    sat_e = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:E10').execute().get('values', [])
+USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
+USAGE_SHEET_RANGE = 'Data!A3:G'
 
-    # normalize to lists of strings (may be nested lists from API)
-    def cell_str(cell_list, idx):
-        try:
-            return cell_list[idx][0].strip()
-        except Exception:
-            return ''
-
-    def sanitize_cell(s):
-        if not s:
-            return ''
-        # replace newlines and stray text like 'Register'
-        s = s.replace('\n', ' ').replace('\r', ' ').replace('Register', '')
-        s = s.replace('"', '').strip()
-        return s
-
-    # helper to extract date substring and parse flexibly
-    def extract_date(s):
-        if not s:
-            return None
-        s = sanitize_cell(s)
-        # Try common patterns first
-        for fmt in ('%b. %d, %Y', '%b %d, %Y', '%B %d, %Y'):
-            try:
-                return datetime.strptime(s, fmt).date()
-            except Exception:
-                pass
-        # Avoid fuzzy-parsing long instructional text (e.g. "30 days before...")
-        # Only attempt fuzzy parse if the string contains a month name/abbr
-        month_regex = r'\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b'
-        if re.search(month_regex, s, re.IGNORECASE):
-            try:
-                return dateparse(s, fuzzy=True).date()
-            except Exception:
-                return None
-        return None
-
-    max_rows = max(len(sat_a), len(sat_b), len(sat_c), len(sat_d), len(sat_e))
-    for i in range(max_rows):
-        a_raw = cell_str(sat_a, i)
-        b_raw = cell_str(sat_b, i)
-        c_raw = cell_str(sat_c, i)
-        d_raw = cell_str(sat_d, i)
-        e_raw = cell_str(sat_e, i)
-
-
-
-        a_clean = sanitize_cell(a_raw)
-        d_clean = sanitize_cell(d_raw)
-
-        # prefer A for test date, fallback to D if A empty
-        test_date = extract_date(a_clean) or extract_date(d_clean)
-        if not test_date:
-            continue
-
-        reg_deadline = extract_date(b_raw)
-        late_deadline = extract_date(c_raw)
-
-        # score release: only add if E present and A and D match (both parse and equal)
-        score_release = None
-        if e_raw:
-            e_date = extract_date(e_raw)
-            a_dt = extract_date(a_clean)
-            d_dt = extract_date(d_clean)
-            cond = bool(e_date and a_dt and d_dt and a_dt == d_dt)
-            if cond:
-                # ensure year alignment: if e_date earlier than test_date, maybe belongs to next year
-                if e_date < test_date:
-                    # try bump year (dateutil handled fuzzy; here we skip complex year logic)
-                    pass
-                score_release = e_date
-
-        # Upsert into DB with structured logging
-        existing = TestDate.query.filter_by(test='sat', date=test_date).first()
-        if existing:
-            changes = {}
-            if existing.reg_date != reg_deadline:
-                changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
-                existing.reg_date = reg_deadline
-            if existing.late_date != late_deadline:
-                changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
-                existing.late_date = late_deadline
-            if existing.score_date != score_release:
-                changes['score_date'] = {'old': existing.score_date, 'new': score_release}
-                existing.score_date = score_release
-            if changes:
-                logger.info('Updated SAT TestDate id=%s date=%s changes=%s', getattr(existing, 'id', None), test_date, changes)
-            else:
-                logger.debug('SAT TestDate id=%s date=%s no changes', getattr(existing, 'id', None), test_date)
-        else:
-            new_td = TestDate(
-                test='sat',
-                date=test_date,
-                reg_date=reg_deadline,
-                late_date=late_deadline,
-                score_date=score_release,
-                status='confirmed'
-            )
-            db.session.add(new_td)
-            logger.info('Created SAT TestDate date=%s reg=%s late=%s score=%s', test_date, reg_deadline, late_deadline, score_release)
-        db.session.commit()
-        logger.debug('Committed SAT TestDate for date=%s', test_date)
-
-    # Fetch ACT dates
-    act_result = sheet.values().get(
-        spreadsheetId=SPREADSHEET_ID,
-        range='Test dates!A12:E28'
-    ).execute()
-    act_values = act_result.get('values', [])
-
-    # Process ACT dates
-    for row in act_values:
-        if len(row) >= 1 and row[0]:
-            test_date_str = row[0].replace('*', '').strip()
-            try:
-                test_date = datetime.strptime(test_date_str, '%B %d, %Y').date()
-            except ValueError:
-                continue
-
-            reg_deadline = None
-            late_deadline = None
-            score_release = None
-
-            if len(row) >= 2 and row[1]:
-                try:
-                    reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year}", '%B %d, %Y').date()
-                    if reg_deadline > test_date:
-                        reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year - 1}", '%B %d, %Y').date()
-                except ValueError:
-                    pass
-
-            if len(row) >= 3 and row[2]:
-                try:
-                    late_deadline = datetime.strptime(f"{row[2]}, {test_date.year}", '%B %d, %Y').date()
-                    if late_deadline > test_date:
-                        late_deadline = datetime.strptime(f"{row[2]}, {test_date.year - 1}", '%B %d, %Y').date()
-                except ValueError:
-                    pass
-
-            if len(row) >= 5 and row[4]:
-                try:
-                    score_release = datetime.strptime(f"{row[4]}, {test_date.year}", '%B %d, %Y').date()
-                    if score_release < test_date:
-                        score_release = datetime.strptime(f"{row[4]}, {test_date.year + 1}", '%B %d, %Y').date()
-                except ValueError:
-                    pass
-
-            # SQLAlchemy upsert for ACT with structured logging
-            existing = TestDate.query.filter_by(test='act', date=test_date).first()
-            if existing:
-                changes = {}
-                if existing.reg_date != reg_deadline:
-                    changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
-                    existing.reg_date = reg_deadline
-                if existing.late_date != late_deadline:
-                    changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
-                    existing.late_date = late_deadline
-                if existing.score_date != score_release:
-                    changes['score_date'] = {'old': existing.score_date, 'new': score_release}
-                    existing.score_date = score_release
-                if changes:
-                    logger.info('Updated ACT TestDate id=%s date=%s changes=%s', getattr(existing, 'id', None), test_date, changes)
-                else:
-                    logger.debug('ACT TestDate id=%s date=%s no changes', getattr(existing, 'id', None), test_date)
-            else:
-                new_td = TestDate(
-                    test='act',
-                    date=test_date,
-                    reg_date=reg_deadline,
-                    late_date=late_deadline,
-                    score_date=score_release,
-                    status='confirmed'
-                )
-                db.session.add(new_td)
-                logger.info('Created ACT TestDate date=%s reg=%s late=%s score=%s', test_date, reg_deadline, late_deadline, score_release)
-            db.session.commit()
-            logger.debug('Committed ACT TestDate for date=%s', test_date)
-
-    print('Test dates successfully added/updated from spreadsheet')
 
 def get_week_start_and_end(date_yyyymmddd=None):
     """Returns the start and end of the week for the given date."""
@@ -557,3 +357,208 @@ def create_crm_action(contact_data: dict, action_text: str):
     except Exception as e:
         logging.error(f'Error creating CRM contact and action: {e}', exc_info=True)
         raise
+
+
+def add_test_dates_from_ss():
+    """Import test dates from the configured spreadsheet into the TestDate table."""
+    # Initialize Sheets API client
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'service_account_key2.json')
+    if not os.path.exists(sa_path):
+        print('Service account file not found, skipping sheet import')
+        return
+    creds = Credentials.from_service_account_file(
+        sa_path,
+        scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+    )
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    sheet = service.spreadsheets()
+    SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
+    if not SPREADSHEET_ID:
+        print('Spreadsheet ID not found, skipping sheet import')
+        return
+
+    # --- SAT table (new layout) ---
+    # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date), E (score release)
+    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A10').execute().get('values', [])
+    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B10').execute().get('values', [])
+    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C10').execute().get('values', [])
+    sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D10').execute().get('values', [])
+    sat_e = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:E10').execute().get('values', [])
+
+    # normalize to lists of strings (may be nested lists from API)
+    def cell_str(cell_list, idx):
+        try:
+            return cell_list[idx][0].strip()
+        except Exception:
+            return ''
+
+    def sanitize_cell(s):
+        if not s:
+            return ''
+        # replace newlines and stray text like 'Register'
+        s = s.replace('\n', ' ').replace('\r', ' ').replace('Register', '')
+        s = s.replace('"', '').strip()
+        return s
+
+    # helper to extract date substring and parse flexibly
+    def extract_date(s):
+        if not s:
+            return None
+        s = sanitize_cell(s)
+        # Try common patterns first
+        for fmt in ('%b. %d, %Y', '%b %d, %Y', '%B %d, %Y'):
+            try:
+                return datetime.strptime(s, fmt).date()
+            except Exception:
+                pass
+        # Avoid fuzzy-parsing long instructional text (e.g. "30 days before...")
+        # Only attempt fuzzy parse if the string contains a month name/abbr
+        month_regex = r'\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b'
+        if re.search(month_regex, s, re.IGNORECASE):
+            try:
+                return dateparse(s, fuzzy=True).date()
+            except Exception:
+                return None
+        return None
+
+    max_rows = max(len(sat_a), len(sat_b), len(sat_c), len(sat_d), len(sat_e))
+    for i in range(max_rows):
+        a_raw = cell_str(sat_a, i)
+        b_raw = cell_str(sat_b, i)
+        c_raw = cell_str(sat_c, i)
+        d_raw = cell_str(sat_d, i)
+        e_raw = cell_str(sat_e, i)
+
+
+
+        a_clean = sanitize_cell(a_raw)
+        d_clean = sanitize_cell(d_raw)
+
+        # prefer A for test date, fallback to D if A empty
+        test_date = extract_date(a_clean) or extract_date(d_clean)
+        if not test_date:
+            continue
+
+        reg_deadline = extract_date(b_raw)
+        late_deadline = extract_date(c_raw)
+
+        # score release: only add if E present and A and D match (both parse and equal)
+        score_release = None
+        if e_raw:
+            e_date = extract_date(e_raw)
+            a_dt = extract_date(a_clean)
+            d_dt = extract_date(d_clean)
+            cond = bool(e_date and a_dt and d_dt and a_dt == d_dt)
+            if cond:
+                # ensure year alignment: if e_date earlier than test_date, maybe belongs to next year
+                if e_date < test_date:
+                    # try bump year (dateutil handled fuzzy; here we skip complex year logic)
+                    pass
+                score_release = e_date
+
+        # Upsert into DB with structured logging
+        existing = TestDate.query.filter_by(test='sat', date=test_date).first()
+        if existing:
+            changes = {}
+            if existing.reg_date != reg_deadline:
+                changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
+                existing.reg_date = reg_deadline
+            if existing.late_date != late_deadline:
+                changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
+                existing.late_date = late_deadline
+            if existing.score_date != score_release:
+                changes['score_date'] = {'old': existing.score_date, 'new': score_release}
+                existing.score_date = score_release
+            if changes:
+                logger.info('Updated SAT TestDate id=%s date=%s changes=%s', getattr(existing, 'id', None), test_date, changes)
+            else:
+                logger.debug('SAT TestDate id=%s date=%s no changes', getattr(existing, 'id', None), test_date)
+        else:
+            new_td = TestDate(
+                test='sat',
+                date=test_date,
+                reg_date=reg_deadline,
+                late_date=late_deadline,
+                score_date=score_release,
+                status='confirmed'
+            )
+            db.session.add(new_td)
+            logger.info('Created SAT TestDate date=%s reg=%s late=%s score=%s', test_date, reg_deadline, late_deadline, score_release)
+        db.session.commit()
+        logger.debug('Committed SAT TestDate for date=%s', test_date)
+
+    # Fetch ACT dates
+    act_result = sheet.values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range='Test dates!A12:E28'
+    ).execute()
+    act_values = act_result.get('values', [])
+
+    # Process ACT dates
+    for row in act_values:
+        if len(row) >= 1 and row[0]:
+            test_date_str = row[0].replace('*', '').strip()
+            try:
+                test_date = datetime.strptime(test_date_str, '%B %d, %Y').date()
+            except ValueError:
+                continue
+
+            reg_deadline = None
+            late_deadline = None
+            score_release = None
+
+            if len(row) >= 2 and row[1]:
+                try:
+                    reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year}", '%B %d, %Y').date()
+                    if reg_deadline > test_date:
+                        reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year - 1}", '%B %d, %Y').date()
+                except ValueError:
+                    pass
+
+            if len(row) >= 3 and row[2]:
+                try:
+                    late_deadline = datetime.strptime(f"{row[2]}, {test_date.year}", '%B %d, %Y').date()
+                    if late_deadline > test_date:
+                        late_deadline = datetime.strptime(f"{row[2]}, {test_date.year - 1}", '%B %d, %Y').date()
+                except ValueError:
+                    pass
+
+            if len(row) >= 5 and row[4]:
+                try:
+                    score_release = datetime.strptime(f"{row[4]}, {test_date.year}", '%B %d, %Y').date()
+                    if score_release < test_date:
+                        score_release = datetime.strptime(f"{row[4]}, {test_date.year + 1}", '%B %d, %Y').date()
+                except ValueError:
+                    pass
+
+            # SQLAlchemy upsert for ACT with structured logging
+            existing = TestDate.query.filter_by(test='act', date=test_date).first()
+            if existing:
+                changes = {}
+                if existing.reg_date != reg_deadline:
+                    changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
+                    existing.reg_date = reg_deadline
+                if existing.late_date != late_deadline:
+                    changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
+                    existing.late_date = late_deadline
+                if existing.score_date != score_release:
+                    changes['score_date'] = {'old': existing.score_date, 'new': score_release}
+                    existing.score_date = score_release
+                if changes:
+                    logger.info('Updated ACT TestDate id=%s date=%s changes=%s', getattr(existing, 'id', None), test_date, changes)
+                else:
+                    logger.debug('ACT TestDate id=%s date=%s no changes', getattr(existing, 'id', None), test_date)
+            else:
+                new_td = TestDate(
+                    test='act',
+                    date=test_date,
+                    reg_date=reg_deadline,
+                    late_date=late_deadline,
+                    score_date=score_release,
+                    status='confirmed'
+                )
+                db.session.add(new_td)
+                logger.info('Created ACT TestDate date=%s reg=%s late=%s score=%s', test_date, reg_deadline, late_deadline, score_release)
+            db.session.commit()
+
+    logger.info('Test dates successfully added/updated from spreadsheet')
