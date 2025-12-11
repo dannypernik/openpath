@@ -13,6 +13,7 @@ from app.email import send_verification_email, send_password_reset_email
 
 @auth_bp.route('/signin', methods=['GET', 'POST'])
 def signin():
+    next = get_next_page()
     if current_user.is_authenticated:
         flash('You are already signed in.')
         return redirect(url_for('auth.start_page'))
@@ -90,7 +91,8 @@ def login():
 @auth_bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('auth.signin'))
+    next = get_next_page()
+    return redirect(url_for('auth.signin', next=next))
 
 
 @auth_bp.route('/start-page')
