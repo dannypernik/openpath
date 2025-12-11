@@ -298,8 +298,12 @@ def main():
         ).order_by(User.first_name)
         upcoming_students = students.filter((User.status == 'active') | (User.status == 'prospective'))
         paused_students = students.filter(User.status == 'paused')
-        unregistered_active_students = students.filter(User.status == 'active').filter(User.test_dates.any(UserTestDate.is_registered == False))
-        undecided_active_students = students.filter(User.status == 'active').filter(~User.test_dates.any())
+        unregistered_active_students = students.filter(User.status == 'active').filter(
+            User.subject.in_(['sat', 'act', 'sat/act', '']) | User.subject.is_(None)
+        ).filter(User.test_dates.any(UserTestDate.is_registered == False))
+        undecided_active_students = students.filter(User.status == 'active').filter(
+            User.subject.in_(['sat', 'act', 'sat/act', '']) | User.subject.is_(None)
+        ).filter(~User.test_dates.any())
         unscheduled_students = []
         low_scheduled_students = []
         other_scheduled_students = []
