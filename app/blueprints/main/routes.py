@@ -986,7 +986,10 @@ def handle_act_report(form, template_name, organization=None):
     if current_user.is_authenticated:
         form.test_code.choices = load_act_test_codes()
     else:
-        form.test_code.choices = [["2025MC1", "Form 25MC1"]]
+        form.test_code.choices = [
+            ["2025MC1", "Practice Test 1 (Form 25MC1)"],
+            ["2025MC5", "Practice Test 2 (Form 25MC5)"]
+        ]
 
     if form.validate_on_submit():
         if hcaptcha.verify():

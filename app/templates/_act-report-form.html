@@ -88,25 +88,41 @@
         </div>
         <div class="modal-body">
           <div class="row">
-            <ol class="mb-3">
-              <li class="mb-2">Print the free official
-                <a href="{{ url_for('static', filename='files/Enhanced-ACT-Form-25MC1.pdf')}}" class="semibold" target="_blank">
-                  ACT practice test, Form 25MC1
-                </a>.<br>
-                <span class="sm">(If you completed a different practice test,
-                <a href="{{ url_for('main.index', _anchor='contact', subject='ACT score report inquiry') }}" class="semibold">
-                  contact us
-                </a>.)</span>
-              </li>
-              <li class="mb-2">Print the
-                <a href="{{ url_for('static', filename='files/act-bubble-sheet.pdf')}}" class="semibold" target="_blank">
-                  this bubble sheet
-                </a>
-                and use it as you take your practice ACT. The grader will not work correctly with other bubble sheets.
-              </li>
-              <li class="mb-2">Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.</li>
-              <li>Upload the photo to the form on this page. Accepted file types are JPG, PNG, WEBP, and HEIC.</li>
-            </ol>
+            <div class="col">
+              <ol class="mb-3">
+                <li class="mb-2">
+                  Print
+                  <a href="https://www.act.org/content/act/en/products-and-services/the-act/test-preparation/free-act-test-prep.html#pdf" class="semibold" target="_blank">
+                    ACT Practice Test 1 or 2
+                  </a>
+                  and
+                  <a href="{{ url_for('static', filename='files/act-bubble-sheet.pdf')}}" class="semibold" target="_blank">
+                    this bubble sheet
+                  </a>.
+                  <!-- <span class="sm">(If you completed a different practice test,
+                  <a href="{{ url_for('main.index', _anchor='contact', subject='ACT score report inquiry') }}" class="semibold">
+                    contact us
+                  </a>.)</span> -->
+                </li>
+                <li class="mb-2">
+                  Use the bubble sheet as you take the practice ACT under standard or modified timing conditions.
+                  The grader will not work correctly with other bubble sheets.
+                </li>
+                <li class="mb-2">
+                  Take a clear photo of your completed answer sheet, ensuring that all 4 corners of the page are visible.
+                </li>
+                <li class="mb-2">
+                  Upload the photo to the form on this page. Accepted file types are JPG, PNG, WEBP, and HEIC.
+                </li>
+                <li>
+                  Optional: Add your answers to your student answer sheet by pasting its Google Sheet URL here:
+                </li>
+                <div id="ss-url-div" class="d-flex mt-1">
+                  <input class="" id="ss-url-entry" placeholder="Student spreadsheet URL" type="text" value="">
+                  <button id="save-url" class="d-inline-block btn sm ms-2" data-bs-dismiss="modal">Save</button>
+                </div>
+              </ol>
+            </div>
           </div>
         </div>
       </div>
@@ -114,7 +130,7 @@
   </div>
 </div>
 
-<div id="spreadsheet-modal" class="modal fade" tabindex="-1">
+<!-- <div id="spreadsheet-modal" class="modal fade" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="container-fluid">
@@ -163,4 +179,4 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
