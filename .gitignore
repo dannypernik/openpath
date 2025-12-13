@@ -5,7 +5,6 @@ __pycache__
 /venv/
 /logs/
 /certs/
-app.db
 token*
 credentials*
 service_account_key*
@@ -16,3 +15,4 @@ get-pip.py
 dump.rdb
 app/private/
 app/static/img/orgs
+*.db
