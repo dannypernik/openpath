@@ -49,7 +49,6 @@ logger = logging.getLogger(__name__)
 
 register_heif_opener()
 
-
 def convert_heic_to_jpg(heic_path, quality=90):
     """Convert a HEIC image to JPG."""
     try:

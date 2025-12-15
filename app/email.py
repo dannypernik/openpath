@@ -57,9 +57,9 @@ def send_contact_email(user, message, subject):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info('Contact email sent from ' + user.email)
+        logging.info('Contact email sent by ' + user.email)
     else:
-        logging.info('Contact email from ' + user.email + ' failed with code ' + result.status_code)
+        logging.info('Contact email sent by ' + user.email + ' failed with code ' + result.status_code)
     return result.status_code
 
 
