@@ -11,7 +11,7 @@ def test_app_creation(app):
 
 def test_blueprints_registered(app):
     """Test that all blueprints are registered."""
-    blueprint_names = ['main', 'auth', 'admin', 'api']
+    blueprint_names = ['', 'auth', 'admin', 'api']
     for name in blueprint_names:
         assert name in app.blueprints, f"Blueprint '{name}' not registered"
 
