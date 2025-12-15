@@ -25,7 +25,7 @@ class InquiryForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address', 'autocomplete': 'email'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
-    phone = StringField('Phone number', render_kw={'placeholder': 'Phone number', 'autocomplete': 'tel'})
+    phone = TelField('Phone number', render_kw={'placeholder': 'Phone number', 'autocomplete': 'tel'})
     subject = StringField('Subject', render_kw={'placeholder': 'Subject'}, default='Message')
     message = TextAreaField('Message', render_kw={'placeholder': 'Message'}, \
         validators=[InputRequired()])

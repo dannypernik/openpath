@@ -3,10 +3,10 @@ $font-size-base: 1.8rem;
 $font-size-lead: calc(2rem + 0.1vw);
 $font-size-sm: 1.6rem;
 $lead-font-weight: inherit;
-$primary-color: rgb(0, 69, 87); //#004557;#01496d;//#1C4D65;
+$primary-color: rgb(0, 70, 90); // rgb(0, 69, 87); #004557;#01496d;//#1C4D65;
 $secondary-color: #f06d53; //#d35137;//e97435;
 $tertiary-color: #c4f0f7;
-$text-color: lighten($primary-color, 7%);
+$text-color: lighten($primary-color, 5%);
 $hover-color: #fe7d5e;
 $alert-color: #850017;
 $table-color: #2fb2cb;
@@ -967,6 +967,25 @@ td {
 
 .test-date {
   width: 177px;
+}
+
+// new-student
+
+.iti {
+  display: block;
+}
+
+.iti__selected-country {
+  border-radius: 20px;
+
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+.iti__selected-country-primary {
+  border-radius: 5px;
+  height: 80%;
 }
 
 .date-checkbox {

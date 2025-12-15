@@ -174,14 +174,28 @@ def index():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.index', _anchor='home'))
-        user = User(
-            first_name=form.first_name.data,
-            last_name=form.last_name.data,
-            email=form.email.data,
-            phone=form.phone.data,
-            role=form.role.data
-        )
+            return redirect(url_for('index', _anchor='home'))
+
+        email = form.email.data.lower().strip()
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+            user.phone = form.phone.data
+            user.role = form.role.data
+        else:
+            user = User(
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                email=email,
+                phone=form.phone.data,
+                role=form.role.data
+            )
+            db.session.add(user)
+
+        db.session.commit()
+
         message = form.message.data
         subject = form.subject.data
 
@@ -568,8 +582,6 @@ def new_student():
                 form.parent_email.data = user.email
                 form.parent_phone.data = user.phone
                 form.timezone.data = user.timezone
-                # set the select to the existing parent id (must set after .choices)
-                form.parent_id.data = user.id
             # If the user is a student, prefill student fields
             elif user.role == 'student':
                 form.student_first_name.data = user.first_name

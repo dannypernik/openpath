@@ -170,10 +170,10 @@ def send_reminder_email(event, student, tutor):
     else:
         event_type = 'session'
 
-    location = event['event'].get('location').strip()
     warnings = []
     warnings_str = ''
 
+    location = event['event'].get('location')
     if location != student.location:
         warnings.append('Event location != DB location')
         warnings.append('Event location missing')
