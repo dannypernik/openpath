@@ -10,7 +10,7 @@
   <div class="row text-center justify-content-center">
     <div class="d-flex mt-4 mb-3 justify-content-center col-12 col-sm-11 col-md-9 col-lg-8 col-xl-7">
       <div class="logo-container">
-        <a href="{{ url_for('main.partner_page', org=organization['slug']) }}">
+        <a href="{{ url_for('partner_page', org=organization['slug']) }}">
           <img class="partner-logo" src="{{ url_for('static', filename=organization['logo_path']) }}">
         </a>
       </div>
@@ -30,8 +30,8 @@
   {% block form_content %}
     <div class="row justify-content-center">
       <div class="text-center">
-        <a href="{{ url_for('main.custom_sat_report', org=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice SAT<sup class="">&#174;</sup> analysis</a>
-        <a href="{{ url_for('main.custom_act_report', org=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice ACT<sup class="">&#174;</sup> analysis</a>
+        <a href="{{ url_for('custom_sat_report', org=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice SAT<sup class="">&#174;</sup> analysis</a>
+        <a href="{{ url_for('custom_act_report', org=organization['slug']) }}" class="btn d-inline-block w-auto mx-4">Practice ACT<sup class="">&#174;</sup> analysis</a>
       </div>
     </div>
   {% endblock form_content %}

@@ -4,6 +4,11 @@
   New Student Form
 {% endblock title %}
 
+{% block styles_scripts %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.13.1/build/css/intlTelInput.css">
+  {{ super() }}
+{% endblock styles_scripts %}
+
 {% block content %}
 <div class="container">
   <div class="text-center">
@@ -12,22 +17,22 @@
       <p>If you have time now, providing the information below will get us off to a smooth start.</p>
     {% endif %}
   </div>
-  <form method="POST" action="{{ url_for('main.new_student') }}">
+  <form method="POST" action="{{ url_for('new_student') }}">
     {{ form.hidden_tag() }}
 
     <h3 class="fw-bold">Student details</h3>
     <div class="row mb-4">
       <div class="mb-3 col-6">
-      {{ form.student_first_name }}
+        {{ form.student_first_name }}
       </div>
       <div class="mb-3 col-6">
-      {{ form.student_last_name }}
+        {{ form.student_last_name }}
       </div>
-      <div class="mb-3 col-12">
-      {{ form.student_email }}
+      <div class="mb-3 col-12 col-md-6">
+        {{ form.student_email }}
       </div>
-      <div class="col-12">
-      {{ form.student_phone }}
+      <div class="col-12 col-md-6">
+        {{ form.student_phone }}
       </div>
     </div>
 
@@ -231,6 +236,7 @@
 
 
 {% block end_scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.13.1/build/js/intlTelInput.min.js"></script>
   <script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
   <script src="{{ url_for('static', filename='js/disable-submit-on-click.js') }}"></script>
 

@@ -207,10 +207,10 @@ def index():
             if conf_status == 200:
                 if user.role == 'parent' or user.role == 'student':
                     flash('Your message has been received. Thank you for reaching out!')
-                    return redirect(url_for('main.new_student', id=user.id))
+                    return redirect(url_for('new_student', id=user.id))
                 else:
                     flash('Thank you for reaching out! We\'ll be in touch.')
-                    return redirect(url_for('main.index', _anchor='home'))
+                    return redirect(url_for('index', _anchor='home'))
         flash('Email failed to send, please contact ' + g.hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))#, altcha_site_key=altcha_site_key)
 
@@ -282,7 +282,7 @@ def nominate():
         if email_status == 200:
             send_confirmation_email(form_data['contact_email'], form_data['nomination_text'])
             flash('Thank you for your nomination! We will be in touch.')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('index'))
         else:
             flash(f'An error occurred. Please contact {g.hello}', 'error')
             logging.error(f"Error processing nomination. Email status {email_status}")
@@ -307,7 +307,7 @@ def reviews():
         except:
             db.session.rollback()
             flash('Review could not be added', 'error')
-        return redirect(url_for('main.reviews'))
+        return redirect(url_for('reviews'))
     return render_template('reviews.html', title='Reviews', reviews=reviews, form=form)
 
 
@@ -341,8 +341,8 @@ def test_dates():
         except:
             db.session.rollback()
             flash(date.date.strftime('%b %-d') + date.test.upper() + ' could not be added', 'error')
-            return redirect(url_for('main.test_dates'))
-        return redirect(url_for('main.test_dates'))
+            return redirect(url_for('test_dates'))
+        return redirect(url_for('test_dates'))
     return render_template('test-dates.html', title='Test dates', form=form, main_tests=main_tests,
                            upcoming_weekend_dates=upcoming_weekend_dates, other_dates=other_dates,
                            upcoming_students=upcoming_students, undecided_students=undecided_students)
@@ -370,7 +370,7 @@ def test_reminders():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.test_reminders'))
+            return redirect(url_for('test_reminders'))
         selected_date_ids = request.form.getlist('test_dates')
         if not current_user.is_authenticated:
             user = User.query.filter_by(email=form.email.data).first()
@@ -402,7 +402,7 @@ def test_reminders():
         except:
             db.session.rollback()
             flash(f'Test dates were not updated, please contact {g.hello}', 'error')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     return render_template('test-reminders.html', form=form, tests=tests, upcoming_dates=upcoming_dates,
                            imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
@@ -418,7 +418,7 @@ def ati_austin():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.ati_austin'))
+            return redirect(url_for('ati_austin'))
         student = User(
             first_name=form.student_first_name.data,
             last_name=form.student_last_name.data,
@@ -444,7 +444,7 @@ def kaps():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.kaps'))
+            return redirect(url_for('kaps'))
         student = User(
             first_name=form.student_first_name.data,
             last_name=form.student_last_name.data,
@@ -474,7 +474,7 @@ def centerville():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.centerville'))
+            return redirect(url_for('centerville'))
         student = User(
             first_name=form.student_first_name.data,
             last_name=form.student_last_name.data,
@@ -503,7 +503,7 @@ def test_strategies():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.test_strategies'))
+            return redirect(url_for('test_strategies'))
         relation = form.relation.data
         if relation == 'student':
             student = User(first_name=form.first_name.data, email=form.email.data)
@@ -532,7 +532,7 @@ def ntpa():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.ntpa'))
+            return redirect(url_for('ntpa'))
         email_status = send_ntpa_email(first_name, last_name, biz_name, email)
         if email_status == 200:
             flash('We\'ve received your request and will be in touch!')
@@ -556,7 +556,6 @@ def new_student():
 
     if request.method == 'GET':
         user_id = request.args.get('id')
-
         user = None
         if user_id:
             user = User.query.filter_by(id=int(user_id)).first()
@@ -728,15 +727,15 @@ def new_student():
                 if current_user.is_authenticated and current_user.role == 'admin':
                     return redirect(url_for('admin.students'))
                 else:
-                    return redirect(url_for('main.index'))
+                    return redirect(url_for('index'))
             else:
                 flash(Markup('Email failed to send. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
-                return redirect(url_for('main.new_student'))
+                return redirect(url_for('new_student'))
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error creating new student: {e}", exc_info=True)
             flash(Markup('Unexpected error. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
-            return redirect(url_for('main.new_student'))
+            return redirect(url_for('new_student'))
     return render_template('new-student.html', title='Students', form=form, upcoming_dates=upcoming_dates, tests=tests, tutors=tutors, full_name=full_name, parents=parents)
 
 
@@ -930,13 +929,13 @@ def handle_sat_report(form, template_name, organization=None):
                 send_changed_answers_email(score_data)
 
             if organization:
-                return_route = url_for('main.custom_sat_report', org=organization['slug'])
+                return_route = url_for('custom_sat_report', org=organization['slug'])
                 flash(Markup(f'Your answers have been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')
-                return redirect(url_for('main.index'))
+                return redirect(url_for('index'))
             else:
-                return_route = url_for('main.sat_report')
+                return_route = url_for('sat_report')
                 return render_template('score-report-sent.html', return_route=return_route)
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
@@ -1063,13 +1062,13 @@ def handle_act_report(form, template_name, organization=None):
             act_report_workflow_task.delay(score_data, organization_dict=organization)
 
             if organization:
-                return_route = url_for('main.custom_act_report', org=organization['slug'])
+                return_route = url_for('custom_act_report', org=organization['slug'])
                 flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')
-                return redirect(url_for('main.index'))
+                return redirect(url_for('index'))
             else:
-                return_route = url_for('main.act_report')
+                return_route = url_for('act_report')
                 return render_template('score-report-sent.html', return_route=return_route)
 
         except Exception as e:
