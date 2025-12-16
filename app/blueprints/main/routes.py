@@ -166,14 +166,20 @@ def inject_values():
 @main_bp.route('/', methods=['GET', 'POST'])
 @main_bp.route('/index', methods=['GET', 'POST'])
 def index():
+    import time
+    start_time = time.time()
     form = InquiryForm()
     # altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
     if form.validate_on_submit():
+        t1 = time.time()
+        logger.info(f"Form validation took {t1 - start_time:.4f}s")
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('index', _anchor='home'))
+        t2 = time.time()
+        logger.info(f"hCaptcha verify took {t2 - t1:.4f}s")
 
         email = form.email.data.lower().strip()
 
@@ -194,11 +200,15 @@ def index():
             db.session.add(user)
 
         db.session.commit()
+        t3 = time.time()
+        logger.info(f"DB commit took {t3 - t2:.4f}s")
 
         message = form.message.data
         subject = form.subject.data
 
         email_status = send_contact_email(user, message, subject)
+        t4 = time.time()
+        logger.info(f"send_contact_email took {t4 - t3:.4f}s")
 
         # try:
         #     new_contact = {
@@ -217,13 +227,18 @@ def index():
 
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
+            t5 = time.time()
+            logger.info(f"send_confirmation_email took {t5 - t4:.4f}s")
             if conf_status == 200:
                 if user.role == 'parent' or user.role == 'student':
+                    logger.info(f"Total /index processing time: {time.time() - start_time:.4f}s")
                     flash('Your message has been received. Thank you for reaching out!')
                     return redirect(url_for('new_student', id=user.id))
                 else:
+                    logger.info(f"Total /index processing time: {time.time() - start_time:.4f}s")
                     flash('Thank you for reaching out! We\'ll be in touch.')
                     return redirect(url_for('index', _anchor='home'))
+        logger.info(f"Total /index processing time (failed): {time.time() - start_time:.4f}s")
         flash('Email failed to send, please contact ' + g.hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))#, altcha_site_key=altcha_site_key)
 

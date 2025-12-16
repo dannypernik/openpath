@@ -28,6 +28,22 @@ class StripWerkzeugInnerTimestampFilter(Filter):
             pass
         return True
 
+
+
+
+class StripAnsiColorsFilter(Filter):
+    """Strip ANSI escape codes (colors) from log messages."""
+    _ANSI_RE = re.compile(r'\x1b\[[0-9;]*m')
+
+    def filter(self, record: LogRecord) -> bool:
+        try:
+            if isinstance(record.msg, str):
+                record.msg = self._ANSI_RE.sub('', record.msg)
+        except Exception:
+            pass
+        return True
+
+
 DEFAULT_LOG_FILE = os.path.join('logs', 'openpath.log')
 
 DEFAULT_CONFIG = {
@@ -66,6 +82,16 @@ DEFAULT_CONFIG = {
             'level': 'INFO',
             'handlers': ['file', 'console'],
             'propagate': False
+        },
+        'gunicorn.error': {
+            'level': 'INFO',
+            'handlers': ['file', 'console'],
+            'propagate': False
+        },
+        'gunicorn.access': {
+            'level': 'INFO',
+            'handlers': ['file', 'console'],
+            'propagate': False
         }
     }
 }
@@ -97,12 +123,15 @@ def configure_logging(log_file: str | None = None, console: bool = True):
         },
         'strip_werkzeug_ts': {
             '()': 'app.logging_config.StripWerkzeugInnerTimestampFilter'
+        },
+        'strip_ansi': {
+            '()': 'app.logging_config.StripAnsiColorsFilter'
         }
     }
     # attach filters to file and console handlers
-    cfg['handlers']['file'].setdefault('filters', []).extend(['strip_werkzeug_ts', 'ignore_static'])
+    cfg['handlers']['file'].setdefault('filters', []).extend(['strip_werkzeug_ts', 'ignore_static', 'strip_ansi'])
     if 'console' in cfg['handlers']:
-        cfg['handlers']['console'].setdefault('filters', []).extend(['strip_werkzeug_ts', 'ignore_static'])
+        cfg['handlers']['console'].setdefault('filters', []).extend(['strip_werkzeug_ts', 'ignore_static', 'strip_ansi'])
     if not console:
         # remove console handler from root and werkzeug
         cfg['handlers'].pop('console', None)
