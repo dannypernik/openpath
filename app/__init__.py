@@ -98,6 +98,27 @@ def create_app(config_name=None):
     # Register dynamic template routes
     register_template_routes(app)
 
+    @app.after_request
+    def log_response(response):
+        # Skip logging for static files
+        if request.path.startswith('/static/'):
+            return response
+
+        # timestamp = time.strftime('[%Y-%b-%d %H:%M]')
+        # IP - - "METHOD PATH PROTOCOL" STATUS -
+        ip = request.remote_addr
+        method = request.method
+        path = request.full_path if request.query_string else request.path
+        protocol = request.environ.get('SERVER_PROTOCOL')
+        status = response.status_code
+
+        # User requested format: INFO: 127.0.0.1 - -  "GET /new-student?id=156 HTTP/1.1" 200 -
+        # The logger adds TIMESTAMP and LEVEL. We provide the rest.
+        message = f'{ip} -- "{method} {path} {protocol}" {status} -'
+
+        app.logger.info(message)
+        return response
+
     return app
 
 

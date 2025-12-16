@@ -82,16 +82,6 @@ DEFAULT_CONFIG = {
             'level': 'INFO',
             'handlers': ['file', 'console'],
             'propagate': False
-        },
-        'gunicorn.error': {
-            'level': 'INFO',
-            'handlers': ['file', 'console'],
-            'propagate': False
-        },
-        'gunicorn.access': {
-            'level': 'INFO',
-            'handlers': ['file', 'console'],
-            'propagate': False
         }
     }
 }
