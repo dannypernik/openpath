@@ -49,11 +49,11 @@ def get_act_test_codes():
         and not os.getenv('CI')
         and os.path.exists(sa_path)
     )
-    
+
     if not should_init_google:
         print('Skipping ACT test codes retrieval: TESTING/CI or missing service account file')
         return []
-    
+
     creds = Credentials.from_service_account_file(sa_path)
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     result = service.spreadsheets().values().get(
@@ -564,6 +564,8 @@ def style_custom_act_spreadsheet(organization_data):
 
         if sheet['properties']['title'] == 'Answers':
             answer_sheet_id = sheet['properties']['sheetId']
+        elif sheet['properties']['title'] == 'Enhanced':
+            enhanced_sheet_id = sheet['properties']['sheetId']
         elif sheet['properties']['title'] == 'Test analysis':
             analysis_sheet_id = sheet['properties']['sheetId']
         elif sheet['properties']['title'] == 'Test analysis 2':
@@ -785,156 +787,156 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
-
-    # Apply color1 to A1:O4 on Answer sheet
-    requests.append({
-        "repeatCell": {
-            "range": {
-                "sheetId": answer_sheet_id,
-                "startRowIndex": 0,
-                "endRowIndex": 4,
-                "startColumnIndex": 0,
-                "endColumnIndex": 15
-            },
-            "cell": {
-                "userEnteredFormat": {
-                    "backgroundColor": {
-                        "red": rgb_color1[0] / 255,
-                        "green": rgb_color1[1] / 255,
-                        "blue": rgb_color1[2] / 255
-                    },
-                    "textFormat": {
-                        "foregroundColor": {
-                            "red": rgb_text1[0] / 255,
-                            "green": rgb_text1[1] / 255,
-                            "blue": rgb_text1[2] / 255
+    for ans_sheet_id in [answer_sheet_id, enhanced_sheet_id]:
+        # Apply color1 to A1:O4 on Answer sheet
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": ans_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 15
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
                         },
-                        "fontSize": 10,
-                        "bold": True,
-                        "fontFamily": "Montserrat"
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_text1[0] / 255,
+                                "green": rgb_text1[1] / 255,
+                                "blue": rgb_text1[2] / 255
+                            },
+                            "fontSize": 10,
+                            "bold": True,
+                            "fontFamily": "Montserrat"
+                        }
                     }
-                }
-            },
-            "fields": "userEnteredFormat(backgroundColor, textFormat)"
-        }
-    })
-    # Borders for A1:O4 on Answer sheet
-    requests.append({
-        "updateBorders": {
-            "range": {
-                "sheetId": answer_sheet_id,
-                "startRowIndex": 0,
-                "endRowIndex": 4,
-                "startColumnIndex": 0,
-                "endColumnIndex": 15
-            },
-            "top": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
-            },
-            "bottom": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
-            },
-            "left": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
-            },
-            "right": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
-            },
-            "innerHorizontal": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
-            },
-            "innerVertical": {
-                "style": "SOLID",
-                "width": 1,
-                "color": {
-                    "red": rgb_color1[0] / 255,
-                    "green": rgb_color1[1] / 255,
-                    "blue": rgb_color1[2] / 255
-                }
+                },
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
             }
-        }
-    })
-
-    # Set all sides of cell borders to #a8dc98 width 2 for B3, J3, F3, and N3 of answer_sheet
-    border_color = hex_to_rgb("#a8dc98")
-    border_style = {
-        "style": "SOLID",
-        "width": 2,
-        "color": {
-            "red": border_color[0] / 255,
-            "green": border_color[1] / 255,
-            "blue": border_color[2] / 255
-        }
-    }
-    for col in [1, 5, 9, 13]:  # B, F, J, N (zero-indexed)
+        })
+        # Borders for A1:O4 on Answer sheet
         requests.append({
             "updateBorders": {
                 "range": {
-                    "sheetId": answer_sheet_id,
-                    "startRowIndex": 2,
-                    "endRowIndex": 3,
-                    "startColumnIndex": col,
-                    "endColumnIndex": col + 1
+                    "sheetId": ans_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 15
                 },
-                "top": border_style,
-                "bottom": border_style,
-                "left": border_style,
-                "right": border_style
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                }
             }
         })
 
-    # Set background color of cell F1 to #a8dc98
-    requests.append({
-        "repeatCell": {
-            "range": {
-                "sheetId": answer_sheet_id,
-                "startRowIndex": 0,
-                "endRowIndex": 1,
-                "startColumnIndex": 5,
-                "endColumnIndex": 6
-            },
-            "cell": {
-                "userEnteredFormat": {
-                    "backgroundColor": {
-                        "red": border_color[0] / 255,
-                        "green": border_color[1] / 255,
-                        "blue": border_color[2] / 255
-                    }
-                }
-            },
-            "fields": "userEnteredFormat.backgroundColor"
+        # Set all sides of cell borders to #a8dc98 width 2 for B3, J3, F3, and N3 of answer_sheet
+        border_color = hex_to_rgb("#a8dc98")
+        border_style = {
+            "style": "SOLID",
+            "width": 2,
+            "color": {
+                "red": border_color[0] / 255,
+                "green": border_color[1] / 255,
+                "blue": border_color[2] / 255
+            }
         }
-    })
+        for col in [1, 5, 9, 13]:  # B, F, J, N (zero-indexed)
+            requests.append({
+                "updateBorders": {
+                    "range": {
+                        "sheetId": ans_sheet_id,
+                        "startRowIndex": 2,
+                        "endRowIndex": 3,
+                        "startColumnIndex": col,
+                        "endColumnIndex": col + 1
+                    },
+                    "top": border_style,
+                    "bottom": border_style,
+                    "left": border_style,
+                    "right": border_style
+                }
+            })
+
+        # Set background color of cell F1 to #a8dc98
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": ans_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 1,
+                    "startColumnIndex": 5,
+                    "endColumnIndex": 6
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": border_color[0] / 255,
+                            "green": border_color[1] / 255,
+                            "blue": border_color[2] / 255
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.backgroundColor"
+            }
+        })
 
     # Apply color1 to A1:I3 on Data sheet
     requests.append({
