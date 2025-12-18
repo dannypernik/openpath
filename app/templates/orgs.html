@@ -13,7 +13,7 @@
           <h2 class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#org-{{ loop.index }}" type="button">
             {{ org.name }}
           </h2>
-          <a href="{{ url_for('delete_org', org_slug=org.slug) }}" class="delete-link ms-2 text-danger fw-bold" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
+          <a href="{{ url_for('admin.delete_org', org_slug=org.slug) }}" class="delete-link ms-2 text-danger fw-bold" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
         </div>
 
         <div id="org-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#orgAccordion">
