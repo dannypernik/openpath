@@ -25,6 +25,13 @@ from flask import current_app
 config.set_main_option(
     'sqlalchemy.url',
     str(current_app.extensions['migrate'].db.engine.url).replace('%', '%%'))
+logger.info("[debug] set sqlalchemy.url from current_app: %s",
+            config.get_main_option('sqlalchemy.url'))
+try:
+    with open('/tmp/alembic-sqlalchemy-url.txt', 'w') as _f:
+        _f.write(config.get_main_option('sqlalchemy.url'))
+except Exception:
+    logger.exception('Could not write /tmp/alembic-sqlalchemy-url.txt')
 target_metadata = current_app.extensions['migrate'].db.metadata
 
 # other values from the config, defined by the needs of env.py,
