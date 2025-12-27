@@ -75,7 +75,7 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
     student_name = full_name(contact_data.get('student', {}))
 
     if not new_folder_id:
-        new_folder_id = create_folder(f"{student_name}")
+        new_folder_id = create_folder(f"{student_name} (Incomplete)")
 
     query = f"'{SOURCE_FOLDER_ID}' in parents and trashed=false"
     items = execute_with_retries(lambda: drive_service.files().list(q=query, fields='files(id, name)').execute()).get('files', [])

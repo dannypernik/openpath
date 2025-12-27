@@ -8,7 +8,7 @@ from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, 
     sat_answers_to_student_ss, style_custom_sat_spreadsheet
 from app.create_act_report import create_act_score_report, send_act_pdf_report, \
     act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet
-from app.new_student_folders import create_test_prep_folder
+from app.new_student_folders import create_test_prep_folder, create_folder
 from app.models import User
 from app.helpers import full_name
 from app.email import send_task_fail_mail, send_new_student_email
@@ -166,6 +166,7 @@ def style_custom_act_spreadsheet_task(self, organization_data):
     logging.error(f'Error styling ACT spreadsheet: {e}')
     raise e
 
+
 @celery.task(name='app.tasks.new_student_task', bind=True)
 def new_student_task(self, contact_data):
   try:
@@ -180,12 +181,18 @@ def new_student_task(self, contact_data):
       'phone': parent.get('phone', ''),
       'company_name': student.get('last_name', '')
     }
-    logging.info(f"Creating CRM action for {parent.get('first_name', '')} {parent.get('last_name', '')}")
+
+    try:
+      contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
+      logging.info(f"Test prep folder initiated for {student.get('first_name', 'student')} {student.get('last_name', '')}")
+    except Exception as e:
+      logging.error(f'Test prep folder failed to initiate for {full_name(student)}: {e}')
+      contact_data['folder_id'] = None
+
+    send_new_student_email(contact_data)
     create_crm_action(crm_data, f'Scheduling/followup for {student.get("first_name", "")}')
 
-    logging.info(f"Creating test prep folder for {student.get('first_name', 'student')} {student.get('last_name', '')}")
-    create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
-    folder_link = f'https://drive.google.com/drive/u/0/folders/{contact_data.get("folder_id")}'
+    folder_link = create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
 
     return folder_link
 

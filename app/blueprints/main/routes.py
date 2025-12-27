@@ -42,7 +42,6 @@ from app.create_sat_report import (
     update_sat_org_logo, update_sat_partner_logo
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
-from app.new_student_folders import create_folder
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
 
 logger = logging.getLogger(__name__)
@@ -171,15 +170,11 @@ def index():
     form = InquiryForm()
     # altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
     if form.validate_on_submit():
-        t1 = time.time()
-        logger.info(f"Form validation took {t1 - start_time:.4f}s")
         if hcaptcha.verify():
             pass
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('index', _anchor='home'))
-        t2 = time.time()
-        logger.info(f"hCaptcha verify took {t2 - t1:.4f}s")
 
         email = form.email.data.lower().strip()
 
@@ -200,15 +195,11 @@ def index():
             db.session.add(user)
 
         db.session.commit()
-        t3 = time.time()
-        logger.info(f"DB commit took {t3 - t2:.4f}s")
 
         message = form.message.data
         subject = form.subject.data
 
         email_status = send_contact_email(user, message, subject)
-        t4 = time.time()
-        logger.info(f"send_contact_email took {t4 - t3:.4f}s")
 
         # try:
         #     new_contact = {
@@ -227,18 +218,13 @@ def index():
 
         if email_status == 200:
             conf_status = send_confirmation_email(user.email, message)
-            t5 = time.time()
-            logger.info(f"send_confirmation_email took {t5 - t4:.4f}s")
             if conf_status == 200:
                 if user.role == 'parent' or user.role == 'student':
-                    logger.info(f"Total /index processing time: {time.time() - start_time:.4f}s")
                     flash('Your message has been received. Thank you for reaching out!')
                     return redirect(url_for('new_student', id=user.id))
                 else:
-                    logger.info(f"Total /index processing time: {time.time() - start_time:.4f}s")
                     flash('Thank you for reaching out! We\'ll be in touch.')
                     return redirect(url_for('index', _anchor='home'))
-        logger.info(f"Total /index processing time (failed): {time.time() - start_time:.4f}s")
         flash('Email failed to send, please contact ' + g.hello, 'error')
     return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))#, altcha_site_key=altcha_site_key)
 
@@ -495,7 +481,7 @@ def centerville():
     date = 'Saturday, December 3rd, 2022'
     time = '9:30am to 1:00pm'
     location = 'Centerville High School Room West 126'
-    contact_info = 'Tom at 513-519-6784'
+    contact_info = 'Tom at ###-###-####'
     submit_text = 'Register'
     if form.validate_on_submit():
         if hcaptcha.verify():
@@ -743,20 +729,18 @@ def new_student():
                 for date in contact_data['interested_dates']:
                     date['date'] = date['date'].strftime('%b %d')
 
-                contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
+            new_student_task.delay(contact_data)
 
-                new_student_task.delay(contact_data)
-
-            email_status = send_new_student_email(contact_data)
-            if email_status == 200:
-                flash('New student information received. Thank you!')
-                if current_user.is_authenticated and current_user.role == 'admin':
-                    return redirect(url_for('admin.students'))
-                else:
-                    return redirect(url_for('index'))
+            # email_status = send_new_student_email(contact_data)
+            # if email_status == 200:
+            flash('New student information received. Thank you!')
+            if current_user.is_authenticated and current_user.role == 'admin':
+                return redirect(url_for('admin.students'))
             else:
-                flash(Markup('Email failed to send. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
-                return redirect(url_for('new_student'))
+                return redirect(url_for('index'))
+            # else:
+            #     flash(Markup('Email failed to send. Please <a href="https://www.openpathtutoring.com#contact?subject=New%20student%20form%20error" target="_blank">contact us</a>'), 'error')
+            #     return redirect(url_for('new_student'))
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error creating new student: {e}", exc_info=True)

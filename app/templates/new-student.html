@@ -40,7 +40,7 @@
       <div class="mb-3 d-flex align-items-end col-12 col-md-6 col-lg-5">
         <div>
           {{ form.timezone.label }}<br>
-          <select id="tz-select">
+          <select id="tz-select" required>
             <option value="" selected disabled>Required</option>
             <option value="America/Los_Angeles">US Pacific</option>
             <option value="America/Denver">US Mountain</option>
@@ -111,8 +111,8 @@
       <div class="col-12">
         {% for t in tests %}
           <div id="{{ t }}-div" class="row my-4 g-0">
+            <h4 class="mb-1">Target {{ t.upper() }} dates</h4>
             {% if current_user and current_user.is_admin %}
-              <h4 class="mb-1">Target {{ t.upper() }} dates</h4>
               <div class="d-flex flex-wrap">
                 {% for d in upcoming_dates %}
                   {% if d.test == t %}
@@ -130,12 +130,11 @@
                 {% endfor %}
               </div>
             {% else %}
-              <h4 class="mb-1">Target {{ t.upper() }} dates (optional)</h4>
               <div class="d-flex flex-wrap">
                 <div class="row my-1 mx-2">
                   {% for d in upcoming_dates %}
                     {% if d.test == t %}
-                    <div class="date-checkbox col">
+                    <div class="date-checkbox col col-auto">
                       <input type="checkbox" name="test_dates" id="{{d.id}}" value="{{ d.id }}">
                       <label class="me-3 d-inline-block" for="{{ d.id }}">
                         {{ d.date.strftime('%B %-d, %Y') }}
