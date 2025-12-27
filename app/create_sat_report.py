@@ -901,14 +901,14 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     })
 
-    # Set header background colors and text format for A1:K8 in Analysis sheet
+    # Set header background colors and text format for A1:K7 in Analysis sheet
     requests.append(
         {
             "repeatCell": {
                 "range": {
                     "sheetId": analysis_sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 8,
+                    "endRowIndex": 7,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -936,13 +936,83 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     )
 
-    # Set text color of pivot table filter cell (B7) to rgb_color1
+    # Set borders for Analysis sheet A1:K7
+    requests.append(
+        {
+            "updateBorders": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 0,
+                    "endRowIndex": 7,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
+                },
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "colorStyle": {
+                        "rgbColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    # Set text color of pivot table filter cell (B6) to rgb_color1
     requests.append({
         "repeatCell": {
             "range": {
                 "sheetId": analysis_sheet_id,
-                "startRowIndex": 6,  # B7
-                "endRowIndex": 7,
+                "startRowIndex": 5,  # B6
+                "endRowIndex": 6,
                 "startColumnIndex": 1,
                 "endColumnIndex": 2
             },
@@ -1024,83 +1094,15 @@ def style_custom_sat_spreadsheet(organization_data):
         }
     })
 
-    requests.append(
-        {
-            "updateBorders": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 0,
-                    "endRowIndex": 8,
-                    "startColumnIndex": 0,
-                    "endColumnIndex": 11
-                },
-                "top": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": rgb_color1[0] / 255,
-                            "green": rgb_color1[1] / 255,
-                            "blue": rgb_color1[2] / 255
-                        }
-                    }
-                },
-                "left": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": rgb_color1[0] / 255,
-                            "green": rgb_color1[1] / 255,
-                            "blue": rgb_color1[2] / 255
-                        }
-                    }
-                },
-                "right": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": rgb_color1[0] / 255,
-                            "green": rgb_color1[1] / 255,
-                            "blue": rgb_color1[2] / 255
-                        }
-                    }
-                },
-                "innerHorizontal": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": rgb_color1[0] / 255,
-                            "green": rgb_color1[1] / 255,
-                            "blue": rgb_color1[2] / 255
-                        }
-                    }
-                },
-                "innerVertical": {
-                    "style": "SOLID",
-                    "width": 1,
-                    "colorStyle": {
-                        "rgbColor": {
-                            "red": rgb_color1[0] / 255,
-                            "green": rgb_color1[1] / 255,
-                            "blue": rgb_color1[2] / 255
-                        }
-                    }
-                }
-            }
-        }
-    )
 
-    # Set footer background colors and text format for A82:K84 in Analysis sheet
+    # Set footer background colors and text format for A75:K77 in Analysis sheet
     requests.append(
         {
             "repeatCell": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,
-                    "endRowIndex": 84,
+                    "startRowIndex": 74,
+                    "endRowIndex": 77,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -1133,8 +1135,8 @@ def style_custom_sat_spreadsheet(organization_data):
             "updateBorders": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,            # A82:K84
-                    "endRowIndex": 84,
+                    "startRowIndex": 74,            # A75:K77
+                    "endRowIndex": 77,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
