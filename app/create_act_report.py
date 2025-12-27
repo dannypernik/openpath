@@ -19,13 +19,13 @@ except ImportError:
     GraderClient = None
 
 
-# Constants - Note: get_template_ss_id() and get_act_data_ss_id() are accessed via current_app.config at runtime
+# Constants - Note: get_act_template_ss_id() and get_act_data_ss_id() are accessed via current_app.config at runtime
 ACT_REPORT_FOLDER_ID = '1di1PnSgL4J9oyGQGjUKfg_eRhKSht3WD'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
 
 
-def get_template_ss_id():
+def get_act_template_ss_id():
     return current_app.config['ACT_REPORT_SS_ID']
 
 
@@ -129,7 +129,7 @@ def create_act_score_report(score_data, organization_dict):
     if organization_dict and organization_dict['spreadsheet_id']:
         file_id = organization_dict['spreadsheet_id']
     else:
-        file_id = get_template_ss_id()
+        file_id = get_act_template_ss_id()
     ss_copy = drive_service.files().copy(
         fileId=file_id,
         body={
@@ -149,7 +149,7 @@ def create_act_score_report(score_data, organization_dict):
     enhanced_sheet_id = None
     analysis_sheet_id = None
     for sheet in sheets:
-        if score_data.get('test_code', '').startswith('2025MC'):
+        if score_data.get('test_code', '') > '202502':
             if sheet['properties']['title'] == 'Enhanced':
                 answer_sheet_id = sheet['properties']['sheetId']
                 answer_sheet_name = 'Enhanced'
@@ -210,7 +210,7 @@ def create_act_score_report(score_data, organization_dict):
     requests = []
 
 
-    # Set Enhanced sheet visible and Answers sheet hidden
+    # Set answer sheet visibility
     requests.append({
         "updateSheetProperties": {
             "properties": {
@@ -532,14 +532,14 @@ def create_custom_act_spreadsheet(organization):
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=get_template_ss_id(),
+        fileId=get_act_template_ss_id(),
         body={
             'parents': [ORG_FOLDER_ID],
             'name': f'{organization.name} ACT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
 
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {get_template_ss_id()})')
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {get_act_template_ss_id()})')
 
     return ss_copy_id
 
@@ -587,7 +587,7 @@ def style_custom_act_spreadsheet(organization_data):
     # Prepare batch update requests
     requests = []
 
-    # Apply color1 and borders to A1:K8 on Test analysis and Test analysis 2
+    # Apply color1 and borders to A1:K7 on Test analysis and Test analysis 2
     for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
         # Apply color1
         requests.append({
@@ -595,7 +595,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "range": {
                     "sheetId": sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 8,
+                    "endRowIndex": 7,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -626,7 +626,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "range": {
                     "sheetId": sheet_id,
                     "startRowIndex": 0,
-                    "endRowIndex": 8,
+                    "endRowIndex": 7,
                     "startColumnIndex": 0,
                     "endColumnIndex": 11
                 },
@@ -678,114 +678,207 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
-        # Font sizes 13 for B5, 12 for E3, 23 for E4, 12 for H2:J6
+        # Apply color1 to background of analysis sheet footers in A71:K73
         requests.append({
             "repeatCell": {
                 "range": {
                     "sheetId": sheet_id,
-                    "startRowIndex": 4,
-                    "endRowIndex": 5,
-                    "startColumnIndex": 1,
-                    "endColumnIndex": 2
+                    "startRowIndex": 70,
+                    "endRowIndex": 73,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
                 },
                 "cell": {
                     "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        },
                         "textFormat": {
-                            "fontSize": 13,
-                            "bold": True,
-                            "fontFamily": "Montserrat",
                             "foregroundColor": {
                                 "red": rgb_text1[0] / 255,
                                 "green": rgb_text1[1] / 255,
                                 "blue": rgb_text1[2] / 255
-                            }
+                            },
+                            "bold": True,
+                            "fontFamily": "Montserrat"
                         }
                     }
                 },
-                "fields": "userEnteredFormat.textFormat"
+                "fields": "userEnteredFormat(backgroundColor, textFormat)"
             }
         })
 
+        # Color1 to footer borders
         requests.append({
-            "repeatCell": {
+            "updateBorders": {
                 "range": {
                     "sheetId": sheet_id,
-                    "startRowIndex": 2,
-                    "endRowIndex": 3,
-                    "startColumnIndex": 4,
-                    "endColumnIndex": 5
+                    "startRowIndex": 70,
+                    "endRowIndex": 73,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 11
                 },
-                "cell": {
-                    "userEnteredFormat": {
-                        "textFormat": {
-                            "fontSize": 12,
-                            "bold": True,
-                            "fontFamily": "Montserrat",
-                            "foregroundColor": {
-                                "red": rgb_text1[0] / 255,
-                                "green": rgb_text1[1] / 255,
-                                "blue": rgb_text1[2] / 255
-                            }
-                        }
+                "top": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
                     }
                 },
-                "fields": "userEnteredFormat.textFormat"
+                "left": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "right": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerHorizontal": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
+                "innerVertical": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                }
             }
         })
 
-        requests.append({
-            "repeatCell": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": 3,
-                    "endRowIndex": 4,
-                    "startColumnIndex": 4,
-                    "endColumnIndex": 5
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "textFormat": {
-                            "fontSize": 23,
-                            "bold": True,
-                            "fontFamily": "Montserrat",
-                            "foregroundColor": {
-                                "red": rgb_text1[0] / 255,
-                                "green": rgb_text1[1] / 255,
-                                "blue": rgb_text1[2] / 255
-                            }
-                        }
-                    }
-                },
-                "fields": "userEnteredFormat.textFormat"
-            }
-        })
 
-        requests.append({
-            "repeatCell": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": 1,
-                    "endRowIndex": 6,
-                    "startColumnIndex": 7,
-                    "endColumnIndex": 10
-                },
-                "cell": {
-                    "userEnteredFormat": {
-                        "textFormat": {
-                            "fontSize": 12,
-                            "bold": True,
-                            "fontFamily": "Montserrat",
-                            "foregroundColor": {
-                                "red": rgb_text1[0] / 255,
-                                "green": rgb_text1[1] / 255,
-                                "blue": rgb_text1[2] / 255
-                            }
-                        }
-                    }
-                },
-                "fields": "userEnteredFormat.textFormat"
-            }
-        })
+
+
+        # Font sizes 13 for B5, 12 for E2, 23 for E3, 12 for H2:J6
+        # requests.append({
+        #     "repeatCell": {
+        #         "range": {
+        #             "sheetId": sheet_id,
+        #             "startRowIndex": 4,
+        #             "endRowIndex": 5,
+        #             "startColumnIndex": 1,
+        #             "endColumnIndex": 2
+        #         },
+        #         "cell": {
+        #             "userEnteredFormat": {
+        #                 "textFormat": {
+        #                     "fontSize": 13,
+        #                     "bold": True,
+        #                     "fontFamily": "Montserrat",
+        #                     "foregroundColor": {
+        #                         "red": rgb_text1[0] / 255,
+        #                         "green": rgb_text1[1] / 255,
+        #                         "blue": rgb_text1[2] / 255
+        #                     }
+        #                 }
+        #             }
+        #         },
+        #         "fields": "userEnteredFormat.textFormat"
+        #     }
+        # })
+
+        # requests.append({
+        #     "repeatCell": {
+        #         "range": {
+        #             "sheetId": sheet_id,
+        #             "startRowIndex": 1,
+        #             "endRowIndex": 2,
+        #             "startColumnIndex": 4,
+        #             "endColumnIndex": 5
+        #         },
+        #         "cell": {
+        #             "userEnteredFormat": {
+        #                 "textFormat": {
+        #                     "fontSize": 12,
+        #                     "bold": True,
+        #                     "fontFamily": "Montserrat",
+        #                     "foregroundColor": {
+        #                         "red": rgb_text1[0] / 255,
+        #                         "green": rgb_text1[1] / 255,
+        #                         "blue": rgb_text1[2] / 255
+        #                     }
+        #                 }
+        #             }
+        #         },
+        #         "fields": "userEnteredFormat.textFormat"
+        #     }
+        # })
+
+        # requests.append({
+        #     "repeatCell": {
+        #         "range": {
+        #             "sheetId": sheet_id,
+        #             "startRowIndex": 2,
+        #             "endRowIndex": 3,
+        #             "startColumnIndex": 4,
+        #             "endColumnIndex": 5
+        #         },
+        #         "cell": {
+        #             "userEnteredFormat": {
+        #                 "textFormat": {
+        #                     "fontSize": 23,
+        #                     "bold": True,
+        #                     "fontFamily": "Montserrat",
+        #                     "foregroundColor": {
+        #                         "red": rgb_text1[0] / 255,
+        #                         "green": rgb_text1[1] / 255,
+        #                         "blue": rgb_text1[2] / 255
+        #                     }
+        #                 }
+        #             }
+        #         },
+        #         "fields": "userEnteredFormat.textFormat"
+        #     }
+        # })
+
+        # requests.append({
+        #     "repeatCell": {
+        #         "range": {
+        #             "sheetId": sheet_id,
+        #             "startRowIndex": 1,
+        #             "endRowIndex": 6,
+        #             "startColumnIndex": 7,
+        #             "endColumnIndex": 10
+        #         },
+        #         "cell": {
+        #             "userEnteredFormat": {
+        #                 "textFormat": {
+        #                     "fontSize": 12,
+        #                     "bold": True,
+        #                     "fontFamily": "Montserrat",
+        #                     "foregroundColor": {
+        #                         "red": rgb_text1[0] / 255,
+        #                         "green": rgb_text1[1] / 255,
+        #                         "blue": rgb_text1[2] / 255
+        #                     }
+        #                 }
+        #             }
+        #         },
+        #         "fields": "userEnteredFormat.textFormat"
+        #     }
+        # })
 
     for ans_sheet_id in [answer_sheet_id, enhanced_sheet_id]:
         # Apply color1 to A1:O4 on Answer sheet
@@ -935,6 +1028,113 @@ def style_custom_act_spreadsheet(organization_data):
                     }
                 },
                 "fields": "userEnteredFormat.backgroundColor"
+            }
+        })
+
+    # Apply color1 as bg color of enhanced sheet footer A75:P77
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": enhanced_sheet_id,
+                "startRowIndex": 74,
+                "endRowIndex": 77,
+                "startColumnIndex": 0,
+                "endColumnIndex": 16
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "backgroundColor": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    },
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_text1[0] / 255,
+                            "green": rgb_text1[1] / 255,
+                            "blue": rgb_text1[2] / 255
+                        },
+                        "bold": True,
+                        "fontFamily": "Montserrat"
+                    }
+                }
+            },
+            "fields": "userEnteredFormat(backgroundColor, textFormat)"
+        }
+    })
+
+    # Borders for enhanced sheet footer A75:P77
+    requests.append({
+        "updateBorders": {
+            "range": {
+                "sheetId": enhanced_sheet_id,
+                "startRowIndex": 74,
+                "endRowIndex": 77,
+                "startColumnIndex": 0,
+                "endColumnIndex": 16
+            },
+            "top": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "bottom": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "left": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "right": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            }
+        }
+    })
+
+    # Apply color1 as font color on Answers C3, G3, and K3
+    for col in [2, 6, 10]:  # C, G, K (zero-indexed)
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": answer_sheet_id,
+                    "startRowIndex": 2,
+                    "endRowIndex": 3,
+                    "startColumnIndex": col,
+                    "endColumnIndex": col + 1
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_color1[0] / 255,
+                                "green": rgb_color1[1] / 255,
+                                "blue": rgb_color1[2] / 255
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat"
             }
         })
 
@@ -1145,7 +1345,7 @@ def update_act_org_logo(organization_data):
     requests = []
 
     # Add organization logo to B2 of Test analysis sheet
-    if organization_data['logo_path']:
+    if organization_data['ss_logo_path']:
         requests.append({
             "updateCells": {
                 "range": {
@@ -1158,7 +1358,7 @@ def update_act_org_logo(organization_data):
                 "rows": [{
                     "values": [{
                         "userEnteredValue": {
-                            "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                            "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["ss_logo_path"]}")'
                         }
                     }]
                 }],
@@ -1171,3 +1371,55 @@ def update_act_org_logo(organization_data):
         spreadsheetId=act_ss_id,
         body={"requests": requests}
     ).execute()
+
+
+def update_act_partner_logo(organization_data):
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,
+        scopes=['https://www.googleapis.com/auth/spreadsheets']
+    )
+    act_ss_id = organization_data['act_ss_id']
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    ss_copy = service.spreadsheets().get(spreadsheetId=act_ss_id).execute()
+    sheets = ss_copy.get('sheets', [])
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{act_ss_id} (copied from {get_act_template_ss_id()})')
+
+    analysis_sheet_id = None
+    for sheet in sheets:
+        if sheet['properties']['title'] == 'Test analysis':
+            analysis_sheet_id = sheet['properties']['sheetId']
+
+    requests = []
+
+    # Add partner logo to cell H72 of Test analysis sheet
+    if organization_data['partner_logo_path']:
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": analysis_sheet_id,
+                    "startRowIndex": 71,
+                    "endRowIndex": 72,
+                    "startColumnIndex": 7,
+                    "endColumnIndex": 8
+                },
+                "rows": [
+                    {
+                        "values": [
+                            {
+                                "userEnteredValue": {
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue"
+            }
+        })
+
+    if requests:
+        # Execute batch update
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=act_ss_id,
+            body={"requests": requests}
+        ).execute()

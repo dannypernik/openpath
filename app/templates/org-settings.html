@@ -65,6 +65,24 @@
         {% endif %}
       </div>
     </div>
+    <div class="row my-3">
+      <div class="col-12">
+        <input id="copy-logo-checkbox" type="checkbox">
+        <label for="copy-logo-checkbox">Copy logo for spreadsheets?</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        {{ form.ss_logo.label(class="mb-3") }} {{ form.ss_logo }}
+      </div>
+      <div class="col-6 col-md-4">
+        {% if organization.ss_logo_path %}
+          <div class="mb-2">
+            <img src="https://www.openpathtutoring.com/static/{{ organization.ss_logo_path }}" alt="Org SS Logo" class="img-fluid" style="max-height: 10rem;">
+          </div>
+        {% endif %}
+      </div>
+    </div>
     <div class="my-2">
       {{ form.sat_ss_id.label }} <a href="https://docs.google.com/spreadsheets/d/{{ organization.sat_spreadsheet_id }}" class="ms-3" target="_blank">View</a>
       {{ form.sat_ss_id }}
@@ -73,15 +91,47 @@
       {{ form.act_ss_id.label }} <a href="https://docs.google.com/spreadsheets/d/{{ organization.act_spreadsheet_id }}" class="ms-3" target="_blank">View</a>
       {{ form.act_ss_id }}
     </div>
-    <div class="text-center">
-      {{ form.submit }}
-      <a href="{{ url_for('admin.org_settings', org='new') }}" class="btn ter sm mx-2">New organization</a>
-      <a href="{{ url_for('admin.orgs') }}" class="btn clr sm mx-2">All organizations</a>
+    <div class="row justify-content-center text-center">
+      <div class="col-8">{{ form.save }}</div>
+      {% if organization %}
+        <div class="col-4">
+          <button type="button" class="btn clr alert w-100" data-bs-toggle="modal"
+              data-bs-target="#delete-modal" data-text="delete">
+            Delete
+          </button>
+        </div>
+      {% endif %}
+      <div class="col-12">
+        <a href="{{ url_for('admin.org_settings', org='new') }}" class="btn ter sm mx-2">New organization</a>
+        <a href="{{ url_for('admin.orgs') }}" class="btn clr sm mx-2">All organizations</a>
+      </div>
     </div>
-</form>
+
+    {% if organization %}
+      <div id="delete-modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="modal-header mt-2">
+                  <h1 class="modal-title">Are you sure?</h1>
+                </div>
+              </div>
+              <div class="modal-body">
+                <button class="btn clr alert d-inline me-2" type="submit" name="delete">Delete {{ organization.name }}</button>
+                <button class="btn d-inline" data-bs-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </form>
 {% endblock %}
 
 {% block end_scripts %}
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
   <script>
     const slideDown = element => element.style.height = `${element.scrollHeight + 20}px`;
     const slideUp = element => element.style.height = 0;
@@ -106,6 +156,27 @@
       else {
         document.getElementById('new-partner-info').style.display = 'none';
       }
+    });
+
+    const copyCheckbox = document.getElementById('copy-logo-checkbox');
+    const logoInput = document.getElementById('logo');
+    const ssLogoInput = document.getElementById('ss_logo');
+
+    copyCheckbox.addEventListener('change', function() {
+      if (this.checked && logoInput.files.length > 0) {
+        const dataTransfer = new DataTransfer();
+        Array.from(logoInput.files).forEach(file => {
+          dataTransfer.items.add(file);
+        });
+        ssLogoInput.files = dataTransfer.files;
+      } //
+      else {
+        ssLogoInput.value = '';
+      }
+    });
+
+    logoInput.addEventListener('change', function() {
+      copyCheckbox.checked = false;
     });
 
     var colorPicker1 = new iro.ColorPicker('#picker1', {

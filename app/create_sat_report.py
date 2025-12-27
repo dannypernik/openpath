@@ -23,7 +23,7 @@ def get_static_url(filename):
     return url_for('static', filename=filename)
 
 
-def get_sheet_id():
+def get_sat_template_ss_id():
     return current_app.config['SAT_REPORT_SS_ID']
 
 
@@ -51,11 +51,11 @@ def check_service_account_access(spreadsheet_id):
         and not os.getenv('CI')
         and os.path.exists(sa_path)
     )
-    
+
     if not should_init_google:
         print('Skipping service account access check: TESTING/CI or missing service account file')
         return False
-    
+
     creds = service_account.Credentials.from_service_account_file(
         sa_path,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/spreadsheets']
@@ -86,7 +86,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the spreadsheet
-        file_id = organization_dict['spreadsheet_id'] if organization_dict else get_sheet_id()
+        file_id = organization_dict['spreadsheet_id'] if organization_dict else get_sat_template_ss_id()
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
@@ -825,7 +825,7 @@ def style_custom_sat_spreadsheet(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {get_sheet_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {get_sat_template_ss_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1658,7 +1658,7 @@ def update_sat_org_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sheet_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sat_template_ss_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1671,7 +1671,7 @@ def update_sat_org_logo(organization_data):
     requests = []
 
     # Step 4: Add the logo to cell B2
-    if organization_data['logo_path']:
+    if organization_data['ss_logo_path']:
         # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
         requests.append({
             "updateCells": {
@@ -1687,7 +1687,7 @@ def update_sat_org_logo(organization_data):
                         "values": [
                             {
                                 "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["logo_path"]}")'
+                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["ss_logo_path"]}")'
                                 }
                             }
                         ]
@@ -1714,7 +1714,7 @@ def update_sat_partner_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sheet_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sat_template_ss_id()})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1726,14 +1726,14 @@ def update_sat_partner_logo(organization_data):
 
     requests = []
 
-    # Add partner logo to cell I82
+    # Add partner logo to cell I75
     if organization_data['partner_logo_path']:
         requests.append({
             "updateCells": {
                 "range": {
                     "sheetId": analysis_sheet_id,
-                    "startRowIndex": 81,
-                    "endRowIndex": 82,
+                    "startRowIndex": 74,
+                    "endRowIndex": 75,
                     "startColumnIndex": 8,
                     "endColumnIndex": 9
                 },

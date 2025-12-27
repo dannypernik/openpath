@@ -177,6 +177,7 @@ class Organization(db.Model):
     color3 = db.Column(db.String(7), nullable=True)
     font_color = db.Column(db.String(7), nullable=True)
     logo_path = db.Column(db.String(128), nullable=True)
+    ss_logo_path = db.Column(db.String(128), nullable=True)
     partner_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True)
     partner = db.relationship(
         'User',

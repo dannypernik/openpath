@@ -21,7 +21,9 @@ from app.utils import is_dark_color, color_svg_white_to_input, add_test_dates_fr
 from app.create_sat_report import (
     create_custom_sat_spreadsheet, update_sat_org_logo, update_sat_partner_logo
 )
-from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
+from app.create_act_report import (
+    create_custom_act_spreadsheet, update_act_org_logo, update_act_partner_logo
+)
 from app.tasks import style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
 from reminders import get_student_events
 
@@ -387,124 +389,147 @@ def org_settings(org):
         form.color3.data = organization.color3
         form.font_color.data = organization.font_color
         form.logo.data = organization.logo_path
+        form.ss_logo.data = organization.ss_logo_path
         form.partner_id.data = organization.partner_id
         form.sat_ss_id.data = organization.sat_spreadsheet_id
         form.act_ss_id.data = organization.act_spreadsheet_id
 
     if form.validate_on_submit():
-        try:
-            if not organization:
-                organization = Organization(name=form.org_name.data, slug=form.slug.data)
-                db.session.add(organization)
-            else:
-                organization = Organization.query.filter_by(slug=org).first()
-
-            if form.partner_id.data == 0:
-                partner = User(
-                    first_name=form.first_name.data,
-                    last_name=form.last_name.data,
-                    email=form.email.data.lower(),
-                    role='partner',
-                    session_reminders=False,
-                    test_reminders=False
-                )
-                db.session.add(partner)
-                db.session.flush()
-            else:
-                partner = User.query.filter_by(id=form.partner_id.data).first()
-
-            if (
-                organization.color1 != form.color1.data or
-                organization.color2 != form.color2.data or
-                organization.color3 != form.color3.data or
-                organization.font_color != form.font_color.data or
-                organization.sat_spreadsheet_id != form.sat_ss_id.data or
-                organization.act_spreadsheet_id != form.act_ss_id.data
-            ):
-                is_style_updated = True
-            else:
-                is_style_updated = False
-
-            organization.name = form.org_name.data
-            organization.color1 = form.color1.data
-            organization.color2 = form.color2.data
-            organization.color3 = form.color3.data
-            organization.font_color = form.font_color.data
-            organization.partner_id = partner.id
-            organization.sat_spreadsheet_id = form.sat_ss_id.data
-            organization.act_spreadsheet_id = form.act_ss_id.data
-            slug = form.slug.data
-            slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
-            organization.slug = slug
-
-            organization_data = {
-                'name': form.org_name.data,
-                'sat_ss_id': form.sat_ss_id.data,
-                'act_ss_id': form.act_ss_id.data,
-                'color1': form.color1.data,
-                'color2': form.color2.data,
-                'color3': form.color3.data,
-                'font_color': form.font_color.data,
-            }
-
-            logo_file = form.logo.data
-            if logo_file:
-                upload_dir = os.path.join(current_app.static_folder, 'img/orgs')
-                os.makedirs(upload_dir, exist_ok=True)
-
-                filename = secure_filename(f"{slug}.{logo_file.filename.split('.')[-1]}")
-                logo_path = os.path.join(upload_dir, filename)
-                logo_file.save(logo_path)
-
-                organization.logo_path = f"img/orgs/{filename}"
-            organization_data['logo_path'] = organization.logo_path
-
-            db.session.commit()
-
-            if not form.sat_ss_id.data:
-                organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
-                organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
-
-            if not form.act_ss_id.data:
-                organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
-                organization_data['act_ss_id'] = organization.act_spreadsheet_id
-
-            if form.logo.data:
-                update_sat_org_logo(organization_data)
-                update_act_org_logo(organization_data)
-
-            if is_style_updated:
-                partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
-                os.makedirs(partner_logos_dir, exist_ok=True)
-                svg_path = os.path.join(current_app.static_folder, 'img/logo-header.svg')
-                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{organization.slug}.png'
-                static_output_path = os.path.join(current_app.static_folder, 'img/orgs/partner-logos', f'{organization.slug}.png')
-
-                if is_dark_color(organization.color1):
-                    logo_color = '#ffffff'
+        if 'save' in request.form:
+            try:
+                if not organization:
+                    organization = Organization(name=form.org_name.data, slug=form.slug.data)
+                    db.session.add(organization)
                 else:
-                    logo_color = organization.font_color
-                color_svg_white_to_input(svg_path, logo_color, static_output_path)
-                update_sat_partner_logo(organization_data)
+                    organization = Organization.query.filter_by(slug=org).first()
 
-                style_custom_sat_spreadsheet_task.delay(organization_data)
-                style_custom_act_spreadsheet_task.delay(organization_data)
+                if form.partner_id.data == 0:
+                    partner = User(
+                        first_name=form.first_name.data,
+                        last_name=form.last_name.data,
+                        email=form.email.data.lower(),
+                        role='partner',
+                        session_reminders=False,
+                        test_reminders=False
+                    )
+                    db.session.add(partner)
+                    db.session.flush()
+                else:
+                    partner = User.query.filter_by(id=form.partner_id.data).first()
 
+                if (
+                    organization.color1 != form.color1.data or
+                    organization.color2 != form.color2.data or
+                    organization.color3 != form.color3.data or
+                    organization.font_color != form.font_color.data or
+                    organization.sat_spreadsheet_id != form.sat_ss_id.data or
+                    organization.act_spreadsheet_id != form.act_ss_id.data
+                ):
+                    is_style_updated = True
+                else:
+                    is_style_updated = False
+
+                organization.name = form.org_name.data
+                organization.color1 = form.color1.data
+                organization.color2 = form.color2.data
+                organization.color3 = form.color3.data
+                organization.font_color = form.font_color.data
+                organization.partner_id = partner.id
+                organization.sat_spreadsheet_id = form.sat_ss_id.data
+                organization.act_spreadsheet_id = form.act_ss_id.data
+                slug = form.slug.data
+                slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
+                organization.slug = slug
+
+                organization_data = {
+                    'name': form.org_name.data,
+                    'sat_ss_id': form.sat_ss_id.data,
+                    'act_ss_id': form.act_ss_id.data,
+                    'color1': form.color1.data,
+                    'color2': form.color2.data,
+                    'color3': form.color3.data,
+                    'font_color': form.font_color.data,
+                }
+
+                if form.logo.data:
+                    logo_file = form.logo.data
+                    upload_dir = os.path.join(current_app.static_folder, 'img/orgs')
+                    os.makedirs(upload_dir, exist_ok=True)
+
+                    filename = secure_filename(f"{slug}.{logo_file.filename.split('.')[-1]}")
+                    logo_path = os.path.join(upload_dir, filename)
+                    logo_file.save(logo_path)
+
+                    organization.logo_path = f"img/orgs/{filename}"
+                    organization_data['logo_path'] = organization.logo_path
+
+                if form.ss_logo.data:
+                    ss_logo_file = form.ss_logo.data
+                    upload_dir = os.path.join(current_app.static_folder, 'img/orgs')
+                    os.makedirs(upload_dir, exist_ok=True)
+
+                    filename = secure_filename(f"{slug}-ss.{ss_logo_file.filename.split('.')[-1]}")
+                    ss_logo_path = os.path.join(upload_dir, filename)
+                    ss_logo_file.save(ss_logo_path)
+
+                    organization.ss_logo_path = f"img/orgs/{filename}"
+                    organization_data['ss_logo_path'] = organization.ss_logo_path
+
+                db.session.commit()
+
+                if not form.sat_ss_id.data:
+                    organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
+                    organization_data['sat_ss_id'] = organization.sat_spreadsheet_id
+
+                if not form.act_ss_id.data:
+                    organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
+                    organization_data['act_ss_id'] = organization.act_spreadsheet_id
+
+                if form.ss_logo.data:
+                    update_sat_org_logo(organization_data)
+                    update_act_org_logo(organization_data)
+
+                if is_style_updated:
+                    partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
+                    os.makedirs(partner_logos_dir, exist_ok=True)
+
+                    if is_dark_color(organization.color1):
+                        logo_color = '#ffffff'
+                    else:
+                        logo_color = organization.font_color
+
+                    svg_path = os.path.join(current_app.static_folder, 'img/logo-header.svg')
+                    safe_filename = secure_filename(f'opt-{logo_color}.png')
+                    organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
+                    static_output_path = os.path.join(current_app.static_folder, organization_data['partner_logo_path'])
+
+                    color_svg_white_to_input(svg_path, logo_color, static_output_path)
+                    update_sat_partner_logo(organization_data)
+                    update_act_partner_logo(organization_data)
+
+                    style_custom_sat_spreadsheet_task.delay(organization_data)
+                    style_custom_act_spreadsheet_task.delay(organization_data)
+
+                db.session.commit()
+
+                if is_style_updated or form.logo.data:
+                    flash(Markup(f'{"Style" if is_style_updated else "Logo"} updated for \
+                        <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
+                            SAT spreadsheet</a> and \
+                        <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
+                            ACT spreadsheet</a>'), 'success')
+                else:
+                    flash(f'{organization.name} saved', 'success')
+                return redirect(url_for('admin.org_settings', org=slug))
+            except Exception as e:
+                flash(f"Error creating custom spreadsheet: {e}", 'error')
+                logger.error(f"Error creating custom spreadsheet: {e}")
+                db.session.rollback()
+        elif 'delete' in request.form and organization:
+            db.session.delete(organization)
             db.session.commit()
-
-            if is_style_updated or form.logo.data:
-                flash(Markup(f'{"Style" if is_style_updated else "Logo"} updated for \
-                    <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
-                        SAT spreadsheet</a> and \
-                    <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
-                        ACT spreadsheet</a>'), 'success')
-            else:
-                flash(f'{organization.name} saved', 'success')
-            return redirect(url_for('admin.org_settings', org=slug))
-        except Exception as e:
-            flash(f"Error creating custom spreadsheet: {e}", 'error')
-            logger.error(f"Error creating custom spreadsheet: {e}")
-            db.session.rollback()
+            flash(f'Organization {organization.name} deleted')
+            return redirect(url_for('admin.orgs'))
     return render_template('org-settings.html', form=form, organization=organization)
 
 
