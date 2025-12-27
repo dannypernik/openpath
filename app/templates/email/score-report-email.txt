@@ -8,7 +8,7 @@ Answers for these questions will appear as "not found" on the score report. The 
 {% endif %}
 {% if score_data['answer_key_mismatches'] %}
 It appears that the College Board has changed the answer key for practice {{ score_data['test_display_name'] }}. The following questions may display incorrectly on your score report:
-{% include 'email/_changed_answer_table.txt' %}
+{% include 'email/_changed_answer_table.html' %}
 Note that the scores displayed on the report are not affected by errors in the answer key.
 {% endif %}
 {% if score_data['act_uploads_path'] %}
