@@ -49,6 +49,7 @@ def get_student_answers(score_details_file_path):
   for i, p in enumerate(pages):
     text = p.extract_text()
 
+    prev_start = None
     for line in read_text_line_by_line(text):
       # print(line)
       # print(list(line))
@@ -71,34 +72,68 @@ def get_student_answers(score_details_file_path):
         score_details_data['test_code'] = test_type.lower() + test_number
         score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
 
+      subject = 'rw_modules'
+      number = None
+      correct_answer = None
+      response = None
+
+      line_split = line.split()
       if line.count(' ') >= 3:
-        if line.split()[1] == 'Reading' or line.split()[1] == 'Math':
-          number = str(line.split(' ')[0])
-          if line.split()[1] == 'Reading':
-              subject = 'rw_modules'
-              correct_index = 4
-              if line.split()[3] != 'Writing':
-                raise ValueError('Error reading score details: PDF too narrow')
-          elif line.split()[1] == 'Math':
-            subject = 'm_modules'
-            correct_index = 2
-          if score_details_data['answers'][subject]['1'].get(number):
-            module = '2'
-          else:
-            module = '1'
-          correct_answer = line.split()[correct_index].rstrip(',')
-          s_line = line.split(' ')
-          if s_line[-1] == 'Review':
-            offset = 0
-          else:
-            offset = 1
-          is_correct = s_line[-2 + offset] == 'Correct'
-          if s_line[-2 + offset] == 'Omitted':
+        try:
+          review_index = line_split.index('Review')
+        except ValueError:
+          review_index = None
+
+        number = str(line_split[0])
+        if line_split[1] == 'Reading':
+          # subject = 'rw_modules'
+          if line_split[3] == 'Writing':
+            correct_answer = line_split[4].rstrip(',')
+        elif prev_start == 'Reading' and review_index:
+          # subject = 'rw_modules'
+          correct_answer = line_split[1].rstrip(',;')
+          # response = line_split[2].rstrip(';')
+          # if response == 'Omitted':
+          #   response = '-'
+          #   score_details_data['has_omits'] = True
+          # is_correct = line_split[3] == 'Correct'
+        elif line_split[1] == 'Math':
+          subject = 'm_modules'
+          correct_answer = line_split[2].rstrip(',')
+          if correct_answer == 'Omitted' or correct_answer[-1] == ';':
+            correct_answer = prev_start.rstrip(',')
+
+
+          # if score_details_data['answers'][subject]['1'].get(number):
+          #   module = '2'
+          # else:
+          #   module = '1'
+          # s_line = line.split(' ')
+        if review_index:
+          is_correct = line_split[review_index - 1] == 'Correct'
+          if line_split[review_index - 1] == 'Omitted':
             response = '-'
             score_details_data['has_omits'] = True
           else:
-            response = s_line[-3+offset][:-1]
+            response = line_split[review_index - 2].rstrip(';')
+          # if line_split[-1] == 'Review':
+          #   offset = 0
+          # else:
+          #   offset = 1
+          # is_correct = line_split[-2 + offset] == 'Correct'
+          # if line_split[-2 + offset] == 'Omitted':
+          #   response = '-'
+          #   score_details_data['has_omits'] = True
+          # else:
+          #   response = line_split[-3+offset][:-1]
 
+
+        if score_details_data['answers'][subject]['1'].get(number):
+          module = '2'
+        else:
+          module = '1'
+
+        if subject and number and correct_answer and response:
           subject_totals[subject] += 1
 
           score_details_data['answers'][subject][module][number] = {
@@ -106,6 +141,8 @@ def get_student_answers(score_details_file_path):
             'student_answer': response,
             'is_correct': is_correct
           }
+
+      prev_start = line_split[0] if len(line_split) > 0 else prev_start
 
   rw_questions_answered = 0
   m_questions_answered = 0
