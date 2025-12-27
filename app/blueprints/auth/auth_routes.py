@@ -46,7 +46,7 @@ def signup():
         email_status = send_signup_request_email(user, next)
         if email_status == 200:
             flash('Thanks for reaching out! We\'ll be in touch.')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         else:
             flash('Signup request email failed to send, please contact ' + hello, 'error')
         return redirect(url_for(next, org=request.view_args.get('org')))
@@ -101,7 +101,7 @@ def start_page():
     if current_user.is_admin:
         return redirect(url_for('admin.students'))
     elif current_user.password_hash:
-        return redirect(url_for('test_reminders'))
+        return redirect(url_for('main.test_reminders'))
     else:
         return redirect(url_for('auth.set_password'))
 
@@ -149,7 +149,7 @@ def unsubscribe():
         except Exception as e:
             flash('An error occurred while processing your request. Please try again later.', 'error')
             logger.error(f"Error processing unsubscribe request: {e}", exc_info=True)
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     return render_template('unsubscribe.html', title='Unsubscribe', form=form)
 
 

@@ -17,7 +17,7 @@
       <p>If you have time now, providing the information below will get us off to a smooth start.</p>
     {% endif %}
   </div>
-  <form method="POST" action="{{ url_for('new_student') }}">
+  <form method="POST" action="{{ url_for('main.new_student') }}">
     {{ form.hidden_tag() }}
 
     <h3 class="fw-bold">Student details</h3>

@@ -9,7 +9,7 @@
 {% block content %}
 <h1 class="d-inline-block me-4">Settings for {{ organization.name or 'new organization' }}</h1>
 {% if organization %}
-  <a href="{{ url_for('partner_page', org=organization['slug']) }}">View</a>
+  <a href="{{ url_for('main.partner_page', org=organization['slug']) }}">View</a>
 {% endif %}
 <form method='post' enctype='multipart/form-data'>
     {{ form.hidden_tag() }}

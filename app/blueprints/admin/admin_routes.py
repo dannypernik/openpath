@@ -280,14 +280,14 @@ def edit_date(id):
             except:
                 db.session.rollback()
                 flash(date.date.strftime('%b %-d') + ' could not be updated', 'error')
-                return redirect(url_for('test_dates'))
+                return redirect(url_for('main.test_dates'))
         elif 'delete' in request.form:
             db.session.delete(date)
             db.session.commit()
             flash('Deleted ' + date.date.strftime('%b %-d'))
         else:
             flash('Code error in POST request', 'error')
-        return redirect(url_for('test_dates'))
+        return redirect(url_for('main.test_dates'))
     elif request.method == 'GET':
         form.test.data = date.test
         form.date.data = date.date
@@ -305,7 +305,7 @@ def edit_date(id):
 def add_test_dates():
     add_test_dates_from_ss()
     flash('Test dates added/updated from spreadsheet')
-    return redirect(url_for('test_dates'))
+    return redirect(url_for('main.test_dates'))
 
 
 
