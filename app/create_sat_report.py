@@ -1119,7 +1119,7 @@ def style_custom_sat_spreadsheet(organization_data):
                                 "green": rgb_text1[1] / 255,
                                 "blue": rgb_text1[2] / 255
                             },
-                            "fontSize": 10,
+                            "fontSize": 12,
                             "bold": True,
                             "fontFamily": "Montserrat"
                         }
