@@ -464,7 +464,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         requests.append(request)
 
         if organization_dict:
-            title_row = 5 # Row B6 if custom organization
+            title_row = 4 # Row B5 if custom organization
         else:
             title_row = 1 # Row B2 if default template
         request = {
