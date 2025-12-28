@@ -461,7 +461,7 @@ def org_settings(org):
                     logo_file.save(logo_path)
 
                     organization.logo_path = f"img/orgs/{filename}"
-                    organization_data['logo_path'] = organization.logo_path
+                organization_data['logo_path'] = organization.logo_path
 
                 if form.ss_logo.data:
                     ss_logo_file = form.ss_logo.data
@@ -473,7 +473,7 @@ def org_settings(org):
                     ss_logo_file.save(ss_logo_path)
 
                     organization.ss_logo_path = f"img/orgs/{filename}"
-                    organization_data['ss_logo_path'] = organization.ss_logo_path
+                organization_data['ss_logo_path'] = organization.ss_logo_path
 
                 db.session.commit()
 
@@ -485,7 +485,7 @@ def org_settings(org):
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
                     organization_data['act_ss_id'] = organization.act_spreadsheet_id
 
-                if form.ss_logo.data:
+                if organization.ss_logo_path:
                     update_sat_org_logo(organization_data)
                     update_act_org_logo(organization_data)
 
