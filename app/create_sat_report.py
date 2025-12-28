@@ -437,32 +437,6 @@ def create_sat_score_report(score_data, organization_dict=None):
             }
             requests.append(request)
 
-        # Set test completion date
-        request = {
-            'updateCells': {
-                'range': {
-                    'sheetId': answer_sheet_id,
-                    'startRowIndex': 75,
-                    'endRowIndex': 76,
-                    'startColumnIndex': 1,
-                    'endColumnIndex': 2
-                },
-                'rows': [
-                    {
-                        'values': [
-                            {
-                                'userEnteredValue': {
-                                    'stringValue': 'Test completed on ' + score_data['date']
-                                }
-                            }
-                        ]
-                    }
-                ],
-                'fields': 'userEnteredValue'
-            }
-        }
-        requests.append(request)
-
         if organization_dict:
             title_row = 4 # Row B5 if custom organization
         else:
@@ -492,6 +466,31 @@ def create_sat_score_report(score_data, organization_dict=None):
         }
         requests.append(request)
 
+        # Set test completion date
+        request = {
+            'updateCells': {
+                'range': {
+                    'sheetId': analysis_sheet_id,
+                    'startRowIndex': 75,
+                    'endRowIndex': 76,
+                    'startColumnIndex': 1,
+                    'endColumnIndex': 2
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'userEnteredValue': {
+                                    'stringValue': 'Test completed on ' + score_data['date']
+                                }
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'userEnteredValue'
+            }
+        }
+        requests.append(request)
 
         # Hide 'Data' sheet
         request = {
