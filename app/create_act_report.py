@@ -769,7 +769,6 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
-
         # Font sizes 13 for B5, 12 for E2, 23 for E3, 12 for H2:J6
         requests.append({
             "repeatCell": {
@@ -1030,6 +1029,42 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
+    # 'In partnership with    ' to F72
+    requests.append({
+        "updateCells": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 71,
+                "endRowIndex": 72,
+                "startColumnIndex": 5,
+                "endColumnIndex": 6
+            },
+            "rows": [
+                {
+                    "values": [
+                        {
+                            "userEnteredValue": {
+                                "stringValue": "In partnership with    "
+                            },
+                            # "userEnteredFormat": {
+                            #     "textFormat": {
+                            #         "fontFamily": "Montserrat",
+                            #         "fontSize": 10,
+                            #         "foregroundColor": {
+                            #             "red": rgb_text1[0] / 255,
+                            #             "green": rgb_text1[1] / 255,
+                            #             "blue": rgb_text1[2] / 255
+                            #         }
+                            #     }
+                            # }
+                        }
+                    ]
+                }
+            ],
+            "fields": "userEnteredValue"#,userEnteredFormat.textFormat"
+        }
+    })
+
     # Apply color1 as bg color of enhanced sheet footer A75:P77
     requests.append({
         "repeatCell": {
@@ -1100,6 +1135,24 @@ def style_custom_act_spreadsheet(organization_data):
                 }
             },
             "right": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerHorizontal": {
+                "style": "SOLID",
+                "width": 1,
+                "color": {
+                    "red": rgb_color1[0] / 255,
+                    "green": rgb_color1[1] / 255,
+                    "blue": rgb_color1[2] / 255
+                }
+            },
+            "innerVertical": {
                 "style": "SOLID",
                 "width": 1,
                 "color": {
