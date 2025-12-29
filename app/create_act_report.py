@@ -1089,7 +1089,8 @@ def style_custom_act_spreadsheet(organization_data):
                             "blue": rgb_text1[2] / 255
                         },
                         "bold": True,
-                        "fontFamily": "Montserrat"
+                        "fontFamily": "Montserrat",
+                        "fontSize": 12
                     }
                 }
             },
