@@ -562,11 +562,7 @@ def new_student():
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= datetime.today().date())
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
-    parent_list = [(0,'New parent')]+[(u.id, full_name(u)) for u in parents]
-    form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(u.id, full_name(u)) for u in tutors]
-    form.tutor.choices = tutor_list
 
     if request.method == 'GET':
         user_id = request.args.get('id')

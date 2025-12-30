@@ -158,6 +158,7 @@
     >
       <div class="col-12">
         <select name="parent_id" id="parent_id">
+          <option value="0" selected>New parent</option>
           {% for parent in parents %}
           <option
             value="{{ parent.id }}"
