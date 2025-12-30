@@ -589,7 +589,33 @@ def style_custom_act_spreadsheet(organization_data):
 
     # Apply color1 and borders to A1:K7 on Test analysis and Test analysis 2
     for sheet_id in [analysis_sheet_id, analysis_sheet_2_id]:
-        # Apply color1
+        # Apply font_color to body
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 7,
+                    "endRowIndex": 74,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 11
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_font_color[0] / 255,
+                                "green": rgb_font_color[1] / 255,
+                                "blue": rgb_font_color[2] / 255
+                            },
+                            "fontFamily": "Montserrat"
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
+            }
+        })
+
+        # Apply color1 to headers
         requests.append({
             "repeatCell": {
                 "range": {
@@ -879,6 +905,32 @@ def style_custom_act_spreadsheet(organization_data):
         })
 
     for ans_sheet_id in [answer_sheet_id, enhanced_sheet_id]:
+        # Apply font_color to body A1:O74
+        requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": ans_sheet_id,
+                    "startRowIndex": 4,
+                    "endRowIndex": 74,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": 15
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "textFormat": {
+                            "foregroundColor": {
+                                "red": rgb_font_color[0] / 255,
+                                "green": rgb_font_color[1] / 255,
+                                "blue": rgb_font_color[2] / 255
+                            },
+                            "fontFamily": "Montserrat"
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
+            }
+        })
+
         # Apply color1 to A1:O4 on Answer sheet
         requests.append({
             "repeatCell": {
@@ -1214,7 +1266,7 @@ def style_custom_act_spreadsheet(organization_data):
                             "green": rgb_text1[1] / 255,
                             "blue": rgb_text1[2] / 255
                         },
-                        "fontSize": 10,
+                        "fontSize": 11,
                         "bold": True,
                         "fontFamily": "Montserrat"
                     }
@@ -1223,6 +1275,7 @@ def style_custom_act_spreadsheet(organization_data):
             "fields": "userEnteredFormat(backgroundColor, textFormat)"
         }
     })
+
     # Borders for A1:I3 on Data sheet
     requests.append({
         "updateBorders": {
@@ -1289,6 +1342,60 @@ def style_custom_act_spreadsheet(organization_data):
             }
         }
     })
+
+    # Set font size of Data!B1 to 13
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": data_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 1,
+                "startColumnIndex": 1,
+                "endColumnIndex": 2
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "fontSize": 13,
+                        "fontFamily": "Montserrat",
+                        "bold": True,
+                        "foregroundColor": {
+                            "red": rgb_font_color[0] / 255,
+                            "green": rgb_font_color[1] / 255,
+                            "blue": rgb_font_color[2] / 255
+                        }
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.textFormat"
+        }
+    })
+
+    # Set font color of Data!A1 to color1 to hide text
+    requests.append({
+        "repeatCell": {
+            "range": {
+                "sheetId": data_sheet_id,
+                "startRowIndex": 0,
+                "endRowIndex": 1,
+                "startColumnIndex": 0,
+                "endColumnIndex": 1
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "textFormat": {
+                        "foregroundColor": {
+                            "red": rgb_color1[0] / 255,
+                            "green": rgb_color1[1] / 255,
+                            "blue": rgb_color1[2] / 255
+                        }
+                    }
+                }
+            },
+            "fields": "userEnteredFormat(textFormat.foregroundColor)"
+        }
+    })
+
     # Execute the batch update
     if requests:
         service.spreadsheets().batchUpdate(
