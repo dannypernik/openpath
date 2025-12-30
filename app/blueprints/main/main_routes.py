@@ -729,6 +729,11 @@ def new_student():
                 for date in contact_data['interested_dates']:
                     date['date'] = date['date'].strftime('%b %d')
 
+            if form.create_student_folder.data:
+                contact_data['create_folder'] = True
+            else:
+                contact_data['create_folder'] = False
+
             new_student_task.delay(contact_data)
 
             # email_status = send_new_student_email(contact_data)

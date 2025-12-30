@@ -201,7 +201,11 @@ def new_student_task(self, contact_data):
     send_new_student_email(contact_data)
     create_crm_action(crm_data, f'Scheduling/followup for {student.get("first_name", "")}')
 
-    folder_link = create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
+    if contact_data.get('create_folder'):
+      logging.info(f"Creating test prep folder for {full_name(student)}")
+      folder_link = create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
+    else:
+      folder_link = None
 
     return folder_link
 
