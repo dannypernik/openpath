@@ -5,14 +5,16 @@ from celery import chain
 
 from app import celery
 from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, \
-    sat_answers_to_student_ss, style_custom_sat_spreadsheet
+    sat_answers_to_student_ss, style_custom_sat_spreadsheet, \
+    update_sat_org_logo, update_sat_partner_logo
 from app.create_act_report import create_act_score_report, send_act_pdf_report, \
-    act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet
+    act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet, \
+    update_act_org_logo, update_act_partner_logo
 from app.new_student_folders import create_test_prep_folder, create_folder
 from app.models import User
 from app.helpers import full_name
 from app.email import send_task_fail_mail, send_new_student_email
-from app.utils import create_crm_action
+from app.utils import create_crm_action, color_svg_white_to_input
 
 
 class MyTaskBaseClass(celery.Task):
@@ -147,23 +149,30 @@ def act_report_workflow_task(self, score_data, organization_dict=None):
   ).apply_async()
 
 
-@celery.task(name='app.tasks.style_custom_sat_spreadsheet_task', bind=True, base=MyTaskBaseClass)
-def style_custom_sat_spreadsheet_task(self, organization_data):
+@celery.task(name='app.tasks.style_custom_spreadsheets_task', bind=True, base=MyTaskBaseClass)
+def style_custom_spreadsheets_task(self, organization_data):
   try:
-    logging.info(f"Styling SAT spreadsheet for {organization_data['name']}")
-    style_custom_sat_spreadsheet(organization_data)
+    if organization_data['ss_logo_path']:
+      logging.info(f"Adding org logo to {organization_data['name']} spreadsheets")
+      update_sat_org_logo(organization_data)
+      update_act_org_logo(organization_data)
+
+    if organization_data['is_style_updated']:
+      if not os.path.exists(organization_data['partner_logo_path']):
+        logging.info(f"Creating partner logo for {organization_data['name']}")
+        color_svg_white_to_input(organization_data['svg_path'], organization_data['logo_color'], organization_data['partner_logo_path'])
+
+      logging.info(f"Adding partner logo to {organization_data['name']} spreadsheets")
+      update_sat_partner_logo(organization_data)
+      update_act_partner_logo(organization_data)
+
+      logging.info(f"Styling SAT spreadsheet for {organization_data['name']}")
+      style_custom_sat_spreadsheet(organization_data)
+      logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")
+      style_custom_act_spreadsheet(organization_data)
   except Exception as e:
     logging.error(f'Error styling SAT spreadsheet: {e}')
-    raise e
-
-
-@celery.task(name='app.tasks.style_custom_act_spreadsheet_task', bind=True, base=MyTaskBaseClass)
-def style_custom_act_spreadsheet_task(self, organization_data):
-  try:
-    logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")
-    style_custom_act_spreadsheet(organization_data)
-  except Exception as e:
-    logging.error(f'Error styling ACT spreadsheet: {e}')
+    send_task_fail_mail(organization_data, e, self.request.id, [organization_data], {}, None)
     raise e
 
 

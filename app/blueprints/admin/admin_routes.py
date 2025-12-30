@@ -17,14 +17,14 @@ from app.forms import (
 )
 from app.models import User, TestDate, UserTestDate, Organization
 from app.email import send_session_recap_email, send_verification_email
-from app.utils import is_dark_color, color_svg_white_to_input, add_test_dates_from_ss
+from app.utils import is_dark_color, add_test_dates_from_ss
 from app.create_sat_report import (
     create_custom_sat_spreadsheet, update_sat_org_logo, update_sat_partner_logo
 )
 from app.create_act_report import (
     create_custom_act_spreadsheet, update_act_org_logo, update_act_partner_logo
 )
-from app.tasks import style_custom_sat_spreadsheet_task, style_custom_act_spreadsheet_task
+from app.tasks import style_custom_spreadsheets_task
 from reminders import get_student_events
 
 logger = logging.getLogger(__name__)
@@ -417,18 +417,6 @@ def org_settings(org):
                 else:
                     partner = User.query.filter_by(id=form.partner_id.data).first()
 
-                if (
-                    organization.color1 != form.color1.data or
-                    organization.color2 != form.color2.data or
-                    organization.color3 != form.color3.data or
-                    organization.font_color != form.font_color.data or
-                    organization.sat_spreadsheet_id != form.sat_ss_id.data or
-                    organization.act_spreadsheet_id != form.act_ss_id.data
-                ):
-                    is_style_updated = True
-                else:
-                    is_style_updated = False
-
                 organization.name = form.org_name.data
                 organization.color1 = form.color1.data
                 organization.color2 = form.color2.data
@@ -450,6 +438,19 @@ def org_settings(org):
                     'color3': form.color3.data,
                     'font_color': form.font_color.data,
                 }
+
+                if (
+                    organization.color1 != form.color1.data or
+                    organization.color2 != form.color2.data or
+                    organization.color3 != form.color3.data or
+                    organization.font_color != form.font_color.data or
+                    organization.sat_spreadsheet_id != form.sat_ss_id.data or
+                    organization.act_spreadsheet_id != form.act_ss_id.data or
+                    organization.ss_logo_path != form.ss_logo.data
+                ):
+                    organization_data['is_style_updated'] = True
+                else:
+                    organization_data['is_style_updated'] = False
 
                 if form.logo.data:
                     logo_file = form.logo.data
@@ -485,35 +486,50 @@ def org_settings(org):
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
                     organization_data['act_ss_id'] = organization.act_spreadsheet_id
 
-                if organization.ss_logo_path:
-                    update_sat_org_logo(organization_data)
-                    update_act_org_logo(organization_data)
+                if is_dark_color(organization_data['color1']):
+                    organization_data['logo_color'] = '#ffffff'
+                else:
+                    organization_data['logo_color'] = organization_data['font_color']
 
-                if is_style_updated:
-                    partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
-                    os.makedirs(partner_logos_dir, exist_ok=True)
+                partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
+                os.makedirs(partner_logos_dir, exist_ok=True)
 
-                    if is_dark_color(organization.color1):
-                        logo_color = '#ffffff'
-                    else:
-                        logo_color = organization.font_color
+                organization_data['svg_path'] = os.path.join(current_app.static_folder, 'img/logo-header.svg')
+                safe_filename = secure_filename(f'opt-{organization_data["logo_color"]}.png')
+                logo_path =  f'img/orgs/partner-logos/{safe_filename}'
+                organization_data['partner_logo_path'] = os.path.join(current_app.static_folder, logo_path)
 
-                    svg_path = os.path.join(current_app.static_folder, 'img/logo-header.svg')
-                    safe_filename = secure_filename(f'opt-{logo_color}.png')
-                    organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
-                    static_output_path = os.path.join(current_app.static_folder, organization_data['partner_logo_path'])
+                # if organization.ss_logo_path:
+                #     update_sat_org_logo(organization_data)
+                #     update_act_org_logo(organization_data)
 
-                    color_svg_white_to_input(svg_path, logo_color, static_output_path)
-                    update_sat_partner_logo(organization_data)
-                    update_act_partner_logo(organization_data)
+                # if is_style_updated:
+                #     partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
+                #     os.makedirs(partner_logos_dir, exist_ok=True)
 
-                    style_custom_sat_spreadsheet_task.delay(organization_data)
-                    style_custom_act_spreadsheet_task.delay(organization_data)
+                #     if is_dark_color(organization.color1):
+                #         logo_color = '#ffffff'
+                #     else:
+                #         logo_color = organization.font_color
+
+                #     svg_path = os.path.join(current_app.static_folder, 'img/logo-header.svg')
+                #     safe_filename = secure_filename(f'opt-{logo_color}.png')
+                #     organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
+                #     static_output_path = os.path.join(current_app.static_folder, organization_data['partner_logo_path'])
+
+                #     color_svg_white_to_input(svg_path, logo_color, static_output_path)
+                #     update_sat_partner_logo(organization_data)
+                #     update_act_partner_logo(organization_data)
+
+                #     style_custom_sat_spreadsheet_task.delay(organization_data)
+                #     style_custom_act_spreadsheet_task.delay(organization_data)
+
+                style_custom_spreadsheets_task.delay(organization_data)
 
                 db.session.commit()
 
-                if is_style_updated or form.logo.data:
-                    flash(Markup(f'{"Style" if is_style_updated else "Logo"} updated for \
+                if organization_data['is_style_updated'] or form.logo.data:
+                    flash(Markup(f'{"Style" if organization_data["is_style_updated"] else "Logo"} updated for \
                         <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
                             SAT spreadsheet</a> and \
                         <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
