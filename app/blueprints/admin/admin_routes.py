@@ -496,8 +496,7 @@ def org_settings(org):
 
                 organization_data['svg_path'] = os.path.join(current_app.static_folder, 'img/logo-header.svg')
                 safe_filename = secure_filename(f'opt-{organization_data["logo_color"]}.png')
-                logo_path =  f'img/orgs/partner-logos/{safe_filename}'
-                organization_data['partner_logo_path'] = os.path.join(current_app.static_folder, logo_path)
+                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
 
                 # if organization.ss_logo_path:
                 #     update_sat_org_logo(organization_data)
