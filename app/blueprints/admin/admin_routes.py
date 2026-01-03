@@ -437,6 +437,7 @@ def org_settings(org):
                     'color2': form.color2.data,
                     'color3': form.color3.data,
                     'font_color': form.font_color.data,
+                    'static_path': os.path.join(current_app.static_folder)
                 }
 
                 if (

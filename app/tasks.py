@@ -160,7 +160,8 @@ def style_custom_spreadsheets_task(self, organization_data):
     if organization_data['is_style_updated']:
       if not os.path.exists(organization_data['partner_logo_path']):
         logging.info(f"Creating partner logo for {organization_data['name']}")
-        color_svg_white_to_input(organization_data['svg_path'], organization_data['logo_color'], organization_data['partner_logo_path'])
+        output_path = os.path.join(organization_data['static_path'], organization_data['partner_logo_path'])
+        color_svg_white_to_input(organization_data['svg_path'], organization_data['logo_color'], output_path)
 
       logging.info(f"Adding partner logo to {organization_data['name']} spreadsheets")
       update_sat_partner_logo(organization_data)
