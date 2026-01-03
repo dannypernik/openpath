@@ -756,6 +756,15 @@ def style_custom_act_spreadsheet(organization_data):
                         "blue": rgb_color1[2] / 255
                     }
                 },
+                "bottom": {
+                    "style": "SOLID",
+                    "width": 1,
+                    "color": {
+                        "red": rgb_color1[0] / 255,
+                        "green": rgb_color1[1] / 255,
+                        "blue": rgb_color1[2] / 255
+                    }
+                },
                 "left": {
                     "style": "SOLID",
                     "width": 1,
