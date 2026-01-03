@@ -318,6 +318,7 @@ class OrgSettingsForm(FlaskForm):
     font_color = StringField('Font color', render_kw={'placeholder': '#ffffff'}, \
         validators=[InputRequired()])
     logo = FileField('Logo', validators=[FileAllowed(['png', 'jpg', 'jpeg', 'webp'], 'Images only please (png, jpg, jpeg, webp)')])
+    copy_ss_logo = BooleanField('Copy logo for spreadsheets?')
     ss_logo = FileField('Spreadsheet logo', validators=[FileAllowed(['png', 'jpg', 'jpeg', 'webp'], 'Images only please (png, jpg, jpeg, webp)')])
     sat_ss_id = StringField('SAT template spreadsheet ID', render_kw={'placeholder': 'SAT template spreadsheet ID'})
     act_ss_id = StringField('ACT template spreadsheet ID', render_kw={'placeholder': 'ACT template spreadsheet ID'})

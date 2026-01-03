@@ -67,8 +67,8 @@
     </div>
     <div class="row my-3">
       <div class="col-12">
-        <input id="copy-logo-checkbox" type="checkbox">
-        <label for="copy-logo-checkbox">Copy logo for spreadsheets?</label>
+        {{ form.copy_ss_logo }}
+        {{ form.copy_ss_logo.label }}
       </div>
     </div>
     <div class="row">
@@ -163,7 +163,7 @@
     const ssLogoInput = document.getElementById('ss_logo');
 
     copyCheckbox.addEventListener('change', function() {
-      if (this.checked && logoInput.files.length > 0) {
+      if (this.checked) {
         const dataTransfer = new DataTransfer();
         Array.from(logoInput.files).forEach(file => {
           dataTransfer.items.add(file);

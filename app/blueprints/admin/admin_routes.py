@@ -472,8 +472,10 @@ def org_settings(org):
                     filename = secure_filename(f"{slug}-ss.{ss_logo_file.filename.split('.')[-1]}")
                     ss_logo_path = os.path.join(upload_dir, filename)
                     ss_logo_file.save(ss_logo_path)
-
                     organization.ss_logo_path = f"img/orgs/{filename}"
+                elif form.copy_ss_logo.data and organization.logo_path:
+                    organization.ss_logo_path = organization.logo_path
+
                 organization_data['ss_logo_path'] = organization.ss_logo_path
 
                 db.session.commit()
