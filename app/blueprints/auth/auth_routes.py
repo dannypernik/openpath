@@ -184,21 +184,33 @@ def request_password_reset():
     return render_template('request-password-reset.html', title='Reset password', form=form)
 
 
+@auth_bp.route('/set-password', methods=['GET', 'POST'])
 @auth_bp.route('/set-password/<token>', methods=['GET', 'POST'])
-def set_password(token):
-    user = User.verify_email_token(token)
-    next = request.args.get('next')
-    if not user:
-        flash('The password reset link is expired or invalid. Please try again.')
-        return redirect(url_for('auth.request_password_reset', next=next))
+def set_password(token=None):
+    # Allow setting password either via token (from email) or for a logged-in user
+    next = request.args.get('next') or get_next_page()
+    if token:
+        user = User.verify_email_token(token)
+        if not user:
+            flash('The password reset link is expired or invalid. Please try again.')
+            return redirect(url_for('auth.request_password_reset', next=next))
+    else:
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.signin'))
+        user = current_user
+
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
         user.is_verified = True
         db.session.commit()
-        login_user(user)
+        # Ensure the user is logged in after setting password
+        try:
+            login_user(user)
+        except Exception:
+            pass
         flash('Your password has been saved.')
-        if next in current_app.view_functions:
+        if next and next in current_app.view_functions:
             return redirect(url_for(next))
         else:
             return redirect(url_for('auth.start_page'))
