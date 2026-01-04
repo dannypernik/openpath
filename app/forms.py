@@ -167,7 +167,7 @@ class StudentIntakeForm(FlaskForm):
     grad_year = SelectField('Graduation year', choices=[(None, '--'), ('2026', '2026 (Senior)'), \
         ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
         ('college', 'College'), ('school', 'Grade school')])
-    parent_id = SelectField('Parent', coerce=int)
+    parent_select = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
     parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Email address'})
@@ -176,7 +176,7 @@ class StudentIntakeForm(FlaskForm):
     parent2_last_name = StringField('2nd parent last name', render_kw={'placeholder': 'Last name'})
     parent2_email = EmailField('2nd parent email address', render_kw={'placeholder': 'Email address'})
     parent2_phone = TelField('2nd parent phone', render_kw={'placeholder': 'Phone'})
-    tutor = SelectField('Tutor', coerce=int)
+    tutor_select = SelectField('Tutor', coerce=int)
     status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
         ('paused','Paused'),('inactive','Inactive')])
     subject = StringField('Primary subject', render_kw={'placeholder': 'Subject'})

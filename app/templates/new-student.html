@@ -59,12 +59,8 @@
           </select>
         </div>
         <div>{{ form.subject(class='d-none mb-0') }}</div>
-        <div
-          id="create-folder-div"
-          class="align-self-end mb-lg-2 ms-3 {% if not current_user.is_admin %}d-none{% endif %}"
-        >
-          {{ form.create_student_folder }} {{ form.create_student_folder.label
-          }}
+        <div id="create-folder-div" class="align-self-end mb-lg-2 ms-3 {% if not current_user.is_admin %}d-none{% endif %}">
+          {{ form.create_student_folder }} {{ form.create_student_folder.label }}
         </div>
       </div>
     </div>
@@ -83,8 +79,7 @@
       class="row align-items-end {% if not current_user.is_admin %}d-none{% endif %}"
     >
       <div class="col-12 col-md-4 col-lg-3 mb-3">
-        {{ form.tutor.label }}<br />
-        <select id="tutor" name="tutor" class="form-control">
+        <select id="tutor_select" name="tutor_select">
           {% for tutor in tutors %}
           <option value="{{ tutor.id }}" data-location="{{ tutor.location }}">
             {{ full_name(tutor) }}
@@ -157,7 +152,7 @@
       class="row my-2 {% if current_user and current_user.is_admin %}d-block{% else %}d-none{% endif %}"
     >
       <div class="col-12">
-        <select name="parent_id" id="parent_id">
+        <select name="parent_select" id="parent_select">
           <option value="0" selected>New parent</option>
           {% for parent in parents %}
           <option
@@ -272,7 +267,7 @@
     }
   });
 
-  document.getElementById("parent_id").addEventListener("change", function () {
+  document.getElementById("parent_select").addEventListener("change", function () {
     if (this.value !== "0") {
       document.getElementById("parent_first_name").value =
         this.options[this.selectedIndex].getAttribute("data-first-name");
@@ -287,7 +282,7 @@
     }
   });
 
-  const tutorSelect = document.getElementById("tutor");
+  const tutorSelect = document.getElementById("tutor_select");
 
   // Set initial location from default tutor
   const initialOption = tutorSelect.options[tutorSelect.selectedIndex];

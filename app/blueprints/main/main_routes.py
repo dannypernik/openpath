@@ -562,7 +562,11 @@ def new_student():
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= datetime.today().date())
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
+    parent_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in parents]
+    form.parent_select.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
+    tutor_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in tutors]
+    form.tutor_select.choices = tutor_list
 
     if request.method == 'GET':
         user_id = request.args.get('id')
@@ -594,6 +598,7 @@ def new_student():
             return redirect(url_for('admin.students'))
 
         try:
+            tutor = User.query.filter_by(id=form.tutor_select.data).first()
             parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
             if not parent:
                 parent = User(
@@ -630,7 +635,7 @@ def new_student():
                 role='student',
                 grad_year=form.grad_year.data,
                 subject=form.subject.data,
-                tutor_id=form.tutor.data,
+                tutor_id=form.tutor_select.data,
                 session_reminders=True,
                 test_reminders=True
             )
@@ -678,52 +683,50 @@ def new_student():
                     if str(d.id) in test_selections:
                         student.interested_test_date(d)
 
-            if form.create_student_folder.data:
-                tutor = User.query.filter_by(id=form.tutor.data).first()
-                contact_data = {
-                    'student': {
-                        'first_name': student.first_name,
-                        'last_name': student.last_name,
-                        'email': student.email,
-                        'phone': student.phone,
-                        'timezone': student.timezone,
-                        'subject': student.subject,
-                        'grad_year': student.grad_year
-                    },
-                    'parent': {
-                        'first_name': parent.first_name,
-                        'last_name': parent.last_name,
-                        'email': parent.email,
-                        'phone': parent.phone,
-                        'timezone': student.timezone
-                    } if parent else None,
-                    'parent2': {
-                        'first_name': parent2.first_name,
-                        'last_name': parent2.last_name,
-                        'email': parent2.email,
-                        'phone': parent2.phone,
-                        'timezone': student.timezone
-                    } if parent2 else None,
-                    'tutor': {
-                        'first_name': tutor.first_name,
-                        'last_name': tutor.last_name,
-                        'email': tutor.email,
-                        'phone': tutor.phone
-                    } if tutor else None,
-                    'notes': form.notes.data
-                }
+            contact_data = {
+                'student': {
+                    'first_name': student.first_name,
+                    'last_name': student.last_name,
+                    'email': student.email,
+                    'phone': student.phone,
+                    'timezone': student.timezone,
+                    'subject': student.subject,
+                    'grad_year': student.grad_year
+                },
+                'parent': {
+                    'first_name': parent.first_name,
+                    'last_name': parent.last_name,
+                    'email': parent.email,
+                    'phone': parent.phone,
+                    'timezone': student.timezone
+                } if parent else None,
+                'parent2': {
+                    'first_name': parent2.first_name,
+                    'last_name': parent2.last_name,
+                    'email': parent2.email,
+                    'phone': parent2.phone,
+                    'timezone': student.timezone
+                } if parent2 else None,
+                'tutor': {
+                    'first_name': tutor.first_name,
+                    'last_name': tutor.last_name,
+                    'email': tutor.email,
+                    'phone': tutor.phone
+                } if tutor else None,
+                'notes': form.notes.data
+            }
 
-                contact_data['interested_dates'] = []
-                for test_date in student.get_dates():
-                    contact_data['interested_dates'].append({
-                        'test': test_date.test,
-                        'date': test_date.date,
-                        'is_registered': student.is_registered(test_date)
-                    })
+            contact_data['interested_dates'] = []
+            for test_date in student.get_dates():
+                contact_data['interested_dates'].append({
+                    'test': test_date.test,
+                    'date': test_date.date,
+                    'is_registered': student.is_registered(test_date)
+                })
 
-                contact_data['interested_dates'].sort(key=lambda x: x['date'])
-                for date in contact_data['interested_dates']:
-                    date['date'] = date['date'].strftime('%b %d')
+            contact_data['interested_dates'].sort(key=lambda x: x['date'])
+            for date in contact_data['interested_dates']:
+                date['date'] = date['date'].strftime('%b %d')
 
             if form.create_student_folder.data:
                 contact_data['create_folder'] = True
