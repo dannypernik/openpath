@@ -7,10 +7,8 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 from werkzeug.serving import WSGIRequestHandler
-
 from flask import Flask, redirect, url_for, request, flash, g
 from celery import Celery
-
 from config import config, Config
 from app.extensions import db, migrate, bootstrap, hcaptcha, login, init_extensions
 from app.helpers import full_name

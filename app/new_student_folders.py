@@ -30,7 +30,6 @@ def get_sat_data_ss_id():
     return current_app.config['SAT_DATA_SS_ID']
 
 # Authenticate and initialize services
-
 creds = utils.load_google_credentials(SERVICE_ACCOUNT_JSON, TOKEN, CLIENT_SECRETS, prefer_user=True, scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
