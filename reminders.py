@@ -117,32 +117,11 @@ def init_gspread():
 def get_events_and_data():
     '''
     '''
-    flow = Flow.from_client_secrets_file(os.path.join(basedir, 'credentials.json'), SCOPES)
-
-    authorization_url, state = flow.authorization_url(
-    # Enable offline access so that you can refresh an access token without
-    # re-prompting the user for permission. Recommended for web server apps.
-    access_type='offline',
-    # Enable incremental authorization. Recommended as a best practice.
-    include_granted_scopes='true')
-
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                os.path.join(basedir, 'credentials.json'), SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+    # Load credentials via centralized helper. Prefer a local user token if present.
+    token_path = os.path.join(basedir, 'token.json')
+    client_secrets = os.path.join(basedir, 'credentials.json')
+    service_account_json = os.path.join(basedir, 'service_account_key.json')
+    creds = utils.load_google_credentials(service_account_json, token_path, client_secrets, prefer_user=True, scopes=SCOPES)
 
     try:
         logging.info('Calling Calendar API')

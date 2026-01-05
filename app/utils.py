@@ -5,8 +5,11 @@ import requests
 from datetime import datetime, timedelta
 from dateutil.parser import parse as dateparse
 from app import db
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-from google.oauth2.service_account import Credentials
+from google.oauth2.credentials import Credentials as UserCredentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 import tempfile
 import subprocess
 from io import BytesIO
@@ -14,11 +17,52 @@ import base64
 from email.mime.base import MIMEBase
 from email import encoders
 from app.models import TestDate
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 USAGE_SHEET_ID = '1XyemzCWeDqhZg8dX8A0qMIUuBqCx1aIopD1qpmwUmw4'
 USAGE_SHEET_RANGE = 'Data!A3:G'
+ALL_SCOPES = [
+  'https://www.googleapis.com/auth/drive',
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/documents'
+]
+
+def generate_drive_token(client_secrets: str, output_name: str = 'token_drive.json'):
+    """Run OAuth flow to generate token_drive.json for Drive API access."""
+    flow = InstalledAppFlow.from_client_secrets_file(client_secrets, ALL_SCOPES)
+    creds = flow.run_local_server(port=0)   # opens browser
+    with open(output_name, 'w') as f:
+        f.write(creds.to_json())
+    print(f'Saved {output_name}')
+
+
+def load_google_credentials(service_account_json: str,
+                            token_path: str,
+                            client_secrets: str,
+                            prefer_user: bool = False,
+                            scopes: list = ALL_SCOPES):
+    """
+    Return credentials object. If `prefer_user` is True try user token first,
+    refreshing if needed. Otherwise fall back to the service account.
+    """
+
+    # Try user creds
+    if prefer_user and os.path.exists(token_path):
+        try:
+            creds = UserCredentials.from_authorized_user_file(token_path, scopes)
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            return creds
+        except Exception:
+            logger.exception("Failed loading/refreshing user credentials from %s", token_path)
+
+    # Fallback to service account
+    try:
+        return ServiceAccountCredentials.from_service_account_file(service_account_json, scopes=scopes)
+    except Exception:
+        logger.exception("Failed loading service account credentials from %s", service_account_json)
+        raise
 
 
 def get_week_start_and_end(date_yyyymmddd=None):
@@ -161,7 +205,7 @@ def batch_update_weekly_usage(date_yyyymmddd=None):
         print('Skipping Google Sheets update: TESTING/CI or missing service account file')
         return stats
 
-    creds = Credentials.from_service_account_file(
+    creds = ServiceAccountCredentials.from_service_account_file(
         sa_path,
         scopes=['https://www.googleapis.com/auth/spreadsheets']
     )
@@ -366,7 +410,7 @@ def add_test_dates_from_ss():
     if not os.path.exists(sa_path):
         print('Service account file not found, skipping sheet import')
         return
-    creds = Credentials.from_service_account_file(
+    creds = ServiceAccountCredentials.from_service_account_file(
         sa_path,
         scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
     )

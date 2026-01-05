@@ -6,11 +6,12 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
 from google.oauth2.service_account import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.credentials import Credentials as UserCredentials
+import app.utils as utils
 import datetime
 import time
 import random
-
-logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,8 @@ PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'
 SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com'
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/documents']
+TOKEN = 'token_tpa.json'
+CLIENT_SECRETS = 'credentials_tpa.json'
 
 
 def get_sat_data_ss_id():
@@ -28,16 +31,10 @@ def get_sat_data_ss_id():
 
 # Authenticate and initialize services
 
-creds = None
-drive_service = None
-sheets_service = None
-docs_service = None
-
-if not (os.environ.get("TEST_MODE") == "true" or os.environ.get("CI") == "true"):
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_JSON, scopes=SCOPES)
-    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-    sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
-    docs_service = build('docs', 'v1', credentials=creds, cache_discovery=False)
+creds = utils.load_google_credentials(SERVICE_ACCOUNT_JSON, TOKEN, CLIENT_SECRETS, prefer_user=True, scopes=SCOPES)
+drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+docs_service = build('docs', 'v1', credentials=creds, cache_discovery=False)
 
 
 def execute_with_retries(request_callable, max_retries=6, base_backoff=1, max_backoff=64):
@@ -98,7 +95,9 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
         body={'name': student_name}
     ).execute())
 
-    return new_folder_id
+    new_folder_link = f'https://drive.google.com/drive/u/0/folders/{new_folder_id}'
+
+    return new_folder_link
 
 
 def create_folder(folder_name, parent_folder_id=PARENT_FOLDER_ID):
