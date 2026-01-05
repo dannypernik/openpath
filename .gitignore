@@ -7,7 +7,7 @@ __pycache__
 /certs/
 token*
 credentials*
-service_account_key*
+service_account*
 app/static/img/favicons/favicon.svg
 app/static/img/favicons/favicon.ico
 request.py
