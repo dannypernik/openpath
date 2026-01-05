@@ -4,19 +4,19 @@ import logging
 import requests
 from datetime import datetime, timedelta
 from dateutil.parser import parse as dateparse
-from app import db
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials as UserCredentials
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+from app.extensions import db
+from app.models import TestDate
 import tempfile
 import subprocess
 from io import BytesIO
 import base64
 from email.mime.base import MIMEBase
 from email import encoders
-from app.models import TestDate
 
 logger = logging.getLogger(__name__)
 

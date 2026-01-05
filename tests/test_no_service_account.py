@@ -35,6 +35,12 @@ def _setup_mock_app(testing=True):
     app_module.__path__ = [app_dir]
     app_module.__package__ = 'app'
 
+    # Add db attribute - create a simple mock object
+    class MockDB:
+        session = type('obj', (object,), {'add': lambda x:  None, 'commit': lambda:  None})()
+
+    app_module.db = MockDB()
+
     return app_module
 
 
