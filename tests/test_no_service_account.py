@@ -31,6 +31,7 @@ def _setup_mock_app(testing=True):
 
     app_module = types.ModuleType('app')
     app_module.app = flask_app
+    app_module.db = db
     app_module.__file__ = os.path.join(app_dir, '__init__.py')
     app_module.__path__ = [app_dir]
     app_module.__package__ = 'app'
