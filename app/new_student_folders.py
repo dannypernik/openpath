@@ -29,11 +29,17 @@ def get_sat_data_ss_id():
     """Get SAT data spreadsheet ID from config at runtime."""
     return current_app.config['SAT_DATA_SS_ID']
 
-# Authenticate and initialize services
-creds = utils.load_google_credentials(SERVICE_ACCOUNT_JSON, TOKEN, CLIENT_SECRETS, prefer_user=True, scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
-sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
-docs_service = build('docs', 'v1', credentials=creds, cache_discovery=False)
+creds = None
+drive_service = None
+sheets_service = None
+docs_service = None
+
+if not (os.environ.get("TESTING") == "true" or os.environ.get("CI") == "true"):
+    # Authenticate and initialize services
+    creds = utils.load_google_credentials(SERVICE_ACCOUNT_JSON, TOKEN, CLIENT_SECRETS, prefer_user=True, scopes=SCOPES)
+    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+    sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    docs_service = build('docs', 'v1', credentials=creds, cache_discovery=False)
 
 
 def execute_with_retries(request_callable, max_retries=6, base_backoff=1, max_backoff=64):
