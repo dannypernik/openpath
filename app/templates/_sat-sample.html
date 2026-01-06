@@ -1,0 +1,456 @@
+<style>
+    .bg-header { fill: var(--color1); }
+    .header-text { fill: var(--color1-contrast); font-weight:700; }
+    .bg-page { fill: #ffffff;}
+    .bg-table { fill:#ffffff; }
+    .bg-total-row { fill: var(--color2); }
+    .total-text { fill: var(--color2-contrast); font-weight:700; font-size:12px; }
+    .bg-domain-total { fill: var(--color3); }
+    .domain-total { fill: var(--color3-contrast); font-weight:700; font-size:12px; }
+    .bg-grand-row { fill: var(--color1); }
+    .grand-total-text { fill: var(--color1-contrast); font-weight:700; font-size:12px; }
+    .table-header { fill: var(--color1-contrast); font-weight:700; font-size:13px; }
+    .label { fill: var(--font-color); font-size:12px; }
+    .label-bold { fill: var(--font-color); font-weight:700; font-size:12px; }
+    .pct-100 { fill: #aadb99; stroke: #ffffff }
+    .pct-93 { fill: #e5e5a8; stroke: #ffffff }
+    .pct-92 { fill: #e8e7aa; stroke: #ffffff }
+    .pct-88 { fill: #ffe8aa; stroke: #ffffff }
+    .pct-85  { fill: #fde7ac; stroke: #ffffff }
+    .pct-80  { fill: #fbe2af; stroke: #ffffff }
+    .pct-75 { fill: #fcdfad; stroke: #ffffff }
+    .pct-71  { fill: #fedcac; stroke: #ffffff }
+    .pct-63  { fill: #fed3aa; stroke: #ffffff }
+    .pct-60  { fill: #f2994a; stroke: #ffffff }
+    .pct-50  { fill: #fcccad; stroke: #ffffff }
+    .pct-0   { fill: #f7a8a8; stroke: #ffffff }
+  </style>
+
+<svg viewBox="0 0 1170 536" xmlns="http://www.w3.org/2000/svg">
+
+
+  <!-- page background -->
+  <rect class="bg-page" x="0" y="0" width="1170" height="536"/><!--1050-->
+
+  <!-- top header bar -->
+  <rect class="bg-header" x="0" y="0" width="1170" height="183" />
+
+  <!-- title -->
+  <text class="header-text" x="30" y="80" font-size="22">
+    Bluebook SAT 7 Score Analysis
+  </text>
+
+  <!-- total score in center -->
+  <text class="header-text" x="585" y="55" text-anchor="middle" font-size="18">
+    Total Score:
+  </text>
+  <text class="header-text" x="585" y="105" text-anchor="middle" font-size="46">
+    1420
+  </text>
+
+  <!-- section scores on the right -->
+  <text class="header-text" x="875" y="60" font-size="18">
+    Reading &amp; Writing:
+  </text>
+  <text class="header-text" x="1080" y="60" font-size="18">
+    710
+  </text>
+
+  <text class="header-text" x="875" y="100" font-size="18">
+    Math:
+  </text>
+  <text class="header-text" x="1080" y="100" font-size="18">
+    710
+  </text>
+
+  <!-- main table background -->
+  <!-- <rect class="bg-table" x="20" y="183" width="1130" height="820" rx="4"/> -->
+
+  <!-- column header bar -->
+  <!-- <rect class="bg-header" x="0" y="160" width="1200" height="24" fill="{{ organization.color1 }}"/> -->
+
+  <!-- column header text -->
+  <!-- column x positions -->
+  <!-- Test: 40, Subject: 110, Domain: 250, Skill: 470, Correct: 890, Incorrect: 970, % Correct: 1050 -->
+  <text class="table-header" x="48"  y="170">Test</text>
+  <text class="table-header" x="120" y="170">Subject</text>
+  <text class="table-header" x="260" y="170">Domain</text>
+  <text class="table-header" x="480" y="170">Skill</text>
+  <text class="table-header" x="875" y="170">Correct</text>
+  <text class="table-header" x="953" y="170">Incorrect</text>
+  <text class="table-header" x="1045" y="170">% Correct</text>
+
+  <!-- ===== DATA ROWS ===== -->
+  <!-- baseline y values: 230, 252, 274, 296, 318, 340, 362, 384, 406, 428, 450, 472, 494, 516, 538, 560, 582, 604, 626, 648, 670, 692, 714, 736, 758, 780, 802, 824, 846, 868, 890, 912, 934, 956, 978, 1000, 1022, 1044 -->
+
+  <!-- Reading & Writing: Information & Ideas -->
+  <text class="label-bold" x="48" y="200">SAT7</text>
+  <text class="label-bold" x="120" y="200">Reading &amp; Writing</text>
+  <text class="label-bold" x="260" y="200">Information &amp; Ideas</text>
+  <text class="label" x="480" y="200">Command of Evidence</text>
+  <text class="label" x="900" y="200">6</text>
+  <text class="label" x="980" y="200">2</text>
+  <rect class="pct-75" x="1040" y="184" width="80" height="22"/>
+  <text class="label" x="1080" y="200" text-anchor="middle">75%</text>
+
+  <text class="label" x="480" y="222">Inferences</text>
+  <text class="label" x="900" y="222">3</text>
+  <text class="label" x="981" y="222">1</text>
+  <rect class="pct-75" x="1040" y="206" width="80" height="22"/>
+  <text class="label" x="1080" y="222" text-anchor="middle">75%</text>
+
+  <text class="label" x="480" y="244">Central Ideas and Details</text>
+  <text class="label" x="900" y="244">3</text>
+  <rect class="pct-100" x="1040" y="228" width="80" height="22"/>
+  <text class="label" x="1080" y="244" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="251" width="785" height="22"/>
+  <text class="domain-total" x="260" y="266">Information &amp; Ideas Total</text>
+  <text class="domain-total" x="898" y="266">12</text>
+  <text class="domain-total" x="980" y="266">3</text>
+  <rect class="pct-80" x="1040" y="251" width="80" height="22"/>
+  <text class="label" x="1080" y="266" text-anchor="middle">80%</text>
+  <!-- Craft & Structure -->
+  <text class="label-bold" x="260" y="288">Craft &amp; Structure</text>
+  <text class="label" x="480" y="288">Words in Context</text>
+  <text class="label" x="900" y="288">7</text>
+  <text class="label" x="981" y="288">1</text>
+  <rect class="pct-88" x="1040" y="272" width="80" height="22"/>
+  <text class="label" x="1080" y="288" text-anchor="middle">88%</text>
+
+  <text class="label" x="480" y="310">Text, Structure, and Purpose</text>
+  <text class="label" x="900" y="310">5</text>
+  <rect class="pct-100" x="1040" y="294" width="80" height="22"/>
+  <text class="label" x="1080" y="310" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="332">Cross-Text Connections</text>
+  <text class="label" x="902" y="332">1</text>
+  <rect class="pct-100" x="1040" y="316" width="80" height="22"/>
+  <text class="label" x="1080" y="332" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="339" width="785" height="22"/>
+  <text class="domain-total" x="260" y="354">Craft &amp; Structure Total</text>
+  <text class="domain-total" x="898" y="354">13</text>
+  <text class="domain-total" x="981" y="354">1</text>
+  <rect class="pct-93" x="1040" y="339" width="80" height="22"/>
+  <text class="label" x="1080" y="354" text-anchor="middle">93%</text>
+  <!-- Standard English Conventions -->
+  <text class="label-bold" x="260" y="376">Standard English Conventions</text>
+  <text class="label" x="480" y="376">Boundaries</text>
+  <text class="label" x="900" y="376">5</text>
+  <text class="label" x="980" y="376">3</text>
+  <rect class="pct-63" x="1040" y="360" width="80" height="22"/>
+  <text class="label" x="1080" y="376" text-anchor="middle">63%</text>
+
+  <text class="label" x="480" y="398">Form, Structure, and Sense</text>
+  <text class="label" x="900" y="398">4</text>
+  <rect class="pct-100" x="1040" y="382" width="80" height="22"/>
+  <text class="label" x="1080" y="398" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="405" width="785" height="22"/>
+  <text class="domain-total" x="260" y="420">Standard English Conventions Total</text>
+  <text class="domain-total" x="900" y="420">9</text>
+  <text class="domain-total" x="980" y="420">3</text>
+  <rect class="pct-75" x="1040" y="405" width="80" height="22"/>
+  <text class="label" x="1080" y="420" text-anchor="middle">75%</text>
+  <!-- Expression of Ideas -->
+  <text class="label-bold" x="260" y="442">Expression of Ideas</text>
+  <text class="label" x="480" y="442">Rhetorical Synthesis</text>
+  <text class="label" x="900" y="442">5</text>
+  <text class="label" x="980" y="442">2</text>
+  <rect class="pct-71" x="1040" y="426" width="80" height="22"/>
+  <text class="label" x="1080" y="442" text-anchor="middle">71%</text>
+
+  <text class="label" x="480" y="464">Transitions</text>
+  <text class="label" x="900" y="464">6</text>
+  <rect class="pct-100" x="1040" y="448" width="80" height="22"/>
+  <text class="label" x="1080" y="464" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="471" width="785" height="22"/>
+  <text class="domain-total" x="260" y="486">Expression of Ideas Total</text>
+  <text class="domain-total" x="899" y="486">11</text>
+  <text class="domain-total" x="980" y="486">2</text>
+  <rect class="pct-85" x="1040" y="470" width="80" height="22"/>
+  <text class="label" x="1080" y="486" text-anchor="middle">85%</text>
+
+  <!-- Reading & Writing Total row (orange) -->
+  <rect class="bg-total-row" x="115" y="492" width="1005" height="22"/>
+  <text class="total-text" x="120" y="507">Reading &amp; Writing Total</text>
+  <text class="total-text" x="896" y="507">45</text>
+  <text class="total-text" x="980" y="507">9</text>
+  <text class="total-text" x="1080" y="507" text-anchor="middle">83%</text>
+
+  <!-- ===== Math Section ===== -->
+
+  <!-- Algebra -->
+  <text class="label-bold" x="120" y="530">Math</text>
+  <text class="label-bold" x="260" y="530">Algebra</text>
+  <text class="label" x="480" y="530">Linear Functions</text>
+  <text class="label" x="900" y="530">6</text>
+  <rect class="pct-100" x="1040" y="515" width="80" height="22"/>
+  <text class="label" x="1080" y="530" text-anchor="middle">100%</text>
+</svg>
+
+<svg class="d-none d-lg-block" viewBox="0 0 1170 600" xmlns="http://www.w3.org/2000/svg">
+  <rect class="bg-page" x="0" y="0" width="1170" height="600"/>
+
+  <text class="label" x="480" y="16">Linear Equations in One Variable</text>
+  <text class="label" x="900" y="16">4</text>
+  <rect class="pct-100" x="1040" y="0" width="80" height="22"/>
+  <text class="label" x="1080" y="16" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="38">Systems of Linear Equations</text>
+  <text class="label" x="900" y="38">3</text>
+  <text class="label" x="981" y="38">1</text>
+  <rect class="pct-75" x="1040" y="22" width="80" height="22"/>
+  <text class="label" x="1080" y="38" text-anchor="middle">75%</text>
+
+  <text class="label" x="480" y="60">Linear Inequalities</text>
+  <text class="label" x="981" y="60">1</text>
+  <rect class="pct-0" x="1040" y="44" width="80" height="22"/>
+  <text class="label" x="1080" y="60" text-anchor="middle">0%</text>
+
+  <text class="label" x="480" y="82">Linear Equations in Two Variables</text>
+  <text class="label" x="902" y="82">1</text>
+  <rect class="pct-100" x="1040" y="66" width="80" height="22"/>
+  <text class="label" x="1080" y="82" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="89" width="785" height="22"/>
+  <text class="domain-total" x="260" y="104">Algebra Total</text>
+  <text class="domain-total" x="898" y="104">14</text>
+  <text class="domain-total" x="980" y="104">2</text>
+  <rect class="pct-85" x="1040" y="89" width="80" height="22"/>
+  <text class="label" x="1080" y="104" text-anchor="middle">88%</text>
+  <!-- Advanced Math -->
+  <text class="label-bold" x="260" y="126">Advanced Math</text>
+  <text class="label" x="480" y="126">Nonlinear Functions</text>
+  <text class="label" x="900" y="126">7</text>
+  <text class="label" x="981" y="126">1</text>
+  <rect class="pct-88" x="1040" y="110" width="80" height="22"/>
+  <text class="label" x="1080" y="126" text-anchor="middle">88%</text>
+
+  <text class="label" x="480" y="148">Nonlinear Equations and Systems</text>
+  <text class="label" x="900" y="148">4</text>
+  <rect class="pct-100" x="1040" y="132" width="80" height="22"/>
+  <text class="label" x="1080" y="148" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="170">Equivalent Expressions</text>
+  <text class="label" x="902" y="170">1</text>
+  <rect class="pct-100" x="1040" y="154" width="80" height="22"/>
+  <text class="label" x="1080" y="170" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="176" width="785" height="22"/>
+  <text class="domain-total" x="260" y="192">Advanced Math Total</text>
+  <text class="domain-total" x="898" y="192">12</text>
+  <text class="domain-total" x="981" y="192">1</text>
+  <rect class="pct-92" x="1040" y="176" width="80" height="22"/>
+  <text class="label" x="1080" y="192" text-anchor="middle">92%</text>
+  <!-- Problem-Solving & Data Analysis -->
+  <text class="label-bold" x="260" y="214">Problem-Solving &amp; Data Analysis</text>
+  <text class="label" x="480" y="214">Ratios, Rates, Proportions, and Units</text>
+  <text class="label" x="902" y="214">1</text>
+  <text class="label" x="981" y="214">1</text>
+  <rect class="pct-50" x="1040" y="198" width="80" height="22"/>
+  <text class="label" x="1080" y="214" text-anchor="middle">50%</text>
+
+  <text class="label" x="480" y="236">Percentages</text>
+  <text class="label" x="900" y="236">2</text>
+  <rect class="pct-100" x="1040" y="220" width="80" height="22"/>
+  <text class="label" x="1080" y="236" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="258">Models and Scatterplots</text>
+  <text class="label" x="900" y="258">2</text>
+  <rect class="pct-100" x="1040" y="242" width="80" height="22"/>
+  <text class="label" x="1080" y="258" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="280">Distributions</text>
+  <text class="label" x="902" y="280">1</text>
+  <rect class="pct-100" x="1040" y="264" width="80" height="22"/>
+  <text class="label" x="1080" y="280" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="302">Sample Statistics and Margin of Error</text>
+  <text class="label" x="902" y="302">1</text>
+  <rect class="pct-100" x="1040" y="286" width="80" height="22"/>
+  <text class="label" x="1080" y="302" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="309"  width="785" height="22"/>
+  <text class="domain-total" x="260" y="324">Problem-Solving &amp; Data Analysis Total</text>
+  <text class="domain-total" x="901" y="324">7</text>
+  <text class="domain-total" x="981" y="324">1</text>
+  <rect class="pct-88" x="1040" y="309" width="80" height="22"/>
+  <text class="label" x="1080" y="324" text-anchor="middle">88%</text>
+
+  <!-- Geometry & Trigonometry -->
+  <text class="label-bold" x="260" y="346">Geometry &amp; Trigonometry</text>
+  <text class="label" x="480" y="346">Lines, Angles, and Triangles</text>
+  <text class="label" x="901" y="346">2</text>
+  <rect class="pct-100" x="1040" y="330" width="80" height="22"/>
+  <text class="label" x="1080" y="346" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="368">Area and Volume</text>
+  <text class="label" x="980" y="368">2</text>
+  <rect class="pct-0" x="1040" y="352" width="80" height="22"/>
+  <text class="label" x="1080" y="368" text-anchor="middle">0%</text>
+
+  <text class="label" x="480" y="390">Circles</text>
+  <text class="label" x="901" y="390">2</text>
+  <rect class="pct-100" x="1040" y="374" width="80" height="22"/>
+  <text class="label" x="1080" y="390" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="412">Right Triangles and Trigonometry</text>
+  <text class="label" x="902" y="412">1</text>
+  <rect class="pct-100" x="1040" y="396" width="80" height="22"/>
+  <text class="label" x="1080" y="412" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="418" width="785" height="22"/>
+  <text class="domain-total" x="260" y="434">Geometry &amp; Trigonometry Total</text>
+  <text class="domain-total" x="901" y="434">5</text>
+  <text class="domain-total" x="980" y="434">2</text>
+  <rect class="pct-71" x="1040" y="418" width="80" height="22"/>
+  <text class="label" x="1080" y="434" text-anchor="middle">71%</text>
+
+  <!-- Math Total row -->
+  <rect class="bg-total-row" x="115" y="440" width="1005" height="22"/>
+  <text class="total-text" x="120" y="455">Math Total</text>
+  <text class="total-text" x="897" y="455">38</text>
+  <text class="total-text" x="980" y="455">6</text>
+  <text class="total-text" x="1080" y="455" text-anchor="middle">86%</text>
+
+  <!-- Grand Total row -->
+  <rect class="bg-grand-row" x="40" y="462" width="1080" height="22"/>
+  <text class="grand-total-text" x="48" y="477">Grand Total</text>
+  <text class="grand-total-text" x="897" y="477">83</text>
+  <text class="grand-total-text" x="978" y="477">15</text>
+  <text class="grand-total-text" x="1080" y="477" text-anchor="middle">85%</text>
+  <!-- <rect class="bg-page" x="0" y="0" width="1170" height="600"/>
+
+  <text class="label" x="480" y="552">Linear Equations in One Variable</text>
+  <text class="label" x="900" y="552">4</text>
+  <rect class="pct-100" x="1040" y="536" width="80" height="22"/>
+  <text class="label" x="1080" y="552" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="574">Systems of Linear Equations</text>
+  <text class="label" x="900" y="574">3</text>
+  <text class="label" x="981" y="574">1</text>
+  <rect class="pct-75" x="1040" y="558" width="80" height="22"/>
+  <text class="label" x="1080" y="574" text-anchor="middle">75%</text>
+
+  <text class="label" x="480" y="596">Linear Inequalities</text>
+  <text class="label" x="981" y="596">1</text>
+  <rect class="pct-0" x="1040" y="580" width="80" height="22"/>
+  <text class="label" x="1080" y="596" text-anchor="middle">0%</text>
+
+  <text class="label" x="480" y="618">Linear Equations in Two Variables</text>
+  <text class="label" x="902" y="618">1</text>
+  <rect class="pct-100" x="1040" y="602" width="80" height="22"/>
+  <text class="label" x="1080" y="618" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="625" width="785" height="22"/>
+  <text class="domain-total" x="260" y="640">Algebra Total</text>
+  <text class="domain-total" x="898" y="640">14</text>
+  <text class="domain-total" x="980" y="640">2</text>
+  <rect class="pct-85" x="1040" y="625" width="80" height="22"/>
+  <text class="label" x="1080" y="640" text-anchor="middle">88%</text>
+  <!-- Advanced Math --
+  <text class="label-bold" x="260" y="662">Advanced Math</text>
+  <text class="label" x="480" y="662">Nonlinear Functions</text>
+  <text class="label" x="900" y="662">7</text>
+  <text class="label" x="981" y="662">1</text>
+  <rect class="pct-88" x="1040" y="646" width="80" height="22"/>
+  <text class="label" x="1080" y="662" text-anchor="middle">88%</text>
+
+  <text class="label" x="480" y="684">Nonlinear Equations and Systems</text>
+  <text class="label" x="900" y="684">4</text>
+  <rect class="pct-100" x="1040" y="668" width="80" height="22"/>
+  <text class="label" x="1080" y="684" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="706">Equivalent Expressions</text>
+  <text class="label" x="902" y="706">1</text>
+  <rect class="pct-100" x="1040" y="690" width="80" height="22"/>
+  <text class="label" x="1080" y="706" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="712" width="785" height="22"/>
+  <text class="domain-total" x="260" y="728">Advanced Math Total</text>
+  <text class="domain-total" x="898" y="728">12</text>
+  <text class="domain-total" x="981" y="728">1</text>
+  <rect class="pct-92" x="1040" y="712" width="80" height="22"/>
+  <text class="label" x="1080" y="728" text-anchor="middle">92%</text>
+  <!-- Problem-Solving & Data Analysis --
+  <text class="label-bold" x="260" y="750">Problem-Solving &amp; Data Analysis</text>
+  <text class="label" x="480" y="750">Ratios, Rates, Proportions, and Units</text>
+  <text class="label" x="902" y="750">1</text>
+  <text class="label" x="981" y="750">1</text>
+  <rect class="pct-50" x="1040" y="734" width="80" height="22"/>
+  <text class="label" x="1080" y="750" text-anchor="middle">50%</text>
+
+  <text class="label" x="480" y="772">Percentages</text>
+  <text class="label" x="900" y="772">2</text>
+  <rect class="pct-100" x="1040" y="756" width="80" height="22"/>
+  <text class="label" x="1080" y="772" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="794">Models and Scatterplots</text>
+  <text class="label" x="900" y="794">2</text>
+  <rect class="pct-100" x="1040" y="778" width="80" height="22"/>
+  <text class="label" x="1080" y="794" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="816">Distributions</text>
+  <text class="label" x="902" y="816">1</text>
+  <rect class="pct-100" x="1040" y="800" width="80" height="22"/>
+  <text class="label" x="1080" y="816" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="838">Sample Statistics and Margin of Error</text>
+  <text class="label" x="902" y="838">1</text>
+  <rect class="pct-100" x="1040" y="822" width="80" height="22"/>
+  <text class="label" x="1080" y="838" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="845"  width="785" height="22"/>
+  <text class="domain-total" x="260" y="860">Problem-Solving &amp; Data Analysis Total</text>
+  <text class="domain-total" x="901" y="860">7</text>
+  <text class="domain-total" x="981" y="860">1</text>
+  <rect class="pct-88" x="1040" y="845" width="80" height="22"/>
+  <text class="label" x="1080" y="860" text-anchor="middle">88%</text>
+
+  <!-- Geometry & Trigonometry --
+  <text class="label-bold" x="260" y="882">Geometry &amp; Trigonometry</text>
+  <text class="label" x="480" y="882">Lines, Angles, and Triangles</text>
+  <text class="label" x="901" y="882">2</text>
+  <rect class="pct-100" x="1040" y="866" width="80" height="22"/>
+  <text class="label" x="1080" y="882" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="904">Area and Volume</text>
+  <text class="label" x="980" y="904">2</text>
+  <rect class="pct-0" x="1040" y="888" width="80" height="22"/>
+  <text class="label" x="1080" y="904" text-anchor="middle">0%</text>
+
+  <text class="label" x="480" y="926">Circles</text>
+  <text class="label" x="901" y="926">2</text>
+  <rect class="pct-100" x="1040" y="910" width="80" height="22"/>
+  <text class="label" x="1080" y="926" text-anchor="middle">100%</text>
+
+  <text class="label" x="480" y="948">Right Triangles and Trigonometry</text>
+  <text class="label" x="902" y="948">1</text>
+  <rect class="pct-100" x="1040" y="932" width="80" height="22"/>
+  <text class="label" x="1080" y="948" text-anchor="middle">100%</text>
+
+  <rect class="bg-domain-total" x="255" y="954" width="785" height="22"/>
+  <text class="domain-total" x="260" y="970">Geometry &amp; Trigonometry Total</text>
+  <text class="domain-total" x="901" y="970">5</text>
+  <text class="domain-total" x="980" y="970">2</text>
+  <rect class="pct-71" x="1040" y="954" width="80" height="22"/>
+  <text class="label" x="1080" y="970" text-anchor="middle">71%</text>
+
+  <!-- Math Total row --
+  <rect class="bg-total-row" x="115" y="976" width="1005" height="22"/>
+  <text class="total-text" x="120" y="992">Math Total</text>
+  <text class="total-text" x="897" y="992">38</text>
+  <text class="total-text" x="980" y="992">6</text>
+  <text class="total-text" x="1080" y="992" text-anchor="middle">86%</text>
+
+  <!-- Grand Total row --
+  <rect class="bg-grand-row" x="40" y="998" width="1080" height="22"/>
+  <text class="grand-total-text" x="48" y="1014">Grand Total</text>
+  <text class="grand-total-text" x="897" y="1014">83</text>
+  <text class="grand-total-text" x="978" y="1014">15</text>
+  <text class="grand-total-text" x="1080" y="1014" text-anchor="middle">85%</text> -->
+
+</svg>

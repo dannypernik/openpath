@@ -43,6 +43,7 @@ from app.create_sat_report import (
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
+from app.utils import is_dark_color
 
 logger = logging.getLogger(__name__)
 
@@ -835,7 +836,27 @@ def custom_sat_report(org):
         'logo_path': organization.logo_path,
         'slug': organization.slug,
         'spreadsheet_id': organization.sat_spreadsheet_id,
+        'color1': organization.color1,
+        'color2': organization.color2,
+        'color3': organization.color3,
+        'font_color': organization.font_color
     }
+
+    if is_dark_color(organization.color1):
+        organization_dict['color1_contrast'] = '#ffffff'
+    else:
+        organization_dict['color1_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color2):
+        organization_dict['color2_contrast'] = '#ffffff'
+    else:
+        organization_dict['color2_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color3):
+        organization_dict['color3_contrast'] = '#ffffff'
+    else:
+        organization_dict['color3_contrast'] = organization.font_color
+
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
 
