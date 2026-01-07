@@ -34,7 +34,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
 
-now = datetime.datetime.utcnow()
+now = datetime.datetime.now(datetime.UTC)
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat() + 'Z'
 bimonth_start_tz_aware = pytz.utc.localize(bimonth_start)

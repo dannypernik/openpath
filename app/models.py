@@ -51,8 +51,8 @@ class User(UserMixin, db.Model):
         backref=db.backref('parent', lazy='joined', remote_side=[id]),
         foreign_keys=[parent_id],
         post_update=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(datetime.UTC))
+    last_viewed = db.Column(db.DateTime, default=datetime.now(datetime.UTC))
     role = db.Column(db.String(24), index=True)
     school = db.Column(db.String(64))
     grad_year = db.Column(db.String(16))
@@ -162,7 +162,7 @@ class Review(db.Model):
     review = db.Column(db.String(1024))
     author = db.Column(db.String(64))
     photo_path = db.Column(db.String(128))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(datetime.UTC))
 
     def __repr__(self):
         return '<Review {}>'.format(self.date)
