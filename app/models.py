@@ -12,7 +12,8 @@ class UserTestDate(db.Model):
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
     is_registered = db.Column(db.Boolean, default=False)
     users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'))
-    test_dates = db.relationship('TestDate', backref=db.backref('users_interested'))
+    users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'), overlaps="test_dates,user")
+    test_dates = db.relationship('TestDate', backref=db.backref('users_interested'), overlaps="students,dates_interested")
 
 
 class TestScore(db.Model):
@@ -65,7 +66,8 @@ class User(UserMixin, db.Model):
         foreign_keys=[UserTestDate.user_id],
         backref=db.backref('user', lazy='joined'),
         lazy='select',
-        cascade='all, delete-orphan')
+        cascade='all, delete-orphan',
+        overlaps="planned_tests,users")
     test_scores = db.relationship('TestScore',
         foreign_keys=[TestScore.user_id],
         backref=db.backref('user', lazy='joined'),
@@ -148,7 +150,7 @@ class TestDate(db.Model):
     late_date = db.Column(db.Date)
     other_date = db.Column(db.Date)
     score_date = db.Column(db.Date)
-    students = db.relationship('User', secondary='user_test_date', backref=db.backref('dates_interested'), lazy='dynamic')
+    students = db.relationship('User', secondary='user_test_date', backref=db.backref('dates_interested', overlaps="planned_tests,test_dates,user,users"), lazy='dynamic', overlaps="planned_tests,test_dates,user,users,test_dates,users_interested")
 
     def __repr__(self):
         return '<TestDate {}>'.format(self.date)
