@@ -870,7 +870,27 @@ def custom_act_report(org):
         'logo_path': organization.logo_path,
         'slug': organization.slug,
         'spreadsheet_id': organization.act_spreadsheet_id,
+        'color1': organization.color1,
+        'color2': organization.color2,
+        'color3': organization.color3,
+        'font_color': organization.font_color
     }
+
+    if is_dark_color(organization.color1):
+        organization_dict['color1_contrast'] = '#ffffff'
+    else:
+        organization_dict['color1_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color2):
+        organization_dict['color2_contrast'] = '#ffffff'
+    else:
+        organization_dict['color2_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color3):
+        organization_dict['color3_contrast'] = '#ffffff'
+    else:
+        organization_dict['color3_contrast'] = organization.font_color
+
     return handle_act_report(form, 'org-act-report.html', organization=organization_dict)
 
 

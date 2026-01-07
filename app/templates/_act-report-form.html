@@ -1,9 +1,9 @@
 <div class="row gx-5 justify-content-center">
   <div class="d-block d-lg-none col-11">
-    <img class="img-fluid" src="{{ url_for('static', filename='img/sample-act-score-analysis-sm.jpg') }}" alt="">
+    {% include '_act-sample.html' %}
   </div>
-  <div class="d-none d-lg-block col-lg-6 mt-3">
-    <img class="img-fluid" src="{{ url_for('static', filename='img/sample-act-score-analysis.jpg') }}" alt="">
+  <div class="d-none d-lg-block col-lg-6 mt-2">
+    {% include '_act-sample.html' %}
   </div>
 
   <div class="col-12 col-sm-10 col-lg-5 col-xl-4">

@@ -16,4 +16,20 @@
 {% block end_scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/act-report-form.js') }}"></script>
+  <script>
+    const font_color = '{{ organization.font_color }}'
+    const color1 = '{{ organization.color1 }}'
+    const color2 = '{{ organization.color2 }}'
+    const color3 = '{{ organization.color3 }}'
+    const color1_contrast = '{{ organization.color1_contrast }}'
+    const color2_contrast = '{{ organization.color2_contrast }}'
+    const color3_contrast = '{{ organization.color3_contrast }}'
+    document.documentElement.style.setProperty('--font-color', font_color);
+    document.documentElement.style.setProperty('--color1', color1);
+    document.documentElement.style.setProperty('--color2', color2);
+    document.documentElement.style.setProperty('--color3', color3);
+    document.documentElement.style.setProperty('--color1-contrast', color1_contrast);
+    document.documentElement.style.setProperty('--color2-contrast', color2_contrast);
+    document.documentElement.style.setProperty('--color3-contrast', color3_contrast);
+  </script>
 {% endblock end_scripts %}
