@@ -21,7 +21,9 @@ def trash_old_files(folder_id):
     try:
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
-        query = f"'{folder_id}' in parents and trashed=false and modifiedTime < '{(datetime.datetime.utcnow() - datetime.timedelta(days=30)).isoformat()}Z'"
+        cutoff = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30))
+        cutoff_iso = cutoff.isoformat().replace('+00:00', 'Z')
+        query = f"'{folder_id}' in parents and trashed=false and modifiedTime < '{cutoff_iso}'"
         files = drive_service.files().list(q=query, fields='files(id, name)').execute().get('files', [])
 
         logging.info(f"Found {len(files)} files to trash in folder {folder_id}")

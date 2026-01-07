@@ -5,7 +5,7 @@ import json
 import logging
 import traceback
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from markupsafe import Markup
 from flask import (
@@ -137,7 +137,7 @@ def load_act_test_codes():
 @main_bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
-        current_user.last_viewed = datetime.utcnow()
+        current_user.last_viewed = datetime.now(timezone.utc)
         db.session.commit()
     g.hello = hello_email()
 
@@ -314,7 +314,7 @@ def reviews():
     form = ReviewForm()
     reviews = Review.query.order_by(Review.timestamp.desc()).all()
     if form.validate_on_submit():
-        review = Review(text=form.text.data, author=form.author.data, timestamp=datetime.utcnow())
+        review = Review(text=form.text.data, author=form.author.data, timestamp=datetime.now(timezone.utc))
         try:
             db.session.add(review)
             db.session.commit()

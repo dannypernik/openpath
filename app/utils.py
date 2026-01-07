@@ -2,7 +2,7 @@ import os
 import re
 import logging
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil.parser import parse as dateparse
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -73,7 +73,7 @@ def get_week_start_and_end(date_yyyymmddd=None):
         except ValueError:
             raise ValueError("Invalid date format. Use YYYYMMDD.")
     else:
-        date = datetime.utcnow().date()
+        date = datetime.now(timezone.utc).date()
 
     if date.weekday() == 0:
         week_start = date - timedelta(days=7)
@@ -91,7 +91,7 @@ def parse_celery_worker_log(log_path, week_start=None, week_end=None):
         raise FileNotFoundError(f"Log file not found: {log_path}")
 
     if week_start is None or week_end is None:
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         week_start = today - timedelta(days=today.weekday())  # Monday
         week_end = week_start + timedelta(days=7)
 
@@ -145,7 +145,7 @@ def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
     from collections import defaultdict
 
     if week_start is None or week_end is None:
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         week_start = today - timedelta(days=today.weekday())  # Monday
         week_end = week_start + timedelta(days=7)
 
