@@ -19,15 +19,15 @@
         <img id="opt-partner-logo" class="partner-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
       </div>
       {% if current_user and current_user.is_admin %}
-        <div class="ms-3 align-self-center">
-          <a href="{{ url_for('admin.org_settings', org=organization['id']) }}" class="btn btn-sm btn-outline-secondary">Org settings</a>
-        </div>
+        <p>
+          <a href="{{ url_for('admin.org_settings', org=organization['id']) }}">Org settings</a>
+        </p>
       {% endif %}
     </div>
   </div>
 
   {% block title_text %}
-    <div class="row justify-content-center">
+    <div class="row text-center justify-content-center">
       <div class="col-10 col-lg-8">
         <h1>Get your practice test score analysis</h1>
         <p>
