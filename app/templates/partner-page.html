@@ -26,16 +26,16 @@
     </div>
   </div>
 
-  {% block title_text %}
-    <div class="row text-center justify-content-center">
-      <div class="col-10 col-lg-8">
-        <h1>Get your practice test score analysis</h1>
-        <p>
-          Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
-        </p>
+  <div class="row text-center justify-content-center">
+    <div class="col-10">
+        {% block title_text %}
+          <h1>Get your practice test score analysis</h1>
+          <p>
+            Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
+          </p>
+        {% endblock title_text %}
       </div>
     </div>
-  {% endblock title_text %}
 
   {% block form_content %}
     <div class="row justify-content-center">
