@@ -256,7 +256,7 @@ def tutors():
 def edit_date(id):
     form = TestDateForm()
     date = TestDate.query.get_or_404(id)
-    students = date.students
+    students = date.users_interested
     if form.validate_on_submit():
         if 'save' in request.form:
             date.test = form.test.data
@@ -267,12 +267,9 @@ def edit_date(id):
             date.score_date = form.score_date.data
             date.status = form.status.data
 
-            registered_students = request.form.getlist('registered_students')
+            registered_ids = set(map(int, request.form.getlist('registered_students')))
             for s in students:
-                if s in registered_students:
-                    s.is_registered = True
-                else:
-                    s.is_registered = False
+                s.is_registered = (s.user_id in registered_ids)
             try:
                 db.session.add(date)
                 db.session.commit()

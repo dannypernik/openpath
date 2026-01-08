@@ -5,15 +5,16 @@ from flask import current_app
 from app.extensions import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from sqlalchemy.ext.associationproxy import association_proxy
 
 
 class UserTestDate(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     test_date_id = db.Column(db.Integer, db.ForeignKey('test_date.id'), primary_key=True)
     is_registered = db.Column(db.Boolean, default=False)
-    users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'))
-    users = db.relationship('User', backref=db.backref('planned_tests', lazy='dynamic'), overlaps="test_dates,user")
-    test_dates = db.relationship('TestDate', backref=db.backref('users_interested'), overlaps="students,dates_interested")
+    # association object: singular relationship names and back_populates
+    user = db.relationship('User', back_populates='planned_tests')
+    test_date = db.relationship('TestDate', back_populates='interested_users')
 
 
 class TestScore(db.Model):
@@ -61,13 +62,14 @@ class User(UserMixin, db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
-    test_dates = db.relationship(
+    planned_tests = db.relationship(
         'UserTestDate',
-        foreign_keys=[UserTestDate.user_id],
-        backref=db.backref('user', lazy='joined'),
-        lazy='select',
+        back_populates='user',
         cascade='all, delete-orphan',
-        overlaps="planned_tests,users")
+        lazy='select',
+    )
+    test_dates = association_proxy('planned_tests', 'test_date')
+
     test_scores = db.relationship('TestScore',
         foreign_keys=[TestScore.user_id],
         backref=db.backref('user', lazy='joined'),
@@ -150,7 +152,13 @@ class TestDate(db.Model):
     late_date = db.Column(db.Date)
     other_date = db.Column(db.Date)
     score_date = db.Column(db.Date)
-    students = db.relationship('User', secondary='user_test_date', backref=db.backref('dates_interested', overlaps="planned_tests,test_dates,user,users"), lazy='dynamic', overlaps="planned_tests,test_dates,user,users,test_dates,users_interested")
+    interested_users = db.relationship(
+        'UserTestDate',
+        back_populates='test_date',
+        cascade='all, delete-orphan',
+    )
+
+    users_interested = association_proxy('interested_users', 'user')
 
     def __repr__(self):
         return '<TestDate {}>'.format(self.date)
