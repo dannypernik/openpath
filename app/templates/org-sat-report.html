@@ -1,14 +1,10 @@
 {% extends 'partner-page.html' %}
 
 {% block title_text %}
-  <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
-  <p class="mb-2">
-    Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
-  </p>
+  {% include '_sat-report-intro.html' %}
 {% endblock title_text %}
 
 {% block form_content %}
-  <button class="btn" data-bs-toggle="modal" data-bs-target="#report-modal">Instructions</button>
   {% include '_sat-report-form.html' %}
 {% endblock form_content %}
 

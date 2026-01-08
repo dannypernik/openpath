@@ -10,11 +10,7 @@
   {% block header %}
     <div class="row gx-5 section-margin justify-content-center">
       <div class="col-12 col-sm-11 text-center">
-        <h1>Bluebook practice SAT<sup class="h5">&#174;</sup> score analysis</h1>
-        <p>
-          Upload your results from a practice test to get a more detailed score analysis than the College Board provides.
-        </p>
-        <button class="btn" data-bs-toggle="modal" data-bs-target="#report-modal">Instructions</button>
+        {% include '_sat-report-intro.html' %}
       </div>
     </div>
   {% endblock header %}
@@ -35,4 +31,20 @@
 {% block end_scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/sat-report-form.js') }}"></script>
+  <script>
+    const font_color = '#00496d'
+    const color1 = '#1b4d64'
+    const color2 = '#ffa874'
+    const color3 = '#c3f0f7'
+    const color1_contrast = '#ffffff'
+    const color2_contrast = '#ffffff'
+    const color3_contrast = '#00496d'
+    document.documentElement.style.setProperty('--font-color', font_color);
+    document.documentElement.style.setProperty('--color1', color1);
+    document.documentElement.style.setProperty('--color2', color2);
+    document.documentElement.style.setProperty('--color3', color3);
+    document.documentElement.style.setProperty('--color1-contrast', color1_contrast);
+    document.documentElement.style.setProperty('--color2-contrast', color2_contrast);
+    document.documentElement.style.setProperty('--color3-contrast', color3_contrast);
+  </script>
 {% endblock end_scripts %}
