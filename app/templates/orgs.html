@@ -18,10 +18,10 @@
 
         <div id="org-{{ loop.index }}" class="accordion-collapse collapse p-2 pt-1" data-bs-parent="#orgAccordion">
           <div class="accordion-body">
-            <a href="{{ url_for('main.partner_page', org=org.slug) }}" class="me-5">View</a>
             <a href="{{ url_for('admin.org_settings', org=org.slug) }}" class="me-5">Settings</a>
+            <a href="{{ url_for('main.partner_page', org=org.slug) }}" class="me-5">View page</a>
             {% if org.sat_spreadsheet_id %}
-            <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5" target="_blank">SAT spreadsheet</a>
+              <a href="https://docs.google.com/spreadsheets/d/{{ org.sat_spreadsheet_id }}" class="me-5" target="_blank">SAT spreadsheet</a>
             {% endif %}
             {% if org.act_spreadsheet_id %}
               <a href="https://docs.google.com/spreadsheets/d/{{ org.act_spreadsheet_id }}" class="me-5" target="_blank">ACT spreadsheet</a>

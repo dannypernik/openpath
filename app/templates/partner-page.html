@@ -18,14 +18,24 @@
       <div class="logo-container">
         <img id="opt-partner-logo" class="partner-logo" src="{{ url_for('static', filename='img/logo-header-green.png') }}">
       </div>
+      {% if current_user and current_user.is_admin %}
+        <div class="ms-3 align-self-center">
+          <a href="{{ url_for('admin.org_settings', org=organization['id']) }}" class="btn btn-sm btn-outline-secondary">Org settings</a>
+        </div>
+      {% endif %}
     </div>
-    {% block title_text %}
-      <h1>Get your practice test score analysis</h1>
-      <p>
-        Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
-      </p>
-    {% endblock title_text %}
   </div>
+
+  {% block title_text %}
+    <div class="row justify-content-center">
+      <div class="col-10 col-lg-8">
+        <h1>Get your practice test score analysis</h1>
+        <p>
+          Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
+        </p>
+      </div>
+    </div>
+  {% endblock title_text %}
 
   {% block form_content %}
     <div class="row justify-content-center">
