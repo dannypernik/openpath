@@ -821,7 +821,28 @@ def partner_page(org):
         'name': organization.name,
         'logo_path': organization.logo_path,
         'slug': organization.slug,
+        'spreadsheet_id': organization.sat_spreadsheet_id,
+        'color1': organization.color1,
+        'color2': organization.color2,
+        'color3': organization.color3,
+        'font_color': organization.font_color
     }
+
+    if is_dark_color(organization.color1):
+        organization_dict['color1_contrast'] = '#ffffff'
+    else:
+        organization_dict['color1_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color2):
+        organization_dict['color2_contrast'] = '#ffffff'
+    else:
+        organization_dict['color2_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color3):
+        organization_dict['color3_contrast'] = '#ffffff'
+    else:
+        organization_dict['color3_contrast'] = organization.font_color
+
     return render_template('partner-page.html', title=organization.name, organization=organization_dict)
 
 
