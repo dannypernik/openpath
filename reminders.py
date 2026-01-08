@@ -38,7 +38,7 @@ now = datetime.datetime.now(datetime.timezone.utc)
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat().replace('+00:00', 'Z')
 bimonth_start_tz_aware = bimonth_start
-upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
+upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
 upcoming_end = upcoming_start + datetime.timedelta(hours=24)
 today = datetime.date.today()
@@ -404,7 +404,7 @@ def main():
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
-                        e_date = datetime.datetime.strptime(e['date'], '%Y-%m-%dT%H:%M:%SZ')
+                        e_date = isoparse(e['date'])
                         if name in e['name']:
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
