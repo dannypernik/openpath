@@ -38,8 +38,8 @@ def generate_drive_token(client_secrets: str, output_name: str = 'token_drive.js
 
 
 def load_google_credentials(service_account_json: str,
-                            token_path: str,
-                            client_secrets: str,
+                            token_path: str = '',
+                            client_secrets: str = '',
                             prefer_user: bool = False,
                             scopes: list = ALL_SCOPES):
     """
