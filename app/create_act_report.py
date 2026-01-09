@@ -981,7 +981,7 @@ def style_custom_act_spreadsheet(organization_data):
                 # Add the update request
                 requests.append({
                     "updateConditionalFormatRule": {
-                        "sheetId": analysis_sheet_id,
+                        "sheetId": sheet_id,
                         "index": rule_idx,
                         "rule": rule
                     }
