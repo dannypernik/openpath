@@ -1,5 +1,4 @@
 import os
-from flask import current_app
 from app.utils import is_dark_color, hex_to_rgb, color_svg_white_to_input
 from app.email import send_score_report_email
 from google.oauth2 import service_account
@@ -22,27 +21,18 @@ def get_static_url(filename):
     """Get URL for static file."""
     return url_for('static', filename=filename)
 
-
-def get_sat_template_ss_id():
-    return current_app.config['SAT_REPORT_SS_ID']
-
-
-def get_org_sheet_id():
-    return current_app.config['ORG_SAT_REPORT_SS_ID']
-
-
-def get_org_folder_id():
-    return current_app.config['ORG_FOLDER_ID']
-
-
 # Constants
 SAT_REPORT_FOLDER_ID = '15tJsdeOx_HucjIb6koTaafncTj-e6FO6'  # Your score report folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
+SAT_REPORT_SS_ID = os.environ.get('SAT_REPORT_SS_ID')
+ORG_SAT_REPORT_SS_ID = os.environ.get('ORG_SAT_REPORT_SS_ID')
+ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
 
 total_questions = {
     'rw_modules': {'questions': 27, 'prepend_rows': 4},
     'm_modules': {'questions': 22, 'prepend_rows': 35}
 }
+
 
 def check_service_account_access(spreadsheet_id):
     sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', SERVICE_ACCOUNT_JSON)
@@ -86,7 +76,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the spreadsheet
-        file_id = organization_dict['spreadsheet_id'] if organization_dict else get_sat_template_ss_id()
+        file_id = organization_dict['spreadsheet_id'] if organization_dict else SAT_REPORT_SS_ID
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
@@ -805,9 +795,9 @@ def create_custom_sat_spreadsheet(organization):
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=get_org_sheet_id(),
+        fileId=ORG_SAT_REPORT_SS_ID,
         body={
-            'parents': [get_org_folder_id()],
+            'parents': [ORG_FOLDER_ID],
             'name': f'{organization.name} SAT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
@@ -824,7 +814,7 @@ def style_custom_sat_spreadsheet(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=ss_copy_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {get_sat_template_ss_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{ss_copy_id} (copied from {SAT_REPORT_SS_ID})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1659,7 +1649,7 @@ def update_sat_org_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sat_template_ss_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SAT_REPORT_SS_ID})')
 
     answer_sheet_id = None
     analysis_sheet_id = None
@@ -1715,7 +1705,7 @@ def update_sat_partner_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=sat_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {get_sat_template_ss_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{sat_ss_id} (copied from {SAT_REPORT_SS_ID})')
 
     answer_sheet_id = None
     analysis_sheet_id = None

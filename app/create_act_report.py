@@ -1,5 +1,4 @@
 import os
-from flask import current_app
 from app.utils import hex_to_rgb, is_dark_color
 from app.email import send_score_report_email
 from googleapiclient.discovery import build
@@ -19,22 +18,12 @@ except ImportError:
     GraderClient = None
 
 
-# Constants - Note: get_act_template_ss_id() and get_act_data_ss_id() are accessed via current_app.config at runtime
 ACT_REPORT_FOLDER_ID = '1di1PnSgL4J9oyGQGjUKfg_eRhKSht3WD'  # Your score report folder ID
 ORG_FOLDER_ID = '1E9oLuQ9pTcTxA2gGuVN_ookpDYZn0fAm'  # Your organization folder ID
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service account JSON file
-
-
-def get_act_template_ss_id():
-    return current_app.config['ACT_REPORT_SS_ID']
-
-
-def get_act_data_ss_id():
-    return current_app.config['ACT_DATA_SS_ID']
-
-def get_admin_email():
-    return current_app.config['ADMIN_EMAIL']
-
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+ACT_REPORT_SS_ID = os.environ.get('ACT_REPORT_SS_ID')
+ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
 
 all_subjects = ['english', 'math', 'reading', 'science']
 completed_subjects = []
@@ -44,6 +33,7 @@ sub_data = {
   'reading': {'col': 10, 'max_len': 40},
   'science': {'col': 14, 'max_len': 40}
 }
+
 
 def get_act_test_codes():
     sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', SERVICE_ACCOUNT_JSON)
@@ -60,7 +50,7 @@ def get_act_test_codes():
     creds = Credentials.from_service_account_file(sa_path)
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     result = service.spreadsheets().values().get(
-      spreadsheetId=get_act_data_ss_id(),
+      spreadsheetId=ACT_DATA_SS_ID,
       range="'Test designations'!E2:I"
     ).execute()
     values = result.get('values', [])
@@ -132,7 +122,7 @@ def create_act_score_report(score_data, organization_dict):
     if organization_dict and organization_dict['spreadsheet_id']:
         file_id = organization_dict['spreadsheet_id']
     else:
-        file_id = get_act_template_ss_id()
+        file_id = ACT_REPORT_SS_ID
     ss_copy = drive_service.files().copy(
         fileId=file_id,
         body={
@@ -535,14 +525,14 @@ def create_custom_act_spreadsheet(organization):
 
     # Step 1: Copy the default template
     file_copy = drive_service.files().copy(
-        fileId=get_act_template_ss_id(),
+        fileId=ACT_REPORT_SS_ID,
         body={
             'parents': [ORG_FOLDER_ID],
             'name': f'{organization.name} ACT Template'}
     ).execute()
     ss_copy_id = file_copy.get('id')
 
-    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {get_act_template_ss_id()})')
+    logging.info(f'ss_copy_id: {ss_copy_id} (copied from {ACT_REPORT_SS_ID})')
 
     return ss_copy_id
 
@@ -1144,7 +1134,7 @@ def style_custom_act_spreadsheet(organization_data):
                     "values": [
                         {
                             "userEnteredValue": {
-                                "stringValue": f"Contact {get_admin_email()} to schedule a free planning meeting."
+                                "stringValue": f"Contact {ADMIN_EMAIL} to schedule a free planning meeting."
                             }
                         }
                     ]
@@ -1579,7 +1569,7 @@ def update_act_partner_logo(organization_data):
     service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
     ss_copy = service.spreadsheets().get(spreadsheetId=act_ss_id).execute()
     sheets = ss_copy.get('sheets', [])
-    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{act_ss_id} (copied from {get_act_template_ss_id()})')
+    logging.info(f'ss_copy_id: https://docs.google.com/spreadsheets/d/{act_ss_id} (copied from {ACT_REPORT_SS_ID})')
 
     analysis_sheet_id = None
     for sheet in sheets:
