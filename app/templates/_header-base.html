@@ -122,7 +122,11 @@
           </div>
         </a>
       {% else %}
-        <a href="{{ url_for('auth.signin', next=request.endpoint) }}">
+        {% if organization %}
+          <a href="{{ url_for('auth.signin', next=request.endpoint, org=organization.slug) }}">
+        {% else %}
+          <a href="{{ url_for('auth.signin', next=request.endpoint) }}">
+        {% endif %}
           <div class="menu-link">
             <p>Sign in</p>
           </div>

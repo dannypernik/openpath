@@ -423,6 +423,7 @@ def org_settings(org):
                 if not partner.password_hash:
                     temp_password = f"{slug.replace('-', '')}{current_app.config['PW_STRING']}"
                     partner.set_password(temp_password)
+                    partner.is_verified = True
 
                 organization.name = form.org_name.data
                 organization.color1 = form.color1.data
