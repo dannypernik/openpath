@@ -440,8 +440,8 @@ def org_settings(org):
 
                 organization_data = {
                     'name': form.org_name.data,
-                    'sat_ss_id': form.sat_ss_id.data,
-                    'act_ss_id': form.act_ss_id.data,
+                    'sat_ss_id': organization.sat_spreadsheet_id,
+                    'act_ss_id': organization.act_spreadsheet_id,
                     'color1': form.color1.data,
                     'color2': form.color2.data,
                     'color3': form.color3.data,
