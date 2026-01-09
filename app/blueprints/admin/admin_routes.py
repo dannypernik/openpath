@@ -361,7 +361,8 @@ def delete_org(org_slug):
 @admin_bp.route('/org-settings/<org>', methods=['GET', 'POST'])
 @admin_required
 def org_settings(org):
-    start_time = time.time()
+    form = OrgSettingsForm()
+
     if org == 'new':
         organization = None
     else:
@@ -369,9 +370,6 @@ def org_settings(org):
         if not organization:
             flash('Organization not found.', 'error')
             return redirect(url_for('admin.org_settings', org='new'))
-    t1 = time.time()
-    form = OrgSettingsForm()
-    t2 = time.time()
 
     partner_list = []
     partners = User.query.filter_by(role='partner').all()
@@ -380,7 +378,6 @@ def org_settings(org):
             partner_list.append((partner.id, full_name(partner)))
     partner_list.insert(0, (0, 'New partner'))
     form.partner_id.choices = partner_list
-    t3 = time.time()
 
     if organization and request.method == 'GET':
         form.org_name.data = organization.name
@@ -395,26 +392,20 @@ def org_settings(org):
         form.sat_ss_id.data = organization.sat_spreadsheet_id
         form.act_ss_id.data = organization.act_spreadsheet_id
         form.is_private.data = organization.is_private
-    t4 = time.time()
 
     if form.validate_on_submit():
         if 'save' in request.form:
             try:
-                step_start = time.time()
                 if not organization:
                     organization = Organization(name=form.org_name.data, slug=form.slug.data)
                     db.session.add(organization)
                 else:
                     organization = Organization.query.filter_by(slug=org).first()
-                logger.info(f"Step: Organization lookup/add: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 slug = form.slug.data
                 slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
                 organization.slug = slug
-                logger.info(f"Step: Slug processing: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if form.partner_id.data == 0:
                     partner = User(
                         first_name=form.first_name.data,
@@ -428,23 +419,17 @@ def org_settings(org):
                     db.session.flush()
                 else:
                     partner = User.query.filter_by(id=form.partner_id.data).first()
-                logger.info(f"Step: Partner lookup/add: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if not partner.password_hash:
                     temp_password = f"{slug.replace('-', '')}{current_app.config['PW_STRING']}"
                     partner.set_password(temp_password)
                     partner.is_verified = True
-                logger.info(f"Step: Partner password: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if not form.sat_ss_id.data:
                     organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
                 if not form.act_ss_id.data:
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
-                logger.info(f"Step: Spreadsheet creation: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 organization.name = form.org_name.data
                 organization.color1 = form.color1.data
                 organization.color2 = form.color2.data
@@ -452,9 +437,7 @@ def org_settings(org):
                 organization.font_color = form.font_color.data
                 organization.partner_id = partner.id
                 organization.is_private = form.is_private.data
-                logger.info(f"Step: Organization field assignment: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 organization_data = {
                     'name': form.org_name.data,
                     'sat_ss_id': form.sat_ss_id.data,
@@ -465,9 +448,7 @@ def org_settings(org):
                     'font_color': form.font_color.data,
                     'static_path': os.path.join(current_app.static_folder)
                 }
-                logger.info(f"Step: Organization data dict: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if (
                     organization.color1 != form.color1.data or
                     organization.color2 != form.color2.data or
@@ -480,9 +461,7 @@ def org_settings(org):
                     organization_data['is_style_updated'] = True
                 else:
                     organization_data['is_style_updated'] = False
-                logger.info(f"Step: Style update check: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if form.logo.data:
                     logo_file = form.logo.data
                     upload_dir = os.path.join(current_app.static_folder, 'img/orgs')
@@ -492,9 +471,7 @@ def org_settings(org):
                     logo_file.save(logo_path)
                     organization.logo_path = f"img/orgs/{filename}"
                 organization_data['logo_path'] = organization.logo_path
-                logger.info(f"Step: Logo upload: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if form.ss_logo.data:
                     ss_logo_file = form.ss_logo.data
                     upload_dir = os.path.join(current_app.static_folder, 'img/orgs')
@@ -506,13 +483,9 @@ def org_settings(org):
                 elif form.copy_ss_logo.data and organization.logo_path:
                     organization.ss_logo_path = organization.logo_path
                 organization_data['ss_logo_path'] = organization.ss_logo_path
-                logger.info(f"Step: SS logo upload/copy: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 db.session.commit()
-                logger.info(f"Step: DB commit 1: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 if is_dark_color(organization_data['color1']):
                     organization_data['logo_color'] = '#ffffff'
                 else:
@@ -522,18 +495,10 @@ def org_settings(org):
                 organization_data['svg_path'] = os.path.join(current_app.static_folder, 'img/logo-header.svg')
                 safe_filename = secure_filename(f'opt-{organization_data["logo_color"]}.png')
                 organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
-                logger.info(f"Step: Partner logo prep: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 style_custom_spreadsheets_task.delay(organization_data)
-                logger.info(f"Step: Style spreadsheet task: {time.time() - step_start:.3f}s")
 
-                step_start = time.time()
                 db.session.commit()
-                logger.info(f"Step: DB commit 2: {time.time() - step_start:.3f}s")
-
-                total_time = time.time() - start_time
-                logger.info(f"Total org_settings processing time: {total_time:.3f}s")
 
                 if organization_data['is_style_updated'] or form.logo.data:
                     flash(Markup(f'{"Style" if organization_data["is_style_updated"] else "Logo"} updated for \
