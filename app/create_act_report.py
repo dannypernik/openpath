@@ -32,6 +32,9 @@ def get_act_template_ss_id():
 def get_act_data_ss_id():
     return current_app.config['ACT_DATA_SS_ID']
 
+def get_admin_email():
+    return current_app.config['ADMIN_EMAIL']
+
 
 all_subjects = ['english', 'math', 'reading', 'science']
 completed_subjects = []
@@ -804,7 +807,7 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
-        # Font sizes 13 for B5, 12 for E2, 23 for E3, 12 for H2:J6
+        # Font sizes 13 for B5, 14 for E2, 30 for E3, 12 for H2:J6
         requests.append({
             "repeatCell": {
                 "range": {
@@ -844,7 +847,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "cell": {
                     "userEnteredFormat": {
                         "textFormat": {
-                            "fontSize": 12,
+                            "fontSize": 14,
                             "bold": True,
                             "fontFamily": "Montserrat",
                             "foregroundColor": {
@@ -871,7 +874,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "cell": {
                     "userEnteredFormat": {
                         "textFormat": {
-                            "fontSize": 23,
+                            "fontSize": 30,
                             "bold": True,
                             "fontFamily": "Montserrat",
                             "foregroundColor": {
@@ -1123,6 +1126,31 @@ def style_custom_act_spreadsheet(organization_data):
                 }
             ],
             "fields": "userEnteredValue"#,userEnteredFormat.textFormat"
+        }
+    })
+
+    # Add contact message to B71
+    requests.append({
+        "updateCells": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 70,
+                "endRowIndex": 71,
+                "startColumnIndex": 1,
+                "endColumnIndex": 2
+            },
+            "rows": [
+                {
+                    "values": [
+                        {
+                            "userEnteredValue": {
+                                "stringValue": f"Contact {get_admin_email()} to schedule a free planning meeting."
+                            }
+                        }
+                    ]
+                }
+            ],
+            "fields": "userEnteredValue"
         }
     })
 
