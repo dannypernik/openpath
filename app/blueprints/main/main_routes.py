@@ -23,7 +23,7 @@ from google.oauth2.service_account import Credentials
 
 from app.blueprints.main import main_bp
 from app.extensions import db, hcaptcha
-from app.helpers import full_name, dir_last_updated, hello_email
+from app.helpers import full_name, dir_last_updated, hello_email, private_login_required
 from app.forms import (
     InquiryForm, EmailListForm, TestStrategiesForm, TestDateForm,
     ScoreAnalysisForm, ReviewForm, FreeResourcesForm, NominationForm,
@@ -815,6 +815,7 @@ def act_report():
 
 
 @main_bp.route('/<org>')
+@private_login_required
 def partner_page(org):
     organization = Organization.query.filter_by(slug=org).first_or_404()
     organization_dict = {

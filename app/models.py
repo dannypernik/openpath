@@ -194,6 +194,7 @@ class Organization(db.Model):
         backref=db.backref('partner_organization', uselist=False),
         foreign_keys=[partner_id]
     )
+    is_private = db.Column(db.Boolean, default=False)
 
 
 @login.user_loader

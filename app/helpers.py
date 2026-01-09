@@ -50,6 +50,20 @@ def admin_required(f):
             return redirect(url_for('auth.signin', next=request.endpoint, org=request.view_args.get('org')))
     return wrap
 
+def private_login_required(f):
+    """Decorator for views that require login if org is private."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        org_slug = kwargs.get('org')
+        from app.models import Organization  # Import here to avoid circular import
+        if org_slug:
+            organization = Organization.query.filter_by(slug=org_slug).first()
+            if organization and organization.is_private and not current_user.is_authenticated:
+                flash('Admin access is required to access this page.', 'error')
+                return redirect(url_for('auth.signin', next=request.endpoint, org=org_slug))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def get_next_page():
     """Get the next page to redirect to after login."""

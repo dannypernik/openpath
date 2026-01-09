@@ -322,6 +322,7 @@ class OrgSettingsForm(FlaskForm):
     ss_logo = FileField('Spreadsheet logo', validators=[FileAllowed(['png', 'jpg', 'jpeg', 'webp'], 'Images only please (png, jpg, jpeg, webp)')])
     sat_ss_id = StringField('SAT template spreadsheet ID', render_kw={'placeholder': 'SAT template spreadsheet ID'})
     act_ss_id = StringField('ACT template spreadsheet ID', render_kw={'placeholder': 'ACT template spreadsheet ID'})
+    is_private = BooleanField('Make organization private')
     save = SubmitField()
 
 class FreeResourcesForm(FlaskForm):

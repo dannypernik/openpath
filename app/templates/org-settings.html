@@ -18,8 +18,12 @@
       {{ form.org_name }}
       {{ form.slug }}
     </div>
-    <div class="mb-1">
+    <div class="mb-1 d-inline-block">
       {{ form.partner_id.label }} {{ form.partner_id }}
+    </div>
+    <div class="mb-1 ms-5 d-inline-block">
+      {{ form.is_private }}
+      {{ form.is_private.label }}
     </div>
     <div id="new-partner-info" class="row">
       <div class="col col-md-6">

@@ -390,6 +390,7 @@ def org_settings(org):
         form.partner_id.data = organization.partner_id
         form.sat_ss_id.data = organization.sat_spreadsheet_id
         form.act_ss_id.data = organization.act_spreadsheet_id
+        form.is_private.data = organization.is_private
 
     if form.validate_on_submit():
         if 'save' in request.form:
@@ -414,6 +415,11 @@ def org_settings(org):
                 else:
                     partner = User.query.filter_by(id=form.partner_id.data).first()
 
+                # If the partner does not have a password, set a temp password
+                if not partner.password_hash:
+                    temp_password = f"{slug.replace('-', '')}{current_app.config['PW_STRING']}"
+                    partner.set_password(temp_password)
+
                 organization.name = form.org_name.data
                 organization.color1 = form.color1.data
                 organization.color2 = form.color2.data
@@ -422,6 +428,7 @@ def org_settings(org):
                 organization.partner_id = partner.id
                 organization.sat_spreadsheet_id = form.sat_ss_id.data
                 organization.act_spreadsheet_id = form.act_ss_id.data
+                organization.is_private = form.is_private.data
                 slug = form.slug.data
                 slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
                 organization.slug = slug
@@ -444,7 +451,7 @@ def org_settings(org):
                     organization.font_color != form.font_color.data or
                     organization.sat_spreadsheet_id != form.sat_ss_id.data or
                     organization.act_spreadsheet_id != form.act_ss_id.data or
-                    organization.ss_logo_path != form.ss_logo.data
+                    form.ss_logo.data
                 ):
                     organization_data['is_style_updated'] = True
                 else:
