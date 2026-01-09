@@ -1201,13 +1201,13 @@ def style_custom_act_spreadsheet(organization_data):
         }
     })
 
-    # Add contact message to B71
+    # Add contact message to B72
     requests.append({
         "updateCells": {
             "range": {
                 "sheetId": analysis_sheet_id,
-                "startRowIndex": 70,
-                "endRowIndex": 71,
+                "startRowIndex": 71,
+                "endRowIndex": 72,
                 "startColumnIndex": 1,
                 "endColumnIndex": 2
             },
