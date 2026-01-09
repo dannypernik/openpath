@@ -401,6 +401,10 @@ def org_settings(org):
                 else:
                     organization = Organization.query.filter_by(slug=org).first()
 
+                slug = form.slug.data
+                slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
+                organization.slug = slug
+
                 if form.partner_id.data == 0:
                     partner = User(
                         first_name=form.first_name.data,
@@ -429,9 +433,6 @@ def org_settings(org):
                 organization.sat_spreadsheet_id = form.sat_ss_id.data
                 organization.act_spreadsheet_id = form.act_ss_id.data
                 organization.is_private = form.is_private.data
-                slug = form.slug.data
-                slug = ''.join(e for e in slug if e.isalnum() or e == '-').replace(' ', '-').lower()
-                organization.slug = slug
 
                 organization_data = {
                     'name': form.org_name.data,
