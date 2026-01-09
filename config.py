@@ -39,6 +39,7 @@ class Config(object):
     ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
     ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
     TEMPLATES_AUTO_RELOAD = True
+    PW_STRING = os.environ.get('PW_STRING')
 
 
 class DevelopmentConfig(Config):
