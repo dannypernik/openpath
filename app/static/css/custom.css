@@ -6168,6 +6168,7 @@ a {
   text-decoration-color: #005a74;
   display: inline-block;
   color: #005a74;
+  font-weight: 600;
 }
 a.sec {
   color: #f06d53;
@@ -6175,7 +6176,6 @@ a.sec {
 a:hover {
   color: #005a74;
   text-decoration-color: #f06d53;
-  font-weight: 600;
 }
 
 .no-decoration a {

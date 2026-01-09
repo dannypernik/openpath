@@ -307,6 +307,7 @@ a {
   @include underline-link();
   display: inline-block;
   color: $text-color;
+  font-weight: 600;
 
   &.sec {
     color: $secondary-color;
@@ -315,7 +316,6 @@ a {
   &:hover {
     color: $text-color;
     text-decoration-color: $secondary-color;
-    font-weight: 600;
   }
 }
 
