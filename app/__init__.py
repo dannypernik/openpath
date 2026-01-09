@@ -74,6 +74,9 @@ def create_app(config_name=None):
     def unauthorized():
         """Redirect unauthorized users to the login page."""
         flash('Please sign in to access this page.')
+        org = getattr(request, 'org', None)
+        if org:
+            return redirect(url_for('auth.login', next=request.endpoint, org=org.slug))
         return redirect(url_for('auth.login', next=request.endpoint, org=request.view_args.get('org')))
 
     # Register blueprints
