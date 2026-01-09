@@ -1547,6 +1547,7 @@ def style_custom_sat_spreadsheet(organization_data):
         body={"requests": requests}
     ).execute()
 
+
     # Update conditional formatting rules
     # Fetch current conditional formatting rules
     current_rules = service.spreadsheets().get(

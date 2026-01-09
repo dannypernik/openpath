@@ -906,6 +906,88 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
+        # Update conditional formatting rules
+        # Fetch current conditional formatting rules
+        current_rules = service.spreadsheets().get(
+            spreadsheetId=ss_copy_id,
+            fields='sheets.conditionalFormats'
+        ).execute()
+
+        analysis_conditional_formats = []
+        analysis_conditional_indices = []
+
+        for sheet in current_rules.get('sheets', []):
+            cond_formats = sheet.get('conditionalFormats')
+            if cond_formats:
+                for idx, rule in enumerate(cond_formats):
+                    if rule.get('ranges', [{}])[0].get('sheetId') == sheet_id:
+                        analysis_conditional_formats.append(rule)
+                        analysis_conditional_indices.append(idx)
+                break
+
+        # Filter only boolean rules
+        boolean_rules = [
+            (idx, rule) for idx, rule in zip(analysis_conditional_indices, analysis_conditional_formats)
+            if 'booleanRule' in rule
+        ]
+
+        # Iterate over the boolean rules and update based on their index
+        for boolean_idx, (rule_idx, rule) in enumerate(boolean_rules):
+            if 'booleanRule' in rule:
+                # Determine the new background color and text color based on the rule's index
+                if boolean_idx == 0:  # First boolean rule
+                    new_bg_color = {
+                        'red': rgb_color1[0] / 255,
+                        'green': rgb_color1[1] / 255,
+                        'blue': rgb_color1[2] / 255
+                    }
+                    text_rgb = (255, 255, 255) if is_dark_color(rgb_color1) else rgb_font_color
+                elif boolean_idx == 1:  # Second boolean rule
+                    new_bg_color = {
+                        'red': rgb_color2[0] / 255,
+                        'green': rgb_color2[1] / 255,
+                        'blue': rgb_color2[2] / 255
+                    }
+                    text_rgb = (255, 255, 255) if is_dark_color(rgb_color2) else rgb_font_color
+                elif boolean_idx == 2:  # Third boolean rule
+                    new_bg_color = {
+                        'red': rgb_color3[0] / 255,
+                        'green': rgb_color3[1] / 255,
+                        'blue': rgb_color3[2] / 255
+                    }
+                    text_rgb = (255, 255, 255) if is_dark_color(rgb_color3) else rgb_font_color
+                else:
+                    # Skip updating rules beyond the first three
+                    continue
+
+                # Update the rule's background color
+                rule['booleanRule']['format']['backgroundColor'] = new_bg_color
+                rule['booleanRule']['format']['backgroundColorStyle'] = {
+                    'rgbColor': new_bg_color
+                }
+                # Preserve original font weight (bold) if present
+                original_text_format = rule['booleanRule']['format'].get('textFormat', {})
+                is_bold = original_text_format.get('bold', False)
+                # Update the rule's text color and keep font weight
+                rule['booleanRule']['format']['textFormat'] = {
+                    'foregroundColor': {
+                        'red': text_rgb[0] / 255,
+                        'green': text_rgb[1] / 255,
+                        'blue': text_rgb[2] / 255
+                    },
+                    'bold': is_bold
+                }
+
+                # Add the update request
+                requests.append({
+                    "updateConditionalFormatRule": {
+                        "sheetId": analysis_sheet_id,
+                        "index": rule_idx,
+                        "rule": rule
+                    }
+                })
+
+
     for ans_sheet_id in [answer_sheet_id, enhanced_sheet_id]:
         # Apply font_color to body A1:O74
         requests.append({
