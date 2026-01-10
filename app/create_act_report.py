@@ -227,7 +227,7 @@ def create_act_score_report(score_data, organization_dict):
     if organization_dict:
         title_row = 4 # Row B5 if custom organization
     else:
-        title_row = 1 # Row B2 if default template
+        title_row = 2 # Row B3 if default template
 
     # Add student name to analysis sheet
     request = {
@@ -608,6 +608,20 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
+        # Merge B2:D4 for logo
+        requests.append({
+            "mergeCells": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": 4,
+                    "startColumnIndex": 1,
+                    "endColumnIndex": 4
+                },
+                "mergeType": "MERGE_ALL"
+            }
+        })
+
         # Apply color1 to headers
         requests.append({
             "repeatCell": {
@@ -639,6 +653,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "fields": "userEnteredFormat(backgroundColor, textFormat)"
             }
         })
+
         # Borders
         requests.append({
             "updateBorders": {
