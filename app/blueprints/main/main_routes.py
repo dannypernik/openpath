@@ -815,7 +815,7 @@ def act_report():
 
 
 @main_bp.route('/<org>')
-@private_login_required
+@private_login_check
 def partner_page(org):
     organization = Organization.query.filter_by(slug=org).first_or_404()
     organization_dict = {
@@ -848,6 +848,7 @@ def partner_page(org):
 
 
 @main_bp.route('/<org>/sat', methods=['GET', 'POST'])
+@private_login_check
 def custom_sat_report(org):
     form = SATReportForm()
     organization = Organization.query.filter_by(slug=org).first_or_404()
@@ -880,40 +881,6 @@ def custom_sat_report(org):
         organization_dict['color3_contrast'] = organization.font_color
 
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
-
-
-@main_bp.route('/<org>/act', methods=['GET', 'POST'])
-def custom_act_report(org):
-    form = ACTReportForm()
-    organization = Organization.query.filter_by(slug=org).first_or_404()
-
-    organization_dict = {
-        'name': organization.name,
-        'logo_path': organization.logo_path,
-        'slug': organization.slug,
-        'spreadsheet_id': organization.act_spreadsheet_id,
-        'color1': organization.color1,
-        'color2': organization.color2,
-        'color3': organization.color3,
-        'font_color': organization.font_color
-    }
-
-    if is_dark_color(organization.color1):
-        organization_dict['color1_contrast'] = '#ffffff'
-    else:
-        organization_dict['color1_contrast'] = organization.font_color
-
-    if is_dark_color(organization.color2):
-        organization_dict['color2_contrast'] = '#ffffff'
-    else:
-        organization_dict['color2_contrast'] = organization.font_color
-
-    if is_dark_color(organization.color3):
-        organization_dict['color3_contrast'] = '#ffffff'
-    else:
-        organization_dict['color3_contrast'] = organization.font_color
-
-    return handle_act_report(form, 'org-act-report.html', organization=organization_dict)
 
 
 def handle_sat_report(form, template_name, organization=None):
@@ -1048,6 +1015,41 @@ def handle_sat_report(form, template_name, organization=None):
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
 
+@main_bp.route('/<org>/act', methods=['GET', 'POST'])
+@private_login_check
+def custom_act_report(org):
+    form = ACTReportForm()
+    organization = Organization.query.filter_by(slug=org).first_or_404()
+
+    organization_dict = {
+        'name': organization.name,
+        'logo_path': organization.logo_path,
+        'slug': organization.slug,
+        'spreadsheet_id': organization.act_spreadsheet_id,
+        'color1': organization.color1,
+        'color2': organization.color2,
+        'color3': organization.color3,
+        'font_color': organization.font_color
+    }
+
+    if is_dark_color(organization.color1):
+        organization_dict['color1_contrast'] = '#ffffff'
+    else:
+        organization_dict['color1_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color2):
+        organization_dict['color2_contrast'] = '#ffffff'
+    else:
+        organization_dict['color2_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color3):
+        organization_dict['color3_contrast'] = '#ffffff'
+    else:
+        organization_dict['color3_contrast'] = organization.font_color
+
+    return handle_act_report(form, 'org-act-report.html', organization=organization_dict)
+
+
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
@@ -1092,6 +1094,7 @@ def handle_act_report(form, template_name, organization=None):
             answer_sheet_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
             answer_img_path = os.path.join(act_uploads_path, answer_sheet_filename)
             answer_img.save(answer_img_path)
+            logging.info(f"Saved answer image to {answer_img_path}")
 
             if file_extension == 'heic':
                 answer_img_path = convert_heic_to_jpg(answer_img_path)

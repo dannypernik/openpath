@@ -50,7 +50,7 @@ def admin_required(f):
             return redirect(url_for('auth.signin', next=request.endpoint, org=request.view_args.get('org')))
     return wrap
 
-def private_login_required(f):
+def private_login_check(f):
     """Decorator for views that require login if org is private."""
     @wraps(f)
     def decorated_function(*args, **kwargs):

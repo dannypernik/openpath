@@ -96,7 +96,7 @@ def send_sat_answers_to_ss_task(self, score_data):
 @celery.task(name='app.tasks.sat_report_workflow_task', bind=True, base=MyTaskBaseClass)
 def sat_report_workflow_task(self, score_data, organization_dict=None):
   chain(
-    create_and_send_sat_report_task.s(score_data),
+    create_and_send_sat_report_task.s(score_data, organization_dict),
     send_sat_answers_to_ss_task.s()
   ).apply_async()
 
@@ -144,7 +144,7 @@ def send_act_answers_to_ss_task(self, score_data):
 @celery.task(name='app.tasks.act_report_workflow_task', bind=True, base=MyTaskBaseClass)
 def act_report_workflow_task(self, score_data, organization_dict=None):
   chain(
-    create_and_send_act_report_task.s(score_data),
+    create_and_send_act_report_task.s(score_data, organization_dict),
     send_act_answers_to_ss_task.s()
   ).apply_async()
 
