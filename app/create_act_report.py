@@ -923,7 +923,6 @@ def style_custom_act_spreadsheet(organization_data):
                     if rule.get('ranges', [{}])[0].get('sheetId') == sheet_id:
                         analysis_conditional_formats.append(rule)
                         analysis_conditional_indices.append(idx)
-                break
 
         # Filter only boolean rules
         boolean_rules = [
