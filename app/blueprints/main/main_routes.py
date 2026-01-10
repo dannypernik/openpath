@@ -57,9 +57,10 @@ def convert_heic_to_jpg(heic_path, quality=90):
         with Image.open(heic_path) as img:
             rgb_img = img.convert('RGB')
             rgb_img.save(jpg_path, 'JPEG', quality=quality)
+        logger.info(f"Converted HEIC to JPG: {jpg_path}")
         return jpg_path
     except Exception as e:
-        print(f"Failed to convert HEIC to JPG: {e}")
+        logger.error(f"Failed to convert HEIC to JPG: {e}")
         return False
 
 
@@ -95,7 +96,7 @@ def get_image_info(file_path):
                 file_extension = 'heic'
             return file_extension
     except Exception as e:
-        print(f"Image format error: {e}")
+        logger.error(f"Image format error: {e}")
         return None, None
     finally:
         if hasattr(file_path, 'stream'):
