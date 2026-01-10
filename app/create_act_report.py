@@ -1520,73 +1520,73 @@ def style_custom_act_spreadsheet(organization_data):
         fields='sheets.conditionalFormats'
     ).execute()
 
-    # Helper to update conditional formatting for a given sheet_id and colors
-    def update_conditional_formatting(sheet_id, color_list):
-        cond_formats = None
-        indices = []
-        formats = []
-        for sheet in current_rules.get('sheets', []):
-            if sheet.get('properties', {}).get('sheetId') == sheet_id:
-                cond_formats = sheet.get('conditionalFormats')
-                break
-        if cond_formats:
-            for idx, rule in enumerate(cond_formats):
-                if rule.get('ranges', [{}])[0].get('sheetId') == sheet_id:
-                    formats.append(rule)
-                    indices.append(idx)
-        updated = []
-        boolean_rules = [
-            (idx, rule) for idx, rule in zip(indices, formats)
-            if 'booleanRule' in rule
-        ]
-        for boolean_idx, (rule_idx, rule) in enumerate(boolean_rules):
-            if boolean_idx >= len(color_list):
-                continue
-            rgb_bg = color_list[boolean_idx]
-            text_rgb = (255, 255, 255) if is_dark_color(rgb_bg) else rgb_font_color
-            new_bg_color = {
-                'red': rgb_bg[0] / 255,
-                'green': rgb_bg[1] / 255,
-                'blue': rgb_bg[2] / 255
-            }
-            rule['booleanRule']['format']['backgroundColor'] = new_bg_color
-            rule['booleanRule']['format']['backgroundColorStyle'] = {
-                'rgbColor': new_bg_color
-            }
-            rule['booleanRule']['format']['textFormat'] = {
-                'foregroundColor': {
-                    'red': text_rgb[0] / 255,
-                    'green': text_rgb[1] / 255,
-                    'blue': text_rgb[2] / 255
-                }
-            }
-            updated.append({
-                "updateConditionalFormatRule": {
-                    "sheetId": sheet_id,
-                    "index": rule_idx,
-                    "rule": rule
-                }
-            })
-        return updated
+    # # Helper to update conditional formatting for a given sheet_id and colors
+    # def update_conditional_formatting(sheet_id, color_list):
+    #     cond_formats = None
+    #     indices = []
+    #     formats = []
+    #     for sheet in current_rules.get('sheets', []):
+    #         if sheet.get('properties', {}).get('sheetId') == sheet_id:
+    #             cond_formats = sheet.get('conditionalFormats')
+    #             break
+    #     if cond_formats:
+    #         for idx, rule in enumerate(cond_formats):
+    #             if rule.get('ranges', [{}])[0].get('sheetId') == sheet_id:
+    #                 formats.append(rule)
+    #                 indices.append(idx)
+    #     updated = []
+    #     boolean_rules = [
+    #         (idx, rule) for idx, rule in zip(indices, formats)
+    #         if 'booleanRule' in rule
+    #     ]
+    #     for boolean_idx, (rule_idx, rule) in enumerate(boolean_rules):
+    #         if boolean_idx >= len(color_list):
+    #             continue
+    #         rgb_bg = color_list[boolean_idx]
+    #         text_rgb = (255, 255, 255) if is_dark_color(rgb_bg) else rgb_font_color
+    #         new_bg_color = {
+    #             'red': rgb_bg[0] / 255,
+    #             'green': rgb_bg[1] / 255,
+    #             'blue': rgb_bg[2] / 255
+    #         }
+    #         rule['booleanRule']['format']['backgroundColor'] = new_bg_color
+    #         rule['booleanRule']['format']['backgroundColorStyle'] = {
+    #             'rgbColor': new_bg_color
+    #         }
+    #         rule['booleanRule']['format']['textFormat'] = {
+    #             'foregroundColor': {
+    #                 'red': text_rgb[0] / 255,
+    #                 'green': text_rgb[1] / 255,
+    #                 'blue': text_rgb[2] / 255
+    #             }
+    #         }
+    #         updated.append({
+    #             "updateConditionalFormatRule": {
+    #                 "sheetId": sheet_id,
+    #                 "index": rule_idx,
+    #                 "rule": rule
+    #             }
+    #         })
+    #     return updated
 
-    updated_requests = []
-    # Update for analysis_sheet_id
-    updated_requests += update_conditional_formatting(
-        analysis_sheet_id,
-        [rgb_color1, rgb_color2, rgb_color3]
-    )
-    # Update for analysis_sheet_2_id
-    updated_requests += update_conditional_formatting(
-        analysis_sheet_2_id,
-        [rgb_color1, rgb_color2, rgb_color3]
-    )
+    # updated_requests = []
+    # # Update for analysis_sheet_id
+    # updated_requests += update_conditional_formatting(
+    #     analysis_sheet_id,
+    #     [rgb_color1, rgb_color2, rgb_color3]
+    # )
+    # # Update for analysis_sheet_2_id
+    # updated_requests += update_conditional_formatting(
+    #     analysis_sheet_2_id,
+    #     [rgb_color1, rgb_color2, rgb_color3]
+    # )
 
-    # Execute the batch update if there are any updates
-    if updated_requests:
-        service.spreadsheets().batchUpdate(
-            spreadsheetId=ss_copy_id,
-            body={"requests": updated_requests}
-        ).execute()
+    # # Execute the batch update if there are any updates
+    # if updated_requests:
+    #     service.spreadsheets().batchUpdate(
+    #         spreadsheetId=ss_copy_id,
+    #         body={"requests": updated_requests}
+    #     ).execute()
 
     return ss_copy_id
 
