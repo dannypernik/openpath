@@ -608,15 +608,15 @@ def style_custom_act_spreadsheet(organization_data):
             }
         })
 
-        # Merge B2:D4 for logo
+        # Merge B2:C4 for logo
         requests.append({
             "mergeCells": {
                 "range": {
                     "sheetId": sheet_id,
-                    "startRowIndex": 1,
+                    "startRowIndex": 0,
                     "endRowIndex": 4,
                     "startColumnIndex": 1,
-                    "endColumnIndex": 4
+                    "endColumnIndex": 3
                 },
                 "mergeType": "MERGE_ALL"
             }
