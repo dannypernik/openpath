@@ -613,7 +613,7 @@ def style_custom_act_spreadsheet(organization_data):
             "mergeCells": {
                 "range": {
                     "sheetId": sheet_id,
-                    "startRowIndex": 0,
+                    "startRowIndex": 1,
                     "endRowIndex": 4,
                     "startColumnIndex": 1,
                     "endColumnIndex": 3
