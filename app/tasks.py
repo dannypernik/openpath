@@ -152,9 +152,12 @@ def act_report_workflow_task(self, score_data, organization_dict=None):
 @celery.task(name='app.tasks.style_custom_spreadsheets_task', bind=True, base=MyTaskBaseClass)
 def style_custom_spreadsheets_task(self, organization_data):
   try:
-    if organization_data.get('ss_logo_path'):
-      logging.info(f"Adding org logo to {organization_data['name']} spreadsheets")
+    if organization_data.get('ss_logo_path') or organization_data.get('is_sat_ss_new'):
+      logging.info(f"Adding org logo to {organization_data['name']} SAT spreadsheet")
       update_sat_org_logo(organization_data)
+
+    if organization_data.get('ss_logo_path') or organization_data.get('is_act_ss_new'):
+      logging.info(f"Adding org logo to {organization_data['name']} ACT spreadsheet")
       update_act_org_logo(organization_data)
 
     if organization_data.get('partner_logo_path'):
@@ -163,8 +166,12 @@ def style_custom_spreadsheets_task(self, organization_data):
         output_path = os.path.join(organization_data['static_path'], organization_data['partner_logo_path'])
         color_svg_white_to_input(organization_data['svg_path'], organization_data['logo_color'], output_path)
 
-      logging.info(f"Adding partner logo to {organization_data['name']} spreadsheets")
+    if organization_data.get('partner_logo_path') or organization_data.get('is_sat_ss_new'):
+      logging.info(f"Adding partner logo to {organization_data['name']} SAT spreadsheet")
       update_sat_partner_logo(organization_data)
+
+    if organization_data.get('partner_logo_path') or organization_data.get('is_act_ss_new'):
+      logging.info(f"Adding partner logo to {organization_data['name']} ACT spreadsheet")
       update_act_partner_logo(organization_data)
 
     if organization_data.get('is_style_updated'):

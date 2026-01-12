@@ -425,15 +425,20 @@ def org_settings(org):
                     partner.set_password(temp_password)
                     partner.is_verified = True
 
-                if not form.sat_ss_id.data:
+                is_sat_ss_new = not form.sat_ss_id.data
+                is_act_ss_new = not form.act_ss_id.data
+                if is_sat_ss_new:
                     organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
-                if not form.act_ss_id.data:
+
+                if is_act_ss_new:
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
 
                 organization_data = {
                     'name': form.org_name.data,
                     'sat_ss_id': organization.sat_spreadsheet_id,
+                    'is_sat_ss_new': is_sat_ss_new,
                     'act_ss_id': organization.act_spreadsheet_id,
+                    'is_act_ss_new': is_act_ss_new,
                     'color1': form.color1.data,
                     'color2': form.color2.data,
                     'color3': form.color3.data,
