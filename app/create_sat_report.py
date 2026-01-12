@@ -1689,12 +1689,12 @@ def update_sat_org_logo(organization_data):
             }
         })
 
-    if requests:
-        # Execute batch update
-        service.spreadsheets().batchUpdate(
-            spreadsheetId=sat_ss_id,
-            body={"requests": requests}
-        ).execute()
+        if requests:
+            # Execute batch update
+            service.spreadsheets().batchUpdate(
+                spreadsheetId=sat_ss_id,
+                body={"requests": requests}
+            ).execute()
 
 
 def update_sat_partner_logo(organization_data):

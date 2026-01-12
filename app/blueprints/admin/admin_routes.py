@@ -429,7 +429,6 @@ def org_settings(org):
                 is_act_ss_new = not form.act_ss_id.data
                 if is_sat_ss_new:
                     organization.sat_spreadsheet_id = create_custom_sat_spreadsheet(organization)
-
                 if is_act_ss_new:
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
 
@@ -481,6 +480,8 @@ def org_settings(org):
                 elif form.copy_ss_logo.data and organization.logo_path:
                     organization.ss_logo_path = organization.logo_path
                     organization_data['ss_logo_path'] = organization.ss_logo_path
+                elif is_sat_ss_new or is_act_ss_new:
+                    organization_data['ss_logo_path'] = organization.ss_logo_path
 
                 if is_dark_color(organization_data['color1']):
                     organization_data['logo_color'] = '#ffffff'
@@ -489,7 +490,9 @@ def org_settings(org):
 
                 if (
                     organization.color1 != form.color1.data or
-                    organization.font_color != form.font_color.data
+                    organization.font_color != form.font_color.data or
+                    is_sat_ss_new or
+                    is_act_ss_new
                 ):
                     partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
                     os.makedirs(partner_logos_dir, exist_ok=True)
