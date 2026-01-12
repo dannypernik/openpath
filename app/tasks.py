@@ -83,7 +83,7 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
 def send_sat_answers_to_ss_task(self, score_data):
   mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
-  if score_data['student_ss_id']:
+  if score_data.get('student_ss_id'):
     logging.info(f"SAT student ss: https://docs.google.com/spreadsheets/d/{score_data['student_ss_id']}")
     score_data = sat_answers_to_student_ss(score_data)
     post_ss_mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
@@ -131,7 +131,7 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
 def send_act_answers_to_ss_task(self, score_data):
   mem_post_report = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
-  if score_data['student_ss_id']:
+  if score_data.get('student_ss_id'):
     logging.info(f"Student ACT ss: https://docs.google.com/spreadsheets/d/{score_data['student_ss_id']}")
     score_data = act_answers_to_student_ss(score_data)
     post_ss_mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
@@ -152,12 +152,12 @@ def act_report_workflow_task(self, score_data, organization_dict=None):
 @celery.task(name='app.tasks.style_custom_spreadsheets_task', bind=True, base=MyTaskBaseClass)
 def style_custom_spreadsheets_task(self, organization_data):
   try:
-    if organization_data['ss_logo_path']:
+    if organization_data.get('ss_logo_path'):
       logging.info(f"Adding org logo to {organization_data['name']} spreadsheets")
       update_sat_org_logo(organization_data)
       update_act_org_logo(organization_data)
 
-    if organization_data['partner_logo_path']:
+    if organization_data.get('partner_logo_path'):
       if not os.path.exists(organization_data['partner_logo_path']):
         logging.info(f"Creating partner logo for {organization_data['name']}")
         output_path = os.path.join(organization_data['static_path'], organization_data['partner_logo_path'])
@@ -167,7 +167,7 @@ def style_custom_spreadsheets_task(self, organization_data):
       update_sat_partner_logo(organization_data)
       update_act_partner_logo(organization_data)
 
-    if organization_data['is_style_updated']:
+    if organization_data.get('is_style_updated'):
       logging.info(f"Styling SAT spreadsheet for {organization_data['name']}")
       style_custom_sat_spreadsheet(organization_data)
       logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")

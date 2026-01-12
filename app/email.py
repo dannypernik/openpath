@@ -10,6 +10,7 @@ from dateutil.parser import parse
 import requests
 import json
 import logging
+import os
 
 
 def get_quote():
@@ -28,8 +29,8 @@ message, author, quote_header = get_quote()
 
 
 def send_contact_email(user, message, subject):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -64,8 +65,8 @@ def send_contact_email(user, message, subject):
 
 
 def send_confirmation_email(user_email, message):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -96,8 +97,8 @@ def send_confirmation_email(user_email, message):
 
 
 def send_unsubscribe_email(email):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -127,8 +128,8 @@ def send_unsubscribe_email(email):
 
 
 def send_reminder_email(event, student, tutor):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     cc_email = []
@@ -220,8 +221,8 @@ def send_reminder_email(event, student, tutor):
 
 
 def send_session_recap_email(student, events):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     cc_email = []
@@ -331,8 +332,8 @@ def send_session_recap_email(student, events):
 
 
 def send_notification_email(alerts):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -364,8 +365,8 @@ def send_notification_email(alerts):
 
 def send_registration_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = current_app.config['MAILJET_KEY']
-        api_secret = current_app.config['MAILJET_SECRET']
+        api_key = os.environ.get('MAILJET_KEY')
+        api_secret = os.environ.get('MAILJET_SECRET')
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -419,8 +420,8 @@ def send_registration_reminder_email(user, test_date):
 
 def send_late_registration_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = current_app.config['MAILJET_KEY']
-        api_secret = current_app.config['MAILJET_SECRET']
+        api_key = os.environ.get('MAILJET_KEY')
+        api_secret = os.environ.get('MAILJET_SECRET')
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -469,8 +470,8 @@ def send_late_registration_reminder_email(user, test_date):
 
 def send_test_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = current_app.config['MAILJET_KEY']
-        api_secret = current_app.config['MAILJET_SECRET']
+        api_key = os.environ.get('MAILJET_KEY')
+        api_secret = os.environ.get('MAILJET_SECRET')
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
         cc_email = []
@@ -517,8 +518,8 @@ def send_test_reminder_email(user, test_date):
 
 
 def send_signup_notification_email(user, dates):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     date_series = ', '.join(dates)
@@ -575,8 +576,8 @@ def send_signup_notification_email(user, dates):
 
 
 def send_signup_request_email(user, next):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -631,8 +632,8 @@ def send_signup_request_email(user, next):
 
 
 def send_verification_email(user, page=None):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     token = user.get_email_verification_token()
@@ -672,8 +673,8 @@ def send_verification_email(user, page=None):
 
 
 def send_password_reset_email(user, next=None):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     token = user.get_email_verification_token()
@@ -716,8 +717,8 @@ def send_password_reset_email(user, next=None):
 
 
 def send_test_strategies_email(student, parent, relation):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     filename = 'SAT-ACT-strategies.pdf'
@@ -777,8 +778,8 @@ def send_test_strategies_email(student, parent, relation):
 
 
 def send_test_registration_email(student, parent, school, test, date, time, location, contact_info):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -814,8 +815,8 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
 
 
 def send_prep_class_email(student, parent, school, test, time, location, cost):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -851,8 +852,8 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
 
 
 def send_score_analysis_email(student, parent, school):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -911,8 +912,8 @@ def send_score_analysis_email(student, parent, school):
 
 def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students,
     paused_students, unregistered_students, undecided_students):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     my_low_students = []
@@ -982,8 +983,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
     unregistered_students, undecided_students, now):
 
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     dt = datetime.datetime
@@ -1033,8 +1034,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
     other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, unregistered_students,
     undecided_students, payments_due, result, exception=''):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     quote, author, header = get_quote()
@@ -1082,8 +1083,8 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
 
 
 def send_new_student_email(contact_data):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     student = contact_data['student']
@@ -1134,8 +1135,8 @@ def send_new_student_email(contact_data):
     return result.status_code
 
 def send_schedule_conflict_email(message):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -1168,8 +1169,8 @@ def send_schedule_conflict_email(message):
 
 
 def send_ntpa_email(first_name, last_name, biz_name, email):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -1201,8 +1202,8 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
 
 
 def send_free_resources_email(user):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     resource_folder_url = 'https://drive.google.com/drive/folders/' + current_app.config['RESOURCE_FOLDER_ID']
@@ -1239,8 +1240,8 @@ def send_free_resources_email(user):
 
 
 def send_nomination_email(form_data):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     data = {
@@ -1298,8 +1299,8 @@ def send_nomination_email(form_data):
 
 
 def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     to_email = []
@@ -1356,8 +1357,8 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
 
 
 def send_changed_answers_email(score_data):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     with current_app.app_context():
@@ -1388,8 +1389,8 @@ def send_changed_answers_email(score_data):
 
 
 def send_fail_mail(subject, error='unknown error', data=None):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     with current_app.app_context():
@@ -1421,8 +1422,8 @@ def send_fail_mail(subject, error='unknown error', data=None):
 
 
 def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
-    api_key = current_app.config['MAILJET_KEY']
-    api_secret = current_app.config['MAILJET_SECRET']
+    api_key = os.environ.get('MAILJET_KEY')
+    api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     with current_app.app_context():
