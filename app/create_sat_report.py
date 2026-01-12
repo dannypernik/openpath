@@ -1663,7 +1663,7 @@ def update_sat_org_logo(organization_data):
     requests = []
 
     # Step 4: Add the logo to cell B2
-    if organization_data['ss_logo_path']:
+    if organization_data.get('ss_logo_path'):
         # Insert image in cell B2 (row 1, column 1) of analysis sheet using the =IMAGE() formula
         requests.append({
             "updateCells": {

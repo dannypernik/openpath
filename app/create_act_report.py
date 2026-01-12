@@ -1623,7 +1623,7 @@ def update_act_org_logo(organization_data):
     requests = []
 
     # Add organization logo to B2 of Test analysis sheet
-    if organization_data['ss_logo_path']:
+    if organization_data.get('ss_logo_path'):
         requests.append({
             "updateCells": {
                 "range": {
