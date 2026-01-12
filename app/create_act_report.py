@@ -1644,11 +1644,11 @@ def update_act_org_logo(organization_data):
             }
         })
 
-    # Execute batch update
-    service.spreadsheets().batchUpdate(
-        spreadsheetId=act_ss_id,
-        body={"requests": requests}
-    ).execute()
+        # Execute batch update
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=act_ss_id,
+            body={"requests": requests}
+        ).execute()
 
 
 def update_act_partner_logo(organization_data):

@@ -180,7 +180,7 @@ def style_custom_spreadsheets_task(self, organization_data):
       logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")
       style_custom_act_spreadsheet(organization_data)
   except Exception as e:
-    logging.error(f'Error styling SAT spreadsheet: {e}')
+    logging.error(f'Error styling spreadsheets: {e}')
     send_task_fail_mail(organization_data, e, self.request.id, [organization_data], {}, None)
     raise e
 
