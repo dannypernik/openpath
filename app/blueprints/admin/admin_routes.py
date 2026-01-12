@@ -430,14 +430,6 @@ def org_settings(org):
                 if not form.act_ss_id.data:
                     organization.act_spreadsheet_id = create_custom_act_spreadsheet(organization)
 
-                organization.name = form.org_name.data
-                organization.color1 = form.color1.data
-                organization.color2 = form.color2.data
-                organization.color3 = form.color3.data
-                organization.font_color = form.font_color.data
-                organization.partner_id = partner.id
-                organization.is_private = form.is_private.data
-
                 organization_data = {
                     'name': form.org_name.data,
                     'sat_ss_id': organization.sat_spreadsheet_id,
@@ -480,25 +472,37 @@ def org_settings(org):
                     ss_logo_path = os.path.join(upload_dir, filename)
                     ss_logo_file.save(ss_logo_path)
                     organization.ss_logo_path = f"img/orgs/{filename}"
+                    organization_data['ss_logo_path'] = organization.ss_logo_path
                 elif form.copy_ss_logo.data and organization.logo_path:
                     organization.ss_logo_path = organization.logo_path
-                organization_data['ss_logo_path'] = organization.ss_logo_path
-
-                db.session.commit()
+                    organization_data['ss_logo_path'] = organization.ss_logo_path
 
                 if is_dark_color(organization_data['color1']):
                     organization_data['logo_color'] = '#ffffff'
                 else:
                     organization_data['logo_color'] = organization_data['font_color']
-                partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
-                os.makedirs(partner_logos_dir, exist_ok=True)
-                organization_data['svg_path'] = os.path.join(current_app.static_folder, 'img/logo-header.svg')
-                safe_filename = secure_filename(f'opt-{organization_data["logo_color"]}.png')
-                organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
 
-                style_custom_spreadsheets_task.delay(organization_data)
+                if (
+                    organization.color1 != form.color1.data or
+                    organization.font_color != form.font_color.data
+                ):
+                    partner_logos_dir = os.path.join(current_app.static_folder, 'img/orgs/partner-logos')
+                    os.makedirs(partner_logos_dir, exist_ok=True)
+                    organization_data['svg_path'] = os.path.join(current_app.static_folder, 'img/logo-header.svg')
+                    safe_filename = secure_filename(f'opt-{organization_data["logo_color"]}.png')
+                    organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
+
+                organization.name = form.org_name.data
+                organization.color1 = form.color1.data
+                organization.color2 = form.color2.data
+                organization.color3 = form.color3.data
+                organization.font_color = form.font_color.data
+                organization.partner_id = partner.id
+                organization.is_private = form.is_private.data
 
                 db.session.commit()
+
+                style_custom_spreadsheets_task.delay(organization_data)
 
                 if organization_data['is_style_updated'] or form.logo.data:
                     flash(Markup(f'{"Style" if organization_data["is_style_updated"] else "Logo"} updated for \

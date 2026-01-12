@@ -157,7 +157,7 @@ def style_custom_spreadsheets_task(self, organization_data):
       update_sat_org_logo(organization_data)
       update_act_org_logo(organization_data)
 
-    if organization_data['is_style_updated']:
+    if organization_data['partner_logo_path']:
       if not os.path.exists(organization_data['partner_logo_path']):
         logging.info(f"Creating partner logo for {organization_data['name']}")
         output_path = os.path.join(organization_data['static_path'], organization_data['partner_logo_path'])
@@ -167,6 +167,7 @@ def style_custom_spreadsheets_task(self, organization_data):
       update_sat_partner_logo(organization_data)
       update_act_partner_logo(organization_data)
 
+    if organization_data['is_style_updated']:
       logging.info(f"Styling SAT spreadsheet for {organization_data['name']}")
       style_custom_sat_spreadsheet(organization_data)
       logging.info(f"Styling ACT spreadsheet for {organization_data['name']}")
