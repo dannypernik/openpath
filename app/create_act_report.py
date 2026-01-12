@@ -1009,7 +1009,7 @@ def style_custom_act_spreadsheet(organization_data):
                 "range": {
                     "sheetId": ans_sheet_id,
                     "startRowIndex": 4,
-                    "endRowIndex": 74,
+                    "endRowIndex": 79,
                     "startColumnIndex": 0,
                     "endColumnIndex": 15
                 },
@@ -1028,6 +1028,32 @@ def style_custom_act_spreadsheet(organization_data):
                 "fields": "userEnteredFormat.textFormat(foregroundColor, fontFamily)"
             }
         })
+
+        # Set font color to white for D5:D79, H5:H79, L5:L79
+        for col in [3, 7, 11]:  # D, H, L (zero-indexed)
+            requests.append({
+                "repeatCell": {
+                    "range": {
+                        "sheetId": ans_sheet_id,
+                        "startRowIndex": 4,
+                        "endRowIndex": 79,
+                        "startColumnIndex": col,
+                        "endColumnIndex": col + 1
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "textFormat": {
+                                "foregroundColor": {
+                                    "red": 1,
+                                    "green": 1,
+                                    "blue": 1
+                                }
+                            }
+                        }
+                    },
+                    "fields": "userEnteredFormat.textFormat(foregroundColor)"
+                }
+            })
 
         # Apply color1 to A1:O4 on Answer sheet
         requests.append({
