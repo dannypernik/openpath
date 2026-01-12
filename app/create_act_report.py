@@ -1670,30 +1670,29 @@ def update_act_partner_logo(organization_data):
     requests = []
 
     # Add partner logo to cell H72 of Test analysis sheet
-    if organization_data['partner_logo_path']:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 71,
-                    "endRowIndex": 72,
-                    "startColumnIndex": 7,
-                    "endColumnIndex": 8
-                },
-                "rows": [
-                    {
-                        "values": [
-                            {
-                                "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
-                                }
+    requests.append({
+        "updateCells": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 71,
+                "endRowIndex": 72,
+                "startColumnIndex": 7,
+                "endColumnIndex": 8
+            },
+            "rows": [
+                {
+                    "values": [
+                        {
+                            "userEnteredValue": {
+                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
                             }
-                        ]
-                    }
-                ],
-                "fields": "userEnteredValue"
-            }
-        })
+                        }
+                    ]
+                }
+            ],
+            "fields": "userEnteredValue"
+        }
+    })
 
     if requests:
         # Execute batch update

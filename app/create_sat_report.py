@@ -1719,30 +1719,29 @@ def update_sat_partner_logo(organization_data):
     requests = []
 
     # Add partner logo to cell I75
-    if organization_data['partner_logo_path']:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": analysis_sheet_id,
-                    "startRowIndex": 74,
-                    "endRowIndex": 75,
-                    "startColumnIndex": 8,
-                    "endColumnIndex": 9
-                },
-                "rows": [
-                    {
-                        "values": [
-                            {
-                                "userEnteredValue": {
-                                    "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
-                                }
+    requests.append({
+        "updateCells": {
+            "range": {
+                "sheetId": analysis_sheet_id,
+                "startRowIndex": 74,
+                "endRowIndex": 75,
+                "startColumnIndex": 8,
+                "endColumnIndex": 9
+            },
+            "rows": [
+                {
+                    "values": [
+                        {
+                            "userEnteredValue": {
+                                "formulaValue": f'=IMAGE("https://www.openpathtutoring.com/static/{organization_data["partner_logo_path"]}")'
                             }
-                        ]
-                    }
-                ],
-                "fields": "userEnteredValue"
-            }
-        })
+                        }
+                    ]
+                }
+            ],
+            "fields": "userEnteredValue"
+        }
+    })
 
     if requests:
         # Execute batch update
