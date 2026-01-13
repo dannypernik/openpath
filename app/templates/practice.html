@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ section_title }} - Practice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bluebook-practice.css') }}">
+</head>
+<body style="margin:0; padding:0; height:100vh; width:100vw; overflow:hidden; background:#fff;">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bluebook-practice.css') }}">
+
+<div id="practice-app" class="bluebook-practice">
+  <div class="practice-header">
+    <div>
+      <span id="section-title">{{ section_title }}</span>
+      <span id="timer">00:00</span>
+    </div>
+    <div class="practice-tools">
+      {% if section_type == 'reading' %}
+        <button id="highlight-mode-btn" class="tool-btn" title="Highlight mode">
+          <img src="{{ url_for('static', filename='img/highlight.svg') }}" alt="Highlight">
+        </button>
+        <button id="crossout-mode-btn" class="tool-btn" title="Cross out answer choices">
+          <img src="{{ url_for('static', filename='img/crossout.svg') }}" alt="Cross out">
+        </button>
+      {% elif section_type == 'math' %}
+        <button id="desmos-btn" class="tool-btn" title="Open Calculator">
+          <img src="{{ url_for('static', filename='img/desmos.svg') }}" alt="Desmos">
+        </button>
+      {% endif %}
+      <button id="mark-review-btn" class="tool-btn" title="Mark for Review">
+        <img src="{{ url_for('static', filename='img/flag.svg') }}" alt="Mark for Review">
+      </button>
+    </div>
+  </div>
+
+  <div class="practice-main {% if section_type == 'math' and desmos_open %}with-desmos{% endif %}">
+    {% if section_type == 'math' and desmos_open %}
+      <div class="desmos-container">
+        <iframe src="https://www.desmos.com/testing/cb-sat-ap/graphing" frameborder="0"></iframe>
+      </div>
+    {% endif %}
+    <div class="question-area">
+      {% if section_type == 'reading' %}
+        <div class="passage" id="passage">
+          {{ passage_html|safe }}
+        </div>
+      {% endif %}
+      <div class="question-block">
+        <div class="question-header">
+          <span class="question-number">{{ question_number }}</span>
+          <span class="mark-review-label" id="mark-review-label">
+            <input type="checkbox" id="mark-review-checkbox"> Mark for Review
+          </span>
+        </div>
+        <div class="question-text" id="question-text">
+          {{ question_text|safe }}
+        </div>
+        <div class="answer-choices" id="answer-choices">
+          {% for choice in answer_choices %}
+            <div class="answer-choice" data-choice="{{ choice.letter }}">
+              <span class="choice-letter">{{ choice.letter }}</span>
+              <span class="choice-text">{{ choice.text }}</span>
+              <button class="crossout-btn" title="Cross out this choice" style="display:none;">&#x2715;</button>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Highlighter tooltip/modal -->
+  <div id="highlight-tooltip" class="highlight-tooltip" style="display:none;">
+    <button class="highlight-color" data-color="#fff9c4"></button>
+    <button class="highlight-color" data-color="#bbdefb"></button>
+    <button class="highlight-color" data-color="#f8bbd0"></button>
+    <button class="highlight-underline" title="Underline">U</button>
+    <button class="highlight-delete" title="Remove highlight">&#128465;</button>
+    <button class="highlight-add-note" title="Add note">+</button>
+  </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/bluebook-practice.js') }}"></script>
+</body>
+</html>
