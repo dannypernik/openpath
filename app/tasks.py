@@ -181,7 +181,6 @@ def style_custom_spreadsheets_task(self, organization_data):
       style_custom_act_spreadsheet(organization_data)
   except Exception as e:
     logging.error(f'Error styling spreadsheets: {e}')
-    send_task_fail_mail(organization_data, e, self.request.id, [organization_data], {}, None)
     raise e
 
 
@@ -220,5 +219,4 @@ def new_student_task(self, contact_data):
 
   except Exception as e:
     logging.error(f'Error creating test prep folder: {e}')
-    send_task_fail_mail(contact_data, e, self.request.id, [contact_data], {}, None)
     raise e
