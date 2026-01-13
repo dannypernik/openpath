@@ -12,6 +12,11 @@
         <div class="accordion-header">
           <h2 class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#org-{{ loop.index }}" type="button">
             {{ org.name }}
+            {% if org.is_private %}
+              <span class="ms-3" title="Partner login required">
+                <img style="height: 1.5rem;" src="{{ url_for('static', filename='img/lock.svg') }}">
+              </span>
+            {% endif %}
           </h2>
           <a href="{{ url_for('admin.delete_org', org_slug=org.slug) }}" class="delete-link ms-2 text-danger fw-bold" onclick="return confirm('Are you sure you want to delete this organization?');">×</a>
         </div>
