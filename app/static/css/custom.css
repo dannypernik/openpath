@@ -6763,6 +6763,16 @@ div.alert a:hover {
   overflow: hidden;
 }
 
+div.row.student > * {
+  overflow: hidden;
+}
+div.row.student a {
+  font-weight: 400;
+}
+div.row.student a:hover {
+  font-weight: 600;
+}
+
 .accordion-button {
   padding: 1.5rem;
 }
@@ -6780,10 +6790,6 @@ div.alert a:hover {
 
 .accordion-item {
   color: #005a74;
-}
-
-div.row.student > * {
-  overflow: hidden;
 }
 
 .table-container {
