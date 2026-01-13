@@ -540,4 +540,4 @@ def admin_download(filename):
     file_path = os.path.join(private_folder, filename)
     if not os.path.isfile(file_path):
         abort(404)
-    return send_file(file_path, as_attachment=True)
+    return send_file(file_path)
