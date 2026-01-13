@@ -386,8 +386,6 @@ def org_settings(org):
         form.color2.data = organization.color2
         form.color3.data = organization.color3
         form.font_color.data = organization.font_color
-        form.logo.data = organization.logo_path
-        form.ss_logo.data = organization.ss_logo_path
         form.partner_id.data = organization.partner_id
         form.sat_ss_id.data = organization.sat_spreadsheet_id
         form.act_ss_id.data = organization.act_spreadsheet_id

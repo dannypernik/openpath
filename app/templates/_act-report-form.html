@@ -17,7 +17,11 @@
           {{ form.last_name }}
         </div>
         <div class="col-12">
-          {{ form.email }}
+          {% if organization %}
+            {{ form.email(placeholder="Student email (optional)") }}
+          {% else %}
+            {{ form.email(required=True) }}
+          {% endif %}
         </div>
         <div class="col-12 my-2">
           {{ form.test_code.label(class='me-2') }}

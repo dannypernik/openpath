@@ -282,8 +282,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
-        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'})
     test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'heic', 'webp', 'tif'], 'Images only please (jpg, png, heic, webp, or tif)')])
