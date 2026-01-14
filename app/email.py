@@ -575,7 +575,7 @@ def send_signup_notification_email(user, dates):
     return result.status_code
 
 
-def send_signup_request_email(user, next):
+def send_signup_request_email(user, reason, next):
     api_key = os.environ.get('MAILJET_KEY')
     api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -594,7 +594,7 @@ def send_signup_request_email(user, next):
                 ],
                 'Subject': user.first_name + ' requested an account',
                 'HTMLPart': render_template('email/signup-request-email.html',
-                    user=user, next=next)
+                    user=user, reason=reason, next=next)
             }
         ]
     }

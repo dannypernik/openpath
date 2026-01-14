@@ -8,7 +8,7 @@ from app.extensions import db, hcaptcha
 from app.helpers import full_name, get_next_page
 from app.forms import SignupForm, LoginForm, RequestPasswordResetForm, ResetPasswordForm
 from app.models import User
-from app.email import send_verification_email, send_password_reset_email
+from app.email import send_verification_email, send_password_reset_email, send_signup_request_email
 
 
 @auth_bp.route('/signin', methods=['GET', 'POST'])
@@ -42,8 +42,10 @@ def signup():
                     email=signup_form.email.data.lower())
         db.session.add(user)
         db.session.commit()
-        from app.email import send_signup_request_email
-        email_status = send_signup_request_email(user, next)
+
+        reason = signup_form.reason.data
+
+        email_status = send_signup_request_email(user, reason, next)
         if email_status == 200:
             flash('Thanks for reaching out! We\'ll be in touch.')
             return redirect(url_for('main.index'))
