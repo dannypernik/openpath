@@ -822,6 +822,7 @@ def partner_page(org):
     organization_dict = {
         'name': organization.name,
         'logo_path': organization.logo_path,
+        'ss_logo_path': organization.ss_logo_path,
         'slug': organization.slug,
         'spreadsheet_id': organization.sat_spreadsheet_id,
         'color1': organization.color1,
@@ -858,6 +859,7 @@ def custom_sat_report(org):
     organization_dict = {
         'name': organization.name,
         'logo_path': organization.logo_path,
+        'ss_logo_path': organization.ss_logo_path,
         'slug': organization.slug,
         'spreadsheet_id': organization.sat_spreadsheet_id,
         'color1': organization.color1,
@@ -1025,6 +1027,7 @@ def custom_act_report(org):
     organization_dict = {
         'name': organization.name,
         'logo_path': organization.logo_path,
+        'ss_logo_path': organization.ss_logo_path,
         'slug': organization.slug,
         'spreadsheet_id': organization.act_spreadsheet_id,
         'color1': organization.color1,
@@ -1114,6 +1117,8 @@ def handle_act_report(form, template_name, organization=None):
             score_data['email'] = form.email.data.lower()
             score_data['student_responses'] = {}
             score_data['date'] = date
+            score_data['is_enhanced'] = form.test_code.data > '202502'
+            score_data['is_scaled_down'] = form.is_scaled_down.data
 
             score_data['admin_email'] = None
             if organization:

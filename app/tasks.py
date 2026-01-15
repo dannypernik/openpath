@@ -20,7 +20,7 @@ from app.utils import create_crm_action, color_svg_white_to_input
 class MyTaskBaseClass(celery.Task):
     autoretry_for = (Exception,)
     retry_backoff = 10
-    retry_kwargs = {'max_retries': 3}
+    retry_kwargs = {'max_retries': 2}
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         logging.info(f'Retry #{self.request.retries + 1} for task {task_id} due to: {exc}')

@@ -27,6 +27,10 @@
           {{ form.test_code.label(class='me-2') }}
           {{ form.test_code }}
         </div>
+        <div id="scaled-down-div" class="col-12 d-none">
+          {{ form.is_scaled_down }}
+          {{ form.is_scaled_down.label(class='ms-1 mt-2 mb-3') }}
+        </div>
         <div class="col-12">
           {{ form.answer_img.label(class='mt-2') }}
           <a class="info-icon" href="#" data-bs-toggle="modal" data-bs-target="#answer-img-modal">
@@ -184,3 +188,27 @@
     </div>
   </div>
 </div> -->
+
+
+{% block end_scripts %}
+  <script>
+      const testCodeInput = document.getElementById('test_code');
+      testCodeInput.addEventListener('change', function() {
+        const scaledDownDiv = document.getElementById('scaled-down-div');
+        const isScaledDown = document.getElementById('is_scaled_down');
+        const value = testCodeInput.value.trim();
+        if (value <= '202502') {
+          scaledDownDiv.classList.remove('d-none');
+        } //
+        else {
+          scaledDownDiv.classList.add('d-none');
+          isScaledDown.checked = false;
+        }
+
+        // testCodeInput.addEventListener('input', updateScaledDownDiv);
+
+        // // Initial state
+        // updateScaledDownDiv();
+      });
+  </script>
+{% endblock end_scripts %}

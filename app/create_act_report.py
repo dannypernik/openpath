@@ -28,10 +28,10 @@ ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
 all_subjects = ['english', 'math', 'reading', 'science']
 completed_subjects = []
 sub_data = {
-  'english': {'col': 2, 'max_len': 75},
-  'math': {'col': 6, 'max_len': 60},
-  'reading': {'col': 10, 'max_len': 40},
-  'science': {'col': 14, 'max_len': 40}
+  'english': {'col': 2, 'start': 1, 'max_len': 75},
+  'math': {'col': 6, 'start': 1, 'max_len': 60},
+  'reading': {'col': 10, 'start': 1, 'max_len': 40},
+  'science': {'col': 14, 'start': 1, 'max_len': 40}
 }
 
 
@@ -162,14 +162,31 @@ def create_act_score_report(score_data, organization_dict):
         elif sheet['properties']['title'] == 'Data':
             data_sheet_id = sheet['properties']['sheetId']
 
+    if score_data.get('is_enhanced'):
+        sub_data['english']['max_len'] = 50
+        sub_data['math']['max_len'] = 45
+        sub_data['reading']['max_len'] = 36
+
+    if score_data.get('is_scaled_down'):
+        sub_data['english']['max_len'] = 50
+        sub_data['math']['start'] = 16
+
     # 2. Prepare the data for batchUpdate
     score_data['completed_subjects'] = []
-    def prep_range(col, start_row, subject, max_len):
+    def prep_range(col, start_row, subject, start, max_len):
         answers = score_data['student_responses'][subject]
         values = []
         omit_count = 0
+
+        enhanced_reading = False
+        if score_data.get('is_scaled_down') and subject == 'reading':
+            enhanced_reading = True
+
         for i in range(max_len):
-            val = answers.get(str(i+1), "-")
+            if enhanced_reading and (i - 1) % 10 == 0 or (i + 1) < start:
+                val = "-"
+            else:
+                val = answers.get(str(i+1), "-")
             if not val:
                 val = "-"
                 omit_count += 1
@@ -187,7 +204,7 @@ def create_act_score_report(score_data, organization_dict):
 
     data = []
     for sub in all_subjects:
-        result = prep_range(sub_data[sub]['col'], 5, sub, sub_data[sub]['max_len'])
+        result = prep_range(sub_data[sub]['col'], 5, sub, sub_data[sub]['start'], sub_data[sub]['max_len'])
         if result:
             data.append(result)
 
