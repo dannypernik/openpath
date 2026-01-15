@@ -78,16 +78,6 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset password')
 
 
-# def get_tutors():
-#     return User.query.filter_by(role='tutor')
-
-# def get_parents():
-#     return User.query.filter_by(role='parent')
-
-# def full_name(User):
-#     return User.first_name + ' ' + User.last_name
-
-
 class UserForm(FlaskForm):
     first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
@@ -281,6 +271,7 @@ class ACTReportForm(FlaskForm):
         validators=[InputRequired()])
     email = EmailField('Email address', render_kw={'placeholder': 'Email address'})
     test_code = SelectField('Test code', choices=[], validators=[InputRequired()])
+    is_scaled_down = BooleanField('Use scaled-down scoring')
     answer_img = FileField('Photo of answer sheet', render_kw={'placeholder': 'Photo of answer sheet'}, \
         validators=[FileRequired('Answer sheet photo required'), FileAllowed(['jpg', 'jpeg', 'png', 'heic', 'webp', 'tif'], 'Images only please (jpg, png, heic, webp, or tif)')])
     spreadsheet_url = StringField('Student spreadsheet URL or ID', render_kw={'placeholder': 'Optional'})

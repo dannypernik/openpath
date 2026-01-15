@@ -8,7 +8,8 @@
           <h1 class="text-center">Meet the Team</h1>
           <p class="mb-4">
             We are a small but mighty team of tutors who have a wealth of experience in the subjects
-            in which we specialize. We believe in fostering a growth mindset not only for our students, but also for ourselves. Click below to learn more about each member of our team.
+            in which we specialize. We believe in fostering a growth mindset not only for our students,
+            but also for ourselves. Click below to learn more about each member of our team.
           </p>
         </div>
       </div>
@@ -22,7 +23,7 @@
                   <img class="profile-pic dim img-fluid" src="{{ url_for('static', filename='img/team/' + member.first_name.lower() + '.jpg') }}" alt="{{ member.first_name }} {{ member.last_name }}">
                 </div>
                 <h4 class="text-center semibold mb-1">{{ member.first_name }} {{ member.last_name }}</h4>
-                <p class="text-center mb-4">{{ member.title }}</p>
+                <p class="text-center fw-normal mb-4">{{ member.title }}</p>
               </a>
             </div>
           </div>
