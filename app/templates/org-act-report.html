@@ -1,13 +1,9 @@
 {% extends 'partner-page.html' %}
 
-{% block title_text %}
+{% block body %}
   {% include '_act-report-intro.html' %}
-{% endblock title_text %}
-
-{% block form_content %}
-  <!-- <button class="btn" data-bs-toggle="modal" data-bs-target="#answer-img-modal">Instructions</button> -->
   {% include '_act-report-form.html' %}
-{% endblock form_content %}
+{% endblock body %}
 
 {% block end_scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
