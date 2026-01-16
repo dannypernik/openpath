@@ -37,7 +37,7 @@
   <!-- title -->
   <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="27" height="55"/>
 
-  <text class="header-text" x="48" y="120" font-size="20">
+  <text class="header-text" x="48" {% if organization %}y="120"{% else %}y="90"{% endif %} font-size="20">
     Bluebook SAT Score Analysis
   </text>
 

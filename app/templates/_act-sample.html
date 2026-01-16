@@ -37,7 +37,7 @@
 
   <!-- title -->
   <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="25" height="55"/>
-  <text class="header-text" x="48" y="120" font-size="20">Enhanced ACT Score Analysis</text>
+  <text class="header-text" x="48" {% if organization %}y="120"{% else %}y="90"{% endif %} font-size="20">Enhanced ACT Score Analysis</text>
 
   <text class="header-text" x="600" y="70" text-anchor="middle" font-size="18">Composite:</text>
   <text class="header-text" x="600" y="105" text-anchor="middle" font-size="28">32</text>
