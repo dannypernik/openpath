@@ -12,6 +12,7 @@
   .table-header { fill: var(--color1-contrast); font-weight:700; font-size:15px; }
   .label { fill: var(--font-color); font-size:13px; }
   .label-bold { fill: var(--font-color); font-weight:700; font-size:13px; }
+  .pct-label { fill: #000000; font-size:13px; }
   .pct-100 { fill: #a8dc98; stroke: #ffffff }
   .pct-95  { fill: #bce09d; stroke: #ffffff }
   .pct-91  { fill: #d4e3a4; stroke: #ffffff }
@@ -36,7 +37,7 @@
   <rect class="bg-header" x="0" y="10" width="1170" height="173" />
 
   <!-- title -->
-  <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="25" height="55"/>
+  <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="27" height="55"/>
   <text class="header-text" x="48" {% if organization %}y="120"{% else %}y="90"{% endif %} font-size="20">Enhanced ACT Score Analysis</text>
 
   <text class="header-text" x="600" y="70" text-anchor="middle" font-size="18">Composite:</text>
@@ -73,103 +74,103 @@
   <text class="label" x="480" y="200">Revision</text>
   <text class="label" x="900" y="200">7</text>
   <rect class="pct-100" x="1040" y="184" width="80" height="22"/>
-  <text class="label" x="1080" y="200" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="200" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="222">Transitions</text>
   <text class="label" x="900" y="222">6</text>
   <rect class="pct-100" x="1040" y="206" width="80" height="22"/>
-  <text class="label" x="1080" y="222" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="222" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="244">Purpose</text>
   <text class="label" x="900" y="244">4</text>
   <text class="label" x="980" y="244">1</text>
   <rect class="pct-80" x="1040" y="228" width="80" height="22"/>
-  <text class="label" x="1080" y="244" text-anchor="middle">80%</text>
+  <text class="pct-label" x="1080" y="244" text-anchor="middle">80%</text>
 
   <text class="label" x="480" y="266">Intro/Conclusion</text>
   <text class="label" x="900" y="266">3</text>
   <rect class="pct-100" x="1040" y="250" width="80" height="22"/>
-  <text class="label" x="1080" y="266" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="266" text-anchor="middle">100%</text>
 
   <rect class="bg-domain-total" x="255" y="272" width="785" height="22"/>
   <text class="domain-total" x="260" y="287">Context Total</text>
   <text class="domain-total" x="896" y="287">20</text>
   <text class="domain-total" x="980" y="287">1</text>
   <rect class="pct-95" x="1040" y="272" width="80" height="22"/>
-  <text class="label" x="1080" y="287" text-anchor="middle">95%</text>
+  <text class="pct-label" x="1080" y="287" text-anchor="middle">95%</text>
 
   <!-- Structure -->
   <text class="label-bold" x="260" y="308">Structure</text>
   <text class="label" x="480" y="308">Independent/Dependent clauses</text>
   <text class="label" x="900" y="308">5</text>
   <rect class="pct-100" x="1040" y="292" width="80" height="22"/>
-  <text class="label" x="1080" y="308" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="308" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="330">Joining clauses</text>
   <text class="label" x="900" y="330">4</text>
   <text class="label" x="980" y="330">1</text>
   <rect class="pct-80" x="1040" y="314" width="80" height="22"/>
-  <text class="label" x="1080" y="330" text-anchor="middle">80%</text>
+  <text class="pct-label" x="1080" y="330" text-anchor="middle">80%</text>
 
   <text class="label" x="480" y="352">Modifiers</text>
   <text class="label" x="902" y="352">1</text>
   <rect class="pct-100" x="1040" y="336" width="80" height="22"/>
-  <text class="label" x="1080" y="352" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="352" text-anchor="middle">100%</text>
 
   <rect class="bg-domain-total" x="255" y="358" width="785" height="22"/>
   <text class="domain-total" x="260" y="373">Structure Total</text>
   <text class="domain-total" x="898" y="373">10</text>
   <text class="domain-total" x="980" y="373">1</text>
   <rect class="pct-91" x="1040" y="358" width="80" height="22"/>
-  <text class="label" x="1080" y="373" text-anchor="middle">91%</text>
+  <text class="pct-label" x="1080" y="373" text-anchor="middle">91%</text>
 
   <!-- Parts of speech -->
   <text class="label-bold" x="260" y="395">Parts of speech</text>
   <text class="label" x="480" y="395">Verbs</text>
   <text class="label" x="900" y="395">5</text>
   <rect class="pct-100" x="1040" y="379" width="80" height="22"/>
-  <text class="label" x="1080" y="395" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="395" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="417">Pronouns</text>
   <text class="label" x="900" y="417">3</text>
   <rect class="pct-100" x="1040" y="401" width="80" height="22"/>
-  <text class="label" x="1080" y="417" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="417" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="439">Prepositions</text>
   <text class="label" x="902" y="439">1</text>
   <rect class="pct-100" x="1040" y="423" width="80" height="22"/>
-  <text class="label" x="1080" y="439" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="439" text-anchor="middle">100%</text>
 
   <rect class="bg-domain-total" x="255" y="445" width="785" height="22"/>
   <text class="domain-total" x="260" y="460">Parts of speech Total</text>
   <text class="domain-total" x="900" y="460">9</text>
   <rect class="pct-100" x="1040" y="445" width="80" height="22"/>
-  <text class="label" x="1080" y="460" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="460" text-anchor="middle">100%</text>
 
   <!-- Word choice -->
   <text class="label-bold" x="260" y="482">Word choice</text>
   <text class="label" x="480" y="482">Usage</text>
   <text class="label" x="900" y="482">4</text>
   <rect class="pct-100" x="1040" y="467" width="80" height="22"/>
-  <text class="label" x="1080" y="482" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="482" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="504">Wordiness</text>
   <text class="label" x="900" y="504">2</text>
   <text class="label" x="981" y="504">1</text>
   <rect class="pct-67" x="1040" y="489" width="80" height="22"/>
-  <text class="label" x="1080" y="504" text-anchor="middle">67%</text>
+  <text class="pct-label" x="1080" y="504" text-anchor="middle">67%</text>
 
   <text class="label" x="480" y="526">Style/Tone</text>
   <text class="label" x="900" y="526">2</text>
   <rect class="pct-100" x="1040" y="511" width="80" height="22"/>
-  <text class="label" x="1080" y="526" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="526" text-anchor="middle">100%</text>
 
   <rect class="bg-domain-total" x="255" y="533" width="785" height="22"/>
   <text class="domain-total" x="260" y="548">Word choice Total</text>
   <text class="domain-total" x="900" y="548">8</text>
   <text class="domain-total" x="981" y="548">1</text>
   <rect class="pct-89" x="1040" y="533" width="80" height="22"/>
-  <text class="label" x="1080" y="548" text-anchor="middle">89%</text>
+  <text class="pct-label" x="1080" y="548" text-anchor="middle">89%</text>
 
   <!-- English Total -->
   <rect class="bg-total-row" x="115" y="555" width="1005" height="22"/>
@@ -184,74 +185,74 @@
   <text class="label" x="480" y="593">Translating word problems</text>
   <text class="label" x="900" y="593">6</text>
   <rect class="pct-86" x="1040" y="578" width="80" height="22"/>
-  <text class="label" x="1080" y="593" text-anchor="middle">86%</text>
+  <text class="pct-label" x="1080" y="593" text-anchor="middle">86%</text>
 
   <text class="label" x="480" y="615">Exponents/Radicals</text>
   <text class="label" x="900" y="615">3</text>
   <text class="label" x="980" y="615">2</text>
   <rect class="pct-60" x="1040" y="599" width="80" height="22"/>
-  <text class="label" x="1080" y="615" text-anchor="middle">60%</text>
+  <text class="pct-label" x="1080" y="615" text-anchor="middle">60%</text>
 </svg>
 
 <svg class="d-none d-lg-block" viewBox="0 0 1170 600" xmlns="http://www.w3.org/2000/svg">
   <text class="label" x="480" y="16">Unit conversion</text>
   <text class="label" x="900" y="16">3</text>
   <rect class="pct-100" x="1040" y="0" width="80" height="22"/>
-  <text class="label" x="1080" y="16" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="16" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="38">Inequalities</text>
   <text class="label" x="902" y="38">1</text>
   <text class="label" x="980" y="38">2</text>
   <rect class="pct-33" x="1040" y="22" width="80" height="22"/>
-  <text class="label" x="1080" y="38" text-anchor="middle">33%</text>
+  <text class="pct-label" x="1080" y="38" text-anchor="middle">33%</text>
 
   <text class="label" x="480" y="60">Rearranging equations</text>
   <text class="label" x="900" y="60">2</text>
   <rect class="pct-100" x="1040" y="44" width="80" height="22"/>
-  <text class="label" x="1080" y="60" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="60" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="82">Ratios/Proportions</text>
   <text class="label" x="900" y="82">2</text>
   <rect class="pct-100" x="1040" y="66" width="80" height="22"/>
-  <text class="label" x="1080" y="82" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="82" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="104">LCM/LCD</text>
   <text class="label" x="900" y="104">2</text>
   <rect class="pct-100" x="1040" y="88" width="80" height="22"/>
-  <text class="label" x="1080" y="104" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="104" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="126">Fractions</text>
   <text class="label" x="900" y="126">2</text>
   <rect class="pct-100" x="1040" y="110" width="80" height="22"/>
-  <text class="label" x="1080" y="126" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="126" text-anchor="middle">100%</text>
 
   <text class="label" x="480" y="148">Percentage</text>
   <text class="label" x="982" y="148">1</text>
   <rect class="pct-0" x="1040" y="132" width="80" height="22"/>
-  <text class="label" x="1080" y="148" text-anchor="middle">0%</text>
+  <text class="pct-label" x="1080" y="148" text-anchor="middle">0%</text>
 
   <rect class="bg-domain-total" x="255" y="154" width="785" height="22"/>
   <text class="domain-total" x="260" y="169">Algebra Total</text>
   <text class="domain-total" x="898" y="169">21</text>
   <text class="domain-total" x="981" y="169">5</text>
   <rect class="pct-80" x="1040" y="154" width="80" height="22"/>
-  <text class="label" x="1080" y="169" text-anchor="middle">81%</text>
+  <text class="pct-label" x="1080" y="169" text-anchor="middle">81%</text>
 
   <!-- Geometry sample rows -->
   <text class="label-bold" x="260" y="192">Geometry</text>
   <text class="label" x="480" y="192">Circles</text>
   <text class="label" x="900" y="192">2</text>
   <rect class="pct-67" x="1040" y="176" width="80" height="22"/>
-  <text class="label" x="1080" y="192" text-anchor="middle">67%</text>
+  <text class="pct-label" x="1080" y="192" text-anchor="middle">67%</text>
 
   <text class="label" x="480" y="214">Triangles</text>
   <text class="label" x="900" y="214">1</text>
   <text class="label" x="982" y="214">1</text>
   <rect class="pct-50" x="1040" y="198" width="80" height="22"/>
-  <text class="label" x="1080" y="214" text-anchor="middle">50%</text>
+  <text class="pct-label" x="1080" y="214" text-anchor="middle">50%</text>
 
   <text class="label" x="480" y="236">Solids</text>
   <text class="label" x="900" y="236">2</text>
   <rect class="pct-100" x="1040" y="220" width="80" height="22"/>
-  <text class="label" x="1080" y="236" text-anchor="middle">100%</text>
+  <text class="pct-label" x="1080" y="236" text-anchor="middle">100%</text>
 </svg>
