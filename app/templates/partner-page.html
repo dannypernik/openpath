@@ -51,6 +51,10 @@
   {% endblock body %}
 {% endblock container %}
 
+{% block ntpa_logo %}
+  <img id="ntpa-logo" src="{{ url_for('static', filename='img/ntpa-member.png') }}" class="img-fluid mb-3 my-md-0">
+{% endblock ntpa_logo %}
+
 {% block footnote %}
   {% include "_disclaimer.html" %}
 {% endblock footnote %}

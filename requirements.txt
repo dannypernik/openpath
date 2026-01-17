@@ -29,7 +29,7 @@ Flask==2.3.3
 Flask-Babel==2.0.0
 Flask-Bootstrap==3.3.7.1
 Flask-Executor==1.0.0
-Flask-hCaptcha==0.6.0
+Flask-hCaptcha==0.7.2
 Flask-Limiter==1.4
 Flask-Login==0.6.3
 Flask-Mailman==0.1.5

@@ -1,11 +1,5 @@
 {% extends 'base.html' %}
 
-{% block head %}
-  {{ super() }}
-
-  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-{% endblock head %}
-
 {% block container %}
   {% block header %}
     <div class="row section-margin justify-content-center">
@@ -31,6 +25,7 @@
 {% block end_scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/act-report-form.js') }}"></script>
+
   <script>
     const font_color = '#00496d'
     const color1 = '#1b4d64'

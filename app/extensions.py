@@ -28,7 +28,7 @@ def init_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True, compare_type=True)
     bootstrap.init_app(app)
-    hcaptcha.init_app(app)
+    hcaptcha.init_app(app, callback='captchaPassed')
 
     login.init_app(app)
     login.login_view = 'auth.login'

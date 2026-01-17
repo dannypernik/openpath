@@ -171,13 +171,12 @@
               </span>
             </p>
           </div>
-          <!-- <div class="col-11 col-md-10 text-start d-md-none mt-4">
-            <img id="ntpa-logo" src="{{ url_for('static', filename='img/ntpa-member.png') }}" class="img-fluid">
-          </div> -->
         </div>
       </footer>
     {% endblock footer %}
 
     {% block end_scripts %}{% endblock end_scripts %}
+
+    <script src="{{ url_for('static', filename='js/disable-submit.js') }}"></script>
   </body>
 </html>

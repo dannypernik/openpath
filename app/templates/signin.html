@@ -34,7 +34,7 @@
             {{ signup_form.last_name }}
             {{ signup_form.email }}
             {{ signup_form.reason }}
-            {{ hcaptcha }}
+            {{ hcaptcha_with(callback='captcha2Passed') }}
             {{ signup_form.submit }}
           </form>
         </div>

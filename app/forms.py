@@ -51,7 +51,8 @@ class SignupForm(FlaskForm):
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
         validators=[InputRequired()])
-    reason = TextAreaField('Reason', render_kw={'placeholder': 'Reason for requesting an account', 'rows': '3'})
+    reason = TextAreaField('Reason', render_kw={'placeholder': 'Reason for requesting an account', 'rows': '3'},
+        validators=[InputRequired(), Length(max=300)])
     submit = SubmitField('Sign up')
 
 
@@ -146,7 +147,7 @@ class StudentIntakeForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'})
     student_email = EmailField('Student Email address', render_kw={'placeholder': 'Email address'}, \
-        validators=[InputRequired(), Email(message='Please enter a valid email address'), validate_email])
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
     student_phone = TelField('Student phone', render_kw={'placeholder': 'Phone'})
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
