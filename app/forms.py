@@ -116,33 +116,7 @@ class UserForm(FlaskForm):
                 raise ValidationError('An account already exists for ' + user.email + '.')
 
 
-class StudentForm(FlaskForm):
-    student_name = StringField('Student first name', render_kw={'placeholder': 'Student first name'}, \
-        validators=[InputRequired()])
-    student_last_name = StringField('Student last name', render_kw={'placeholder': 'Student last name'})
-    student_email = EmailField('Student Email address', render_kw={'placeholder': 'Student Email address'}, \
-        validators=[InputRequired(), Email(message='Please enter a valid email address'), \
-            validate_email])
-    student_phone = StringField('Student phone', render_kw={'placeholder': 'Student phone'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
-        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
-        ('college', 'College'), ('school', 'Grade school')])
-    parent_id = SelectField('Parent', coerce=int)
-    parent_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'})
-    parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Parent last name'})
-    parent_email = EmailField('Parent Email address', render_kw={'placeholder': 'Parent Email address'})
-    secondary_email = EmailField('Parent email 2', render_kw={'placeholder': 'Parent email 2'})
-    parent_phone = StringField('Parent phone', render_kw={'placeholder': 'Parent phone'})
-    timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
-        validators=[InputRequired()])
-    location = StringField('Location', render_kw={'placeholder': 'Location'})
-    status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
-        ('paused','Paused'),('inactive','Inactive')])
-    tutor_id = SelectField('Tutor', coerce=int)
-    submit = SubmitField('Save')
-
-
-class StudentIntakeForm(FlaskForm):
+class NewStudentForm(FlaskForm):
     student_first_name = StringField('Student first name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'})
@@ -152,9 +126,7 @@ class StudentIntakeForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
     school = StringField('School', render_kw={'placeholder': 'School'})
-    grad_year = SelectField('Graduation year', choices=[(None, '--'), ('2026', '2026 (Senior)'), \
-        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
-        ('college', 'College'), ('school', 'Grade school')])
+    grad_year = StringField('HS graduation year', render_kw={'placeholder': 'Grad year'})
     parent_select = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})

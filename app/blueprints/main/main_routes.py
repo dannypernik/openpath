@@ -27,7 +27,7 @@ from app.helpers import full_name, dir_last_updated, hello_email, private_login_
 from app.forms import (
     InquiryForm, EmailListForm, TestStrategiesForm, TestDateForm,
     ScoreAnalysisForm, ReviewForm, FreeResourcesForm, NominationForm,
-    SATReportForm, ACTReportForm, NtpaForm, StudentIntakeForm
+    SATReportForm, ACTReportForm, NtpaForm, NewStudentForm
 )
 from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from app.email import (
@@ -559,7 +559,7 @@ def ntpa():
 
 @main_bp.route('/new-student', methods=['GET', 'POST'])
 def new_student():
-    form = StudentIntakeForm()
+    form = NewStudentForm()
 
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.date >= datetime.today().date())
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
@@ -567,7 +567,7 @@ def new_student():
     parent_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in parents]
     form.parent_select.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in tutors]
+    tutor_list = [(u.id, full_name(u)) for u in tutors]
     form.tutor_select.choices = tutor_list
 
     if request.method == 'GET':
