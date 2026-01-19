@@ -52,7 +52,9 @@
             <option value="psat">PSAT prep</option>
             <option value="math">Math</option>
             <option value="english">English/Reading</option>
-            <option value="science">Science</option>
+            <option value="physics">Physics</option>
+            <option value="biology">Biology</option>
+            <option value="chemistry">Chemistry</option>
             <option value="stats">Statistics</option>
             <option value="executive-functioning">Study skills</option>
             <option value="">Other</option>
@@ -64,7 +66,6 @@
         </div>
       </div>
     </div>
-
     <div class="row mb-3">
       <div class="mt-3 col-7 col-sm-6 col-lg-5">
         {{ form.grad_year.label(class='me-2') }}<br />
@@ -225,10 +226,6 @@
 
   const subjectSelect = document.getElementById("subject-select");
   const subjectText = document.getElementById("subject");
-  const createFolderDiv = document.getElementById("create-folder-div");
-  const studentFolderCheckbox = document.getElementById(
-    "create_student_folder",
-  );
   const satDatesDiv = document.getElementById("sat-div");
   const actDatesDiv = document.getElementById("act-div");
 
@@ -239,29 +236,24 @@
     subjectText.value = selectedValue;
     if (selectedValue === "") {
       subjectText.classList.remove("d-none");
-      createFolderDiv.classList.add("d-none");
     } //
     else {
       subjectText.classList.add("d-none");
     }
 
     if (selectedValue === "sat/act" || selectedValue === "psat") {
-      studentFolderCheckbox.checked = true;
       satDatesDiv.classList.remove("d-none");
       actDatesDiv.classList.remove("d-none");
     } //
     else if (selectedValue === "sat") {
-      studentFolderCheckbox.checked = true;
       satDatesDiv.classList.remove("d-none");
       actDatesDiv.classList.add("d-none");
     } //
     else if (selectedValue === "act") {
-      studentFolderCheckbox.checked = true;
       satDatesDiv.classList.add("d-none");
       actDatesDiv.classList.remove("d-none");
     } //
     else {
-      studentFolderCheckbox.checked = false;
       satDatesDiv.classList.add("d-none");
       actDatesDiv.classList.add("d-none");
     }

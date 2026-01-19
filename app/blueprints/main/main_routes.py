@@ -600,9 +600,16 @@ def new_student():
             return redirect(url_for('admin.students'))
 
         try:
-            tutor = User.query.filter_by(id=form.tutor_select.data).first()
             parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
-            if not parent:
+            if parent:
+                parent.first_name = form.parent_first_name.data
+                parent.last_name = form.parent_last_name.data
+                parent.email = form.parent_email.data.lower()
+                parent.secondary_email = form.parent2_email.data.lower()
+                parent.phone = form.parent_phone.data
+                parent.timezone = form.timezone.data
+                parent.role = 'parent'
+            else:
                 parent = User(
                     first_name=form.parent_first_name.data,
                     last_name=form.parent_last_name.data,
@@ -615,34 +622,37 @@ def new_student():
                     test_reminders=True
                 )
                 db.session.add(parent)
+
+            student = User.query.filter_by(email=form.student_email.data.lower()).first()
+            if student:
+                student.first_name = form.student_first_name.data
+                student.last_name = form.student_last_name.data
+                student.email = form.student_email.data.lower()
+                student.phone = form.student_phone.data
+                student.timezone = form.timezone.data
+                student.status = form.status.data
+                student.role = 'student'
+                student.grad_year = form.grad_year.data
+                student.subject = form.subject.data
+                student.tutor_id = form.tutor_select.data
             else:
-                parent.first_name = form.parent_first_name.data
-                parent.last_name = form.parent_last_name.data
-                parent.email = form.parent_email.data.lower()
-                parent.secondary_email = form.parent2_email.data.lower()
-                parent.phone = form.parent_phone.data
-                parent.timezone = form.timezone.data
-                parent.role = 'parent'
+                student = User(
+                    first_name=form.student_first_name.data,
+                    last_name=form.student_last_name.data,
+                    email=form.student_email.data.lower(),
+                    phone=form.student_phone.data,
+                    timezone=form.timezone.data,
+                    status=form.status.data,
+                    role='student',
+                    grad_year=form.grad_year.data,
+                    subject=form.subject.data,
+                    tutor_id=form.tutor_select.data,
+                    session_reminders=True,
+                    test_reminders=True
+                )
+                db.session.add(student)
 
             db.session.flush()
-
-            student_email = form.student_email.data.lower() or None
-            student = User(
-                first_name=form.student_first_name.data,
-                last_name=form.student_last_name.data,
-                email=student_email,
-                phone=form.student_phone.data,
-                timezone=form.timezone.data,
-                status=form.status.data,
-                role='student',
-                grad_year=form.grad_year.data,
-                subject=form.subject.data,
-                tutor_id=form.tutor_select.data,
-                session_reminders=True,
-                test_reminders=True
-            )
-            db.session.add(student)
-
             student.parent_id = parent.id
 
             if form.parent2_email.data:
@@ -685,6 +695,7 @@ def new_student():
                     if str(d.id) in test_selections:
                         student.interested_test_date(d)
 
+            tutor = User.query.filter_by(id=form.tutor_select.data).first()
             contact_data = {
                 'student': {
                     'first_name': student.first_name,

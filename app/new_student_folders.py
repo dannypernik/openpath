@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Constants
 SOURCE_FOLDER_ID = '1rz0xXMvtklwUuvGTkqs9cuNfQyY7-8-s'
 PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
+STUDENT_NOTES_DOC_ID = '1CBxl8hdrFUDLGSLKAi-gHWAsWwKNnf6ktKMIZ_CsNkE'
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'
 SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com'
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/documents']
@@ -72,6 +73,21 @@ def execute_with_retries(request_callable, max_retries=6, base_backoff=1, max_ba
     return request_callable()
 
 
+def create_folder(folder_name, parent_folder_id=PARENT_FOLDER_ID):
+    """Create a new folder in Google Drive."""
+    if drive_service is None:
+        logger.warning('Cannot create folder: Google Drive service not initialized')
+        return None
+
+    folder_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [parent_folder_id]
+    }
+    folder = execute_with_retries(lambda: drive_service.files().create(body=folder_metadata, fields='id').execute())
+    return folder.get('id')
+
+
 def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_id=None):
     """Create a test prep folder and copy/link files."""
     student_name = full_name(contact_data.get('student', {}))
@@ -105,19 +121,52 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
     return new_folder_link
 
 
-def create_folder(folder_name, parent_folder_id=PARENT_FOLDER_ID):
-    """Create a new folder in Google Drive."""
-    if drive_service is None:
-        logger.warning('Cannot create folder: Google Drive service not initialized')
-        return None
+def create_academic_folder(contact_data: dict, subject, new_folder_id=None):
+    """Create an academic folder and copy/link files."""
+    student = contact_data.get('student', {})
+    student_name = full_name(student)
 
-    folder_metadata = {
-        'name': folder_name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [parent_folder_id]
+    if not new_folder_id:
+        new_folder_id = create_folder(f"{student_name} (Incomplete)")
+
+    # Create a subfolder named "{student_name} {subject.title()}" inside the new academic folder
+    subject_folder_name = f"{student_name} {subject.title()}"
+    subject_folder_id = create_folder(subject_folder_name, new_folder_id)
+
+    # Copy the student notes doc into the new folder
+    notes_metadata = {
+        'name': f"_Admin notes - {student_name}",
+        'parents': [new_folder_id]
     }
-    folder = execute_with_retries(lambda: drive_service.files().create(body=folder_metadata, fields='id').execute())
-    return folder.get('id')
+    copied_notes = execute_with_retries(lambda: drive_service.files().copy(
+        fileId=STUDENT_NOTES_DOC_ID,
+        body=notes_metadata
+    ).execute())
+    notes_doc_id = copied_notes.get('id')
+
+    text_pairs = [
+        {'find_text': 'studentName', 'replace_text': student_name},
+        {'find_text': 'studentEmail', 'replace_text': student.get('email', '')},
+        {'find_text': 'studentPhone', 'replace_text': student.get('phone', '')},
+        {'find_text': 'schoolName', 'replace_text': student.get('school', '')},
+        {'find_text': 'gradYear', 'replace_text': str(student.get('grad_year', ''))},
+        {'find_text': 'timezone', 'replace_text': student.get('timezone', '')},
+        {'find_text': 'tutorName', 'replace_text': full_name(contact_data.get('tutor', {}))},
+        {'find_text': 'parentInfo', 'replace_text': parent_info},
+        {'find_text': 'testType', 'replace_text': test_type.upper()},
+        {'find_text': 'interestedDates', 'replace_text': interested_dates},
+        {'find_text': 'formNotes', 'replace_text': contact_data.get('notes', '')}
+    ]
+
+    replace_text_in_doc(docs_service, file_ids.get('notes'), text_pairs)
+
+    execute_with_retries(lambda: drive_service.files().update(
+        fileId=new_folder_id,
+        body={'name': student_name}
+    ).execute())
+
+    new_folder_link = f'https://drive.google.com/drive/u/0/folders/{new_folder_id}'
+    return new_folder_link
 
 
 def copy_item(item_id, new_name, new_folder_id, test_type='sat/act', file_ids=None, student_name=None):
@@ -333,6 +382,7 @@ def link_sheets(folder_id, contact_data, file_ids, test_type='sat/act'):
         for date in contact_data.get('interested_dates', []):
             checkmark = '✓' if date.get('is_registered') else ''
             interested_dates += f"{date.get('date')} {date.get('test').upper()} {checkmark}\n"
+
 
     text_pairs = [
         {'find_text': 'studentName', 'replace_text': student_name},

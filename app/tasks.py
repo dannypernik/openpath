@@ -10,7 +10,7 @@ from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, 
 from app.create_act_report import create_act_score_report, send_act_pdf_report, \
     act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet, \
     update_act_org_logo, update_act_partner_logo
-from app.new_student_folders import create_test_prep_folder, create_folder
+from app.new_student_folders import create_folder, create_test_prep_folder, create_academic_folder
 from app.models import User
 from app.helpers import full_name
 from app.email import send_task_fail_mail, send_new_student_email
@@ -189,7 +189,7 @@ def new_student_task(self, contact_data):
   try:
     student = contact_data['student']
     parent = contact_data['parent']
-    test_type = student.get('subject', '').lower()
+    subject = student.get('subject', '').lower()
 
     crm_data = {
       'first_name': parent.get('first_name'),
@@ -210,8 +210,12 @@ def new_student_task(self, contact_data):
     create_crm_action(crm_data, f'Scheduling/followup for {student.get("first_name", "")}')
 
     if contact_data.get('create_folder'):
-      logging.info(f"Creating test prep folder for {full_name(student)}")
-      folder_link = create_test_prep_folder(contact_data, test_type, contact_data.get('folder_id'))
+      if subject in ['sat', 'act', 'sat/act']:
+        logging.info(f"Creating test prep folder for {full_name(student)}")
+        folder_link = create_test_prep_folder(contact_data, subject, contact_data.get('folder_id'))
+      else:
+        logging.info(f"Creating academic folder for {full_name(student)}")
+        folder_link = create_academic_folder(contact_data, subject, contact_data.get('folder_id'))
     else:
       folder_link = None
 
