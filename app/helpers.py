@@ -73,7 +73,7 @@ def get_next_page():
     return next_page
 
 
-def proper(name):
+def title(name):
     """Convert name to proper title case."""
     try:
         name = name.title()

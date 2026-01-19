@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 
 from app.blueprints.admin import admin_bp
 from app.extensions import db
-from app.helpers import full_name, admin_required, proper
+from app.helpers import full_name, admin_required, title
 from app.forms import (
     UserForm, StudentForm, TutorForm, TestDateForm, RecapForm, OrgSettingsForm
 )
@@ -67,7 +67,7 @@ def users():
             return redirect(url_for('admin.users'))
         return redirect(url_for('admin.users'))
     return render_template('users.html', title='Users', form=form, users=users, roles=roles,
-                           full_name=full_name, proper=proper)
+                           full_name=full_name, title=title)
 
 
 @admin_bp.route('/edit-user/<int:id>', methods=['GET', 'POST'])
@@ -142,6 +142,11 @@ def edit_user(id):
         else:
             return redirect(url_for('admin.users'))
     elif request.method == 'GET':
+        grad_choices = form.grad_year.data
+        user_grad_year = user.grad_year
+        if user_grad_year and user_grad_year not in [c[0] for c in grad_choices]:
+            form.grad_year.choices = [(user_grad_year, user_grad_year)] + grad_choices
+
         form.first_name.data = user.first_name
         form.last_name.data = user.last_name
         form.email.data = user.email
@@ -174,7 +179,6 @@ def edit_user(id):
 @admin_bp.route('/students', methods=['GET', 'POST'])
 @admin_required
 def students():
-    form = StudentForm()
     students = User.query.order_by(User.first_name, User.last_name).filter_by(role='student')
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
     parent_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in parents]
@@ -222,9 +226,9 @@ def students():
             return redirect(url_for('admin.students'))
         flash(student.first_name + ' added')
         return redirect(url_for('admin.students'))
-    return render_template('students.html', title='Students', form=form, students=students,
-                           statuses=statuses, upcoming_dates=upcoming_dates, tests=tests, other_students=other_students,
-                           full_name=full_name, proper=proper)
+    return render_template('students.html', title='Students', students=students,
+            statuses=statuses, upcoming_dates=upcoming_dates, tests=tests,
+            other_students=other_students, full_name=full_name, title=title)
 
 
 @admin_bp.route('/tutors', methods=['GET', 'POST'])
@@ -249,7 +253,7 @@ def tutors():
             return redirect(url_for('admin.tutors'))
         return redirect(url_for('admin.tutors'))
     return render_template('tutors.html', title='Tutors', form=form, tutors=tutors,
-                           statuses=statuses, full_name=full_name, proper=proper)
+                           statuses=statuses, full_name=full_name, title=title)
 
 
 @admin_bp.route('/edit-date/<int:id>', methods=['GET', 'POST'])
