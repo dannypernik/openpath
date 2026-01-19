@@ -590,6 +590,7 @@ def new_student():
                 form.student_last_name.data = user.last_name
                 form.student_email.data = user.email
                 form.student_phone.data = user.phone
+                form.pronouns.data = user.pronouns
                 form.timezone.data = user.timezone
 
     if form.validate_on_submit():
@@ -627,6 +628,7 @@ def new_student():
             if student:
                 student.first_name = form.student_first_name.data
                 student.last_name = form.student_last_name.data
+                student.pronouns = form.pronouns.data
                 student.email = form.student_email.data.lower()
                 student.phone = form.student_phone.data
                 student.timezone = form.timezone.data
@@ -639,6 +641,7 @@ def new_student():
                 student = User(
                     first_name=form.student_first_name.data,
                     last_name=form.student_last_name.data,
+                    pronouns=form.pronouns.data,
                     email=form.student_email.data.lower(),
                     phone=form.student_phone.data,
                     timezone=form.timezone.data,
@@ -700,6 +703,7 @@ def new_student():
                 'student': {
                     'first_name': student.first_name,
                     'last_name': student.last_name,
+                    'pronouns': student.pronouns,
                     'email': student.email,
                     'phone': student.phone,
                     'timezone': student.timezone,

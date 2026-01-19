@@ -19,15 +19,28 @@
     {{ form.hidden_tag() }}
 
     <h3 class="fw-bold">Student details</h3>
-    <div class="row mb-4">
+    <div class="row">
       <div class="mb-3 col-6">{{ form.student_first_name }}</div>
       <div class="mb-3 col-6">{{ form.student_last_name }}</div>
-      <div class="mb-3 col-12 col-md-6">{{ form.student_email }}</div>
-      <div class="col-12 col-md-6">{{ form.student_phone }}</div>
+      <div class="mb-3 col-12 col-lg-6">{{ form.student_email }}</div>
+      <div class="col-12 col-lg-6">{{ form.student_phone }}</div>
+      <div class="mb-3 col-12">
+        {{ form.pronouns.label }} <br>
+        <select id="pronouns-select">
+          <option value="" selected disabled>--</option>
+          <option value="she/her">She/Her</option>
+          <option value="he/him">He/Him</option>
+          <option value="they/them">They/Them</option>
+          <option value="">Other</option>
+        </select>
+      </div>
+      <div id="pronouns-text-div" class="d-none">
+        {{ form.pronouns }}
+      </div>
     </div>
 
     <div class="row">
-      <div class="mb-3 d-flex align-items-end col-12 col-md-6 col-lg-5">
+      <div class="mb-3 d-flex align-items-end col-12 col-md-6">
         <div>
           {{ form.timezone.label }}<br />
           <select id="tz-select" required>
@@ -42,7 +55,7 @@
         <div>{{ form.timezone(class='d-none mb-0') }}</div>
       </div>
 
-      <div class="mb-3 d-flex align-items-end col-12 col-md-6 col-lg-7">
+      <div class="mb-3 d-flex align-items-end col-12 col-md-6">
         <div>
           {{ form.subject.label }}<br />
           <select id="subject-select">
@@ -68,11 +81,23 @@
       </div>
     </div>
     <div class="row mb-3">
-      <div class="mt-3 col-7 col-sm-6 col-lg-5">
-        {{ form.grad_year.label(class='me-2') }}<br />
-        {{ form.grad_year }}
+      <div class="mt-3 d-flex align-items-end col-12 col-md-6">
+        <div>
+          {{ form.grad_year.label }} <br>
+          <select id="grad-year-select">
+            <option value="" selected>--</option>
+            <option value="2026">2026 (Senior)</option>
+            <option value="2027">2027 (Junior)</option>
+            <option value="2028">2028 (Sophomore)</option>
+            <option value="2029">2029 (Freshman)</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          {{ form.grad_year(class='d-none mb-0') }}
+        </div>
       </div>
-      <div class="mt-3 col-5 col-sm-6 col-lg-7 align-self-end">
+      <div class="mt-3 d-flex align-items-end col-12 col-md-6">
         {{ form.school(class='mb-0') }}
       </div>
     </div>
@@ -211,6 +236,19 @@
 <script src="{{ url_for('static', filename='js/disable-submit-on-click.js') }}"></script>
 
 <script>
+  const pronounsSelect = document.getElementById("pronouns-select");
+  const pronounsTextDiv = document.getElementById("pronouns-text-div");
+  pronounsSelect.addEventListener("change", function () {
+    const selectedValue = pronounsSelect.value;
+    pronounsTextDiv.value = selectedValue;
+    if (selectedValue === "") {
+      pronounsTextDiv.classList.remove("d-none");
+    } //
+    else {
+      pronounsTextDiv.classList.add("d-none");
+    }
+  });
+
   const selectElement = document.getElementById("tz-select");
   const timezoneText = document.getElementById("timezone");
 
@@ -257,6 +295,20 @@
     else {
       satDatesDiv.classList.add("d-none");
       actDatesDiv.classList.add("d-none");
+    }
+  });
+
+  const gradYearSelect = document.getElementById("grad-year-select");
+  const gradYearText = document.getElementById("grad_year");
+  gradYearSelect.addEventListener("change", function () {
+    const selectedValue = gradYearSelect.value;
+    if (selectedValue === "other") {
+      gradYearText.classList.remove("d-none");
+      gradYearText.value = "";
+    } //
+    else {
+      gradYearText.classList.add("d-none");
+      gradYearText.value = selectedValue;
     }
   });
 

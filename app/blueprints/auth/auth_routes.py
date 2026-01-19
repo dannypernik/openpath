@@ -34,12 +34,12 @@ def signup():
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
-        email_exists = User.query.filter_by(email=signup_form.email.data.lower()).first()
+        email_exists = User.query.filter_by(email=signup_form.signup_email.data.lower()).first()
         if email_exists:
             flash('An account already exists for this email. Try logging in or resetting your password.', 'error')
             return redirect(url_for('auth.signin', next=next))
         user = User(first_name=signup_form.first_name.data, last_name=signup_form.last_name.data,
-                    email=signup_form.email.data.lower())
+                    email=signup_form.signup_email.data.lower())
         db.session.add(user)
         db.session.commit()
 
@@ -72,7 +72,7 @@ def login():
         else:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        user = User.query.filter_by(email=form.login_email.data.lower()).first()
         if user and not user.password_hash:
             flash('Please verify your email to set or reset your password.')
             return redirect(url_for('auth.request_password_reset'))

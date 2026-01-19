@@ -14,7 +14,7 @@ from app.blueprints.admin import admin_bp
 from app.extensions import db
 from app.helpers import full_name, admin_required, proper
 from app.forms import (
-    UserForm, StudentForm, TutorForm, TestDateForm, RecapForm, OrgSettingsForm
+    UserForm, TutorForm, TestDateForm, RecapForm, OrgSettingsForm
 )
 from app.models import User, TestDate, UserTestDate, Organization
 from app.email import send_session_recap_email, send_verification_email
@@ -141,7 +141,7 @@ def edit_user(id):
         else:
             return redirect(url_for('admin.users'))
     elif request.method == 'GET':
-        grad_choices = form.grad_year.data
+        grad_choices = form.grad_year.choices
         user_grad_year = user.grad_year
         if user_grad_year and user_grad_year not in [c[0] for c in grad_choices]:
             form.grad_year.choices = [(user_grad_year, user_grad_year)] + grad_choices
@@ -179,11 +179,7 @@ def edit_user(id):
 def students():
     students = User.query.order_by(User.first_name, User.last_name).filter_by(role='student')
     parents = User.query.order_by(User.first_name, User.last_name).filter_by(role='parent')
-    parent_list = [(0, 'New parent')] + [(u.id, full_name(u)) for u in parents]
-    form.parent_id.choices = parent_list
     tutors = User.query.filter_by(role='tutor')
-    tutor_list = [(u.id, full_name(u)) for u in tutors]
-    form.tutor_id.choices = tutor_list
     status_order = ['prospective', 'active', 'paused', 'inactive']
     statuses = []
     for s in status_order:
@@ -193,37 +189,6 @@ def students():
     upcoming_dates = TestDate.query.order_by(TestDate.date).filter(TestDate.status != 'past')
     tests = sorted(set(TestDate.test for TestDate in TestDate.query.all()), reverse=True)
 
-    if form.validate_on_submit():
-        student = User(first_name=form.student_name.data, last_name=form.student_last_name.data,
-                       email=form.student_email.data.lower(), phone=form.student_phone.data, timezone=form.timezone.data,
-                       location=form.location.data, status=form.status.data, tutor_id=form.tutor_id.data,
-                       role='student', grad_year=form.grad_year.data, session_reminders=True, test_reminders=True)
-        if form.parent_id.data == 0:
-            parent = User(first_name=form.parent_name.data, last_name=form.parent_last_name.data,
-                          email=form.parent_email.data.lower(), secondary_email=form.secondary_email.data.lower(),
-                          phone=form.parent_phone.data, timezone=form.timezone.data, role='parent',
-                          session_reminders=True, test_reminders=True)
-        else:
-            parent = User.query.filter_by(id=form.parent_id.data).first()
-
-        try:
-            db.session.add(parent)
-            db.session.flush()
-            student.parent_id = parent.id
-            db.session.add(student)
-            db.session.commit()
-            test_selections = request.form.getlist('test_dates')
-            for d in upcoming_dates:
-                if str(d.id) + '-interested' in test_selections:
-                    student.interested_test_date(d)
-                elif str(d.id) + '-registered' in test_selections:
-                    student.register_test_date(d)
-        except:
-            db.session.rollback()
-            flash(student.first_name + ' could not be added', 'error')
-            return redirect(url_for('admin.students'))
-        flash(student.first_name + ' added')
-        return redirect(url_for('admin.students'))
     return render_template('students.html', title='Students', students=students,
             statuses=statuses, upcoming_dates=upcoming_dates, tests=tests,
             other_students=other_students, full_name=full_name, proper=proper)

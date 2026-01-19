@@ -142,10 +142,25 @@ def create_academic_folder(contact_data: dict, subject, new_folder_id=None):
         fileId=STUDENT_NOTES_DOC_ID,
         body=notes_metadata
     ).execute())
-    notes_doc_id = copied_notes.get('id')
+    copied_notes_id = copied_notes.get('id')
+
+    parent_info = ''
+    if contact_data.get('parent'):
+        parent = contact_data.get('parent', {})
+        parent_info = f"{parent.get('first_name', '')} {parent.get('last_name', '')} ({parent.get('email', 'email')}, {parent.get('phone', 'phone')})\n"
+    if contact_data.get('parent2'):
+        parent2 = contact_data.get('parent2', {})
+        parent_info += f"{parent2.get('first_name', '')} {parent2.get('last_name', '')} ({parent2.get('email', 'email')}, {parent2.get('phone', 'phone')})\n"
+
+    interested_dates = ''
+    if contact_data.get('interested_dates'):
+        for date in contact_data.get('interested_dates', []):
+            checkmark = '✓' if date.get('is_registered') else ''
+            interested_dates += f"{date.get('date')} {date.get('test').upper()} {checkmark}\n"
 
     text_pairs = [
         {'find_text': 'studentName', 'replace_text': student_name},
+        {'find_text': 'pronouns', 'replace_text': student.get('pronouns', '')},
         {'find_text': 'studentEmail', 'replace_text': student.get('email', '')},
         {'find_text': 'studentPhone', 'replace_text': student.get('phone', '')},
         {'find_text': 'schoolName', 'replace_text': student.get('school', '')},
@@ -153,12 +168,12 @@ def create_academic_folder(contact_data: dict, subject, new_folder_id=None):
         {'find_text': 'timezone', 'replace_text': student.get('timezone', '')},
         {'find_text': 'tutorName', 'replace_text': full_name(contact_data.get('tutor', {}))},
         {'find_text': 'parentInfo', 'replace_text': parent_info},
-        {'find_text': 'testType', 'replace_text': test_type.upper()},
+        {'find_text': 'testType', 'replace_text': subject.replace('-', ' ').title()},
         {'find_text': 'interestedDates', 'replace_text': interested_dates},
-        {'find_text': 'formNotes', 'replace_text': contact_data.get('notes', '')}
+        {'find_text': 'formNotes', 'replace_text': contact_data.get('notes', ' ')}
     ]
 
-    replace_text_in_doc(docs_service, file_ids.get('notes'), text_pairs)
+    replace_text_in_doc(docs_service, copied_notes_id, text_pairs)
 
     execute_with_retries(lambda: drive_service.files().update(
         fileId=new_folder_id,
@@ -386,6 +401,7 @@ def link_sheets(folder_id, contact_data, file_ids, test_type='sat/act'):
 
     text_pairs = [
         {'find_text': 'studentName', 'replace_text': student_name},
+        {'find_text': 'pronouns', 'replace_text': student.get('pronouns', '')},
         {'find_text': 'studentEmail', 'replace_text': student.get('email', '')},
         {'find_text': 'studentPhone', 'replace_text': student.get('phone', '')},
         {'find_text': 'schoolName', 'replace_text': student.get('school', '')},
@@ -395,7 +411,7 @@ def link_sheets(folder_id, contact_data, file_ids, test_type='sat/act'):
         {'find_text': 'parentInfo', 'replace_text': parent_info},
         {'find_text': 'testType', 'replace_text': test_type.upper()},
         {'find_text': 'interestedDates', 'replace_text': interested_dates},
-        {'find_text': 'formNotes', 'replace_text': contact_data.get('notes', '')}
+        {'find_text': 'formNotes', 'replace_text': contact_data.get('notes', ' ')}
     ]
 
     replace_text_in_doc(docs_service, file_ids.get('notes'), text_pairs)
@@ -929,7 +945,7 @@ def replace_text_in_doc(docs_service, doc_id: str, text_pairs):
         raise TypeError('text_pairs must be a dict or list of dicts')
 
     for find_text, replace_text in pairs:
-        if not find_text:
+        if not find_text or not replace_text:
             continue
         requests.append({
             "replaceAllText": {

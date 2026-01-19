@@ -1,7 +1,13 @@
 {% extends 'email/_email-base.html' %}
 
 {% block content %}
-  <p><strong>{{ full_name(student) }}:</strong> {{ student['email'] }}, {{ student['phone'] }}</p>
+  <p>
+    <strong>{{ full_name(student) }}</strong>
+    {% if student.pronouns %}({{ student.pronouns }}){% endif %}
+    {{ student['email'] }}, {{ student['phone'] }}
+  </p>
+
+  {% endif %} {{ student['email'] }}, {{ student['phone'] }}</p>
   <p><strong>{{ full_name(parent) }}:</strong> {{ parent['email'] }}, {{ parent['phone'] }}</p>
   {% if parent2 %}
     <p><strong>{{ full_name(parent2) }}:</strong> {{ parent2['email'] }}, {{ parent2['phone'] }}</p>

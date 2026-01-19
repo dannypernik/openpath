@@ -44,7 +44,7 @@ class EmailListForm(FlaskForm):
 
 
 class SignupForm(FlaskForm):
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+    signup_email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address'), \
             validate_email])
     first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
@@ -53,16 +53,16 @@ class SignupForm(FlaskForm):
         validators=[InputRequired()])
     reason = TextAreaField('Reason', render_kw={'placeholder': 'Reason for requesting an account', 'rows': '3'},
         validators=[InputRequired(), Length(max=300)])
-    submit = SubmitField('Sign up')
+    signup_submit = SubmitField('Sign up')
 
 
 class LoginForm(FlaskForm):
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+    login_email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     password = PasswordField('Password', render_kw={'placeholder': 'Password'}, \
         validators=[InputRequired()])
     remember_me = BooleanField('Remember me')
-    submit = SubmitField('Log in')
+    login_submit = SubmitField('Log in')
 
 
 class RequestPasswordResetForm(FlaskForm):
@@ -120,13 +120,14 @@ class NewStudentForm(FlaskForm):
     student_first_name = StringField('Student first name', render_kw={'placeholder': 'First name'}, \
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Last name'})
+    pronouns = StringField('Preferred pronouns', render_kw={'placeholder': 'Pronouns'})
     student_email = EmailField('Student Email address', render_kw={'placeholder': 'Email address'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     student_phone = TelField('Student phone', render_kw={'placeholder': 'Phone'})
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
     school = StringField('School', render_kw={'placeholder': 'School'})
-    grad_year = StringField('HS graduation year', render_kw={'placeholder': 'Grad year'})
+    grad_year = StringField('HS Graduation year', render_kw={'placeholder': 'Grad year'})
     parent_select = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
@@ -140,7 +141,7 @@ class NewStudentForm(FlaskForm):
     status = SelectField('Status', choices=[('prospective','Prospective'), ('active', 'Active'), \
         ('paused','Paused'),('inactive','Inactive')])
     subject = StringField('Primary subject', render_kw={'placeholder': 'Subject'})
-    create_student_folder = BooleanField('Create student folder', default=True)
+    create_student_folder = BooleanField('Create folder', default=True)
     notes = TextAreaField('Additional notes (optional)', render_kw={'placeholder': 'Personality, learning style, strengths/opportunities, etc', 'rows': '4'})
     submit = SubmitField()
 
