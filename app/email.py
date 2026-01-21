@@ -1095,6 +1095,11 @@ def send_new_student_email(contact_data):
     notes = contact_data.get('notes', '')
     folder_id = contact_data.get('folder_id', None)
 
+    if 'sat' in student['subject'].lower() or 'act' in student['subject'].lower():
+        student['subject'] = student['subject'].upper()
+    else:
+        student['subject'] = student['subject'].replace('-', ' ').title()
+
     contacts = [student, parent]
     if parent2:
         contacts.append(parent2)

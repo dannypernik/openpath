@@ -705,7 +705,7 @@ def new_student():
                     'last_name': student.last_name,
                     'pronouns': student.pronouns,
                     'email': student.email,
-                    'phone': student.phone,
+                    'phone': request.form.get('student_phone_formatted'),
                     'timezone': student.timezone,
                     'subject': student.subject,
                     'grad_year': student.grad_year,
@@ -715,21 +715,21 @@ def new_student():
                     'first_name': parent.first_name,
                     'last_name': parent.last_name,
                     'email': parent.email,
-                    'phone': parent.phone,
+                    'phone': request.form.get('parent_phone_formatted'),
                     'timezone': student.timezone
                 } if parent else None,
                 'parent2': {
                     'first_name': parent2.first_name,
                     'last_name': parent2.last_name,
                     'email': parent2.email,
-                    'phone': parent2.phone,
+                    'phone': request.form.get('parent2_phone_formatted'),
                     'timezone': student.timezone
                 } if parent2 else None,
                 'tutor': {
                     'first_name': tutor.first_name,
                     'last_name': tutor.last_name,
                     'email': tutor.email,
-                    'phone': tutor.phone
+                    'phone': request.form.get('tutor_phone_formatted')
                 } if tutor else None,
                 'notes': form.notes.data
             }
