@@ -1111,8 +1111,8 @@ def handle_act_report(form, template_name, organization=None):
             date = datetime.today().date().strftime('%Y-%m-%d')
 
             file_extension = get_image_info(answer_img)
-            answer_sheet_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
-            answer_img_path = os.path.join(act_uploads_path, answer_sheet_filename)
+            answer_img_filename = secure_filename(f"{user.first_name} {user.last_name} ACT {form.test_code.data} answer sheet {date}.{file_extension}")
+            answer_img_path = os.path.join(act_uploads_path, answer_img_filename)
             answer_img.save(answer_img_path)
             logging.info(f"Saved answer image to {answer_img_path}")
 
@@ -1125,6 +1125,7 @@ def handle_act_report(form, template_name, organization=None):
 
             score_data = {}
             score_data['answer_img_path'] = answer_img_path
+            score_data['answer_img_filename'] = answer_img_filename
             score_data['act_uploads_path'] = act_uploads_path
             score_data['act_reports_path'] = act_reports_path
             score_data['test_code'] = form.test_code.data

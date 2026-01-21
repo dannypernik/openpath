@@ -110,6 +110,7 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
       logging.info(f"ACT report started for {score_data['student_name']} by {score_data['email']}")
 
     score_data = process_act_answer_img(score_data)
+    logging.info(f"ACT answer image: https://openpathtutoring.com/admin-files/act/uploads/{score_data['answer_img_filename']}")
 
     mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     ss_copy_id, score_data = create_act_score_report(score_data, organization_dict)
