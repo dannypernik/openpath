@@ -270,7 +270,7 @@ def main():
         tutors = session.query(User).order_by(User.id.desc()).filter(User.role == 'tutor')
         test_dates = session.query(TestDate).all()
         test_reminder_users = session.query(User).options(
-            selectinload(User.test_dates).selectinload(UserTestDate.test_dates)
+            selectinload(User.planned_tests).selectinload(UserTestDate.test_date)
         ).filter(
             User.test_dates.any(),
             User.test_reminders == True
