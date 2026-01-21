@@ -624,6 +624,7 @@ def new_student():
                 )
                 db.session.add(parent)
 
+            tutor = User.query.filter_by(id=form.tutor_select.data).first()
             student = User.query.filter_by(email=form.student_email.data.lower()).first()
             if student:
                 student.first_name = form.student_first_name.data
@@ -698,7 +699,6 @@ def new_student():
                     if str(d.id) in test_selections:
                         student.interested_test_date(d)
 
-            tutor = User.query.filter_by(id=form.tutor_select.data).first()
             contact_data = {
                 'student': {
                     'first_name': student.first_name,
@@ -708,7 +708,8 @@ def new_student():
                     'phone': student.phone,
                     'timezone': student.timezone,
                     'subject': student.subject,
-                    'grad_year': student.grad_year
+                    'grad_year': student.grad_year,
+                    'status': student.status
                 },
                 'parent': {
                     'first_name': parent.first_name,

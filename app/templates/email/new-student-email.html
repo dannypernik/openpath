@@ -3,40 +3,39 @@
 {% block content %}
   <p>
     <strong>{{ full_name(student) }}</strong>
-    {% if student.pronouns %}({{ student.pronouns }}){% endif %}
+    {% if student['pronouns'] %}({{ student['pronouns'] }}){% endif %}
     {{ student['email'] }}, {{ student['phone'] }}
   </p>
 
-  {% endif %} {{ student['email'] }}, {{ student['phone'] }}</p>
   <p><strong>{{ full_name(parent) }}:</strong> {{ parent['email'] }}, {{ parent['phone'] }}</p>
   {% if parent2 %}
     <p><strong>{{ full_name(parent2) }}:</strong> {{ parent2['email'] }}, {{ parent2['phone'] }}</p>
   {% endif %}
 
   <ul>
-    {% if student.subject %}
+    {% if student['subject'] %}
       <li><strong>Subject:</strong> {{ student['subject'] }}</li>
     {% endif %}
 
-    {% if student.grad_year %}
+    {% if student['grad_year'] %}
       <li><strong>Graduation year:</strong> {{ student['grad_year'] }}</li>
     {% endif %}
 
-    {% if student.timezone %}
+    {% if student['timezone'] %}
       <li><strong>Timezone:</strong> {{ student['timezone'] }}</li>
     {% endif %}
 
 
-    {% if student.tutor %}
+    {% if tutor %}
       <li><strong>Tutor:</strong> {{ full_name(tutor) }}</li>
     {% endif %}
 
-    {% if student.status %}
+    {% if student['status'] %}
       <li><strong>Status:</strong> {{ student['status'] }}</li>
     {% endif %}
 
     {% if folder_id %}
-      <li><a href="https://drive.google.com/drive/u/0/folders/{{ folder_id }}">{{ full_name(student) }} {{ student['subject'] }} folder</a></li>
+      <li><a href="https://drive.google.com/drive/u/0/folders/{{ folder_id }}">Admin folder for {{ full_name(student) }}</a></li>
     {% endif %}
   </ul>
 

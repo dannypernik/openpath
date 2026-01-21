@@ -1088,6 +1088,7 @@ def send_new_student_email(contact_data):
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
     student = contact_data['student']
+    tutor = contact_data.get('tutor', None)
     parent = contact_data['parent']
     parent2 = contact_data.get('parent2', None)
     interested_dates = contact_data.get('interested_dates', [])
@@ -1114,8 +1115,9 @@ def send_new_student_email(contact_data):
                 ],
                 'Subject': 'New student added: ' + full_name(student),
                 'HTMLPart': render_template('email/new-student-email.html',
-                    student=student, parent=parent, parent2=parent2, interested_dates=interested_dates,
-                    full_name=full_name, notes=notes, folder_id=folder_id),
+                    student=student, tutor=tutor,parent=parent, parent2=parent2,
+                    interested_dates=interested_dates, full_name=full_name, notes=notes,
+                    folder_id=folder_id),
                 'Attachments': [
                     {
                         'ContentType': 'text/vcard',
