@@ -159,7 +159,7 @@ def get_events_and_data():
                         service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
                         sheet = service_sheets.spreadsheets()
                         result = sheet.values().get(spreadsheetId=tutor['finance_ss_id'],
-                            range='Summary!R3', valueRenderOption='UNFORMATTED_VALUE').execute()
+                            range='Summary!Q3', valueRenderOption='UNFORMATTED_VALUE').execute()
                         biweekly_due_cell = result.get('values', [])
 
                         biweekly_due = biweekly_due_cell[0][0]
