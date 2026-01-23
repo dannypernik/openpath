@@ -331,6 +331,7 @@ def create_crm_action(contact_data: dict, action_text: str):
             f'https://app.onepagecrm.com/api/v3/contacts?email={contact_data.get("email")}&page=1&per_page=10',
             auth=(os.getenv('ONEPAGECRM_ID'), os.getenv('ONEPAGECRM_PW'))
         )
+
         if existing_email_matches.status_code == 200 and len(existing_email_matches.json()['data']['contacts']) > 0:
             is_existing_contact = True
 
@@ -351,7 +352,7 @@ def create_crm_action(contact_data: dict, action_text: str):
                 auth=(os.getenv('ONEPAGECRM_ID'), os.getenv('ONEPAGECRM_PW'))
             )
 
-            logger.info('Contact already exists in OnePageCRM.')
+            logging.info('Contact already exists in OnePageCRM.')
 
         else:
             # New contact
@@ -367,7 +368,7 @@ def create_crm_action(contact_data: dict, action_text: str):
 
             crm_contact = requests.post(
                 'https://app.onepagecrm.com/api/v3/contacts',
-                json=contact_data,
+                json=contact,
                 auth=(os.getenv('ONEPAGECRM_ID'), os.getenv('ONEPAGECRM_PW'))
             )
 
