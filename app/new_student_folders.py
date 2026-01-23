@@ -24,18 +24,16 @@ SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/documents']
 TOKEN = 'token_tpa.json'
 CLIENT_SECRETS = 'credentials_tpa.json'
+SAT_DATA_SS_ID = os.environ.get('SAT_DATA_SS_ID')
+OPT_SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
 
-
-def get_sat_data_ss_id():
-    """Get SAT data spreadsheet ID from config at runtime."""
-    return current_app.config['SAT_DATA_SS_ID']
 
 creds = None
 drive_service = None
 sheets_service = None
 docs_service = None
 
-if not (os.environ.get("TESTING") == "true" or os.environ.get("CI") == "true"):
+if not (os.environ.get('TESTING') or os.environ.get('CI')):
     # Authenticate and initialize services
     creds = utils.load_google_credentials(SERVICE_ACCOUNT_JSON, TOKEN, CLIENT_SECRETS, prefer_user=True, scopes=SCOPES)
     drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
@@ -111,6 +109,9 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
     update_homework_ss(file_ids, contact_data)
     logger.info(f"Homework spreadsheet updated for {student_name}.")
 
+    add_student_to_ss_list(student_name)
+    logger.info(f"{student_name} added to spreadsheet list.")
+
     execute_with_retries(lambda: drive_service.files().update(
         fileId=new_folder_id,
         body={'name': student_name}
@@ -174,6 +175,9 @@ def create_academic_folder(contact_data: dict, subject, new_folder_id=None):
     ]
 
     replace_text_in_doc(docs_service, copied_notes_id, text_pairs)
+
+    add_student_to_ss_list(student_name)
+    logger.info(f"{student_name} added to spreadsheet list.")
 
     execute_with_retries(lambda: drive_service.files().update(
         fileId=new_folder_id,
@@ -680,6 +684,34 @@ def update_homework_ss(file_ids, contact_data):
         ).execute())
 
 
+# If student name not present in Summary A1:A of OPT_SPREADSHEET_ID, append it
+def add_student_to_ss_list(student_name):
+    if sheets_service is None:
+        logger.warning('Cannot add student to OPT list: Google Sheets service not initialized')
+        return
+
+    result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
+        spreadsheetId=OPT_SPREADSHEET_ID,
+        range='Summary!A1:A'
+    ).execute())
+
+    values = result.get('values', [])
+    existing_names = []
+    for row in values:
+        if not row or not row[0].strip():
+            target_row = values.index(row) + 1
+            break
+        existing_names.append(row[0])
+
+    if student_name not in existing_names:
+        execute_with_retries(lambda: sheets_service.spreadsheets().values().append(
+            spreadsheetId=OPT_SPREADSHEET_ID,
+            range=f'Summary!A{target_row}',
+            valueInputOption='RAW',
+            body={'values': [[student_name]]}
+        ).execute())
+
+
 # Recursively get all files in folder_id and nested subfolders
 def get_all_files(folder_id):
     if drive_service is None:
@@ -759,9 +791,8 @@ def remove_sat_protections(sheets_service, admin_ss_id):
 
 def get_sat_test_codes(sheets_service):
     """Retrieve SAT test codes from the SAT data spreadsheet."""
-    sat_data_ss_id = get_sat_data_ss_id()
     # Get all sheets in the spreadsheet
-    spreadsheet = execute_with_retries(lambda: sheets_service.spreadsheets().get(spreadsheetId=sat_data_ss_id).execute())
+    spreadsheet = execute_with_retries(lambda: sheets_service.spreadsheets().get(spreadsheetId=SAT_DATA_SS_ID).execute())
     sheets = spreadsheet.get('sheets', [])
 
     # Filter sheets that start with 'Practice test data updated' and find the alphabetically last one
@@ -787,7 +818,7 @@ def get_sat_test_codes(sheets_service):
     latest_sheet = max(matching_sheets, key=extract_date)
 
     result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
-        spreadsheetId=sat_data_ss_id,
+        spreadsheetId=SAT_DATA_SS_ID,
         range=f'{latest_sheet}!A2:A'
     ).execute())
 
