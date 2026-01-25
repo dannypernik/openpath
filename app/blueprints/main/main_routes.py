@@ -43,7 +43,7 @@ from app.create_sat_report import (
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
-from app.utils import is_dark_color
+from app.utils import is_dark_color, format_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -699,6 +699,8 @@ def new_student():
                     if str(d.id) in test_selections:
                         student.interested_test_date(d)
 
+            timezone = format_timezone(student.timezone)
+
             contact_data = {
                 'student': {
                     'first_name': student.first_name,
@@ -706,7 +708,7 @@ def new_student():
                     'pronouns': student.pronouns,
                     'email': student.email,
                     'phone': request.form.get('student_phone_formatted'),
-                    'timezone': student.timezone,
+                    'timezone': timezone,
                     'subject': student.subject,
                     'grad_year': student.grad_year,
                     'status': student.status
@@ -716,14 +718,14 @@ def new_student():
                     'last_name': parent.last_name,
                     'email': parent.email,
                     'phone': request.form.get('parent_phone_formatted'),
-                    'timezone': student.timezone
+                    'timezone': timezone
                 } if parent else None,
                 'parent2': {
                     'first_name': parent2.first_name,
                     'last_name': parent2.last_name,
                     'email': parent2.email,
                     'phone': request.form.get('parent2_phone_formatted'),
-                    'timezone': student.timezone
+                    'timezone': timezone
                 } if parent2 else None,
                 'tutor': {
                     'first_name': tutor.first_name,

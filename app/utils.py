@@ -404,6 +404,20 @@ def create_crm_action(contact_data: dict, action_text: str):
         raise
 
 
+def format_timezone(tz_str):
+    """Format timezone string for display."""
+    if 'New_York' in tz_str:
+        return 'Eastern'
+    if 'Chicago' in tz_str:
+        return 'Central'
+    if 'Denver' in tz_str:
+        return 'Mountain'
+    if 'Los_Angeles' in tz_str:
+        return 'Pacific'
+    else:
+        return tz_str
+
+
 def add_test_dates_from_ss():
     """Import test dates from the configured spreadsheet into the TestDate table."""
     # Initialize Sheets API client
