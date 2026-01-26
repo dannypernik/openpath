@@ -81,7 +81,7 @@ def create_sat_score_report(score_data, organization_dict=None):
             fileId=file_id,
             body={
             'parents': [SAT_REPORT_FOLDER_ID],
-            'name': f"{score_data['test_code'].upper()} Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')}.pdf"
+            'name': f"{score_data['test_display_name']} Score Analysis for {score_data['student_name']} - {score_data['date'].replace('-', '.')}.pdf"
             }
         ).execute()
         ss_copy_id = ss_copy.get('id')
@@ -539,7 +539,7 @@ def send_sat_pdf_report(spreadsheet_id, score_data):
 
         # Handle response
         if response.status_code == 200:
-            pdf_name = f"SAT Score Analysis for {score_data['student_name']} - {score_data['date']} - {score_data['test_display_name']}.pdf"
+            pdf_name = f"{score_data['test_display_name']} Score Analysis for {score_data['student_name']} - {score_data['date']}.pdf"
             file_path = f'app/private/sat/reports/{pdf_name}'
 
             # Save the PDF content to a file
