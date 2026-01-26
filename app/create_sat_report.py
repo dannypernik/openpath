@@ -212,7 +212,7 @@ def create_sat_score_report(score_data, organization_dict=None):
                                             'type': 'CUSTOM_FORMULA',
                                             'values': [
                                                 {
-                                                'userEnteredValue': '=or(Subject=A12,Subject=A13)'
+                                                'userEnteredValue': '=or(Subject=A11,Subject=A12)'
                                                 }
                                             ]
                                             }
