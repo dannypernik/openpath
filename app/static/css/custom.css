@@ -6884,6 +6884,17 @@ a.info-icon:hover span {
   max-width: 100rem;
 }
 
+#report-modal li {
+  margin-top: 1rem;
+}
+#report-modal video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  max-height: 60vh;
+  margin-top: 1rem;
+}
+
 .btn-close {
   --bs-btn-close-bg: none;
   font-size: 4rem;

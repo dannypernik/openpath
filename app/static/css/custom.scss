@@ -1054,6 +1054,18 @@ a.info-icon {
   max-width: 100rem;
 }
 
+#report-modal {
+  li {
+    margin-top: 1rem;
+  }
+  video {
+    @include img-fluid();
+    border-radius: 10px;
+    max-height: 60vh;
+    margin-top: 1rem;
+  }
+}
+
 .btn-close {
   --bs-btn-close-bg: none;
   font-size: 4rem;
