@@ -8,6 +8,21 @@
   <h3>Changed answers:</h3>
   {% include 'email/_changed_answer_table.html' %}
 
+  {% if score_data['missing_data'] %}
+    <p>
+      Questions not found on the Score Details PDF:
+    </p>
+    <ul>
+      {% for item in score_data['missing_data'] %}
+        <li>{% if item['sub'] == 'rw_modules' %}Reading & Writing{% else %}Math{% endif %} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
+      {% endfor %}
+    </ul>
+    <p>
+      Answers for these questions will appear as "not found" on the score report. The
+      subject and overall scores are still accurate, however.
+    </p>
+  {% endif %}
+
   <h3>Score data:</h3>
   <p>{{ score_data }}</p>
 {% endblock content %}

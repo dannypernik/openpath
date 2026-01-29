@@ -33,7 +33,7 @@ from app.models import User, TestDate, UserTestDate, TestScore, Review, Organiza
 from app.email import (
     send_contact_email, send_test_strategies_email, send_score_analysis_email,
     send_test_registration_email, send_prep_class_email, send_signup_notification_email,
-    send_confirmation_email, send_changed_answers_email, send_ntpa_email, send_fail_mail,
+    send_confirmation_email, send_unexpected_data_email, send_ntpa_email, send_fail_mail,
     send_free_resources_email, send_nomination_email, send_new_student_email
 )
 from app.score_reader import get_all_data
@@ -990,8 +990,8 @@ def handle_sat_report(form, template_name, organization=None):
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
-            if len(score_data['answer_key_mismatches']) > 0:
-                send_changed_answers_email(score_data)
+            if len(score_data['answer_key_mismatches']) > 0 or len(score_data['missing_data']) > 0:
+                send_unexpected_data_email(score_data)
 
             if organization:
                 return_route = url_for('main.custom_sat_report', org=organization['slug'])

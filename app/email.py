@@ -1363,7 +1363,7 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
     return result.status_code
 
 
-def send_changed_answers_email(score_data):
+def send_unexpected_data_email(score_data):
     api_key = os.environ.get('MAILJET_KEY')
     api_secret = os.environ.get('MAILJET_SECRET')
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -1381,7 +1381,7 @@ def send_changed_answers_email(score_data):
                             'Email': current_app.config['MAIL_USERNAME']
                         }
                     ],
-                    'Subject': 'Changed answers for ' + score_data['test_display_name'],
+                    'Subject': 'Unexpected data for ' + score_data['test_display_name'],
                     'HTMLPart': render_template('email/changed-answers-email.html', score_data=score_data, int=int)
                 }
             ]

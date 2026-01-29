@@ -12,7 +12,7 @@
     </p>
     <ul>
       {% for item in score_data['missing_data'] %}
-        <li>{{ item['sub'] }} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
+        <li>{% if item['sub'] == 'rw_modules' %}Reading & Writing{% else %}Math{% endif %} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
       {% endfor %}
     </ul>
     <p>
