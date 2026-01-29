@@ -1382,7 +1382,7 @@ def send_unexpected_data_email(score_data):
                         }
                     ],
                     'Subject': 'Unexpected data for ' + score_data['test_display_name'],
-                    'HTMLPart': render_template('email/changed-answers-email.html', score_data=score_data, int=int)
+                    'HTMLPart': render_template('email/unexpected-data-email.html', score_data=score_data, int=int)
                 }
             ]
         }
