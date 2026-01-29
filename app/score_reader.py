@@ -50,10 +50,10 @@ def get_student_answers(score_details_file_path):
   rw_mod_num = '1'
   m_mod_num = '1'
 
+  prev_line_split = None
   for i, p in enumerate(pages):
     text = p.extract_text()
 
-    prev_line_split = None
     for line_num, line in enumerate(read_text_line_by_line(text), 1):
       # print(line)
       # print(list(line))
@@ -110,18 +110,19 @@ def get_student_answers(score_details_file_path):
           if score_details_data['answers']['m_modules']['1'].get(number):
             m_mod_num = '2'
 
-          # If first word of prev line ends with ',' it is 1 of multiple correct answers
-          if prev_start[-1] == ',':
-            correct_answer = prev_start.rstrip(',')
-          else:
-            correct_answer = line_split[2].rstrip(',')
+          if prev_start:
+            # If first word of prev line ends with ',' it is 1 of multiple correct answers
+            if prev_start[-1] == ',':
+              correct_answer = prev_start.rstrip(',')
+            else:
+              correct_answer = line_split[2].rstrip(',')
 
-          # If first word of prev line ends with ';' it is the student response
-          if prev_start[-1] == ';':
-            response = prev_start.rstrip(';')
-          # If the 2nd word ends with a ';' it is the student response
-          elif len(prev_line_split) > 1 and prev_line_split[1][-1] == ';':
-            response = prev_line_split[1].rstrip(';')
+            # If first word of prev line ends with ';' it is the student response
+            if prev_start[-1] == ';':
+              response = prev_start.rstrip(';')
+            # If the 2nd word ends with a ';' it is the student response
+            elif len(prev_line_split) > 1 and prev_line_split[1][-1] == ';':
+              response = prev_line_split[1].rstrip(';')
 
           # if correct_answer == 'Omitted' or correct_answer[-1] == ';':
           #   correct_answer = prev_start.rstrip(',')
@@ -171,7 +172,7 @@ def get_student_answers(score_details_file_path):
             'is_correct': is_correct
           }
 
-      prev_line_split = line_split if len(line_split) > 0 else prev_line_split
+      prev_line_split = line_split
 
   rw_questions_answered = 0
   m_questions_answered = 0
