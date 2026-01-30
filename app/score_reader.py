@@ -46,133 +46,120 @@ def get_student_answers(score_details_file_path):
     'm_modules': 0
   }
 
-  subject = 'rw_modules'
+  subject = None
   rw_mod_num = '1'
   m_mod_num = '1'
 
+  sub_splits = ['Reading', 'and', 'Writing', 'Math']
   prev_line_split = None
+
+  full_text = ''
   for i, p in enumerate(pages):
     text = p.extract_text()
+    full_text += text.rstrip() + "\n"
 
-    for line_num, line in enumerate(read_text_line_by_line(text), 1):
-      # print(line)
-      # print(list(line))
-      if date is None and line.find('My Tests') != -1:
-        trimmed_line = line.rstrip() # ensures no trailing whitespace
-        date_start = trimmed_line.find(' - ') + 3
-        date_str = trimmed_line[date_start:]
-        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
-        score_details_data['date'] = date
+  for line_num, line in enumerate(read_text_line_by_line(full_text), 1):
+    # print(line)
+    # print(list(line))
+    if date is None and line.find('My Tests') != -1:
+      trimmed_line = line.rstrip() # ensures no trailing whitespace
+      date_start = trimmed_line.find(' - ') + 3
+      date_str = trimmed_line[date_start:]
+      date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
+      score_details_data['date'] = date
 
-        test_type_start = line.find('My Tests') + 11
-        sep = {'/',' '}
-        test_type_end = next((i for i, ch  in enumerate(line[test_type_start:]) if ch in sep),None) + test_type_start
-        # test_type_end = line.find(' ', test_type_start)
-        test_type = line[test_type_start:test_type_end]
-        test_number_end = date_start - 3
-        test_number_start = line.rfind(" ", 0, test_number_end) + 1
+      test_type_start = line.find('My Tests') + 11
+      sep = {'/',' '}
+      test_type_end = next((i for i, ch  in enumerate(line[test_type_start:]) if ch in sep),None) + test_type_start
+      # test_type_end = line.find(' ', test_type_start)
+      test_type = line[test_type_start:test_type_end]
+      test_number_end = date_start - 3
+      test_number_start = line.rfind(" ", 0, test_number_end) + 1
 
-        test_number = line[test_number_start:test_number_end]
-        score_details_data['test_code'] = test_type.lower() + test_number
-        score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
+      test_number = line[test_number_start:test_number_end]
+      score_details_data['test_code'] = test_type.lower() + test_number
+      score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
 
-      number = None
-      correct_answer = None
-      response = None
+    number = None
+    correct_answer = None
+    response = None
+    result = None
 
-      line_split = line.split()
+    line_split = line.split()
+    for i, s in enumerate(line_split):
+
+      if s in ['Reading', 'Writing']:
+          subject = 'rw_modules'
+      elif s == 'Math':
+        subject = 'm_modules'
+
       if len(line_split) >= 3:
-        print(f'line_split: {line_split}')
-        result_index = None
-        result = None
-        for r in ['Correct', 'Incorrect', 'Omitted']:
-          if r in line_split:
-            result_index = line_split.index(r)
-            result = r
+        if i == 0:
+          if s.isdigit():
+            number = s
+            print(line_split)
+          else:
             break
+        elif not correct_answer and s not in sub_splits:
+          correct_answer = s.rstrip(',')
+        elif s[-1] == ';':
+          response = s.rstrip(';')
+        elif s in ['Correct', 'Incorrect', 'Omitted']:
+          result = s
 
-        number = str(line_split[0])
-        prev_start = prev_line_split[0] if prev_line_split else None
-        if line_split[1] == 'Reading':
-          # subject = 'rw_modules'
-          if line_split[3] == 'Writing':
-            correct_answer = line_split[4].rstrip(',')
-        elif prev_start == 'Reading' and result_index:
-          # subject = 'rw_modules'
-          correct_answer = line_split[1].rstrip(',;')
-          # response = line_split[2].rstrip(';')
-          # if response == 'Omitted':
-          #   response = '-'
-          #   score_details_data['has_omits'] = True
-          # is_correct = line_split[3] == 'Correct'
-        elif line_split[1] == 'Math':
-          subject = 'm_modules'
-          if score_details_data['answers']['m_modules']['1'].get(number):
-            m_mod_num = '2'
-
-          if prev_start:
-            # If first word of prev line ends with ',' it is 1 of multiple correct answers
-            if prev_start[-1] == ',':
-              correct_answer = prev_start.rstrip(',')
-            else:
-              correct_answer = line_split[2].rstrip(',')
-
-            # If first word of prev line ends with ';' it is the student response
-            if prev_start[-1] == ';':
-              response = prev_start.rstrip(';')
-            # If the 2nd word ends with a ';' it is the student response
-            elif len(prev_line_split) > 1 and prev_line_split[1][-1] == ';':
-              response = prev_line_split[1].rstrip(';')
-
-          # if correct_answer == 'Omitted' or correct_answer[-1] == ';':
-          #   correct_answer = prev_start.rstrip(',')
-
-        if score_details_data['answers']['rw_modules']['1'].get(number):
-            rw_mod_num = '2'
-
-          # if score_details_data['answers'][subject]['1'].get(number):
-          #   module = '2'
-          # else:
-          #   module = '1'
-          # s_line = line.split(' ')
-        if result_index:
-          is_correct = line_split[result_index] == 'Correct'
-          if line_split[result_index] == 'Omitted':
-            print(f'result_index: {result_index}')
+          if s == 'Omitted':
             response = '-'
             score_details_data['has_omits'] = True
-          elif not response:
-            response = line_split[result_index - 1].rstrip(';')
-        # Result not found in current line, check next line
-        elif line_num + 1 < len(text.split('\n')):
-          next_line = text.split('\n')[line_num]
-          print(f'next_line: {next_line}')
+
+    if number and not result:
+      for x in range(line_num, line_num + 3):
+        if not result and x < len(full_text.split('\n')):
+          next_line = full_text.split('\n')[x]
+          print(f'line {x}: {next_line}')
           next_line_split = next_line.split()
           for word in next_line_split:
             if word in ['Correct', 'Incorrect', 'Omitted']:
               result = word
+              break
 
-            is_correct = result == 'Correct'
-            if result == 'Omitted':
-              print(f'result: {result}')
-              response = '-'
-              score_details_data['has_omits'] = True
+    if result == 'Correct':
+      is_correct = True
+    elif result in ['Incorrect', 'Omitted']:
+      is_correct = False
 
-        if subject and number and correct_answer and response:
-          subject_totals[subject] += 1
+    # Find response or correct answer from previous line if not already found
+    if number and prev_line_split and not (response and correct_answer):
+      print(f'prev_line_split: {prev_line_split}')
+      for s in range(len(prev_line_split)):
+        split = prev_line_split[s]
+        if not response and split[-1] == ';':
+          response = split.rstrip(';')
 
-          if subject == 'rw_modules':
-            module = rw_mod_num
-          elif subject == 'm_modules':
-            module = m_mod_num
+        if not correct_answer and split[-1] == ',':
+          correct_answer = split.rstrip(',')
 
-          score_details_data['answers'][subject][module][number] = {
-            'correct_answer': correct_answer,
-            'student_answer': response,
-            'is_correct': is_correct
-          }
 
-      prev_line_split = line_split
+    if score_details_data['answers']['m_modules']['1'].get(number):
+      m_mod_num = '2'
+
+    if score_details_data['answers']['rw_modules']['1'].get(number):
+      rw_mod_num = '2'
+
+    if subject and number and correct_answer and response:
+      subject_totals[subject] += 1
+
+      if subject == 'rw_modules':
+        module = rw_mod_num
+      elif subject == 'm_modules':
+        module = m_mod_num
+
+      score_details_data['answers'][subject][module][number] = {
+        'correct_answer': correct_answer,
+        'student_answer': response,
+        'is_correct': is_correct
+      }
+
+    prev_line_split = line_split
 
   rw_questions_answered = 0
   m_questions_answered = 0
@@ -196,9 +183,9 @@ def get_student_answers(score_details_file_path):
   score_details_data['rw_questions_answered'] = rw_questions_answered
   score_details_data['m_questions_answered'] = m_questions_answered
 
+  pp.pprint(score_details_data)
 
   if date is None:
-    print(score_details_data)
     return "invalid"
   elif int(test_number) > 10:
         raise ValueError('Test unavailable')
