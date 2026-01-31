@@ -28,6 +28,22 @@ ALL_SCOPES = [
   'https://www.googleapis.com/auth/documents'
 ]
 
+
+def get_quote():
+    try:
+        quote = requests.get('https://zenquotes.io/api/today')
+        message = quote.json()[0]['q']
+        author = quote.json()[0]['a']
+        header = 'Random inspirational quote of the day'
+    except (requests.exceptions.RequestException, json.JSONDecodeError, Exception):
+        message = 'We don\'t have to do all of it alone. We were never meant to.'
+        author = 'Brene Brown'
+        header = ''
+    return message, author, header
+
+message, author, quote_header = get_quote()
+
+
 def generate_drive_token(client_secrets: str, output_name: str = 'token_drive.json'):
     """Run OAuth flow to generate token_drive.json for Drive API access."""
     flow = InstalledAppFlow.from_client_secrets_file(client_secrets, ALL_SCOPES)
@@ -417,6 +433,35 @@ def format_timezone(tz_str):
     else:
         return tz_str
 
+
+def get_org_details_dict(organization):
+    organization_dict = {
+        'name': organization.name,
+        'logo_path': organization.logo_path,
+        'ss_logo_path': organization.ss_logo_path,
+        'slug': organization.slug,
+        'spreadsheet_id': organization.sat_spreadsheet_id,
+        'color1': organization.color1,
+        'color2': organization.color2,
+        'color3': organization.color3,
+        'font_color': organization.font_color
+    }
+
+    if is_dark_color(organization.color1):
+        organization_dict['color1_contrast'] = '#ffffff'
+    else:
+        organization_dict['color1_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color2):
+        organization_dict['color2_contrast'] = '#ffffff'
+    else:
+        organization_dict['color2_contrast'] = organization.font_color
+
+    if is_dark_color(organization.color3):
+        organization_dict['color3_contrast'] = '#ffffff'
+    else:
+        organization_dict['color3_contrast'] = organization.font_color
+    return organization_dict
 
 def add_test_dates_from_ss():
     """Import test dates from the configured spreadsheet into the TestDate table."""

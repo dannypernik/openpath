@@ -16,7 +16,7 @@ from app.extensions import db
 from app.helpers import full_name
 from dotenv import load_dotenv
 from app.models import User, TestDate, UserTestDate
-from app.email import get_quote, send_reminder_email, send_test_reminder_email, \
+from app.email import send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_weekly_report_email, send_script_status_email, send_tutor_email
 from sqlalchemy.orm import sessionmaker, selectinload
