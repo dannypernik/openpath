@@ -100,8 +100,10 @@ def get_student_answers(score_details_file_path):
             print(line_split)
           else:
             break
+        elif s == 'Review':
+          break
         elif not correct_answer and s not in sub_splits:
-          correct_answer = s.rstrip(',')
+            correct_answer = s.rstrip(',')
         elif s[-1] == ';':
           response = s.rstrip(';')
         elif s in ['Correct', 'Incorrect', 'Omitted']:
