@@ -37,7 +37,10 @@
   <rect class="bg-header" x="0" y="10" width="1170" height="173" />
 
   <!-- title -->
-  <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="27" height="55"/>
+  {% if organization and organization.ss_logo_path %}
+    <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="27" height="55"/>
+  {% endif %}
+
   <text class="header-text" x="48" {% if organization %}y="120"{% else %}y="90"{% endif %} font-size="20">Enhanced ACT Score Analysis</text>
 
   <text class="header-text" x="600" y="70" text-anchor="middle" font-size="18">Composite:</text>

@@ -1,0 +1,49 @@
+{% extends 'partner-page.html' %}
+
+{% block body %}
+  <div class="row justify-content-center mt-3 mt-lg-5 text-center text-lg-start">
+    <div class="col-11 col-lg-6 ps-xl-3 pe-5">
+      <h1>Get your practice test score analysis</h1>
+      <p>
+        If you or your student has recently participated in a practice SAT or ACT at
+        {{ organization.name }}, submit the form below to get a score analysis that is more
+        detailed than the official reports.
+      </p>
+
+      <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="row">
+          <div class="col-6">
+            {{ form.student_first_name }}
+          </div>
+          <div class="col-6">
+            {{ form.student_last_name }}
+          </div>
+          <div class="col-12">
+            {{ form.grad_year(class='mb-2') }}
+          </div>
+          <div class="col-6">
+            {{ form.parent_first_name }}
+          </div>
+          <div class="col-6">
+            {{ form.parent_last_name }}
+          </div>
+          <div class="col-12">
+            {{ form.parent_email }}
+          </div>
+          <div class="col-12 mt-2">
+            <div class="d-md-flex">
+              {{ hcaptcha }}
+              <input id="submit" class="flex-grow-1 ms-1 mt-0 btn" name="submit" type="submit" value="Submit">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-12 col-md-10 col-lg-5 mt-3 mt-lg-0">
+      {% include "_sat-sample.html" %}
+    </div>
+  </div>
+
+{% endblock body %}

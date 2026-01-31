@@ -212,18 +212,18 @@ class TestStrategiesForm(FlaskForm):
 
 
 class ScoreAnalysisForm(FlaskForm):
-    student_first_name = StringField('Student\'s first name', render_kw={'placeholder': 'Student\'s first name'}, \
+    student_first_name = StringField('Student first name', render_kw={'placeholder': 'Student first name'}, \
         validators=[InputRequired()])
-    student_last_name = StringField('Student\'s last name', render_kw={'placeholder': 'Student\'s last name'}, \
+    student_last_name = StringField('Student last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
+    grad_year = SelectField('Graduation year', choices=[(None, 'Graduation year'), ('2026', '2026 (Senior)'), \
         ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
-        ('college', 'College'), ('school', 'Grade school')])
-    school = StringField('School', render_kw={'placeholder': 'Student\'s school'}, \
+        ('graduated', 'Graduated'), ('school', 'Grade school')])
+    parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'}, \
         validators=[InputRequired()])
-    parent_first_name = StringField('Parent\'s first name', render_kw={'placeholder': 'Parent\'s first name'}, \
+    parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Parent last name'}, \
         validators=[InputRequired()])
-    parent_email = EmailField('Parent\'s email address', render_kw={'placeholder': 'Parent\'s email address'}, \
+    parent_email = EmailField('Parent email address', render_kw={'placeholder': 'Parent email'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     submit = SubmitField()
 
@@ -266,6 +266,7 @@ class OrgSettingsForm(FlaskForm):
     validators=[InputRequired()])
     slug = StringField('Organization slug', render_kw={'placeholder': 'Organization slug'}, \
         validators=[InputRequired()])
+    role = SelectField('Role', choices=[('school','School'),('iec','IEC'), ('tutoring','Tutoring company')])
     partner_id = SelectField('Partner', coerce=int)
     first_name = StringField('Partner first name', render_kw={'placeholder': 'Partner first name'})
     last_name = StringField('Partner last name', render_kw={'placeholder': 'Partner last name'})

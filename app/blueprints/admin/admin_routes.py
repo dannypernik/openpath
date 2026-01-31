@@ -349,6 +349,7 @@ def org_settings(org):
     if organization and request.method == 'GET':
         form.org_name.data = organization.name
         form.slug.data = organization.slug
+        form.role.data = organization.role
         form.color1.data = organization.color1
         form.color2.data = organization.color2
         form.color3.data = organization.color3
@@ -466,6 +467,7 @@ def org_settings(org):
                     organization_data['partner_logo_path'] = f'img/orgs/partner-logos/{safe_filename}'
 
                 organization.name = form.org_name.data
+                organization.role = form.role.data
                 organization.color1 = form.color1.data
                 organization.color2 = form.color2.data
                 organization.color3 = form.color3.data

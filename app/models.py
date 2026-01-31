@@ -62,6 +62,7 @@ class User(UserMixin, db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
+    referrer = db.Column(db.String(64))
     planned_tests = db.relationship(
         'UserTestDate',
         back_populates='user',
@@ -180,6 +181,8 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)
+    role = db.Column(db.String(64), nullable=True)
+    timezone = db.Column(db.String(64), nullable=True)
     sat_spreadsheet_id = db.Column(db.String(255), nullable=True)
     act_spreadsheet_id = db.Column(db.String(255), nullable=True)
     color1 = db.Column(db.String(7), nullable=True)
@@ -195,6 +198,7 @@ class Organization(db.Model):
         foreign_keys=[partner_id]
     )
     is_private = db.Column(db.Boolean, default=False)
+    # can_create_folders = db.Column(db.Boolean, default=False)
 
 
 @login.user_loader

@@ -1,12 +1,11 @@
-Hi {{ parent.first_name }}, thank you for requesting the score report for your student's practice test. We aim to send it to you within 48 hours. Feel free to reply to this email with any questions in the meantime.
+Hi {{ parent.first_name }}, we've received your request for your student's practice test score analysis. We aim to send it to you within 48 hours. Feel free to reply to this email with any questions in the meantime. Thank you!
 
-Thank you,
 Open Path Tutoring
 
 
 Student name: {{ student.first_name }} {{ student.last_name }}
 Graduation year: {{ student.grad_year }}
-School: {{ school }}
+In partnership with {{ organization_dict.name }}
 
 
 "We don't have to do all of it alone. We were never meant to."

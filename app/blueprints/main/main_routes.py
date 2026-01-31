@@ -43,7 +43,7 @@ from app.create_sat_report import (
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
-from app.utils import is_dark_color, format_timezone
+from app.utils import is_dark_color, format_timezone, get_org_details_dict
 
 logger = logging.getLogger(__name__)
 
@@ -867,39 +867,58 @@ def partner_page(org):
     return render_template('partner-page.html', title=organization.name, organization=organization_dict)
 
 
+@main_bp.route('/<org>/results', methods=['GET', 'POST'])
+@private_login_check
+def request_score_report(org):
+    form = ScoreAnalysisForm()
+
+    organization = Organization.query.filter_by(slug=org).first_or_404()
+    organization_dict = get_org_details_dict(organization)
+
+    if form.validate_on_submit():
+        student = User(
+            first_name = form.student_first_name.data,
+            last_name = form.student_last_name.data,
+            grad_year = form.grad_year.data
+        )
+
+        parent = User.query.filter_by(email=form.parent_email.data).first()
+        if parent:
+            parent.first_name = form.parent_first_name.data
+            parent.last_name = form.parent_last_name.data
+
+            if not parent.referrer:
+                parent.referrer = organization.name
+
+        else:
+            parent = User(
+                first_name=form.parent_first_name.data,
+                last_name=form.parent_last_name.data,
+                email=form.parent_email.data,
+                referrer=organization.name
+            )
+            db.session.add(parent)
+            db.session.flush()
+
+        db.session.commit()
+
+        email_status = send_score_analysis_email(student, parent, organization_dict)
+        if email_status == 200:
+            flash('We\'ve received your score analysis request. Thank you!')
+            return redirect(url_for('main.index'))
+        else:
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
+
+    return render_template('org-results.html', title='Score Analysis', form=form, organization=organization_dict)
+
+
 @main_bp.route('/<org>/sat', methods=['GET', 'POST'])
 @private_login_check
 def custom_sat_report(org):
     form = SATReportForm()
+
     organization = Organization.query.filter_by(slug=org).first_or_404()
-    print(f'organization.slug: {organization.slug}')
-
-    organization_dict = {
-        'name': organization.name,
-        'logo_path': organization.logo_path,
-        'ss_logo_path': organization.ss_logo_path,
-        'slug': organization.slug,
-        'spreadsheet_id': organization.sat_spreadsheet_id,
-        'color1': organization.color1,
-        'color2': organization.color2,
-        'color3': organization.color3,
-        'font_color': organization.font_color
-    }
-
-    if is_dark_color(organization.color1):
-        organization_dict['color1_contrast'] = '#ffffff'
-    else:
-        organization_dict['color1_contrast'] = organization.font_color
-
-    if is_dark_color(organization.color2):
-        organization_dict['color2_contrast'] = '#ffffff'
-    else:
-        organization_dict['color2_contrast'] = organization.font_color
-
-    if is_dark_color(organization.color3):
-        organization_dict['color3_contrast'] = '#ffffff'
-    else:
-        organization_dict['color3_contrast'] = organization.font_color
+    organization_dict = get_org_details_dict(organization)
 
     return handle_sat_report(form, 'org-sat-report.html', organization=organization_dict)
 
@@ -987,6 +1006,9 @@ def handle_sat_report(form, template_name, organization=None):
                     flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
                     logging.error('Service account does not have access to student spreadsheet')
                     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+            # if form.create_student_folder.data:
+            #     score_data['create_student_folder'] = True
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
