@@ -1,7 +1,7 @@
 from threading import Thread
 from flask import render_template, url_for, current_app
 from app.helpers import full_name
-from app.utils import generate_vcard
+from app.utils import generate_vcard, get_quote
 from mailjet_rest import Client
 import re
 import datetime
@@ -13,25 +13,12 @@ import logging
 import os
 
 
-def get_quote():
-    try:
-        quote = requests.get('https://zenquotes.io/api/today')
-        message = quote.json()[0]['q']
-        author = quote.json()[0]['a']
-        header = 'Random inspirational quote of the day'
-    except (requests.exceptions.RequestException, json.JSONDecodeError, Exception):
-        message = 'We don\'t have to do all of it alone. We were never meant to.'
-        author = 'Brene Brown'
-        header = ''
-    return message, author, header
-
-message, author, quote_header = get_quote()
+MAILJET_KEY = os.environ.get('MAILJET_KEY')
+MAILJET_SECRET = os.environ.get('MAILJET_SECRET')
 
 
 def send_contact_email(user, message, subject):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -60,14 +47,12 @@ def send_contact_email(user, message, subject):
     if result.status_code == 200:
         logging.info('Contact email sent by ' + user.email)
     else:
-        logging.info('Contact email sent by ' + user.email + ' failed with code ' + result.status_code)
+        logging.info('Contact email sent by ' + user.email + ' failed with code ' + str(result.status_code))
     return result.status_code
 
 
 def send_confirmation_email(user_email, message):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -81,7 +66,7 @@ def send_confirmation_email(user_email, message):
                     'Email': user_email
                     }
                 ],
-                'Subject': 'Email confirmation + a quote from Brene Brown',
+                'Subject': 'Email confirmation',
                 'TextPart': render_template('email/confirmation-email.txt', message=message),
                 'HTMLPart': render_template('email/confirmation-email.html', message=message)
             }
@@ -92,14 +77,12 @@ def send_confirmation_email(user_email, message):
     if result.status_code == 200:
         logging.info('Confirmation email sent to ' + user_email)
     else:
-        logging.info('Confirmation email to ' + user_email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Confirmation email to ' + user_email + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_unsubscribe_email(email):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -123,14 +106,12 @@ def send_unsubscribe_email(email):
     if result.status_code == 200:
         logging.info('Confirmation email sent to ' + email)
     else:
-        logging.info('Confirmation email to ' + email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Confirmation email to ' + email + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_reminder_email(event, student, tutor):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     cc_email = []
     reply_email = []
@@ -183,6 +164,8 @@ def send_reminder_email(event, student, tutor):
     if warnings.__len__() > 0:
         warnings_str = '(' + (', ').join(warnings) + ')'
 
+    message, author, quote_header = get_quote()
+
     with current_app.app_context():
         data = {
             'Messages': [
@@ -221,9 +204,7 @@ def send_reminder_email(event, student, tutor):
 
 
 def send_session_recap_email(student, events):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     cc_email = []
     if student.parent:
@@ -332,9 +313,7 @@ def send_session_recap_email(student, events):
 
 
 def send_notification_email(alerts):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -365,9 +344,7 @@ def send_notification_email(alerts):
 
 def send_registration_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = os.environ.get('MAILJET_KEY')
-        api_secret = os.environ.get('MAILJET_SECRET')
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
         cc_email = []
         if user.parent_id:
@@ -420,9 +397,7 @@ def send_registration_reminder_email(user, test_date):
 
 def send_late_registration_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = os.environ.get('MAILJET_KEY')
-        api_secret = os.environ.get('MAILJET_SECRET')
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
         cc_email = []
         if user.parent:
@@ -470,9 +445,7 @@ def send_late_registration_reminder_email(user, test_date):
 
 def send_test_reminder_email(user, test_date):
     with current_app.app_context():
-        api_key = os.environ.get('MAILJET_KEY')
-        api_secret = os.environ.get('MAILJET_SECRET')
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
         cc_email = []
         if user.parent:
@@ -518,9 +491,7 @@ def send_test_reminder_email(user, test_date):
 
 
 def send_signup_notification_email(user, dates):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     date_series = ', '.join(dates)
 
@@ -576,9 +547,7 @@ def send_signup_notification_email(user, dates):
 
 
 def send_signup_request_email(user, reason, next):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -627,14 +596,12 @@ def send_signup_request_email(user, reason, next):
     if result.status_code == 200:
         logging.info('Signup notification email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + str(result.status_code))
     return result.status_code
 
 
 def send_verification_email(user, page=None):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     token = user.get_email_verification_token()
 
@@ -668,14 +635,12 @@ def send_verification_email(user, page=None):
     if result.status_code == 200:
         logging.info('Verification email sent to ' + user.email)
     else:
-        logging.info('Verification email to ' + user.email + ' failed with code ' + result.status_code)
+        logging.info('Verification email to ' + user.email + ' failed with code ' + str(result.status_code))
     return result.status_code
 
 
 def send_password_reset_email(user, next=None):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     token = user.get_email_verification_token()
     if user.password_hash == None:
@@ -717,9 +682,7 @@ def send_password_reset_email(user, next=None):
 
 
 def send_test_strategies_email(student, parent, relation):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     filename = 'SAT-ACT-strategies.pdf'
 
@@ -778,9 +741,7 @@ def send_test_strategies_email(student, parent, relation):
 
 
 def send_test_registration_email(student, parent, school, test, date, time, location, contact_info):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -815,9 +776,7 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
 
 
 def send_prep_class_email(student, parent, school, test, time, location, cost):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -851,10 +810,8 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
     return result.status_code
 
 
-def send_score_analysis_email(student, parent, school):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+def send_score_analysis_email(student, parent, organization_dict):
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -872,9 +829,9 @@ def send_score_analysis_email(student, parent, school):
                 'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
                 'Subject': 'Score analysis request received',
                 'TextPart': render_template('email/score-analysis-email.txt',
-                                         student=student, parent=parent, school=school),
+                            student=student, parent=parent, organization_dict=organization_dict),
                 'HTMLPart': render_template('email/score-analysis-email.html',
-                                         student=student, parent=parent, school=school)
+                            student=student, parent=parent, organization_dict=organization_dict)
             }
         ]
     }
@@ -912,9 +869,7 @@ def send_score_analysis_email(student, parent, school):
 
 def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_scheduled_students,
     paused_students, unregistered_students, undecided_students):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     my_low_students = []
     action_str = None
@@ -974,7 +929,7 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     if result.status_code == 200:
         msg = 'Tutor email sent to ' + full_name(tutor)
     else:
-        msg = 'Tutor email to ' + full_name(tutor) + ' failed to send with code ' + result.status_code + ' ' + result.reason
+        msg = 'Tutor email to ' + full_name(tutor) + ' failed to send with code ' + str(result.status_code) + ' ' + result.reason
     return msg
 
 
@@ -983,9 +938,7 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
     unregistered_students, undecided_students, now):
 
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     dt = datetime.datetime
     start = (now + datetime.timedelta(hours=40)).isoformat() + 'Z'
@@ -1034,9 +987,7 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
     other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, unregistered_students,
     undecided_students, payments_due, result, exception=''):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     quote, author, header = get_quote()
 
@@ -1083,9 +1034,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
 
 
 def send_new_student_email(contact_data):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     student = contact_data['student']
     tutor = contact_data.get('tutor', None)
@@ -1142,9 +1091,7 @@ def send_new_student_email(contact_data):
     return result.status_code
 
 def send_schedule_conflict_email(message):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -1176,9 +1123,7 @@ def send_schedule_conflict_email(message):
 
 
 def send_ntpa_email(first_name, last_name, biz_name, email):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -1204,14 +1149,12 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
     if result.status_code == 200:
         logging.info('NTPA email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('NTPA email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('NTPA email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_free_resources_email(user):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     resource_folder_url = 'https://drive.google.com/drive/folders/' + current_app.config['RESOURCE_FOLDER_ID']
 
@@ -1242,14 +1185,12 @@ def send_free_resources_email(user):
     if result.status_code == 200:
         logging.info('Free resources email sent to ' + user.email)
     else:
-        logging.info('Free resources email to ' + user.email + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Free resources email to ' + user.email + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_nomination_email(form_data):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     data = {
         'Messages': [
@@ -1301,14 +1242,12 @@ def send_nomination_email(form_data):
     if result.status_code == 200:
         logging.info('Nomination email sent ')
     else:
-        logging.info('Nomination email failed with code ' + result.status_code)
+        logging.info('Nomination email failed with code ' + str(result.status_code))
     return result.status_code
 
 
 def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     to_email = []
     cc_email = []
@@ -1364,9 +1303,7 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
 
 
 def send_unexpected_data_email(score_data):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     with current_app.app_context():
         data = {
@@ -1391,14 +1328,12 @@ def send_unexpected_data_email(score_data):
     if result.status_code == 200:
         logging.info('Changed answer email sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Changed answer email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Changed answer email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_fail_mail(subject, error='unknown error', data=None):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     with current_app.app_context():
         data = {
@@ -1424,14 +1359,12 @@ def send_fail_mail(subject, error='unknown error', data=None):
     if result.status_code == 200:
         logging.info('Fail mail sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
-    api_key = os.environ.get('MAILJET_KEY')
-    api_secret = os.environ.get('MAILJET_SECRET')
-    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    mailjet = Client(auth=(MAILJET_KEY, MAILJET_SECRET), version='v3.1')
 
     with current_app.app_context():
         data = {
@@ -1457,5 +1390,5 @@ def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
     if result.status_code == 200:
         logging.info('Task fail mail sent to ' + current_app.config['MAIL_USERNAME'])
     else:
-        logging.info('Task fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Task fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
