@@ -228,6 +228,18 @@ class ScoreAnalysisForm(FlaskForm):
     submit = SubmitField()
 
 
+class ReportSubmittedSignupForm(FlaskForm):
+    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
+        validators=[InputRequired()])
+    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
+        validators=[InputRequired()])
+    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
+        validators=[InputRequired(), Email(message='Please enter a valid email address')])
+    sat_ss_id = StringField('SAT spreadsheet ID', render_kw={'placeholder': 'SAT spreadsheet ID'})
+    act_ss_id = StringField('ACT spreadsheet ID', render_kw={'placeholder': 'ACT spreadsheet ID'})
+    submit = SubmitField()
+
+
 class SATReportForm(FlaskForm):
     email = EmailField('Email address', render_kw={'placeholder': 'Required'})
     report_file = FileField('Score Report PDF', render_kw={'placeholder': 'Score Report PDF'}, \
@@ -266,7 +278,7 @@ class OrgSettingsForm(FlaskForm):
     validators=[InputRequired()])
     slug = StringField('Organization slug', render_kw={'placeholder': 'Organization slug'}, \
         validators=[InputRequired()])
-    role = SelectField('Role', choices=[('school','School'),('iec','IEC'), ('tutoring','Tutoring company')])
+    role = SelectField('Org role', choices=[('school','School'), ('iec','IEC'), ('tutoring','Tutoring company')])
     partner_id = SelectField('Partner', coerce=int)
     first_name = StringField('Partner first name', render_kw={'placeholder': 'Partner first name'})
     last_name = StringField('Partner last name', render_kw={'placeholder': 'Partner last name'})
