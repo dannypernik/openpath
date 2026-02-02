@@ -46,7 +46,7 @@ def get_student_answers(score_details_file_path):
     'm_modules': 0
   }
 
-  subject = None
+  subject = 'rw_modules'
   rw_mod_num = '1'
   m_mod_num = '1'
 
@@ -57,8 +57,13 @@ def get_student_answers(score_details_file_path):
   for i, p in enumerate(pages):
     text = p.extract_text()
     full_text += text.rstrip() + "\n"
+  full_text_lines = full_text.split('\n')
 
-  for line_num, line in enumerate(read_text_line_by_line(full_text), 1):
+  # Remove lines starting with 'http' or 'MyPractice'
+  full_text_lines = [line for line in full_text_lines if not (line.startswith('http') or line.startswith('MyPractice'))]
+  print(full_text_lines)
+
+  for line_num, line in enumerate(full_text_lines, 1):
     # print(line)
     # print(list(line))
     if date is None and line.find('My Tests') != -1:
@@ -88,11 +93,6 @@ def get_student_answers(score_details_file_path):
     line_split = line.split()
     for i, s in enumerate(line_split):
 
-      if s in ['Reading', 'Writing']:
-          subject = 'rw_modules'
-      elif s == 'Math':
-        subject = 'm_modules'
-
       if len(line_split) >= 3:
         if i == 0:
           if s.isdigit():
@@ -100,23 +100,28 @@ def get_student_answers(score_details_file_path):
             print(line_split)
           else:
             break
+        elif s == 'Math':
+          subject = 'm_modules'
         elif s == 'Review':
           break
-        elif not correct_answer and s not in sub_splits:
-            correct_answer = s.rstrip(',')
-        elif s[-1] == ';':
-          response = s.rstrip(';')
+
         elif s in ['Correct', 'Incorrect', 'Omitted']:
           result = s
-
           if s == 'Omitted':
             response = '-'
             score_details_data['has_omits'] = True
+            break
+
+        elif s[-1] == ';':
+          response = s.rstrip(';')
+        # If response is found before correct_answer, correct_answer is in previous line
+        elif not correct_answer and not response and s not in sub_splits:
+            correct_answer = s.rstrip(',')
 
     if number and not result:
       for x in range(line_num, line_num + 3):
-        if not result and x < len(full_text.split('\n')):
-          next_line = full_text.split('\n')[x]
+        if not result and x < len(full_text_lines):
+          next_line = full_text_lines[x]
           print(f'line {x}: {next_line}')
           next_line_split = next_line.split()
           for word in next_line_split:
@@ -203,9 +208,9 @@ def get_student_answers(score_details_file_path):
   return score_details_data
 
 
-def read_text_line_by_line(text):
-  for line in text.split('\n'):
-    yield line
+# def read_text_line_by_line(text):
+#   for line in text.split('\n'):
+#     yield line
 
 
 def get_data_from_pdf(data, pdf_path):
