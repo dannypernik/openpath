@@ -83,7 +83,7 @@ def get_quote():
         message = quote.json()[0]['q']
         author = quote.json()[0]['a']
         header = 'Random inspirational quote of the day'
-    except (requests.exceptions.RequestException, json.JSONDecodeError, Exception):
+    except Exception:
         message = 'We don\'t have to do all of it alone. We were never meant to.'
         author = 'Brene Brown'
         header = ''
