@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from markupsafe import Markup
 from flask import (
     render_template, flash, redirect, url_for, g,
-    request, send_from_directory, send_file, make_response, abort, current_app
+    request, send_from_directory, send_file, make_response, abort, current_app, session
 )
 from flask_login import current_user, login_required
 from urllib.parse import urlparse as url_parse
@@ -43,7 +43,10 @@ from app.create_sat_report import (
 )
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
-from app.utils import is_dark_color, format_timezone, get_org_details_dict
+from app.utils import (
+    is_dark_color, format_timezone, get_org_details_dict, show_hcaptcha,
+    check_hcaptcha_or_session
+)
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +148,7 @@ def before_request():
 
 @main_bp.app_context_processor
 def inject_values():
+    hcaptcha_widget = show_hcaptcha(hcaptcha)
     try:
         if current_user.is_authenticated:
             current_first_name = current_user.first_name
@@ -160,7 +164,8 @@ def inject_values():
         hello=(getattr(g, 'hello', None) or hello_email()),
         phone=current_app.config['PHONE'],
         current_first_name=current_first_name,
-        current_last_name=current_last_name
+        current_last_name=current_last_name,
+        hcaptcha=hcaptcha_widget
     )
 
 
@@ -171,10 +176,10 @@ def index():
     start_time = time.time()
     form = InquiryForm()
     # altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
+
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.index', _anchor='home'))
 
@@ -228,7 +233,7 @@ def index():
                     flash('Thank you for reaching out! We\'ll be in touch.')
                     return redirect(url_for('main.index', _anchor='home'))
         flash('Email failed to send, please contact ' + g.hello, 'error')
-    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))#, altcha_site_key=altcha_site_key)
+    return render_template('index.html', form=form, last_updated=dir_last_updated('app/static'))
 
 
 @main_bp.route('/team', methods=['GET', 'POST'])
@@ -241,6 +246,11 @@ def team():
 def mission():
     form = FreeResourcesForm()
     if form.validate_on_submit():
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
+            flash('Captcha was unsuccessful. Please try again.', 'error')
+            return render_template('mission.html', title='Our mission', form=form)
+
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if not user:
             user = User(first_name=form.first_name.data, email=form.email.data.lower())
@@ -270,7 +280,13 @@ def mission():
 @main_bp.route('/nominate', methods=['GET', 'POST'])
 def nominate():
     form = NominationForm()
+
     if form.validate_on_submit():
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
+            flash('Captcha was unsuccessful. Please try again.', 'error')
+            return render_template('nominate.html', form=form)
+
         form_data = {
             'student_first_name': form.student_first_name.data,
             'student_last_name': form.student_last_name.data,
@@ -382,9 +398,8 @@ def test_reminders():
             if d in selected_dates:
                 selected_date_ids.append(d.id)
     if request.method == 'POST':
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.test_reminders'))
         selected_date_ids = request.form.getlist('test_dates')
@@ -430,9 +445,8 @@ def ati_austin():
     test = 'SAT'
     submit_text = 'Submit'
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('ati_austin'))
         student = User(
@@ -515,9 +529,8 @@ def sat_act_data():
 def test_strategies():
     form = TestStrategiesForm()
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.test_strategies'))
         relation = form.relation.data
@@ -594,9 +607,8 @@ def new_student():
                 form.timezone.data = user.timezone
 
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('admin.students'))
 
@@ -866,9 +878,8 @@ def handle_sat_report(form, template_name, organization=None):
             form.email.data = email
 
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 
@@ -1020,9 +1031,8 @@ def handle_act_report(form, template_name, organization=None):
         ]
 
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
 

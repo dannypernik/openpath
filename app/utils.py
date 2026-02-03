@@ -17,6 +17,7 @@ from io import BytesIO
 import base64
 from email.mime.base import MIMEBase
 from email import encoders
+from flask import session
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,53 @@ ALL_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/documents'
 ]
+
+
+def show_hcaptcha(hcaptcha_widget, minutes_valid=15):
+    """
+    Returns the hcaptcha widget if the user is not session-verified, else returns an empty string.
+    """
+    from datetime import datetime, timezone
+    verified_until = session.get('human_verified_until')
+    if verified_until:
+        try:
+            verified_until_dt = datetime.fromisoformat(verified_until)
+        except Exception:
+            verified_until_dt = None
+    else:
+        verified_until_dt = None
+    now = datetime.now(timezone.utc)
+    from markupsafe import Markup
+    if not (verified_until_dt and verified_until_dt > now):
+        return Markup(hcaptcha_widget.get_code())
+    else:
+        return ""
+
+
+def check_hcaptcha_or_session(hcaptcha, minutes_valid=15):
+    """
+    Checks if the user has a valid human_verified_until session flag.
+    If not, calls hcaptcha.verify() (should return True/False).
+    If successful, sets session['human_verified_until'] for minutes_valid minutes.
+    Returns True if captcha is (or was recently) valid, else False.
+    """
+    now = datetime.now(timezone.utc)
+    verified_until = session.get('human_verified_until')
+    if verified_until:
+        try:
+            verified_until_dt = datetime.fromisoformat(verified_until)
+        except Exception:
+            verified_until_dt = None
+    else:
+        verified_until_dt = None
+
+    if verified_until_dt and verified_until_dt > now:
+        return True
+    else:
+        captcha_ok = hcaptcha.verify()
+        if captcha_ok:
+            session['human_verified_until'] = (now + timedelta(minutes=minutes_valid)).isoformat()
+        return captcha_ok
 
 
 def get_quote():
