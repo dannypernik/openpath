@@ -27,7 +27,7 @@ from app.helpers import full_name, dir_last_updated, hello_email, private_login_
 from app.forms import (
     InquiryForm, EmailListForm, TestStrategiesForm, TestDateForm,
     ScoreAnalysisForm, ReviewForm, FreeResourcesForm, NominationForm,
-    SATReportForm, ACTReportForm, NtpaForm, NewStudentForm
+    SATReportForm, ACTReportForm, NtpaForm, NewStudentForm, ReportSubmittedSignupForm
 )
 from app.models import User, TestDate, UserTestDate, TestScore, Review, Organization
 from app.email import (
@@ -463,63 +463,6 @@ def ati_austin():
     return render_template('ati.html', form=form, school=school, test=test, submit_text=submit_text)
 
 
-@main_bp.route('/kaps', methods=['GET', 'POST'])
-def kaps():
-    form = ScoreAnalysisForm()
-    school = 'Katherine Anne Porter School'
-    test = 'SAT'
-    submit_text = 'Request score analysis'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.kaps'))
-        student = User(
-            first_name=form.student_first_name.data,
-            last_name=form.student_last_name.data,
-            grad_year=form.grad_year.data
-        )
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_prep_class_email(student, parent, school, test)
-        if email_status == 200:
-            return render_template('registration-confirmed.html', email=form.parent_email.data)
-        else:
-            flash(f'Email failed to send, please contact {g.hello}', 'error')
-    return render_template('kaps.html', form=form, school=school, test=test, submit_text=submit_text)
-
-
-@main_bp.route('/centerville', methods=['GET', 'POST'])
-def centerville():
-    form = ScoreAnalysisForm()
-    school = 'Centerville Elks Soccer'
-    test = 'ACT'
-    date = 'Saturday, December 3rd, 2022'
-    time = '9:30am to 1:00pm'
-    location = 'Centerville High School Room West 126'
-    contact_info = 'Tom at ###-###-####'
-    submit_text = 'Register'
-    if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.centerville'))
-        student = User(
-            first_name=form.student_first_name.data,
-            last_name=form.student_last_name.data,
-            grad_year=form.grad_year.data
-        )
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_test_registration_email(student, parent, school, test, date, time, location, contact_info)
-        if email_status == 200:
-            return render_template('test-registration-submitted.html', email=parent.email, student=student, test=test)
-        else:
-            flash(f'Email failed to send, please contact {g.hello}', 'error')
-    return render_template('centerville.html', form=form, school=school, test=test,
-                           date=date, time=time, location=location, submit_text=submit_text)
-
-
 @main_bp.route('/sat-act-data')
 def sat_act_data():
     return render_template('sat-act-data.html', title='SAT & ACT data')
@@ -546,28 +489,6 @@ def test_strategies():
         else:
             flash(f'Email failed to send, please contact {g.hello}', 'error')
     return render_template('test-strategies.html', form=form)
-
-
-@main_bp.route('/ntpa', methods=['GET', 'POST'])
-def ntpa():
-    form = NtpaForm()
-    if form.validate_on_submit():
-        first_name = form.first_name.data
-        last_name = form.last_name.data
-        biz_name = form.biz_name.data
-        email = form.email.data
-
-        if hcaptcha.verify():
-            pass
-        else:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('main.ntpa'))
-        email_status = send_ntpa_email(first_name, last_name, biz_name, email)
-        if email_status == 200:
-            flash('We\'ve received your request and will be in touch!')
-        else:
-            flash(f'Request did not send, please retry or contact {g.hello}', 'error')
-    return render_template('ntpa.html', form=form)
 
 
 @main_bp.route('/new-student', methods=['GET', 'POST'])
