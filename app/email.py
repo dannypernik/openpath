@@ -951,6 +951,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
         paused.append(full_name(s))
     paused_str = (', ').join(paused)
 
+    message, author, header = get_quote()
+
     with current_app.app_context():
         data = {
             'Messages': [
