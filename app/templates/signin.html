@@ -15,7 +15,7 @@
         <div class="col-12 col-md-5 mb-4">
           <h1>Log in</h1>
           <form action="{{ url_for('auth.login', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
-            {{ form.csrf_token(id='login_csrf_token') }}
+            {{ form.hidden_tag() }}
             {{ form.login_email }}
             {{ form.password }}
             {{ hcaptcha }}
@@ -29,7 +29,7 @@
         <div class="col-12 col-md-5 offset-md-2">
           <h1>Request account</h1>
           <form action="{{ url_for('auth.signup', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
-            {{ signup_form.csrf_token(id='signup_csrf_token') }}
+            {{ signup_form.hidden_tag() }}
             {{ signup_form.first_name }}
             {{ signup_form.last_name }}
             {{ signup_form.signup_email }}
