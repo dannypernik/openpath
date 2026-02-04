@@ -513,7 +513,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         raise
 
 
-def send_sat_pdf_report(spreadsheet_id, score_data):
+def create_sat_pdf_report(spreadsheet_id, score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/drive']
@@ -563,9 +563,7 @@ def send_sat_pdf_report(spreadsheet_id, score_data):
 
             base64_blob = base64.b64encode(blob).decode('utf-8')
 
-            # Send email with PDF attachment
-            send_score_report_email(score_data, base64_blob)
-            logging.info(f"PDF report sent to {score_data['email']}")
+            return base64_blob
         else:
             logging.error(f'Failed to fetch PDF: {response.content}')
     except Exception:

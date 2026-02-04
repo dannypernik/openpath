@@ -26,7 +26,6 @@ from app.create_act_report import (
     create_custom_act_spreadsheet, update_act_org_logo, update_act_partner_logo
 )
 from app.tasks import style_custom_spreadsheets_task
-from reminders import get_student_events
 
 logger = logging.getLogger(__name__)
 
@@ -271,33 +270,6 @@ def add_test_dates():
     add_test_dates_from_ss()
     flash('Test dates added/updated from spreadsheet')
     return redirect(url_for('main.test_dates'))
-
-
-
-@admin_bp.route('/recap', methods=['GET', 'POST'])
-@admin_required
-def recap():
-    form = RecapForm()
-    students = User.query.order_by(User.first_name, User.last_name).filter(
-        (User.role == 'student') & (User.status == 'active') | (User.status == 'prospective'))
-    student_list = [(0, 'Student name')] + [(s.id, full_name(s)) for s in students]
-    form.students.choices = student_list
-    if form.students.data == 0:
-        flash('Please select a student', 'error')
-    elif form.validate_on_submit():
-        user = User.query.get_or_404(form.students.data)
-        user.homework = form.homework.data
-        user.date = form.date.data
-        user.audio = form.audio.data
-        events = get_student_events(full_name(user))
-
-        email_status = send_session_recap_email(user, events)
-        if email_status == 200:
-            flash('Update email sent for ' + user.first_name)
-        else:
-            flash('Email failed to send', 'error')
-        return redirect(url_for('admin.recap'))
-    return render_template('recap.html', form=form)
 
 
 @admin_bp.route('/orgs')

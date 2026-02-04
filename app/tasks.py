@@ -3,17 +3,17 @@ import logging
 import resource
 from celery import chain
 
-from app import celery
-from app.create_sat_report import create_sat_score_report, send_sat_pdf_report, \
+from app import celery, create_app
+from app.create_sat_report import create_sat_score_report, create_sat_pdf_report, \
     sat_answers_to_student_ss, style_custom_sat_spreadsheet, \
     update_sat_org_logo, update_sat_partner_logo
-from app.create_act_report import create_act_score_report, send_act_pdf_report, \
+from app.create_act_report import create_act_score_report, create_act_pdf_report, \
     act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet, \
     update_act_org_logo, update_act_partner_logo
 from app.new_student_folders import create_folder, create_test_prep_folder, create_academic_folder
 from app.models import User
 from app.helpers import full_name
-from app.email import send_task_fail_mail, send_new_student_email
+from app.email import send_task_fail_mail, send_new_student_email, send_act_fail_mail, send_score_report_email
 from app.utils import create_crm_action, color_svg_white_to_input
 
 
@@ -31,8 +31,10 @@ class MyTaskBaseClass(celery.Task):
         if not score_data:
             logging.error("Score data is missing. Cannot send failure email.")
             return
-        if self.request.retries >= self.max_retries:
-            send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+        app = create_app()
+        with app.app_context():
+            if self.request.retries >= self.max_retries:
+                send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
 
 
 class SsUpdateTaskClass(celery.Task):
@@ -51,8 +53,27 @@ class SsUpdateTaskClass(celery.Task):
         if not score_data:
             logging.error("Score data is missing. Cannot send failure email.")
             return
-        if self.request.retries >= self.max_retries:
-            send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+        app = create_app()
+        with app.app_context():
+            if self.request.retries >= self.max_retries:
+                send_task_fail_mail(score_data, exc, task_id, args, kwargs, einfo)
+
+
+class ActTaskClass(celery.Task):
+    autoretry_for = (Exception,)
+    retry_backoff = 10
+    retry_kwargs = {'max_retries': 1}
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        logging.error(f'Task {task_id} raised exception: {exc}')
+        score_data = args[0] if args else kwargs.get('score_data')
+        if not score_data:
+            logging.error("Score data is missing. Cannot send failure email.")
+            return
+        app = create_app()
+        with app.app_context():
+            if self.request.retries >= self.max_retries:
+                send_act_fail_mail(score_data)
 
 
 @celery.task(name='app.tasks.create_and_send_sat_report_task', bind=True, base=MyTaskBaseClass)
@@ -71,12 +92,26 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
     score_report_mem = mem_post_report - mem_start
     logging.info(f"SAT score report used {score_report_mem:.2f} MB of memory")
 
-    send_sat_pdf_report(ss_copy_id, score_data_updated)
+    base64_blob = create_sat_pdf_report(ss_copy_id, score_data_updated)
+
+    send_score_report_email(score_data_updated, base64_blob)
+    logging.info(f"PDF report sent to {score_data_updated['email']}")
 
     return score_data_updated
 
   except Exception as e:
     logging.error(f'Error creating and sending SAT report: {e}')
+    raise e
+
+@celery.task(name='app.tasks.create_student_folder_task', bind=True, base=MyTaskBaseClass)
+def create_student_folder_task(self, score_data):
+  try:
+    if score_data.get('create_student_folder'):
+      logging.info(f"Creating student folder for {score_data['student_name']}")
+      create_test_prep_folder(score_data)
+    return score_data
+  except Exception as e:
+    logging.error(f'Error creating student folder: {e}')
     raise e
 
 @celery.task(name='app.tasks.send_sat_answers_to_ss_task', bind=True, base=SsUpdateTaskClass)
@@ -97,11 +132,12 @@ def send_sat_answers_to_ss_task(self, score_data):
 def sat_report_workflow_task(self, score_data, organization_dict=None):
   chain(
     create_and_send_sat_report_task.s(score_data, organization_dict),
+    create_student_folder_task.s(),
     send_sat_answers_to_ss_task.s()
   ).apply_async()
 
 
-@celery.task(name='app.tasks.create_and_send_act_report_task', bind=True, base=MyTaskBaseClass)
+@celery.task(name='app.tasks.create_and_send_act_report_task', bind=True, base=ActTaskClass)
 def create_and_send_act_report_task(self, score_data, organization_dict=None):
   try:
     if organization_dict:
@@ -119,7 +155,10 @@ def create_and_send_act_report_task(self, score_data, organization_dict=None):
     score_report_mem = mem_post_report - mem_start
     logging.info(f"ACT score report used {score_report_mem:.2f} MB of memory")
 
-    send_act_pdf_report(ss_copy_id, score_data)
+    pdf_base64, conf_img_base64 = create_act_pdf_report(ss_copy_id, score_data)
+
+    send_score_report_email(score_data, pdf_base64, conf_img_base64)
+    logging.info(f"PDF report sent to {score_data['email']}")
 
     return score_data
 

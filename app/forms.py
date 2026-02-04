@@ -229,12 +229,6 @@ class ScoreAnalysisForm(FlaskForm):
 
 
 class ReportSubmittedSignupForm(FlaskForm):
-    first_name = StringField('First name', render_kw={'placeholder': 'First name'}, \
-        validators=[InputRequired()])
-    last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
-        validators=[InputRequired()])
-    email = EmailField('Email address', render_kw={'placeholder': 'Email address'}, \
-        validators=[InputRequired(), Email(message='Please enter a valid email address')])
     sat_ss_id = StringField('SAT spreadsheet ID', render_kw={'placeholder': 'SAT spreadsheet ID'})
     act_ss_id = StringField('ACT spreadsheet ID', render_kw={'placeholder': 'ACT spreadsheet ID'})
     submit = SubmitField()

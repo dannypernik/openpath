@@ -696,11 +696,9 @@ def add_student_to_ss_list(student_name):
     ).execute())
 
     values = result.get('values', [])
+    target_row = len(values) + 1
     existing_names = []
     for row in values:
-        if not row or not row[0].strip():
-            target_row = values.index(row) + 1
-            break
         existing_names.append(row[0])
 
     if student_name not in existing_names:

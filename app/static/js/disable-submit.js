@@ -8,6 +8,11 @@ if (form2) form2.querySelectorAll('input[type=submit]').forEach(e => e.disabled 
 let isCaptchaPassed = false;
 let isCaptcha2Passed = false;
 
+document.addEventListener('DOMContentLoaded', function () {
+  if (form1) checkFormCompletion(form1, isCaptchaPassed, 'captchaPassed');
+  if (form2) checkFormCompletion(form2, isCaptcha2Passed, 'captcha2Passed');
+});
+
 function requiresCaptcha(form, callbackName) {
   let captcha = form.querySelector('.h-captcha[data-callback="' + callbackName + '"]');
   return !!captcha;

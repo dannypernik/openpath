@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from markupsafe import Markup
 from flask import (
-    render_template, flash, redirect, url_for, g,
+    render_template, flash, redirect, url_for, g, has_request_context,
     request, send_from_directory, send_file, make_response, abort, current_app, session
 )
 from flask_login import current_user, login_required
@@ -148,7 +148,10 @@ def before_request():
 
 @main_bp.app_context_processor
 def inject_values():
-    hcaptcha_widget = show_hcaptcha(hcaptcha)
+    if has_request_context():
+        hcaptcha_widget = show_hcaptcha(hcaptcha)
+    else:
+        hcaptcha_widget = None
     try:
         if current_user.is_authenticated:
             current_first_name = current_user.first_name
@@ -794,9 +797,14 @@ def handle_sat_report(form, template_name, organization=None):
         ss_id = request.args.get('ssId')
         if ss_id:
             form.spreadsheet_url.data = ss_id
+        elif current_user.is_authenticated and current_user.sat_ss_id:
+            form.spreadsheet_url.data = current_user.sat_ss_id
+
         email = request.args.get('email')
         if email:
             form.email.data = email
+        elif current_user.is_authenticated:
+            form.email.data = current_user.email
 
     if form.validate_on_submit():
         captcha_ok = check_hcaptcha_or_session(hcaptcha)
@@ -863,6 +871,9 @@ def handle_sat_report(form, template_name, organization=None):
             with open(json_file_path, "w") as json_file:
                 json.dump(score_data, json_file, indent=2)
 
+            if len(score_data['answer_key_mismatches']) > 0 or len(score_data['missing_data']) > 0:
+                send_unexpected_data_email(score_data)
+
             if student_ss_id:
                 has_access = check_service_account_access(student_ss_id)
                 if not has_access:
@@ -875,9 +886,6 @@ def handle_sat_report(form, template_name, organization=None):
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
-            if len(score_data['answer_key_mismatches']) > 0 or len(score_data['missing_data']) > 0:
-                send_unexpected_data_email(score_data)
-
             if organization:
                 return_route = url_for('main.custom_sat_report', org=organization['slug'])
                 flash(Markup(f'Your answers have been submitted successfully.<br> \
@@ -885,8 +893,19 @@ def handle_sat_report(form, template_name, organization=None):
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('main.index'))
             else:
+                if current_user.is_authenticated:
+                    if current_user.email == form.email.data.lower():
+                        current_email = current_user.email
+                    else:
+                        current_email = None
+                    ss_updated = score_data['student_ss_id'] and current_user.sat_ss_id != score_data['student_ss_id']
+
                 return_route = url_for('main.sat_report')
-                return render_template('score-report-sent.html', return_route=return_route)
+                return redirect(url_for('main.score_report_sent',
+                                        sat_ss_id=score_data['student_ss_id'],
+                                        ss_updated=ss_updated,
+                                        email=current_email,
+                                        return_route=return_route))
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
@@ -935,14 +954,6 @@ def custom_act_report(org):
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-    if request.method == 'GET':
-        ss_id = request.args.get('ssId')
-        if ss_id:
-            form.spreadsheet_url.data = ss_id
-        email = request.args.get('email')
-        if email:
-            form.email.data = email
-
     if current_user.is_authenticated:
         form.test_code.choices = load_act_test_codes()
     else:
@@ -950,6 +961,20 @@ def handle_act_report(form, template_name, organization=None):
             ["2025MC1", "Practice Test 1 (Form 25MC1)"],
             ["2025MC5", "Practice Test 2 (Form 25MC5)"]
         ]
+
+    if request.method == 'GET':
+        ss_id = request.args.get('ssId')
+        if ss_id:
+            form.spreadsheet_url.data = ss_id
+        elif current_user.is_authenticated and current_user.act_ss_id:
+            form.spreadsheet_url.data = current_user.act_ss_id
+
+        email = request.args.get('email')
+        if email:
+            form.email.data = email
+        elif current_user.is_authenticated:
+            form.email.data = current_user.email
+
 
     if form.validate_on_submit():
         captcha_ok = check_hcaptcha_or_session(hcaptcha)
@@ -1032,10 +1057,111 @@ def handle_act_report(form, template_name, organization=None):
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('main.index'))
             else:
-                return_route = url_for('act_report')
-                return render_template('score-report-sent.html', return_route=return_route)
+                if current_user.is_authenticated:
+                    if current_user.email == form.email.data.lower():
+                        current_email = current_user.email
+                    else:
+                        current_email = None
+                    ss_updated = score_data['student_ss_id'] and current_user.act_ss_id != score_data['student_ss_id']
+
+                return_route = url_for('main.act_report')
+                return redirect(url_for('main.score_report_sent',
+                                        act_ss_id=score_data['student_ss_id'],
+                                        ss_updated=ss_updated,
+                                        email=current_email,
+                                        return_route=return_route))
 
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
             flash(f'Failed to send answer sheet. Please contact {g.hello}.', 'error')
     return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+
+
+@main_bp.route('/score-report-sent', methods=['GET', 'POST'])
+def score_report_sent():
+    form = ReportSubmittedSignupForm()
+
+    sat_ss_id = request.args.get('sat_ss_id')
+    act_ss_id = request.args.get('act_ss_id')
+    ss_updated = request.args.get('ss_updated') == 'True'
+    email = request.args.get('email')
+    return_route = request.args.get('return_route')
+    user = current_user if current_user.is_authenticated else None
+
+    if request.method == 'GET':
+        if user:
+            form.sat_ss_id.data = user.sat_ss_id
+            form.act_ss_id.data = user.act_ss_id
+
+        if sat_ss_id:
+            form.sat_ss_id.data = sat_ss_id
+        if act_ss_id:
+            form.act_ss_id.data = act_ss_id
+
+    if form.validate_on_submit():
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
+            flash('Captcha was unsuccessful. Please try again.', 'error')
+            return redirect(url_for('main.score_report_sent',
+                                    sat_ss_id=sat_ss_id,
+                                    act_ss_id=act_ss_id,
+                                    ss_updated=ss_updated,
+                                    email=email,
+                                    return_route=return_route))
+        if not user:
+            user = User(email=form.email.data)
+            db.session.add(user)
+
+        user.sat_ss_id = form.sat_ss_id.data
+        user.act_ss_id = form.act_ss_id.data
+        db.session.commit()
+        flash('Your account details have been saved.')
+    return render_template('score-report-sent.html',
+                            form=form,
+                            email=email,
+                            ss_updated=ss_updated,
+                            return_route=return_route)
+
+
+@main_bp.route('/<org>/results', methods=['GET', 'POST'])
+@private_login_check
+def request_score_report(org):
+    form = ScoreAnalysisForm()
+
+    organization = Organization.query.filter_by(slug=org).first_or_404()
+    organization_dict = get_org_details_dict(organization)
+
+    if form.validate_on_submit():
+        student = User(
+            first_name = form.student_first_name.data,
+            last_name = form.student_last_name.data,
+            grad_year = form.grad_year.data
+        )
+
+        parent = User.query.filter_by(email=form.parent_email.data).first()
+        if parent:
+            parent.first_name = form.parent_first_name.data
+            parent.last_name = form.parent_last_name.data
+
+            if not parent.referrer:
+                parent.referrer = organization.name
+
+        else:
+            parent = User(
+                first_name=form.parent_first_name.data,
+                last_name=form.parent_last_name.data,
+                email=form.parent_email.data,
+                referrer=organization.name
+            )
+            db.session.add(parent)
+            db.session.flush()
+
+        db.session.commit()
+
+        email_status = send_score_analysis_email(student, parent, organization_dict)
+        if email_status == 200:
+            flash('We\'ve received your score analysis request. Thank you!')
+            return redirect(url_for('main.index'))
+        else:
+            flash(f'Email failed to send, please contact {g.hello}', 'error')
+    return render_template('org-results.html', title='Score Analysis', form=form, organization=organization_dict)

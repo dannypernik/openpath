@@ -7,6 +7,8 @@ import re
 import datetime
 from zoneinfo import ZoneInfo
 from dateutil.parser import parse
+import base64
+import mimetypes
 import requests
 import json
 import logging
@@ -19,12 +21,12 @@ def send_contact_email(user, message, subject):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'Open Path Tutoring: ' + subject + ' from ' + user.first_name,
@@ -51,7 +53,7 @@ def send_confirmation_email(user_email, message):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -79,12 +81,12 @@ def send_unsubscribe_email(email):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'Unsubscribe request from ' + email,
@@ -116,7 +118,7 @@ def send_reminder_email(event, student, tutor):
         if tutor.session_reminders:
             cc_email.append({ 'Email': tutor.email })
     if not reply_email:
-        reply_email = current_app.config['MAIL_USERNAME']
+        reply_email = os.environ.get('MAIL_USERNAME')
 
     dt = datetime.datetime
 
@@ -155,33 +157,32 @@ def send_reminder_email(event, student, tutor):
 
     message, author, quote_header = get_quote()
 
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                        'Email': student.email
-                        }
-                    ],
-                    'Cc': cc_email,
-                    'ReplyTo': { 'Email': reply_email },
-                    'Subject': 'Reminder for ' + event_type + ' on ' + start_date + ' at ' + start_time + ' ' + timezone,
-                    'HTMLPart': render_template('email/reminder-email.html', student=student, \
-                        tutor=tutor, start_date=start_date, start_time=start_time, \
-                        end_time=end_time, location=location, timezone=timezone, \
-                        quote_header=quote_header, message=message, author=author, event_type=event_type),
-                    'TextPart': render_template('email/reminder-email.txt', student=student, \
-                        tutor=tutor, start_date=start_date, start_time=start_time, \
-                        end_time=end_time, location=location, timezone=timezone, \
-                        quote_header=quote_header, message=message, author=author, event_type=event_type)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': student.email
+                    }
+                ],
+                'Cc': cc_email,
+                'ReplyTo': { 'Email': reply_email },
+                'Subject': 'Reminder for ' + event_type + ' on ' + start_date + ' at ' + start_time + ' ' + timezone,
+                'HTMLPart': render_template('email/reminder-email.html', student=student, \
+                    tutor=tutor, start_date=start_date, start_time=start_time, \
+                    end_time=end_time, location=location, timezone=timezone, \
+                    quote_header=quote_header, message=message, author=author, event_type=event_type),
+                'TextPart': render_template('email/reminder-email.txt', student=student, \
+                    tutor=tutor, start_date=start_date, start_time=start_time, \
+                    end_time=end_time, location=location, timezone=timezone, \
+                    quote_header=quote_header, message=message, author=author, event_type=event_type)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
 
@@ -208,7 +209,7 @@ def send_session_recap_email(student, events):
 
         reply_email = tutor.email
         if reply_email == '':
-            reply_email = current_app.config['MAIL_USERNAME']
+            reply_email = os.environ.get('MAIL_USERNAME')
 
     tz_difference = student.timezone - tutor.timezone
 
@@ -273,7 +274,7 @@ def send_session_recap_email(student, events):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -304,12 +305,12 @@ def send_notification_email(alerts):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'Open Path Tutoring notification',
@@ -321,152 +322,149 @@ def send_notification_email(alerts):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Notification email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Notification email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Notification email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
 def send_registration_reminder_email(user, test_date):
-    with current_app.app_context():
-        cc_email = []
-        if user.parent_id:
-            if user.parent.test_reminders:
-                cc_email.append({ 'Email': user.parent.email })
-            if user.parent.secondary_email:
-                cc_email.append({ 'Email': user.parent.secondary_email })
-        if user.tutor:
-            if user.tutor.test_reminders:
-                cc_email.append({ 'Email': user.tutor.email })
+    cc_email = []
+    if user.parent_id:
+        if user.parent.test_reminders:
+            cc_email.append({ 'Email': user.parent.email })
+        if user.parent.secondary_email:
+            cc_email.append({ 'Email': user.parent.secondary_email })
+    if user.tutor:
+        if user.tutor.test_reminders:
+            cc_email.append({ 'Email': user.tutor.email })
 
-        td = test_date.date.strftime('%B %-d')
-        reg_dl = test_date.reg_date.strftime('%A, %B %-d')
-        reg_dl_day = test_date.reg_date.strftime('%A')
+    td = test_date.date.strftime('%B %-d')
+    reg_dl = test_date.reg_date.strftime('%A, %B %-d')
+    reg_dl_day = test_date.reg_date.strftime('%A')
 
-        if test_date.late_date is not None:
-            late_dl = test_date.late_date.strftime('%A, %B %-d')
-        else:
-            late_dl = None
+    if test_date.late_date is not None:
+        late_dl = test_date.late_date.strftime('%A, %B %-d')
+    else:
+        late_dl = None
 
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        { 'Email': user.email }
-                    ],
-                    'Cc': cc_email,
-                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
-                    'Subject': 'Registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + reg_dl_day,
-                    'HTMLPart': render_template('email/registration-reminder.html', \
-                        user=user, test_date=test_date, td=td, reg_dl=reg_dl, late_dl=late_dl),
-                    'TextPart': render_template('email/registration-reminder.txt', \
-                        user=user, test_date=test_date, td=td, reg_dl=reg_dl, late_dl=late_dl)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    { 'Email': user.email }
+                ],
+                'Cc': cc_email,
+                'ReplyTo': { 'Email': os.environ.get('MAIL_USERNAME') },
+                'Subject': 'Registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + reg_dl_day,
+                'HTMLPart': render_template('email/registration-reminder.html', \
+                    user=user, test_date=test_date, td=td, reg_dl=reg_dl, late_dl=late_dl),
+                'TextPart': render_template('email/registration-reminder.txt', \
+                    user=user, test_date=test_date, td=td, reg_dl=reg_dl, late_dl=late_dl)
+            }
+        ]
+    }
 
-        result = mailjet.send.create(data=data)
+    result = mailjet.send.create(data=data)
 
-        if result.status_code == 200:
-            msg = 'Registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
-        else:
-            msg = 'Error for ' + user.first_name + '\'s registration reminder with code ' + str(result.status_code) + ' ' + result.reason
-        return msg
+    if result.status_code == 200:
+        msg = 'Registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
+    else:
+        msg = 'Error for ' + user.first_name + '\'s registration reminder with code ' + str(result.status_code) + ' ' + result.reason
+    return msg
 
 
 def send_late_registration_reminder_email(user, test_date):
-    with current_app.app_context():
-        cc_email = []
-        if user.parent:
-            if user.parent.test_reminders:
-                cc_email.append({ 'Email': user.parent.email })
-            if user.parent.secondary_email:
-                cc_email.append({ 'Email': user.parent.secondary_email })
-        if user.tutor:
-            if user.tutor.test_reminders:
-                cc_email.append({ 'Email': user.tutor.email })
+    cc_email = []
+    if user.parent:
+        if user.parent.test_reminders:
+            cc_email.append({ 'Email': user.parent.email })
+        if user.parent.secondary_email:
+            cc_email.append({ 'Email': user.parent.secondary_email })
+    if user.tutor:
+        if user.tutor.test_reminders:
+            cc_email.append({ 'Email': user.tutor.email })
 
-        td = test_date.date.strftime('%B %-d')
-        late_dl = test_date.late_date.strftime('%A, %B %-d')
-        late_dl_day = test_date.late_date.strftime('%A')
+    td = test_date.date.strftime('%B %-d')
+    late_dl = test_date.late_date.strftime('%A, %B %-d')
+    late_dl_day = test_date.late_date.strftime('%A')
 
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        { 'Email': user.email }
-                    ],
-                    'Cc': cc_email,
-                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
-                    'Subject': 'Late registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + late_dl_day,
-                    'HTMLPart': render_template('email/late-registration-reminder.html', \
-                        user=user, test_date=test_date, td=td, late_dl=late_dl),
-                    'TextPart': render_template('email/late-registration-reminder.txt', \
-                        user=user, test_date=test_date, td=td, late_dl=late_dl)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    { 'Email': user.email }
+                ],
+                'Cc': cc_email,
+                'ReplyTo': { 'Email': os.environ.get('MAIL_USERNAME') },
+                'Subject': 'Late registration deadline for the ' + td + ' ' + test_date.test.upper() + ' is this ' + late_dl_day,
+                'HTMLPart': render_template('email/late-registration-reminder.html', \
+                    user=user, test_date=test_date, td=td, late_dl=late_dl),
+                'TextPart': render_template('email/late-registration-reminder.txt', \
+                    user=user, test_date=test_date, td=td, late_dl=late_dl)
+            }
+        ]
+    }
 
-        result = mailjet.send.create(data=data)
+    result = mailjet.send.create(data=data)
 
-        if result.status_code == 200:
-            msg = 'Late registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
-        else:
-            msg = 'Error for ' + user.first_name + '\'s late registration reminder with code ' + str(result.status_code) + ' ' + result.reason
-        return msg
+    if result.status_code == 200:
+        msg = 'Late registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
+    else:
+        msg = 'Error for ' + user.first_name + '\'s late registration reminder with code ' + str(result.status_code) + ' ' + result.reason
+    return msg
 
 
 def send_test_reminder_email(user, test_date):
-    with current_app.app_context():
-        cc_email = []
-        if user.parent:
-            if user.parent.test_reminders:
-                cc_email.append({ 'Email': user.parent.email })
-            if user.parent.secondary_email:
-                cc_email.append({ 'Email': user.parent.secondary_email })
-        if user.tutor:
-            if user.tutor.test_reminders:
-                cc_email.append({ 'Email': user.tutor.email })
+    cc_email = []
+    if user.parent:
+        if user.parent.test_reminders:
+            cc_email.append({ 'Email': user.parent.email })
+        if user.parent.secondary_email:
+            cc_email.append({ 'Email': user.parent.secondary_email })
+    if user.tutor:
+        if user.tutor.test_reminders:
+            cc_email.append({ 'Email': user.tutor.email })
 
-        td = test_date.date.strftime('%B %-d')
-        td_day = test_date.date.strftime('%A')
+    td = test_date.date.strftime('%B %-d')
+    td_day = test_date.date.strftime('%A')
 
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        { 'Email': user.email }
-                    ],
-                    'Cc': cc_email,
-                    'ReplyTo': { 'Email': current_app.config['MAIL_USERNAME'] },
-                    'Subject': 'Things to remember for your ' + test_date.test.upper() + ' on ' + td_day + ', ' + td,
-                    'HTMLPart': render_template('email/test-reminders.html', \
-                        user=user, test_date=test_date, td=td),
-                    'TextPart': render_template('email/test-reminders.txt', \
-                        user=user, test_date=test_date, td=td)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    { 'Email': user.email }
+                ],
+                'Cc': cc_email,
+                'ReplyTo': { 'Email': os.environ.get('MAIL_USERNAME') },
+                'Subject': 'Things to remember for your ' + test_date.test.upper() + ' on ' + td_day + ', ' + td,
+                'HTMLPart': render_template('email/test-reminders.html', \
+                    user=user, test_date=test_date, td=td),
+                'TextPart': render_template('email/test-reminders.txt', \
+                    user=user, test_date=test_date, td=td)
+            }
+        ]
+    }
 
-        result = mailjet.send.create(data=data)
+    result = mailjet.send.create(data=data)
 
-        if result.status_code == 200:
-            msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + full_name(user)
-        else:
-            msg = 'Error for ' + user.first_name + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
-        return msg
+    if result.status_code == 200:
+        msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + full_name(user)
+    else:
+        msg = 'Error for ' + user.first_name + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
+    return msg
 
 
 def send_signup_notification_email(user, dates):
@@ -476,12 +474,12 @@ def send_signup_notification_email(user, dates):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': user.first_name + ' signed up for test reminders',
@@ -498,28 +496,28 @@ def send_signup_notification_email(user, dates):
         'tags': ['Website']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.environ.get('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info('Signup notification email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Signup notification email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + result.status_code)
+        logging.info('Signup notification email to ' + os.environ.get('MAIL_USERNAME') + ' failed with code ' + result.status_code)
     return result.status_code
 
 
@@ -528,12 +526,12 @@ def send_signup_request_email(user, reason, next):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': user.first_name + ' requested an account',
@@ -550,28 +548,28 @@ def send_signup_request_email(user, reason, next):
         'tags': ['Website', next]
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.environ.get('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info('Signup notification email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Signup notification email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Signup notification email to ' + current_app.config['MAIL_USERNAME'] + ' failed with code ' + str(result.status_code))
+        logging.info('Signup notification email to ' + os.environ.get('MAIL_USERNAME') + ' failed with code ' + str(result.status_code))
     return result.status_code
 
 
@@ -586,7 +584,7 @@ def send_verification_email(user, page=None):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -627,7 +625,7 @@ def send_password_reset_email(user, next=None):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -666,11 +664,11 @@ def send_test_strategies_email(student, parent, relation):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': to_email,
-                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': os.environ.get('MAIL_USERNAME')}],
                 'Subject': '10 Strategies to Master the SAT & ACT',
                 'HTMLPart': render_template('email/test-strategies.html', relation=relation, student=student, parent=parent, link=link),
                 'TextPart': render_template('email/test-strategies.txt', relation=relation, student=student, parent=parent, link=link)
@@ -685,20 +683,20 @@ def send_test_strategies_email(student, parent, relation):
         'tags': ['Website']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.environ.get('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -714,7 +712,7 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -722,7 +720,7 @@ def send_test_registration_email(student, parent, school, test, date, time, loca
                     'Email': parent.email
                     }
                 ],
-                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': os.environ.get('MAIL_USERNAME')}],
                 'Subject': full_name(student) + ' is registered for the practice ACT on ' + date,
                 'TextPart': render_template('email/test-registration-email.txt',
                             student=student, parent=parent, school=school, test=test, \
@@ -747,7 +745,7 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -755,7 +753,7 @@ def send_prep_class_email(student, parent, school, test, time, location, cost):
                     'Email': parent.email
                     }
                 ],
-                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': os.environ.get('MAIL_USERNAME')}],
                 'Subject': full_name(student) + ' is registered for ' + test + ' Study Club',
                 'TextPart': render_template('email/prep-class-email.txt',
                             student=student, parent=parent, school=school, test=test, \
@@ -780,7 +778,7 @@ def send_score_analysis_email(student, parent, organization_dict):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -789,7 +787,7 @@ def send_score_analysis_email(student, parent, organization_dict):
                     }
                 ],
                 'ReplyTo': { 'Email': parent.email },
-                'Bcc': [{'Email': current_app.config['MAIL_USERNAME']}],
+                'Bcc': [{'Email': os.environ.get('MAIL_USERNAME')}],
                 'Subject': 'Score analysis request received',
                 'TextPart': render_template('email/score-analysis-email.txt',
                             student=student, parent=parent, organization_dict=organization_dict),
@@ -806,20 +804,20 @@ def send_score_analysis_email(student, parent, organization_dict):
         'lead_source': 'Practice test'
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.environ.get('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': 'Respond to OPT web form',
             #'date': ,
             #'exact_time': 1526472000,
             #'position': 1
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -864,27 +862,26 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
     else:
         action_str = ''
 
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['ADMIN_EMAIL'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                        'Email': tutor.email
-                        }
-                    ],
-                    'Subject': 'OPT weekly report' + action_str,
-                    'HTMLPart': render_template('email/tutor-email.html', tutor=tutor,
-                        my_low_students=my_low_students, my_scheduled_students=my_scheduled_students,
-                        my_unscheduled_students=my_unscheduled_students, paused_student_list=paused_student_list,
-                        full_name=full_name)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('ADMIN_EMAIL'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': tutor.email
+                    }
+                ],
+                'Subject': 'OPT weekly report' + action_str,
+                'HTMLPart': render_template('email/tutor-email.html', tutor=tutor,
+                    my_low_students=my_low_students, my_scheduled_students=my_scheduled_students,
+                    my_unscheduled_students=my_unscheduled_students, paused_student_list=paused_student_list,
+                    full_name=full_name)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
@@ -912,30 +909,29 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 
     message, author, header = get_quote()
 
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': os.environ.get('MAIL_USERNAME')
                     },
-                    'To': [
-                        {
-                            'Email': current_app.config['MAIL_USERNAME']
-                        },
-                    ],
-                    'Subject': 'reminders.py succeeded - Admin tutoring report',
-                    'HTMLPart': render_template('email/weekly-report-email.html',
-                        messages=messages, status_updates=status_updates, my_tutoring_hours=my_tutoring_hours,
-                        my_session_count=my_session_count, other_tutoring_hours=other_tutoring_hours,
-                        other_session_count=other_session_count, unscheduled_students=unscheduled_students,
-                        paused_str=paused_str, tutors_attention=tutors_attention, cc_sessions=cc_sessions,
-                        message=message, author=author, weekly_data=weekly_data,
-                        add_students_to_data=add_students_to_data, full_name=full_name)
-                }
-            ]
-        }
+                ],
+                'Subject': 'reminders.py succeeded - Admin tutoring report',
+                'HTMLPart': render_template('email/weekly-report-email.html',
+                    messages=messages, status_updates=status_updates, my_tutoring_hours=my_tutoring_hours,
+                    my_session_count=my_session_count, other_tutoring_hours=other_tutoring_hours,
+                    other_session_count=other_session_count, unscheduled_students=unscheduled_students,
+                    paused_str=paused_str, tutors_attention=tutors_attention, cc_sessions=cc_sessions,
+                    message=message, author=author, weekly_data=weekly_data,
+                    add_students_to_data=add_students_to_data, full_name=full_name)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
@@ -961,29 +957,28 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
 
     quote, author, header = get_quote()
 
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': current_app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'Subject': name + ' ' + result,
-                    'HTMLPart': render_template('email/script-status-email.html',
-                        messages=messages, status_updates=status_updates,
-                        low_scheduled_students=low_scheduled_students, unscheduled_students=unscheduled_students,
-                        tutors_attention=tutors_attention, add_students_to_data=add_students_to_data,
-                        cc_sessions=cc_sessions, unregistered_str=unregistered_str, undecided_str=undecided_str,
-                        payments_due=payments_due, exception=exception, quote=quote, author=author)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': os.environ.get('MAIL_USERNAME')
+                    }
+                ],
+                'Subject': name + ' ' + result,
+                'HTMLPart': render_template('email/script-status-email.html',
+                    messages=messages, status_updates=status_updates,
+                    low_scheduled_students=low_scheduled_students, unscheduled_students=unscheduled_students,
+                    tutors_attention=tutors_attention, add_students_to_data=add_students_to_data,
+                    cc_sessions=cc_sessions, unregistered_str=unregistered_str, undecided_str=undecided_str,
+                    payments_due=payments_due, exception=exception, quote=quote, author=author)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
@@ -1017,12 +1012,12 @@ def send_new_student_email(contact_data):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                        'Email': current_app.config['MAIL_USERNAME']
+                        'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'New student added: ' + full_name(student),
@@ -1043,9 +1038,9 @@ def send_new_student_email(contact_data):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('New student email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('New student email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('New student email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('New student email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 def send_schedule_conflict_email(message):
@@ -1053,12 +1048,12 @@ def send_schedule_conflict_email(message):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'Schedule conflict email',
@@ -1072,9 +1067,9 @@ def send_schedule_conflict_email(message):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Schedule conflict email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Schedule conflict email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Schedule conflict email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + result.status_code, result.reason)
+        logging.info('Schedule conflict email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + result.status_code, result.reason)
     return result.status_code
 
 
@@ -1083,12 +1078,12 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'ReplyTo': { 'Email': email },
@@ -1101,20 +1096,20 @@ def send_ntpa_email(first_name, last_name, biz_name, email):
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('NTPA email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('NTPA email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('NTPA email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('NTPA email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_free_resources_email(user):
-    resource_folder_url = 'https://drive.google.com/drive/folders/' + current_app.config['RESOURCE_FOLDER_ID']
+    resource_folder_url = 'https://drive.google.com/drive/folders/' + os.environ.get('RESOURCE_FOLDER_ID')
 
     data = {
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
@@ -1122,7 +1117,7 @@ def send_free_resources_email(user):
                         'Email': user.email
                     },
                     {
-                        'Email': current_app.config['MAIL_USERNAME']
+                        'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'ReplyTo': { 'Email': user.email },
@@ -1146,12 +1141,12 @@ def send_nomination_email(form_data):
         'Messages': [
             {
                 'From': {
-                    'Email': current_app.config['MAIL_USERNAME'],
+                    'Email': os.environ.get('MAIL_USERNAME'),
                     'Name': 'Open Path Tutoring'
                 },
                 'To': [
                     {
-                    'Email': current_app.config['MAIL_USERNAME']
+                    'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
                 'Subject': 'Nomination received for ' + form_data['student_first_name'] + ' ' + form_data['student_last_name'],
@@ -1174,17 +1169,17 @@ def send_nomination_email(form_data):
         'tags': ['Nominated']
     }
 
-    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+    crm_contact = requests.post('https://app.onepagecrm.com/api/v3/contacts', json=new_contact, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
 
     if crm_contact.status_code == 201:
         logging.info('crm_contact passes')
         new_action = {
             'contact_id': crm_contact.json()['data']['contact']['id'],
-            'assignee_id': current_app.config['ONEPAGECRM_ID'],
+            'assignee_id': os.environ.get('ONEPAGECRM_ID'),
             'status': 'asap',
             'text': 'Respond to nomination form',
         }
-        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(current_app.config['ONEPAGECRM_ID'], current_app.config['ONEPAGECRM_PW']))
+        crm_action = requests.post('https://app.onepagecrm.com/api/v3/actions', json=new_action, auth=(os.environ.get('ONEPAGECRM_ID'), os.environ.get('ONEPAGECRM_PW')))
         logging.info('crm_action:', crm_action)
 
     result = mailjet.send.create(data=data)
@@ -1201,7 +1196,7 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
     cc_email = []
     bcc_email = []
     if score_data['admin_email']:
-        bcc_email.append({ 'Email': current_app.config.get('ADMIN_EMAIL') })
+        bcc_email.append({ 'Email': os.environ.get('ADMIN_EMAIL') })
 
         if score_data['email']:
             to_email.append({ 'Email': score_data['email'] })
@@ -1226,111 +1221,157 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
         'Base64Content': pdf_base64
     })
 
-
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': to_email,
-                    'Cc': cc_email,
-                    'Bcc': bcc_email,
-                    'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
-                    'TextPart': render_template('email/score-report-email.txt', score_data=score_data, int=int),
-                    'HTMLPart': render_template('email/score-report-email.html', score_data=score_data, int=int),
-                    'Attachments': attachments
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': to_email,
+                'Cc': cc_email,
+                'Bcc': bcc_email,
+                'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
+                'TextPart': render_template('email/score-report-email.txt', score_data=score_data, int=int),
+                'HTMLPart': render_template('email/score-report-email.html', score_data=score_data, int=int),
+                'Attachments': attachments
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('Score report email sent to ' + os.environ.get('MAIL_USERNAME'))
+    else:
+        logging.info('Score report email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_unexpected_data_email(score_data):
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': current_app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'Subject': 'Unexpected data for ' + score_data['test_display_name'],
-                    'HTMLPart': render_template('email/unexpected-data-email.html', score_data=score_data, int=int)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': os.environ.get('MAIL_USERNAME')
+                    }
+                ],
+                'Subject': 'Unexpected data for ' + score_data['test_display_name'],
+                'HTMLPart': render_template('email/unexpected-data-email.html', score_data=score_data, int=int)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Changed answer email sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Changed answer email sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Changed answer email to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('Changed answer email to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_fail_mail(subject, error='unknown error', data=None):
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': current_app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'Subject': 'Error: ' + subject,
-                    'TextPart': render_template('email/fail-mail.txt', data=data, error=error),
-                    'HTMLPart': render_template('email/fail-mail.html', data=data, error=error)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': os.environ.get('MAIL_USERNAME')
+                    }
+                ],
+                'Subject': 'Error: ' + subject,
+                'TextPart': render_template('email/fail-mail.txt', data=data, error=error),
+                'HTMLPart': render_template('email/fail-mail.html', data=data, error=error)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Fail mail sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Fail mail sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('Fail mail to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 
 def send_task_fail_mail(task_data, exc, task_id, args, kwargs, einfo):
-    with current_app.app_context():
-        data = {
-            'Messages': [
-                {
-                    'From': {
-                        'Email': current_app.config['MAIL_USERNAME'],
-                        'Name': 'Open Path Tutoring'
-                    },
-                    'To': [
-                        {
-                            'Email': current_app.config['MAIL_USERNAME']
-                        }
-                    ],
-                    'Subject': 'Error with task ' + task_id,
-                    'HTMLPart': render_template('email/task-fail-mail.html', task_data=task_data, \
-                        exc=exc, task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
-                }
-            ]
-        }
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                        'Email': os.environ.get('MAIL_USERNAME')
+                    }
+                ],
+                'Subject': 'Error with task ' + task_id,
+                'HTMLPart': render_template('email/task-fail-mail.html', task_data=task_data, \
+                    exc=exc, task_id=task_id, args=args, kwargs=kwargs, einfo=einfo)
+            }
+        ]
+    }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Task fail mail sent to ' + current_app.config['MAIL_USERNAME'])
+        logging.info('Task fail mail sent to ' + os.environ.get('MAIL_USERNAME'))
     else:
-        logging.info('Task fail mail to ' + current_app.config['MAIL_USERNAME'] + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info('Task fail mail to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
+    return result.status_code
+
+
+def send_act_fail_mail(score_data):
+    to_email = []
+    cc_email = []
+    attachments = []
+
+    img_path = score_data.get('answer_img_path')
+    if img_path and os.path.exists(img_path):
+        with open(img_path, 'rb') as f:
+            img_base64 = base64.b64encode(f.read()).decode('utf-8')
+        mime_type, _ = mimetypes.guess_type(img_path)
+        attachments.append({
+            'ContentType': mime_type or 'image/jpeg',
+            'Filename': os.path.basename(img_path),
+            'Base64Content': img_base64
+        })
+
+    if score_data['email']:
+        to_email.append({ 'Name': score_data['student_name'], 'Email': score_data['email'] })
+        cc_email.append({ 'Email': os.environ.get('ADMIN_EMAIL') })
+    else:
+        to_email.append({ 'Email': os.environ.get('ADMIN_EMAIL') })
+
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': to_email,
+                'Cc': cc_email,
+                'Subject': 'ACT score report error',
+                'HTMLPart': render_template('email/act-fail-email.html', score_data=score_data),
+                'TextPart': render_template('email/act-fail-email.txt', score_data=score_data),
+                'Attachments': attachments if attachments else None
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('ACT fail mail sent to ' + os.environ.get('MAIL_USERNAME'))
+    else:
+        logging.info('ACT fail mail to ' + os.environ.get('MAIL_USERNAME') + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code

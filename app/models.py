@@ -63,6 +63,9 @@ class User(UserMixin, db.Model):
     session_reminders = db.Column(db.Boolean, default=True)
     test_reminders = db.Column(db.Boolean, default=True)
     referrer = db.Column(db.String(64))
+    sat_ss_id = db.Column(db.String(64))
+    act_ss_id = db.Column(db.String(64))
+    access_level = db.Column(db.String(24))
     planned_tests = db.relationship(
         'UserTestDate',
         back_populates='user',
@@ -181,16 +184,16 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)
-    role = db.Column(db.String(64), nullable=True)
-    timezone = db.Column(db.String(64), nullable=True)
-    sat_spreadsheet_id = db.Column(db.String(255), nullable=True)
-    act_spreadsheet_id = db.Column(db.String(255), nullable=True)
-    color1 = db.Column(db.String(7), nullable=True)
-    color2 = db.Column(db.String(7), nullable=True)
-    color3 = db.Column(db.String(7), nullable=True)
-    font_color = db.Column(db.String(7), nullable=True)
-    logo_path = db.Column(db.String(128), nullable=True)
-    ss_logo_path = db.Column(db.String(128), nullable=True)
+    role = db.Column(db.String(64))
+    timezone = db.Column(db.String(64))
+    sat_spreadsheet_id = db.Column(db.String(255))
+    act_spreadsheet_id = db.Column(db.String(255))
+    color1 = db.Column(db.String(7))
+    color2 = db.Column(db.String(7))
+    color3 = db.Column(db.String(7))
+    font_color = db.Column(db.String(7))
+    logo_path = db.Column(db.String(128))
+    ss_logo_path = db.Column(db.String(128))
     partner_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True)
     partner = db.relationship(
         'User',

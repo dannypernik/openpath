@@ -17,7 +17,7 @@ from io import BytesIO
 import base64
 from email.mime.base import MIMEBase
 from email import encoders
-from flask import session
+from flask import has_request_context, session
 
 logger = logging.getLogger(__name__)
 
@@ -34,19 +34,21 @@ def show_hcaptcha(hcaptcha_widget, minutes_valid=15):
     """
     Returns the hcaptcha widget if the user is not session-verified, else returns an empty string.
     """
-    from datetime import datetime, timezone
-    verified_until = session.get('human_verified_until')
-    if verified_until:
-        try:
-            verified_until_dt = datetime.fromisoformat(verified_until)
-        except Exception:
+    if has_request_context():
+        verified_until = session.get('human_verified_until')
+        if verified_until:
+            try:
+                verified_until_dt = datetime.fromisoformat(verified_until)
+            except Exception:
+                verified_until_dt = None
+        else:
             verified_until_dt = None
-    else:
-        verified_until_dt = None
-    now = datetime.now(timezone.utc)
-    from markupsafe import Markup
-    if not (verified_until_dt and verified_until_dt > now):
-        return Markup(hcaptcha_widget.get_code())
+        now = datetime.now(timezone.utc)
+        from markupsafe import Markup
+        if not (verified_until_dt and verified_until_dt > now):
+            return Markup(hcaptcha_widget.get_code())
+        else:
+            return ""
     else:
         return ""
 

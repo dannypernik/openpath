@@ -7,4 +7,25 @@
     your spam folder, please mark as "Not spam" to ensure you receive future reports.
   </p>
   <a href="{{ return_route }}" class="btn">Submit another test</a>
+
+  {% if email and ss_updated %}
+    <h2 class="mt-4">Save account details</h2>
+    <p>This spreadsheet ID will be linked to your account for future practice tests.</p>
+    <form action="" method="post">
+      {{ form.hidden_tag() }}
+      <div id="account-details" class="row">
+        <div class="col-12 col-md-6">
+          {{ form.sat_ss_id.label }}
+          {{ form.sat_ss_id }}
+        </div>
+        <div class="col-12 col-md-6">
+          {{ form.act_ss_id.label }}
+          {{ form.act_ss_id }}
+        </div>
+      </div>
+
+      {{ hcaptcha }}
+      {{ form.submit }}
+    </form>
+  {% endif %}
 {% endblock content %}

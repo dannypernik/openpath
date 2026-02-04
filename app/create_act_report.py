@@ -77,16 +77,20 @@ def process_act_answer_img(score_data):
   process_response, uri = gc.process_image()
 
   # download the answers as json, you need to specify the destination file
-  json_filename = secure_filename(f"{score_data['student_name']} {score_data['date']} {score_data['test_display_name']} answers.json")
+  json_filename = secure_filename(f"{score_data['student_name']} {score_data['test_display_name']} {score_data['date']} answers.json")
   json_path = os.path.join(score_data['act_uploads_path'], json_filename)
-  download_ma_response, path = gc.download_marked_answers(json_path)
+  download_ma_response, ma_path = gc.download_marked_answers(json_path)
+  logging.info(f"Marked answers saved to {ma_path}")
+
+  if ma_path is None:
+    raise Exception("Answer sheet processing failed.")
 
   # download the confirmation image, you need to specify the destination file
-  confirmation_filename = secure_filename(f"{score_data['student_name']} {score_data['date']} {score_data['test_display_name']} confirmation.jpg")
+  confirmation_filename = secure_filename(f"{score_data['student_name']} {score_data['test_display_name']} {score_data['date']} confirmation.jpg")
   confirmation_path = os.path.join(score_data['act_reports_path'], confirmation_filename)
   download_ci_response, score_data['conf_img_path'] = gc.download_confirmation_image(confirmation_path)
 
-  print(f"Confirmation image saved to {score_data['conf_img_path']}")
+  logging.info(f"Confirmation image saved to {score_data['conf_img_path']}")
 
   # Open the JSON file saved at json_path
   with open(json_path, "r") as j:
@@ -395,7 +399,7 @@ def create_act_score_report(score_data, organization_dict):
     return ss_copy_id, score_data
 
 
-def send_act_pdf_report(spreadsheet_id, score_data):
+def create_act_pdf_report(spreadsheet_id, score_data):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
         scopes=['https://www.googleapis.com/auth/drive']
@@ -447,13 +451,11 @@ def send_act_pdf_report(spreadsheet_id, score_data):
                 conf_img_blob = f.read()
           conf_img_base64 = base64.b64encode(conf_img_blob).decode('utf-8')
 
-          # Send email with PDF attachment
-          send_score_report_email(score_data, pdf_base64, conf_img_base64)
-          logging.info(f"PDF report sent to {score_data['email']}")
+          return pdf_base64, conf_img_base64
       else:
           logging.error(f'Failed to fetch PDF: {response.content}')
     except Exception:
-      logging.error(f'Error in send_pdf_score_report: {Exception}')
+      logging.error(f'Error in create_act_pdf_report: {Exception}')
       raise
 
 
