@@ -886,6 +886,7 @@ def handle_sat_report(form, template_name, organization=None):
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
+            ss_updated = False
             if organization:
                 return_route = url_for('main.custom_sat_report', org=organization['slug'])
                 flash(Markup(f'Your answers have been submitted successfully.<br> \
@@ -1050,6 +1051,7 @@ def handle_act_report(form, template_name, organization=None):
 
             act_report_workflow_task.delay(score_data, organization_dict=organization)
 
+            ss_updated = False
             if organization:
                 return_route = url_for('main.custom_act_report', org=organization['slug'])
                 flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
