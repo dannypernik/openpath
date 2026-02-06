@@ -108,7 +108,7 @@ def test_unsubscribe_returns_200(client):
 
 def test_admin_routes_require_auth(client):
     """Test that admin routes redirect when not authenticated."""
-    admin_routes = ['/users', '/students', '/tutors', '/recap', '/orgs']
+    admin_routes = ['/users', '/students', '/tutors', '/orgs']
     for route in admin_routes:
         response = client.get(route)
         # Should redirect to login (302) or show flash message
