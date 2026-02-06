@@ -1,5 +1,5 @@
 from threading import Thread
-from flask import render_template, url_for, current_app
+from flask import render_template, url_for
 from app.helpers import full_name
 from app.utils import generate_vcard, get_quote
 from mailjet_rest import Client
