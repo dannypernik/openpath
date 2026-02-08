@@ -886,7 +886,6 @@ def handle_sat_report(form, template_name, organization=None):
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
-            ss_updated = False
             if organization:
                 return_route = url_for('main.custom_sat_report', org=organization['slug'])
                 flash(Markup(f'Your answers have been submitted successfully.<br> \
@@ -894,11 +893,11 @@ def handle_sat_report(form, template_name, organization=None):
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('main.index'))
             else:
+                ss_updated = False
+                current_email = None
                 if current_user.is_authenticated:
                     if current_user.email == form.email.data.lower():
-                        current_email = current_user.email
-                    else:
-                        current_email = None
+                        current_email = current_user.email.lower()
                     ss_updated = score_data['student_ss_id'] and current_user.sat_ss_id != score_data['student_ss_id']
 
                 return_route = url_for('main.sat_report')
@@ -1051,7 +1050,6 @@ def handle_act_report(form, template_name, organization=None):
 
             act_report_workflow_task.delay(score_data, organization_dict=organization)
 
-            ss_updated = False
             if organization:
                 return_route = url_for('main.custom_act_report', org=organization['slug'])
                 flash(Markup(f'Your answer sheet has been submitted successfully.<br> \
@@ -1059,11 +1057,11 @@ def handle_act_report(form, template_name, organization=None):
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('main.index'))
             else:
+                ss_updated = False
+                current_email = None
                 if current_user.is_authenticated:
                     if current_user.email == form.email.data.lower():
-                        current_email = current_user.email
-                    else:
-                        current_email = None
+                        current_email = current_user.email.lower()
                     ss_updated = score_data['student_ss_id'] and current_user.act_ss_id != score_data['student_ss_id']
 
                 return_route = url_for('main.act_report')
