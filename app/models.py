@@ -65,7 +65,7 @@ class User(UserMixin, db.Model):
     referrer = db.Column(db.String(64))
     sat_ss_id = db.Column(db.String(64))
     act_ss_id = db.Column(db.String(64))
-    access_level = db.Column(db.String(24))
+    access_level = db.Column(db.Integer, default=0)
     planned_tests = db.relationship(
         'UserTestDate',
         back_populates='user',
