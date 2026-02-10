@@ -27,7 +27,7 @@
         </div>
 
         <div class="col-12 col-md-5 offset-md-2">
-          <h1>Request account</h1>
+          <h1>Create account</h1>
           <form action="{{ url_for('auth.signup', next=request.args.get('next'), org=request.args.get('org')) }}" method="post">
             {{ signup_form.hidden_tag() }}
             {{ signup_form.first_name }}
