@@ -427,10 +427,10 @@ def test_reminders():
             db.session.add(user)
             db.session.commit()
             if current_user.is_authenticated:
-                flash('Test dates updated')
+                flash('Test dates saved.')
             else:
                 if email_status == 200:
-                    flash('Test dates updated. Please check your inbox to verify your email.')
+                    flash('Test dates saved. Please check your inbox to complete your account.')
                 else:
                     flash(f'Verification email did not send. Please contact {g.hello}', 'error')
         except:
@@ -954,7 +954,7 @@ def custom_act_report(org):
 def handle_act_report(form, template_name, organization=None):
     hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
 
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.access_level >= 1:
         form.test_code.choices = load_act_test_codes()
     else:
         form.test_code.choices = [

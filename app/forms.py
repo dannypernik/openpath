@@ -51,8 +51,6 @@ class SignupForm(FlaskForm):
         validators=[InputRequired()])
     last_name = StringField('Last name', render_kw={'placeholder': 'Last name'}, \
         validators=[InputRequired()])
-    reason = TextAreaField('Reason', render_kw={'placeholder': 'Reason for requesting an account', 'rows': '3'},
-        validators=[InputRequired(), Length(max=300)])
     signup_submit = SubmitField('Sign up')
 
 

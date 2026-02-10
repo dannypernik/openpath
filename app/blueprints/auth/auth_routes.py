@@ -1,6 +1,6 @@
 """Auth blueprint routes for authentication."""
 
-from flask import render_template, flash, redirect, url_for, request, current_app
+from flask import render_template, flash, redirect, url_for, request, current_app, has_request_context
 from flask_login import current_user, login_user, logout_user, login_required
 
 from app.blueprints.auth import auth_bp
@@ -9,6 +9,31 @@ from app.helpers import full_name, get_next_page
 from app.forms import SignupForm, LoginForm, RequestPasswordResetForm, ResetPasswordForm
 from app.models import User
 from app.email import send_verification_email, send_password_reset_email, send_signup_request_email
+from app.utils import check_hcaptcha_or_session, show_hcaptcha
+
+
+@auth_bp.app_context_processor
+def inject_values():
+    if has_request_context():
+        hcaptcha_widget = show_hcaptcha(hcaptcha)
+    else:
+        hcaptcha_widget = None
+    try:
+        if current_user.is_authenticated:
+            current_first_name = current_user.first_name
+            current_last_name = current_user.last_name
+        else:
+            current_first_name = None
+            current_last_name = None
+    except Exception:
+        current_first_name = None
+        current_last_name = None
+    return dict(
+        phone=current_app.config['PHONE'],
+        current_first_name=current_first_name,
+        current_last_name=current_last_name,
+        hcaptcha=hcaptcha_widget
+    )
 
 
 @auth_bp.route('/signin', methods=['GET', 'POST'])
@@ -29,9 +54,8 @@ def signup():
     next = get_next_page()
     hello = current_app.config['HELLO_EMAIL']
     if signup_form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
         email_exists = User.query.filter_by(email=signup_form.signup_email.data.lower()).first()
@@ -43,9 +67,7 @@ def signup():
         db.session.add(user)
         db.session.commit()
 
-        reason = signup_form.reason.data
-
-        email_status = send_signup_request_email(user, reason, next)
+        email_status = send_password_reset_email(user, next)
         if email_status == 200:
             flash('Thanks for reaching out! We\'ll be in touch.')
             return redirect(url_for('main.index'))
@@ -67,9 +89,8 @@ def login():
     hello = current_app.config['HELLO_EMAIL']
 
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
         user = User.query.filter_by(email=form.login_email.data.lower()).first()
@@ -100,12 +121,14 @@ def logout():
 @auth_bp.route('/start-page')
 @login_required
 def start_page():
-    if current_user.is_admin:
-        return redirect(url_for('admin.students'))
-    elif current_user.password_hash:
-        return redirect(url_for('main.test_reminders'))
-    else:
-        return redirect(url_for('auth.set_password'))
+    if current_user.is_authenticated:
+        if current_user.is_admin:
+            return redirect(url_for('admin.students'))
+        elif current_user.password_hash and current_user.planned_tests:
+            return redirect(url_for('main.test_reminders'))
+        elif not current_user.password_hash:
+            return redirect(url_for('auth.set_password'))
+    return redirect(url_for('main.index'))
 
 
 @auth_bp.route('/verify-email/<token>', methods=['GET', 'POST'])
@@ -167,9 +190,8 @@ def request_password_reset():
             form.email.data = email
 
     if form.validate_on_submit():
-        if hcaptcha.verify():
-            pass
-        else:
+        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.request_password_reset'))
 
