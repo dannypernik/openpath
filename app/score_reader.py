@@ -61,7 +61,6 @@ def get_student_answers(score_details_file_path):
 
   # Remove lines starting with 'http' or 'MyPractice'
   full_text_lines = [line for line in full_text_lines if not (line.startswith('http') or line.startswith('MyPractice'))]
-  print(full_text_lines)
 
   for line_num, line in enumerate(full_text_lines, 1):
     # print(line)
@@ -194,7 +193,7 @@ def get_student_answers(score_details_file_path):
 
   if date is None:
     return "invalid"
-  elif int(test_number) > 10:
+  elif int(test_number) > 11:
         raise ValueError('Test unavailable')
   elif subject_totals['m_modules'] < 5:
     raise ValueError('Missing math modules')
@@ -402,6 +401,18 @@ def get_mod_difficulty(score_details_data):
       'm': {
         'diff_question': '2',
         'easy_answer': 'C',
+        'hard_answer': 'B',
+      }
+    },
+    'sat11': {
+      'rw': {
+        'diff_question': '1',
+        'easy_answer': 'C',
+        'hard_answer': 'D',
+      },
+      'm': {
+        'diff_question': '1',
+        'easy_answer': '4',
         'hard_answer': 'B',
       }
     },
@@ -2127,6 +2138,171 @@ def check_answer_key(score_details_data):
           '22': 'A'
         }
       }
+    },
+    'sat11': {
+      'rw_modules': {
+        '1': {
+          '1': 'C',
+          '2': 'D',
+          '3': 'B',
+          '4': 'A',
+          '5': 'B',
+          '6': 'D',
+          '7': 'D',
+          '8': 'D',
+          '9': 'B',
+          '10': 'D',
+          '11': 'B',
+          '12': 'A',
+          '13': 'A',
+          '14': 'D',
+          '15': 'B',
+          '16': 'A',
+          '17': 'B',
+          '18': 'B',
+          '19': 'B',
+          '20': 'B',
+          '21': 'C',
+          '22': 'D',
+          '23': 'B',
+          '24': 'C',
+          '25': 'C',
+          '26': 'A',
+          '27': 'C',
+        },
+        '2': {
+          '1': 'C',
+          '2': 'D',
+          '3': 'D',
+          '4': 'D',
+          '5': 'B',
+          '6': 'A',
+          '7': 'B',
+          '8': 'C',
+          '9': 'D',
+          '10': 'C',
+          '11': 'B',
+          '12': 'C',
+          '13': 'A',
+          '14': 'C',
+          '15': 'C',
+          '16': 'D',
+          '17': 'D',
+          '18': 'A',
+          '19': 'B',
+          '20': 'B',
+          '21': 'B',
+          '22': 'D',
+          '23': 'D',
+          '24': 'B',
+          '25': 'C',
+          '26': 'A',
+          '27': 'A',
+        },
+        '3': {
+          '1': 'D',
+          '2': 'B',
+          '3': 'B',
+          '4': 'B',
+          '5': 'B',
+          '6': 'C',
+          '7': 'B',
+          '8': 'A',
+          '9': 'D',
+          '10': 'C',
+          '11': 'A',
+          '12': 'B',
+          '13': 'A',
+          '14': 'A',
+          '15': 'A',
+          '16': 'B',
+          '17': 'A',
+          '18': 'A',
+          '19': 'A',
+          '20': 'D',
+          '21': 'B',
+          '22': 'A',
+          '23': 'B',
+          '24': 'D',
+          '25': 'D',
+          '26': 'B',
+          '27': 'A',
+        }
+      },
+      'm_modules': {
+        '1': {
+          '1': 'A',
+          '2': 'A',
+          '3': '8',
+          '4': '13',
+          '5': 'B',
+          '6': 'C',
+          '7': '63',
+          '8': 'C',
+          '9': 'C',
+          '10': 'A',
+          '11': 'A',
+          '12': 'A',
+          '13': 'C',
+          '14': 'D',
+          '15': '15000',
+          '16': 'A',
+          '17': 'B',
+          '18': 'B',
+          '19': 'A',
+          '20': 'D',
+          '21': '3331',
+          '22': 'B'
+        },
+        '2': {
+          '1': '4',
+          '2': 'A',
+          '3': 'B',
+          '4': 'A',
+          '5': '8.6,43/5',
+          '6': '75',
+          '7': 'C',
+          '8': 'A',
+          '9': 'A',
+          '10': 'B',
+          '11': 'D',
+          '12': 'A',
+          '13': 'C',
+          '14': '3600',
+          '15': 'A',
+          '16': 'D',
+          '17': '45',
+          '18': 'A',
+          '19': 'B',
+          '20': 'C',
+          '21': 'B',
+          '22': 'B'
+        },
+        '3': {
+          '1': 'B',
+          '2': '30',
+          '3': 'A',
+          '4': 'C',
+          '5': 'B',
+          '6': 'D',
+          '7': '100',
+          '8': 'A',
+          '9': '29',
+          '10': 'A',
+          '11': 'D',
+          '12': 'A',
+          '13': 'B',
+          '14': 'C',
+          '15': '.5061,.5062,41/81',
+          '16': 'A',
+          '17': 'A',
+          '18': 'A',
+          '19': 'C',
+          '20': 'B',
+          '21': 'D',
+          '22': '60000'
+        }
+      },
     },
     'psat1': {
       'rw_modules': {
