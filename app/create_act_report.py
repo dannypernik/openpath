@@ -1526,7 +1526,12 @@ def style_custom_act_spreadsheet(organization_data):
                     "textFormat": {
                         "fontSize": 13,
                         "fontFamily": "Montserrat",
-                        "bold": True
+                        "bold": True,
+                        "foregroundColor": {
+                            "red": rgb_text1[0] / 255,
+                            "green": rgb_text1[1] / 255,
+                            "blue": rgb_text1[2] / 255
+                        }
                     }
                 }
             },
