@@ -1196,13 +1196,14 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
     cc_email = []
     bcc_email = []
     if score_data['admin_email']:
-        bcc_email.append({ 'Email': os.environ.get('ADMIN_EMAIL') })
-
         if score_data['email']:
             to_email.append({ 'Email': score_data['email'] })
             cc_email.append({ 'Email': score_data['admin_email'] })
         else:
             to_email.append({ 'Email': score_data['admin_email'] })
+
+        if score_data['org_role'] != 'tutoring':
+            bcc_email.append({ 'Email': os.environ.get('ADMIN_EMAIL') })
     else:
         to_email.append({ 'Email': score_data['email'] })
 

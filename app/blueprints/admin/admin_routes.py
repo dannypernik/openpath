@@ -14,7 +14,7 @@ from app.blueprints.admin import admin_bp
 from app.extensions import db
 from app.helpers import full_name, admin_required, proper
 from app.forms import (
-    UserForm, TutorForm, TestDateForm, RecapForm, OrgSettingsForm
+    UserForm, TutorForm, TestDateForm, RecapForm, OrganizationForm
 )
 from app.models import User, TestDate, UserTestDate, Organization
 from app.email import send_session_recap_email, send_verification_email
@@ -287,9 +287,9 @@ def new_org():
     return redirect(url_for('admin.org_settings', org='new'))
 
 
-@admin_bp.route('/delete-org/<org_slug>', methods=['POST', 'GET'])
+@admin_bp.route('/<org>/delete', methods=['POST', 'GET'])
 @admin_required
-def delete_org(org_slug):
+def delete_org(org):
     org = Organization.query.filter_by(slug=org_slug).first_or_404()
     db.session.delete(org)
     db.session.commit()
@@ -297,10 +297,10 @@ def delete_org(org_slug):
     return redirect(url_for('admin.orgs'))
 
 
-@admin_bp.route('/org-settings/<org>', methods=['GET', 'POST'])
+@admin_bp.route('/<org>/settings', methods=['GET', 'POST'])
 @admin_required
 def org_settings(org):
-    form = OrgSettingsForm()
+    form = OrganizationForm()
 
     if org == 'new':
         organization = None

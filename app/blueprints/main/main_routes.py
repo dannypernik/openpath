@@ -860,8 +860,10 @@ def handle_sat_report(form, template_name, organization=None):
                 org = Organization.query.filter_by(slug=organization['slug']).first()
                 admin = User.query.filter(User.id == org.partner_id).first()
                 score_data['admin_email'] = admin.email
+                score_data['org_role'] = org.role
             else:
                 score_data['admin_email'] = None
+                score_data['org_role'] = None
 
             filename = score_data['student_name'] + ' ' + score_data['date'] + ' ' + score_data['test_display_name']
             os.rename(report_file_path, os.path.join(uploads_folder_path, filename + ' CB report.pdf'))
@@ -1028,6 +1030,10 @@ def handle_act_report(form, template_name, organization=None):
                 org = Organization.query.filter_by(slug=organization['slug']).first()
                 admin = User.query.filter(User.id == org.partner_id).first()
                 score_data['admin_email'] = admin.email
+                score_data['org_role'] = org.role
+            else:
+                score_data['admin_email'] = None
+                score_data['org_role'] = None
 
             score_data['student_ss_id'] = None
             if form.spreadsheet_url.data:

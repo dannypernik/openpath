@@ -1,6 +1,5 @@
 import os
 from app.utils import hex_to_rgb, is_dark_color
-from app.email import send_score_report_email
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaFileUpload

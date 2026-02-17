@@ -265,7 +265,7 @@ class ReviewForm(FlaskForm):
         validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField()
 
-class OrgSettingsForm(FlaskForm):
+class OrganizationForm(FlaskForm):
     org_name = StringField('Organization name', render_kw={'placeholder': 'Organization name'}, \
     validators=[InputRequired()])
     slug = StringField('Organization slug', render_kw={'placeholder': 'Organization slug'}, \

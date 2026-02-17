@@ -487,6 +487,7 @@ def format_timezone(tz_str):
 def get_org_details_dict(organization):
     organization_dict = {
         'name': organization.name,
+        'role': organization.role,
         'logo_path': organization.logo_path,
         'ss_logo_path': organization.ss_logo_path,
         'slug': organization.slug,

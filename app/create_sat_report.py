@@ -1,6 +1,5 @@
 import os
 from app.utils import is_dark_color, hex_to_rgb, color_svg_white_to_input
-from app.email import send_score_report_email
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
