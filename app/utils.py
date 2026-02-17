@@ -370,7 +370,7 @@ def generate_vcard(contacts):
 VERSION:3.0
 N:{contact.get('last_name', '')};{contact.get('first_name', '')};;;
 FN:{contact.get('first_name', '')} {contact.get('last_name', '')}
-EMAIL:{contact.get('email', '')}
+EMAIL;TYPE=HOME:{contact.get('email', '')}
 ORG:{contact.get('role', '').title()}
 TEL;TYPE=CELL:{contact.get('phone', '')}
 NOTE:Timezone: {contact.get('timezone', '')}
