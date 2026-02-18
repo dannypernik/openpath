@@ -240,8 +240,11 @@ def new_student_task(self, contact_data):
     }
 
     try:
-      contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
-      logging.info(f"Test prep folder initiated for {student.get('first_name', 'student')} {student.get('last_name', '')}")
+      if contact_data.get('create_folder'):
+        contact_data['folder_id'] = create_folder(f'{full_name(student)} (Incomplete)')
+        logging.info(f"Test prep folder initiated for {student.get('first_name', 'student')} {student.get('last_name', '')}")
+      else:
+        contact_data['folder_id'] = None
     except Exception as e:
       logging.error(f'Test prep folder failed to initiate for {full_name(student)}: {e}')
       contact_data['folder_id'] = None
