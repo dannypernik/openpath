@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <div class="row text-center text-lg-start section-margin justify-content-center">
+    <div class="col-11 col-md-10 col-xl-8">
+      <h2>Scholarship calculator</h2>
+      <p>Use the slider below to see how far your contribution will go.</p>
+    </div>
+  </div>
+  <div class="slider-label">If a family can comfortably afford:</div>
+  <div class="row justify-content-center text-center">
+    <div class="col-11 col-md-10 col-xl-8">
+      <div class="slider-value">$ <span id="familyPayDisplay"></span></div>
+      <div class="label-units">per hour</div>
+      <input type="range" min="0" max="100" step="5" value="50" class="slider" id="familyPaySlider">
+
+      <div class="row text-center justify-content-center">
+        <div class="col-12 col-lg-4 mb-2">
+          <div class="eq-title">Family payment:</div>
+          <div class="eq-value" id="familyPayEq"></div>
+        </div>
+        <div class="col-12 col-lg-4 mb-2">
+          <div class="eq-title">Community contribution:</div>
+          <div class="eq-value" id="communityPayEq"></div>
+        </div>
+        <div class="col-12 col-lg-4 mb-2">
+          <div class="eq-title">Open Path discount:</div>
+          <div class="eq-value" id="optDonationEq"></div>
+        </div>
+      </div>
+      <div class="row justify-content-center my-2">
+        <div class="col-12">
+          <div class="slider-label">A contribution of $150 enables</div>
+          <div id="hoursEnabled" class="slider-value"></div>
+          <div class="slider-label">for this family</div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <a href="https://buy.stripe.com/8x27sMdZf6wm7ny6Uh7wA0j" class="btn">Make a contribution</a><br>
+        <a href="{{ url_for('mission') }}" class="btn ter sm">Our mission</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  function updateSliderValues(val) {
+    family = parseInt(val);
+    document.getElementById('familyPayDisplay').textContent = family;
+    document.getElementById('familyPayEq').textContent = `$${family}`;
+    // Formulas
+    const community = Math.round((150 - family)/2*100)/100;
+    const total = family + community;
+    const opt = 150 - total;
+    // Format numbers to 2 decimal places if they have decimals
+    function formatNumber(num) {
+      return Number.isInteger(num) ? num : num.toFixed(2);
+    }
+    const communityFormatted = formatNumber(community);
+    const optFormatted = formatNumber(opt);
+    document.getElementById('communityPayEq').textContent = `$${communityFormatted}`;
+    document.getElementById('optDonationEq').textContent = `$${optFormatted}`;
+    document.getElementById('hoursEnabled').textContent = `${Math.round((150 / community)*100)/100} hours`;
+  }
+  const slider = document.getElementById('familyPaySlider');
+  slider.addEventListener('input', function() {
+    updateSliderValues(this.value);
+  });
+  // Initialize
+  updateSliderValues(slider.value);
+  </script>
+{% endblock container %}
