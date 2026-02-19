@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <div class="mt-5 row justify-content-center text-center text-lg-start">
+    <div class="col-11 col-lg-6 ps-xl-3 pe-5">
+      <h1 class="mt-lg-4">Get your free practice test score analysis</h1>
+      <p>
+        Upload your results from a practice test to get a more detailed and useful score analysis than the official score reports.
+      </p>
+
+      <div class="">
+        <a href="{{ url_for('main.sat_report') }}" class="btn d-inline-block w-auto mx-2 ms-lg-0 me-lg-3">Practice SAT<sup class="">&#174;</sup> analysis</a>
+        <a href="{{ url_for('main.act_report') }}" class="btn d-inline-block w-auto mx-2 mx-lg-0">Practice ACT<sup class="">&#174;</sup> analysis</a>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-10 col-lg-5 mt-4">
+      {% include "_sat-sample.html" %}
+    </div>
+  </div>
+{% endblock container %}
+
+{% block end_scripts %}
+  <script>
+    const font_color = '#00496d'
+    const color1 = '#1b4d64'
+    const color2 = '#ffa874'
+    const color3 = '#c3f0f7'
+    const color1_contrast = '#ffffff'
+    const color2_contrast = '#ffffff'
+    const color3_contrast = '#00496d'
+    document.documentElement.style.setProperty('--font-color', font_color);
+    document.documentElement.style.setProperty('--color1', color1);
+    document.documentElement.style.setProperty('--color2', color2);
+    document.documentElement.style.setProperty('--color3', color3);
+    document.documentElement.style.setProperty('--color1-contrast', color1_contrast);
+    document.documentElement.style.setProperty('--color2-contrast', color2_contrast);
+    document.documentElement.style.setProperty('--color3-contrast', color3_contrast);
+  </script>
+{% endblock end_scripts %}

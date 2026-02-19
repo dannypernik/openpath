@@ -756,7 +756,6 @@ def sitemap():
     return response
 
 
-@main_bp.route('/score-report', methods=['GET', 'POST'])
 @main_bp.route('/sat-report', methods=['GET', 'POST'])
 def sat_report():
     form = SATReportForm()
