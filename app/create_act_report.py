@@ -122,8 +122,8 @@ def create_act_score_report(score_data, organization_dict):
     sheets_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
     # 1. Copy the template spreadsheet
-    if organization_dict and organization_dict['spreadsheet_id']:
-        file_id = organization_dict['spreadsheet_id']
+    if organization_dict and organization_dict['act_spreadsheet_id']:
+        file_id = organization_dict['act_spreadsheet_id']
     else:
         file_id = ACT_REPORT_SS_ID
     ss_copy = drive_service.files().copy(

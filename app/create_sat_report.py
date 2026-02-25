@@ -75,7 +75,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
         # Create a copy of the spreadsheet
-        file_id = organization_dict['spreadsheet_id'] if organization_dict else SAT_REPORT_SS_ID
+        file_id = organization_dict['sat_spreadsheet_id'] if organization_dict else SAT_REPORT_SS_ID
         ss_copy = drive_service.files().copy(
             fileId=file_id,
             body={
