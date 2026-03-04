@@ -7,7 +7,7 @@
 
   {% if score_data['missing_data'] %}
     <p>
-      It appears that data for the following questions was missing from the Score Details PDF:
+      It appears that data for the following questions is missing from the Score Details PDF:
     </p>
     <ul>
       {% for item in score_data['missing_data'] %}
@@ -18,7 +18,7 @@
 
   {% if score_data['answer_key_mismatches'] %}
     <p>
-      The following questions may contain errors:
+      The following questions had unexpected formatting and may contain errors:
     </p>
 
     {% include 'email/_changed_answer_table.html' %}
@@ -26,14 +26,17 @@
 
   {% if score_data.get('score_analysis_ss_link') %}
     <p>
-      Note that the scores displayed on the report are not affected
-      by errors in the answer key. You can make corrections to the
+      You can make corrections to the
       <a href="{{ score_data['score_analysis_ss_link'] }}">
         Score analysis spreadsheet
       </a>
-      and generate a new PDF by clicking File > Download > PDF,
-      then change the Export selection from "Current sheet" to
+      and generate a new PDF by clicking File > Download > PDF.
+      Change the Export selection from "Current sheet" to
       "Workbook". Reply here if you need any assistance!
+    </p>
+    <p>
+      Note that the scores displayed on the report are accurate
+      and not affected by errors in the answer key.
     </p>
   {% endif %}
 
@@ -62,9 +65,6 @@
   <p>
     Thank you for allowing us to be a part of your test prep journey! Please let us
     know if you have any questions, feedback, or suggestions.
-  </p>
-  <p>
-    Team OPT
   </p>
 {% endblock content %}
 
