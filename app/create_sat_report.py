@@ -28,8 +28,8 @@ ORG_SAT_REPORT_SS_ID = os.environ.get('ORG_SAT_REPORT_SS_ID')
 ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
 
 total_questions = {
-    'rw_modules': {'questions': 27, 'prepend_rows': 4},
-    'm_modules': {'questions': 22, 'prepend_rows': 35}
+    'rw': {'questions': 27, 'prepend_rows': 4},
+    'math': {'questions': 22, 'prepend_rows': 35}
 }
 
 
@@ -230,18 +230,18 @@ def create_sat_score_report(score_data, organization_dict=None):
             rw_difficulty = 3
         else:
             rw_difficulty = 2
-        if score_data['is_m_hard']:
+        if score_data['is_math_hard']:
             m_difficulty = 3
         else:
             m_difficulty = 2
 
         for cat in [
             {
-                'mod': 'rw_modules',
+                'mod': 'rw',
                 'difficulty': rw_difficulty,
             },
             {
-                'mod': 'm_modules',
+                'mod': 'math',
                 'difficulty': m_difficulty
             }
         ]:
@@ -289,7 +289,7 @@ def create_sat_score_report(score_data, organization_dict=None):
         requests = []
         x = 0
         mod_answers = []
-        for sub in ['rw_modules', 'm_modules']:
+        for sub in ['rw', 'math']:
             for mod in range(1, 3):
                 section = []
                 for n in range(1, total_questions[sub]['questions'] + 1):
@@ -338,8 +338,8 @@ def create_sat_score_report(score_data, organization_dict=None):
 
 
         # Set RW and Math scores
-        for sub in [['rw_score', 5], ['m_score', 8]]:
-            if (sub[0] == 'rw_score' and score_data['rw_questions_answered'] >= 5) or (sub[0] == 'm_score' and score_data['m_questions_answered'] >= 5):
+        for sub in [['rw_score', 5], ['math_score', 8]]:
+            if (sub[0] == 'rw_score' and score_data['rw_questions_answered'] >= 5) or (sub[0] == 'math_score' and score_data['m_questions_answered'] >= 5):
                 request = {
                     'updateCells': {
                         'range': {
@@ -599,7 +599,7 @@ def sat_answers_to_student_ss(score_data):
             rw_difficulty = 3
         else:
             rw_difficulty = 2
-        if score_data['is_m_hard']:
+        if score_data['is_math_hard']:
             m_difficulty = 3
         else:
             m_difficulty = 2
@@ -611,9 +611,9 @@ def sat_answers_to_student_ss(score_data):
 
         completed_subjects = []
         if score_data['rw_questions_answered'] >= 5:
-            completed_subjects.append('rw_modules')
+            completed_subjects.append('rw')
         if score_data['m_questions_answered'] >= 5:
-            completed_subjects.append('m_modules')
+            completed_subjects.append('math')
 
         # Reset batch requests
         x = 0
@@ -625,9 +625,9 @@ def sat_answers_to_student_ss(score_data):
                 for n in range(1, total_questions[sub]['questions'] + 1):
                     # Update the answer sheet with the response
                     row_idx = n + total_questions[sub]['prepend_rows'] - 1
-                    if sub == 'rw_modules':
+                    if sub == 'rw':
                         col_idx = (mod - 1) * 4 * (rw_difficulty - 1) + 2
-                    elif sub == 'm_modules':
+                    elif sub == 'math':
                         col_idx = (mod - 1) * 4 * (m_difficulty - 1) + 2
 
                     # Needed str(mod) and str(n) with celery worker
@@ -675,8 +675,8 @@ def sat_answers_to_student_ss(score_data):
 
 
         # Set RW and Math scores
-        for sub in [['rw_score', 6], ['m_score', 8]]:
-            if (sub[0] == 'rw_score' and 'rw_modules' in completed_subjects) or (sub[0] == 'm_score' and 'm_modules' in completed_subjects):
+        for sub in [['rw_score', 6], ['math_score', 8]]:
+            if (sub[0] == 'rw_score' and 'rw' in completed_subjects) or (sub[0] == 'math_score' and 'math' in completed_subjects):
                 request = {
                     'updateCells': {
                     'range': {
@@ -704,7 +704,7 @@ def sat_answers_to_student_ss(score_data):
 
 
         # If RW completed, set RW completion date
-        if 'rw_modules' in completed_subjects:
+        if 'rw' in completed_subjects:
             request = {
                 'updateCells': {
                     'range': {
@@ -737,7 +737,7 @@ def sat_answers_to_student_ss(score_data):
 
 
         # If Math completed, set Math completion date
-        if 'm_modules' in completed_subjects:
+        if 'math' in completed_subjects:
             request = {
                 'updateCells': {
                     'range': {

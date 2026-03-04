@@ -11,42 +11,44 @@ pp = pprint.PrettyPrinter(indent=2, width=100)
 
 def get_student_answers(score_details_file_path):
   total_questions = {
-    'rw_modules': {'questions': 27},
-    'm_modules': {'questions': 22}
+    'rw': {'questions': 27},
+    'math': {'questions': 22}
   }
   pdf = pdfplumber.open(score_details_file_path)
   pages = pdf.pages
 
   score_details_data = {
-      'test_code': None,
-      'test_display_name': None,
-      'date': None,
-      'rw_score': 100,
-      'm_score': 100,
-      'is_rw_hard': None,
-      'is_m_hard': None,
-      'has_omits': False,
-      'answer_key_mismatches': [],
-      'missing_data': [],
-      'answers': {
-        'rw_modules': {
-          '1': {},
-          '2': {}
-        },
-        'm_modules': {
-          '1': {},
-          '2': {}
-        },
+    'test_code': None,
+    'test_display_name': None,
+    'date': None,
+    'is_rw_found': False,
+    'is_math_found': False,
+    'rw_score': 100,
+    'math_score': 100,
+    'is_rw_hard': None,
+    'is_math_hard': None,
+    'has_omits': False,
+    'answer_key_mismatches': [],
+    'missing_data': [],
+    'answers': {
+      'rw': {
+        '1': {},
+        '2': {}
       },
+      'math': {
+        '1': {},
+        '2': {}
+      },
+    },
   }
 
   date = None
   subject_totals = {
-    'rw_modules': 0,
-    'm_modules': 0
+    'rw': 0,
+    'math': 0
   }
 
-  subject = 'rw_modules'
+  subject = 'rw'
   rw_mod_num = '1'
   m_mod_num = '1'
 
@@ -96,11 +98,11 @@ def get_student_answers(score_details_file_path):
         if i == 0:
           if s.isdigit():
             number = s
-            print(line_split)
+            # print(line_split)
           else:
             break
         elif s == 'Math':
-          subject = 'm_modules'
+          subject = 'math'
         elif s == 'Review':
           break
 
@@ -121,7 +123,7 @@ def get_student_answers(score_details_file_path):
       for x in range(line_num, line_num + 3):
         if not result and x < len(full_text_lines):
           next_line = full_text_lines[x]
-          print(f'line {x}: {next_line}')
+          # print(f'line {x}: {next_line}')
           next_line_split = next_line.split()
           for word in next_line_split:
             if word in ['Correct', 'Incorrect', 'Omitted']:
@@ -135,7 +137,7 @@ def get_student_answers(score_details_file_path):
 
     # Find response or correct answer from previous line if not already found
     if number and prev_line_split and not (response and correct_answer):
-      print(f'prev_line_split: {prev_line_split}')
+      # print(f'prev_line_split: {prev_line_split}')
       for s in range(len(prev_line_split)):
         split = prev_line_split[s]
         if not response and split[-1] == ';':
@@ -145,19 +147,23 @@ def get_student_answers(score_details_file_path):
           correct_answer = split.rstrip(',')
 
 
-    if score_details_data['answers']['m_modules']['1'].get(number):
+    if score_details_data['answers']['math']['1'].get(number):
       m_mod_num = '2'
 
-    if score_details_data['answers']['rw_modules']['1'].get(number):
+    if score_details_data['answers']['rw']['1'].get(number):
       rw_mod_num = '2'
 
     if subject and number and correct_answer and response:
       subject_totals[subject] += 1
 
-      if subject == 'rw_modules':
+      if subject == 'rw':
         module = rw_mod_num
-      elif subject == 'm_modules':
+        if not score_details_data['is_rw_found']:
+          score_details_data['is_rw_found'] = True
+      elif subject == 'math':
         module = m_mod_num
+        if not score_details_data['is_m_found']:
+          score_details_data['is_m_found'] = True
 
       score_details_data['answers'][subject][module][number] = {
         'correct_answer': correct_answer,
@@ -170,7 +176,7 @@ def get_student_answers(score_details_file_path):
   rw_questions_answered = 0
   m_questions_answered = 0
 
-  for sub in ['rw_modules', 'm_modules']:
+  for sub in ['rw', 'math']:
     for mod in range(1, 3):
       for q in range(1, total_questions[sub]['questions'] + 1):
         if score_details_data['answers'][sub][str(mod)].get(str(q)) is None:
@@ -179,28 +185,28 @@ def get_student_answers(score_details_file_path):
             'student_answer': 'not found',
             'is_correct': False
           }
-        elif sub == 'rw_modules' and score_details_data['answers'][sub][str(mod)][str(q)][
+        elif sub == 'rw' and score_details_data['answers'][sub][str(mod)][str(q)][
           'student_answer'] != '-':
           rw_questions_answered += 1
-        elif sub == 'm_modules' and score_details_data['answers'][sub][str(mod)][str(q)][
+        elif sub == 'math' and score_details_data['answers'][sub][str(mod)][str(q)][
           'student_answer'] != '-':
           m_questions_answered += 1
 
   score_details_data['rw_questions_answered'] = rw_questions_answered
   score_details_data['m_questions_answered'] = m_questions_answered
 
-  pp.pprint(score_details_data)
+  # pp.pprint(score_details_data)
 
   if date is None:
     return "invalid"
   elif int(test_number) > 11:
         raise ValueError('Test unavailable')
-  elif subject_totals['m_modules'] < 5:
-    raise ValueError('Missing math modules')
-  elif subject_totals['rw_modules'] < 44:
-    raise ValueError('Error reading score details: missing RW questions')
-  elif subject_totals['m_modules'] < 34:
-    raise ValueError('Error reading score details: missing Math questions')
+  # elif subject_totals['math'] < 5:
+  #   raise ValueError('Missing math modules')
+  elif subject_totals['rw'] <= 30:
+    raise ValueError('Error reading score details: missing too many questions')
+  # elif subject_totals['math'] < 34:
+  #   raise ValueError('Error reading score details: missing Math questions')
   elif rw_questions_answered < 5 and m_questions_answered < 5:
     raise ValueError('Error reading score details: insufficient questions answered')
 
@@ -218,11 +224,13 @@ def get_data_from_pdf(data, pdf_path):
 
   data['student_name'] = None
   data['rw_score'] = None
-  data['m_score'] = None
+  data['math_score'] = None
   data['total_score'] = None
 
   reportConfirmed = False
-  if pages[0].extract_text().find('This practice score report is provided by') != -1:
+  page0_condensed = pages[0].extract_text()
+
+  if page0_condensed.replace(' ', '').find('Thispracticescorereportisprovidedby') != -1:
     reportConfirmed = True
 
   if reportConfirmed:
@@ -232,11 +240,18 @@ def get_data_from_pdf(data, pdf_path):
         # print(text)
         # Extract student name
         if not data['student_name']:
-          name_start = text.find('Name: ') + 6
-          if name_start != 5: # -1 + 6
+          name_start = text.find('Name:') + 5
+          if text[5] == ' ':
+            name_start = text.find('Name:') + 6
+          if name_start <= 5: # -1 + 6 => not found
             name_end = text.find('\n', name_start)
-            student_name = text[name_start:name_end].strip()
-            data['student_name'] = student_name
+            data['student_name'] = text[name_start:name_end].strip()
+
+            if data['student_name'].find(' ') == -1:
+              for char in data['student_name'][1:]:
+                if char.isupper():
+                  data['student_name'] = data['student_name'].replace(char, ' ' + char)
+                  break
 
         # Extract total score and remaining values
         scores = re.findall(r'(\s\d{3}\s|\s\d{4}\s)', text)
@@ -249,7 +264,7 @@ def get_data_from_pdf(data, pdf_path):
               for j in range(i+1, len(remaining_values)):
                 if remaining_values[i] + remaining_values[j] == data['total_score']:
                   data['rw_score'] = remaining_values[i]
-                  data['m_score'] = remaining_values[j]
+                  data['math_score'] = remaining_values[j]
                   break
               if not data['rw_score']:
                 break
@@ -267,12 +282,12 @@ def get_data_from_pdf(data, pdf_path):
         test_code = test_type.lower() + test_number
 
         date_start = sat_line.find(' ', test_number_end) + 1
-        date_str = sat_line[date_start:]
-        date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
+        date_str_condensed = sat_line[date_start:].replace(' ', '')
+        date = datetime.datetime.strptime(date_str_condensed, '%B%d,%Y').strftime('%Y.%m.%d')
       if date != data['date'] or test_code != data['test_code']:
         raise ValueError(f'Score report error: date or test code mismatch. {date} != {data["date"]} or {test_code} != {data["test_code"]}')
-      if not data['rw_score'] or not data['m_score']:
-        raise ValueError('Score report error: rw_score or m_score not found')
+      if not data['rw_score'] or not data['math_score']:
+        raise ValueError('Score report error: rw_score or math_score not found')
       return data
     except Exception as e:
       logging.error(f'Error reading score report: {e}')
@@ -444,7 +459,7 @@ def get_mod_difficulty(score_details_data):
 
   easy_rw_diff_answer = mod_diffs[score_details_data['test_code']]['rw']['easy_answer']
   hard_rw_diff_answer = mod_diffs[score_details_data['test_code']]['rw']['hard_answer']
-  pdf_rw_diff_answer = score_details_data['answers']['rw_modules']['2'][mod_diffs[score_details_data['test_code']]['rw']['diff_question']]['correct_answer']
+  pdf_rw_diff_answer = score_details_data['answers']['rw']['2'][mod_diffs[score_details_data['test_code']]['rw']['diff_question']]['correct_answer']
   if hard_rw_diff_answer == pdf_rw_diff_answer:
     score_details_data['is_rw_hard'] = True
   elif easy_rw_diff_answer == pdf_rw_diff_answer:
@@ -454,13 +469,13 @@ def get_mod_difficulty(score_details_data):
 
   easy_m_diff_answer = mod_diffs[score_details_data['test_code']]['m']['easy_answer']
   hard_m_diff_answer = mod_diffs[score_details_data['test_code']]['m']['hard_answer']
-  pdf_m_diff_answer = score_details_data['answers']['m_modules']['2'][mod_diffs[score_details_data['test_code']]['m']['diff_question']]['correct_answer']
+  pdf_m_diff_answer = score_details_data['answers']['math']['2'][mod_diffs[score_details_data['test_code']]['m']['diff_question']]['correct_answer']
   if hard_m_diff_answer == pdf_m_diff_answer:
-    score_details_data['is_m_hard'] = True
+    score_details_data['is_math_hard'] = True
   elif easy_m_diff_answer == pdf_m_diff_answer:
-    score_details_data['is_m_hard'] = False
+    score_details_data['is_math_hard'] = False
   else:
-    score_details_data['is_m_hard'] = None
+    score_details_data['is_math_hard'] = None
 
   return score_details_data
 
@@ -469,12 +484,12 @@ def print_answer_key(score_details_data):
   answer_key = {
     'test_code': score_details_data['test_code'],
     'is_rw_hard': score_details_data['is_rw_hard'],
-    'is_m_hard': score_details_data['is_m_hard'],
-    'rw_modules': {
+    'is_math_hard': score_details_data['is_math_hard'],
+    'rw': {
       '1': {},
       '2': {}
     },
-    'm_modules': {
+    'math': {
       '1': {},
       '2': {}
     }
@@ -490,7 +505,7 @@ def print_answer_key(score_details_data):
 def check_answer_key(score_details_data):
   answer_key = {
     'sat1': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'C',
@@ -579,7 +594,7 @@ def check_answer_key(score_details_data):
           '27': 'A'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'A',
           '2': 'B',
@@ -655,7 +670,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat2': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'C',
@@ -744,7 +759,7 @@ def check_answer_key(score_details_data):
           '27': 'D'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'C',
           '2': 'D',
@@ -820,7 +835,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat3': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'B',
           '2': 'D',
@@ -909,7 +924,7 @@ def check_answer_key(score_details_data):
           '27': 'B'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'C',
           '2': 'D',
@@ -985,7 +1000,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat4': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'B',
           '2': 'B',
@@ -1074,7 +1089,7 @@ def check_answer_key(score_details_data):
           '27': 'D'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'C',
           '2': 'B',
@@ -1150,7 +1165,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat5': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'B',
@@ -1239,7 +1254,7 @@ def check_answer_key(score_details_data):
           '27': 'C'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'D',
           '2': 'A',
@@ -1315,7 +1330,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat6': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'D',
           '2': 'D',
@@ -1404,7 +1419,7 @@ def check_answer_key(score_details_data):
           '27': 'C'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'A',
           '2': 'D',
@@ -1480,7 +1495,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat7': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'D',
           '2': 'D',
@@ -1569,7 +1584,7 @@ def check_answer_key(score_details_data):
           '27': 'A'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'A',
           '2': 'C',
@@ -1645,7 +1660,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat8': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'B',
           '2': 'B',
@@ -1734,7 +1749,7 @@ def check_answer_key(score_details_data):
           '27': 'A'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'D',
           '2': 'D',
@@ -1810,7 +1825,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat9': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'C',
@@ -1899,7 +1914,7 @@ def check_answer_key(score_details_data):
           '27': 'A'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'D',
           '2': 'C',
@@ -1975,7 +1990,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat10': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'C',
@@ -2064,7 +2079,7 @@ def check_answer_key(score_details_data):
           '27': 'D'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'C',
           '2': 'D',
@@ -2140,7 +2155,7 @@ def check_answer_key(score_details_data):
       }
     },
     'sat11': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'C',
           '2': 'D',
@@ -2229,7 +2244,7 @@ def check_answer_key(score_details_data):
           '27': 'A',
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'A',
           '2': 'A',
@@ -2305,7 +2320,7 @@ def check_answer_key(score_details_data):
       },
     },
     'psat1': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'A',
           '2': 'D',
@@ -2394,7 +2409,7 @@ def check_answer_key(score_details_data):
           '27': 'A'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'D',
           '2': 'C',
@@ -2470,7 +2485,7 @@ def check_answer_key(score_details_data):
       }
     },
     'psat2': {
-      'rw_modules': {
+      'rw': {
         '1': {
           '1': 'C',
           '2': 'A',
@@ -2559,7 +2574,7 @@ def check_answer_key(score_details_data):
           '27': 'B'
         }
       },
-      'm_modules': {
+      'math': {
         '1': {
           '1': 'C',
           '2': '17',
@@ -2639,23 +2654,24 @@ def check_answer_key(score_details_data):
   for sub in score_details_data['answers']:
     for mod in score_details_data['answers'][sub]:
       key_mod = mod
-      if mod == '2' and ((sub == 'rw_modules' and score_details_data['is_rw_hard']) or (sub == 'm_modules' and score_details_data['is_m_hard'])):
+      if mod == '2' and ((sub == 'rw' and score_details_data['is_rw_hard']) or (sub == 'math' and score_details_data['is_math_hard'])):
         key_mod = '3'
       for q in score_details_data['answers'][sub][mod]:
-        if score_details_data['answers'][sub][mod][q]['correct_answer'] == 'not found':
-          score_details_data['missing_data'].append({
-            'sub': sub,
-            'mod': mod,
-            'q': q
-          })
-        elif score_details_data['answers'][sub][mod][q]['correct_answer'] != answer_key[score_details_data['test_code']][sub][key_mod][q]:
-          score_details_data['answer_key_mismatches'].append({
-            'sub': sub,
-            'mod': mod,
-            'q': q,
-            'previous_key': answer_key[score_details_data['test_code']][sub][key_mod][q],
-            'new_key': score_details_data['answers'][sub][mod][q]['correct_answer']
-          })
+        if score_details_data[f'is_{sub}_found']:
+          if score_details_data['answers'][sub][mod][q]['correct_answer'] == 'not found':
+            score_details_data['missing_data'].append({
+              'sub': sub,
+              'mod': mod,
+              'q': q
+            })
+          elif score_details_data['answers'][sub][mod][q]['correct_answer'] != answer_key[score_details_data['test_code']][sub][key_mod][q]:
+            score_details_data['answer_key_mismatches'].append({
+              'sub': sub,
+              'mod': mod,
+              'q': q,
+              'previous_key': answer_key[score_details_data['test_code']][sub][key_mod][q],
+              'new_key': score_details_data['answers'][sub][mod][q]['correct_answer']
+            })
 
   return score_details_data
 
