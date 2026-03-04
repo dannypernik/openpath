@@ -887,9 +887,14 @@ def handle_sat_report(form, template_name, organization=None):
 
             sat_report_workflow_task.delay(score_data, organization_dict=organization)
 
+            if score_data['math_questions_answered'] < 5:
+                score_data['test_display_name'] = f'{score_data["test_display_name"]} Reading & Writing'
+            elif score_data['rw_questions_answered'] < 5:
+                score_data['test_display_name'] = f'{score_data["test_display_name"]} Math'
+
             if organization:
                 return_route = url_for('main.custom_sat_report', org=organization['slug'])
-                flash(Markup(f'Your answers have been submitted successfully.<br> \
+                flash(Markup(f'Your {score_data["test_display_name"]} results have been submitted successfully.<br> \
                 Your score analysis should arrive in your inbox or spam folder in the next 5 minutes.<br> \
                 <a href="{return_route}">Submit another test</a>'), 'success')
                 return redirect(url_for('main.index'))
@@ -901,23 +906,17 @@ def handle_sat_report(form, template_name, organization=None):
                         current_email = current_user.email.lower()
                     ss_updated = score_data['student_ss_id'] and current_user.sat_ss_id != score_data['student_ss_id']
 
-                return_route = url_for('main.sat_report')
+                session['test_display_name'] = score_data['test_display_name']
+                session['return_route'] = url_for('main.sat_report')
                 return redirect(url_for('main.score_report_sent',
                                         sat_ss_id=score_data['student_ss_id'],
                                         ss_updated=ss_updated,
-                                        email=current_email,
-                                        return_route=return_route))
+                                        email=current_email))
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
-            elif 'Missing math modules' in str(ve):
+            elif 'missing too many questions' in str(ve):
                 flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'missing RW questions' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure your browser window is wide enough so that "Reading and Writing" displays on one line in your answers table. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'missing Math questions' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure the file includes 27 questions per Reading & Writing module and 22 questions per Math module. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
-            elif 'PDF too narrow' in str(ve):
-                flash('Score Details error: Page too narrow. Ensure "Reading and Writing" displays on single line in answer table.', 'error')
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
             elif 'insufficient questions answered' in str(ve):
@@ -1069,12 +1068,13 @@ def handle_act_report(form, template_name, organization=None):
                         current_email = current_user.email.lower()
                     ss_updated = score_data['student_ss_id'] and current_user.act_ss_id != score_data['student_ss_id']
 
-                return_route = url_for('main.act_report')
+                session['return_route'] = url_for('main.act_report')
+                session['test_display_name'] = score_data['test_display_name']
+
                 return redirect(url_for('main.score_report_sent',
                                         act_ss_id=score_data['student_ss_id'],
                                         ss_updated=ss_updated,
-                                        email=current_email,
-                                        return_route=return_route))
+                                        email=current_email))
 
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
@@ -1090,7 +1090,8 @@ def score_report_sent():
     act_ss_id = request.args.get('act_ss_id')
     ss_updated = request.args.get('ss_updated') == 'True'
     email = request.args.get('email')
-    return_route = request.args.get('return_route')
+    test_display_name = session.pop('test_display_name', 'Test results')
+    return_route = session.pop('return_route', url_for('score_analysis'))
     user = current_user if current_user.is_authenticated else None
 
     if request.method == 'GET':
@@ -1108,6 +1109,7 @@ def score_report_sent():
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.score_report_sent',
+                                    test_display_name=test_display_name,
                                     sat_ss_id=sat_ss_id,
                                     act_ss_id=act_ss_id,
                                     ss_updated=ss_updated,
@@ -1125,7 +1127,8 @@ def score_report_sent():
                             form=form,
                             email=email,
                             ss_updated=ss_updated,
-                            return_route=return_route)
+                            return_route=return_route,
+                            test_display_name=test_display_name)
 
 
 @main_bp.route('/<org>/results', methods=['GET', 'POST'])

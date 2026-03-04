@@ -62,6 +62,31 @@ def check_service_account_access(spreadsheet_id):
         return False
 
 
+def make_file_editable(file_id):
+    '''Make the file editable by anyone with the link.'''
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+    try:
+        # Create the Drive API service
+        drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+
+        # Create the permission
+        permission = {
+            'type': 'anyone',
+            'role': 'writer'
+        }
+        drive_service.permissions().create(
+            fileId=file_id,
+            body=permission
+        ).execute()
+        logging.info(f'File {file_id} is now editable by anyone with the link')
+    except Exception as e:
+        logging.error(f'Error making file {file_id} editable: {e}')
+        raise
+
+
 def create_sat_score_report(score_data, organization_dict=None):
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_JSON,  # Path to your service account JSON file

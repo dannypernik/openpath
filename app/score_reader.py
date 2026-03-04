@@ -218,7 +218,7 @@ def get_student_answers(score_details_file_path):
 #     yield line
 
 
-def get_data_from_pdf(data, pdf_path):
+def get_data_from_score_report(data, pdf_path):
   pdf = pdfplumber.open(pdf_path)
   pages = pdf.pages
 
@@ -243,7 +243,7 @@ def get_data_from_pdf(data, pdf_path):
           name_start = text.find('Name:') + 5
           if text[5] == ' ':
             name_start = text.find('Name:') + 6
-          if name_start <= 5: # -1 + 6 => not found
+          if name_start >= 4: # -1 + 5 => not found
             name_end = text.find('\n', name_start)
             data['student_name'] = text[name_start:name_end].strip()
 
@@ -2683,7 +2683,7 @@ def get_all_data(report_path, details_path):
     report_path, details_path = details_path, report_path
     if data == "invalid":
       raise FileNotFoundError('Score Details PDF does not match expected format')
-  data = get_data_from_pdf(data, report_path)
+  data = get_data_from_score_report(data, report_path)
   data = get_mod_difficulty(data)
   data = check_answer_key(data)
   # print_answer_key(data)

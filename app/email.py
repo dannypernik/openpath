@@ -1233,7 +1233,6 @@ def send_score_report_email(score_data, pdf_base64, conf_img_base64=None):
                 'Cc': cc_email,
                 'Bcc': bcc_email,
                 'Subject': score_data['test_display_name'] + ' Score Analysis for ' + score_data['student_name'],
-                'TextPart': render_template('email/score-report-email.txt', score_data=score_data, int=int),
                 'HTMLPart': render_template('email/score-report-email.html', score_data=score_data, int=int),
                 'Attachments': attachments
             }

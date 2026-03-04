@@ -6,7 +6,7 @@ from celery import chain
 from app import celery, create_app
 from app.create_sat_report import create_sat_score_report, create_sat_pdf_report, \
     sat_answers_to_student_ss, style_custom_sat_spreadsheet, \
-    update_sat_org_logo, update_sat_partner_logo
+    update_sat_org_logo, update_sat_partner_logo, make_file_editable
 from app.create_act_report import create_act_score_report, create_act_pdf_report, \
     act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet, \
     update_act_org_logo, update_act_partner_logo
@@ -93,6 +93,10 @@ def create_and_send_sat_report_task(self, score_data, organization_dict=None):
     logging.info(f"SAT score report used {score_report_mem:.2f} MB of memory")
 
     base64_blob = create_sat_pdf_report(ss_copy_id, score_data_updated)
+
+    if score_data_updated.get('answer_key_mismatches') or score_data_updated.get('missing_data'):
+      make_file_editable(ss_copy_id)
+      score_data_updated['score_analysis_ss_link'] = f"https://docs.google.com/spreadsheets/d/{ss_copy_id}"
 
     send_score_report_email(score_data_updated, base64_blob)
     logging.info(f"PDF report sent to {score_data_updated['email']}")

@@ -2,8 +2,7 @@
 
 {% block content %}
   <p>
-    Please find the {{ score_data['test_display_name'] }} score report for
-    {{ score_data['student_name'] }} attached.
+    Please find {{ score_data['student_name'] }}'s score analysis for {{ score_data['test_display_name'] }} attached.
   </p>
 
   {% if score_data['missing_data'] %}
@@ -15,24 +14,26 @@
         <li>{% if item['sub'] == 'rw' %}Reading & Writing{% else %}Math{% endif %} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
       {% endfor %}
     </ul>
-    <p>
-      Answers for these questions will appear as "not found" on the score report. The
-      subject and overall scores are still accurate, however.
-    </p>
   {% endif %}
 
   {% if score_data['answer_key_mismatches'] %}
     <p>
-      It appears that the College Board has changed the answer key for practice {{
-      score_data['test_display_name'] }}. The following questions may display incorrectly
-      on your score report:
+      The following questions may contain errors:
     </p>
 
     {% include 'email/_changed_answer_table.html' %}
+  {% endif %}
 
+  {% if score_data.get('score_analysis_ss_link') %}
     <p>
-      Note that the scores displayed on the report are not affected by errors in the
-      answer key.
+      Note that the scores displayed on the report are not affected
+      by errors in the answer key. You can make corrections to the
+      <a href="{{ score_data['score_analysis_ss_link'] }}">
+        Score analysis spreadsheet
+      </a>
+      and generate a new PDF by clicking File > Download > PDF,
+      then change the Export selection from "Current sheet" to
+      "Workbook". Reply here if you need any assistance!
     </p>
   {% endif %}
 
