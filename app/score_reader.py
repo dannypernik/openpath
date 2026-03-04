@@ -162,8 +162,8 @@ def get_student_answers(score_details_file_path):
           score_details_data['is_rw_found'] = True
       elif subject == 'math':
         module = m_mod_num
-        if not score_details_data['is_m_found']:
-          score_details_data['is_m_found'] = True
+        if not score_details_data['is_math_found']:
+          score_details_data['is_math_found'] = True
 
       score_details_data['answers'][subject][module][number] = {
         'correct_answer': correct_answer,
@@ -228,9 +228,9 @@ def get_data_from_pdf(data, pdf_path):
   data['total_score'] = None
 
   reportConfirmed = False
-  page0_condensed = pages[0].extract_text()
+  page0 = pages[0].extract_text()
 
-  if page0_condensed.replace(' ', '').find('Thispracticescorereportisprovidedby') != -1:
+  if page0.replace(' ', '').find('Thispracticescorereportisprovidedby') != -1:
     reportConfirmed = True
 
   if reportConfirmed:
