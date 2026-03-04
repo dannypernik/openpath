@@ -339,7 +339,7 @@ def create_sat_score_report(score_data, organization_dict=None):
 
         # Set RW and Math scores
         for sub in [['rw_score', 5], ['math_score', 8]]:
-            if (sub[0] == 'rw_score' and score_data['rw_questions_answered'] >= 5) or (sub[0] == 'math_score' and score_data['m_questions_answered'] >= 5):
+            if (sub[0] == 'rw_score' and score_data['rw_questions_answered'] >= 5) or (sub[0] == 'math_score' and score_data['math_questions_answered'] >= 5):
                 request = {
                     'updateCells': {
                         'range': {
@@ -409,7 +409,7 @@ def create_sat_score_report(score_data, organization_dict=None):
             requests.append(request)
 
         # Hide Math rows if omitted
-        if score_data['m_questions_answered'] < 5:
+        if score_data['math_questions_answered'] < 5:
             request = {
                 'updateDimensionProperties': {
                     'range': {
@@ -612,7 +612,7 @@ def sat_answers_to_student_ss(score_data):
         completed_subjects = []
         if score_data['rw_questions_answered'] >= 5:
             completed_subjects.append('rw')
-        if score_data['m_questions_answered'] >= 5:
+        if score_data['math_questions_answered'] >= 5:
             completed_subjects.append('math')
 
         # Reset batch requests

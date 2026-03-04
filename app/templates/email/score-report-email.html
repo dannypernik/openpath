@@ -12,7 +12,7 @@
     </p>
     <ul>
       {% for item in score_data['missing_data'] %}
-        <li>{% if item['sub'] == 'rw_modules' %}Reading & Writing{% else %}Math{% endif %} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
+        <li>{% if item['sub'] == 'rw' %}Reading & Writing{% else %}Math{% endif %} Module {{ item['mod'] }} Question {{ item['q'] }}</li>
       {% endfor %}
     </ul>
     <p>
@@ -48,7 +48,7 @@
     <p>
       Your{% if score_data['rw_questions_answered'] and score_data['rw_questions_answered'] < 5 %}
       Math
-      {% elif score_data['m_questions_answered'] and score_data['m_questions_answered'] < 5 %}
+      {% elif score_data['math_questions_answered'] and score_data['math_questions_answered'] < 5 %}
       Reading & Writing
       {% else %} test
       {% endif %}answers should be available in the

@@ -174,7 +174,7 @@ def get_student_answers(score_details_file_path):
     prev_line_split = line_split
 
   rw_questions_answered = 0
-  m_questions_answered = 0
+  math_questions_answered = 0
 
   for sub in ['rw', 'math']:
     for mod in range(1, 3):
@@ -190,10 +190,10 @@ def get_student_answers(score_details_file_path):
           rw_questions_answered += 1
         elif sub == 'math' and score_details_data['answers'][sub][str(mod)][str(q)][
           'student_answer'] != '-':
-          m_questions_answered += 1
+          math_questions_answered += 1
 
   score_details_data['rw_questions_answered'] = rw_questions_answered
-  score_details_data['m_questions_answered'] = m_questions_answered
+  score_details_data['math_questions_answered'] = math_questions_answered
 
   # pp.pprint(score_details_data)
 
@@ -207,7 +207,7 @@ def get_student_answers(score_details_file_path):
     raise ValueError('Error reading score details: missing too many questions')
   # elif subject_totals['math'] < 34:
   #   raise ValueError('Error reading score details: missing Math questions')
-  elif rw_questions_answered < 5 and m_questions_answered < 5:
+  elif rw_questions_answered < 5 and math_questions_answered < 5:
     raise ValueError('Error reading score details: insufficient questions answered')
 
   return score_details_data

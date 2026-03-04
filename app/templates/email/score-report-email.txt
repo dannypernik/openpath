@@ -15,7 +15,7 @@ Note that the scores displayed on the report are not affected by errors in the a
 Please check the attached verification image for any errors in grading your bubble sheet. The red squares indicate which answer choices the auto grader tool identified as marked. If you find any errors, reply here for an updated report.
 {% endif %}
 {% if score_data['student_ss_id'] %}
-Your {% if score_data['rw_questions_answered'] and score_data['rw_questions_answered'] < 5 %}Math{% elif score_data['m_questions_answered'] and score_data['m_questions_answered'] < 5 %}Reading & Writing{% else %}test{% endif %} answers should be available in the {{ score_data['test_code'].upper() }} tab of your answer spreadsheet:
+Your {% if score_data['rw_questions_answered'] and score_data['rw_questions_answered'] < 5 %}Math{% elif score_data['math_questions_answered'] and score_data['math_questions_answered'] < 5 %}Reading & Writing{% else %}test{% endif %} answers should be available in the {{ score_data['test_code'].upper() }} tab of your answer spreadsheet:
 https://docs.google.com/spreadsheets/d/{{ score_data['student_ss_id'] }}/edit?gid={{ score_data['test_sheet_id'] }}
 
 If not, reply here for assistance.
