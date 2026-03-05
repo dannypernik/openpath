@@ -8,7 +8,9 @@ Unsubscribe
 <div class="row justify-content-center">
   <div class="col-11 col-lg-10">
     <h1 class="text-center">Unsubscribe from SAT Resources</h1>
-    <p class="text-center">Your email will be removed from the shared SAT Resources folder.</p>
+    <p class="text-center">
+      You will still have access to the resources but will no longer receive email updates.
+    </p>
     <form method="POST" action="{{ url_for('auth.unsubscribe') }}">
       {{ form.hidden_tag() }}
       <div class="mb-3">
