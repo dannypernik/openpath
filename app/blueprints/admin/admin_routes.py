@@ -451,8 +451,8 @@ def org_settings(org):
 
                 style_custom_spreadsheets_task.delay(organization_data)
 
-                if organization_data['is_style_updated'] or form.logo.data:
-                    flash(Markup(f'{"Style" if organization_data["is_style_updated"] else "Logo"} updated for \
+                if organization_data['is_style_updated']:
+                    flash(Markup(f'Style updated for \
                         <a href="https://docs.google.com/spreadsheets/d/{organization.sat_spreadsheet_id}" target="_blank">\
                             SAT spreadsheet</a> and \
                         <a href="https://docs.google.com/spreadsheets/d/{organization.act_spreadsheet_id}" target="_blank">\
