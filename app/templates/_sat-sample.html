@@ -37,7 +37,12 @@
 
   <!-- title -->
   {% if organization and organization.ss_logo_path %}
-    <image href="{{ url_for('static', filename=organization.ss_logo_path) }}" x="50" y="27" height="55"/>
+    <image
+      href="{{ url_for('static', filename=organization.ss_logo_path) }}"
+      x="50" y="27"
+      width="300" height="55"
+      preserveAspectRatio="xMinYMax meet"
+    />
   {% endif %}
 
   <text class="header-text" x="48" {% if organization %}y="120"{% else %}y="90"{% endif %} font-size="20">
