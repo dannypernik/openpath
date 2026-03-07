@@ -692,16 +692,19 @@ def add_student_to_ss_list(student_name):
 
     result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
         spreadsheetId=OPT_SPREADSHEET_ID,
-        range='Summary!A1:A'
+        range='Summary!A3:A'
     ).execute())
 
     values = result.get('values', [])
     target_row = len(values) + 1
-    existing_names = []
+    name_exists = False
     for row in values:
-        existing_names.append(row[0])
+        if row and len(row) > 0:
+            if row[0] == student_name:
+                name_exists = True
+                break
 
-    if student_name not in existing_names:
+    if not name_exists:
         execute_with_retries(lambda: sheets_service.spreadsheets().values().append(
             spreadsheetId=OPT_SPREADSHEET_ID,
             range=f'Summary!A{target_row}',
