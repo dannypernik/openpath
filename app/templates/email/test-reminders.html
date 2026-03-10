@@ -36,13 +36,16 @@
     <ul>
       <li>Photo ID</li>
       <li>Admission ticket</li>
-      <li>#2 pencils: 2 sharpened, 1 dull</li>
+      <li>Pencils for scratch work</li>
       <li>
         {% if test_date.test == 'sat' %}
           <a href="https://satsuite.collegeboard.org/sat/what-to-bring-do/calculator-policy" target="_blank">
-            Approved calculator</a>
+            Approved calculator
+          </a>
         {% elif test_date.test == 'act' %}
-          Calculator
+          <a href="https://www.act.org/content/act/en/products-and-services/the-act/test-day/calculator-policy.html">
+            Approved calculator
+          </a>
         {% endif %}
         with new batteries
       </li>
@@ -64,19 +67,13 @@
     <li>
       Before the start of each section, visualize yourself using your chosen
       strategies, feeling confident in your answers, and moving easily
-      through the test. Slow is smooth, and smooth is fast.
+      through the test. Slow is smooth, smooth is fast.
     </li>
     <li>
       Find what's familiar. Each {{ test_date.test.upper() }} brings new ways to
       ask questions that cover the same old concepts. Identifying the concept is
       often half the challenge.
     </li>
-    {% if test_date.test == 'act' %}
-      <li>
-        The ACT usually includes a 5th experimental section after Science but
-        before the optional essay. This section does not count toward your score.
-      </li>
-    {% endif %}
   </p>
   <p>
     Above all, remember to trust yourself! You've put in the work to train your
