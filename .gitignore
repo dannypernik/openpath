@@ -16,3 +16,4 @@ dump.rdb
 app/private/
 app/static/img/orgs
 *.db
+settings.json
