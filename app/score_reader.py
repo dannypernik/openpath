@@ -94,7 +94,7 @@ def get_student_answers(score_details_file_path):
     line_split = line.split()
     for i, s in enumerate(line_split):
 
-      if len(line_split) >= 3:
+      if len(line_split) >= 2:
         if i == 0:
           if s.isdigit():
             number = s
