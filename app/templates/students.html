@@ -31,7 +31,7 @@
                     Email
                   </div>
                   <div class="col-2">
-                    Grad
+                    Parent
                   </div>
                   <div class="col-3">
                     Parent email
@@ -62,12 +62,11 @@
                         </a>
                       </div>
                       <div class="col-2">
-                        {{ s.grad_year }}
-                        <!-- {% if s.parent_id %}
+                        {% if s.parent_id %}
                           <a href="{{ url_for('admin.edit_user', id=s.parent_id) }}">
                             {{ s.parent.first_name }}
                           </a>
-                        {% endif %} -->
+                        {% endif %}
                       </div>
                       <div class="col-3">
                         {% if s.parent_id %}
