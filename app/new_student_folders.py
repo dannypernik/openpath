@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 SOURCE_FOLDER_ID = '1rz0xXMvtklwUuvGTkqs9cuNfQyY7-8-s'
 PARENT_FOLDER_ID = '1_qQNYnGPFAePo8UE5NfX72irNtZGF5kF'
 STUDENT_NOTES_DOC_ID = '1CBxl8hdrFUDLGSLKAi-gHWAsWwKNnf6ktKMIZ_CsNkE'
+TEMPLATE_HOMEWORK_SS_ID = '1viaky1i2qbEvdDO_ZSrV_yxCxsk05FmArwzOPD8PANA'
 SERVICE_ACCOUNT_JSON = 'service_account_key2.json'
 SERVICE_ACCOUNT_EMAIL = 'score-reports@sat-score-reports.iam.gserviceaccount.com'
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/documents']
@@ -109,7 +110,7 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
     update_homework_ss(file_ids, contact_data)
     logger.info(f"Homework spreadsheet updated for {student_name}.")
 
-    add_student_to_ss_list(student_name, contact_data.get(grad_year))
+    add_student_to_ss_list(student_name, contact_data.get('grad_year'))
     logger.info(f"{student_name} added to spreadsheet list.")
 
     execute_with_retries(lambda: drive_service.files().update(
@@ -434,6 +435,56 @@ def update_homework_ss(file_ids, contact_data):
     homework_ss_id = file_ids.get('homework')
     if not homework_ss_id:
         return
+
+    # Copy editors from first range protection on the Assignments sheet of TEMPLATE_HOMEWORK_SS_ID
+    if TEMPLATE_HOMEWORK_SS_ID:
+        template_metadata = execute_with_retries(lambda: sheets_service.spreadsheets().get(
+            spreadsheetId=TEMPLATE_HOMEWORK_SS_ID,
+            fields='sheets(properties.title,protectedRanges)'
+        ).execute())
+        print(template_metadata)
+        for sheet in template_metadata.get('sheets', []):
+            if sheet.get('properties', {}).get('title') == 'Assignments':
+                protections = sheet.get('protectedRanges', [])
+                if protections:
+                    template_editors = protections[0].get('editors', {}).get('users', [])
+                break
+
+    if template_editors:
+        homework_metadata = execute_with_retries(lambda: sheets_service.spreadsheets().get(
+            spreadsheetId=homework_ss_id,
+            fields='sheets(properties.title,protectedRanges)'
+        ).execute())
+        print(homework_metadata)
+        for sheet in homework_metadata.get('sheets', []):
+            if sheet.get('properties', {}).get('title') == 'Assignments':
+                protections = sheet.get('protectedRanges', [])
+                if protections:
+                    new_protection = protections[0]
+                break
+
+    if new_protection:
+        current_editors = new_protection.get('editors', {}).get('users', [])
+        updated_editors_list = list(set(template_editors + current_editors))
+
+        requests = [{
+            'updateProtectedRange': {
+                'protectedRange': {
+                    'protectedRangeId': new_protection['protectedRangeId'],
+                    'editors': {
+                        'users': updated_editors_list
+                    }
+                },
+                'fields': 'editors' # Only update the editors field
+            }
+        }]
+
+        sheets_service.spreadsheets().batchUpdate(
+            spreadsheetId=homework_ss_id,
+            body={'requests': requests}
+        ).execute()
+
+
 
     # Get the sheet ID of the 'Info' sheet
     sheet_metadata = execute_with_retries(lambda: sheets_service.spreadsheets().get(spreadsheetId=homework_ss_id).execute())
@@ -936,7 +987,7 @@ def add_student_sheet_to_rev_data(sheets_service, admin_ss_id, student_name):
         if sheet_name == 'Template':
             template_sheet_id = sheet.get('properties', {}).get('sheetId')
         if sheet_name == student_name:
-            logger.warning("Student rev data sheet already exists")
+            logger.warning("Student rev data sheet already exists. Skipping")
             return
 
     if template_sheet_id is None:
