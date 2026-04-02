@@ -571,6 +571,7 @@ def new_student():
                 student.timezone = form.timezone.data
                 student.status = form.status.data
                 student.role = 'student'
+                student.school = form.school.data
                 student.grad_year = form.grad_year.data
                 student.subject = form.subject.data
                 student.tutor_id = form.tutor_select.data
@@ -584,6 +585,7 @@ def new_student():
                     timezone=form.timezone.data,
                     status=form.status.data,
                     role='student',
+                    school=form.school.data,
                     grad_year=form.grad_year.data,
                     subject=form.subject.data,
                     tutor_id=form.tutor_select.data,
