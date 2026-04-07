@@ -649,21 +649,24 @@ def new_student():
                     'timezone': timezone,
                     'subject': student.subject,
                     'grad_year': student.grad_year,
-                    'status': student.status
+                    'status': student.status,
+                    'role': 'student'
                 },
                 'parent': {
                     'first_name': parent.first_name,
                     'last_name': parent.last_name,
                     'email': parent.email,
                     'phone': request.form.get('parent_phone_formatted'),
-                    'timezone': timezone
+                    'timezone': timezone,
+                    'role': 'parent'
                 } if parent else None,
                 'parent2': {
                     'first_name': parent2.first_name,
                     'last_name': parent2.last_name,
                     'email': parent2.email,
                     'phone': request.form.get('parent2_phone_formatted'),
-                    'timezone': timezone
+                    'timezone': timezone,
+                    'role': 'parent'
                 } if parent2 else None,
                 'tutor': {
                     'first_name': tutor.first_name,
