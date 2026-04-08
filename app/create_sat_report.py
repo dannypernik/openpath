@@ -544,9 +544,13 @@ def create_sat_pdf_report(spreadsheet_id, score_data):
     )
     creds.refresh(Request())
 
+    import time
     try:
         # Create the Drive API service
         drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+
+        # Wait to allow images to load in the spreadsheet
+        time.sleep(2)  # Adjust seconds as needed
 
         # Prepare URL for PDF export
         url_base = f'https://docs.google.com/spreadsheets/d/{spreadsheet_id}/'
