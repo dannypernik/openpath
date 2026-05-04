@@ -244,13 +244,13 @@ def parse_worker_lost_errors(log_path, week_start=None, week_end=None):
 
 def batch_update_weekly_usage(date_yyyymmddd=None):
     """
-    Parse celery.error.log for the current week and update the usage sheet
+    Parse celery.err.log for the current week and update the usage sheet
     with stats for SAT/ACT (success, failure, retry) for the week.
     """
 
     week_start, week_end = get_week_start_and_end(date_yyyymmddd)
 
-    stats = parse_celery_worker_log('/var/log/supervisor/celery.error.log', week_start, week_end)
+    stats = parse_celery_worker_log('/var/log/supervisor/celery.err.log', week_start, week_end)
 
     sat_success = stats['sat'].get('success', '')
     sat_failure = stats['sat'].get('failure', '')
