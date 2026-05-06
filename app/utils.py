@@ -535,11 +535,11 @@ def add_test_dates_from_ss():
 
     # --- SAT table (new layout) ---
     # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date), E (score release)
-    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A10').execute().get('values', [])
-    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B10').execute().get('values', [])
-    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C10').execute().get('values', [])
-    sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D10').execute().get('values', [])
-    sat_e = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:E10').execute().get('values', [])
+    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A16').execute().get('values', [])
+    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B16').execute().get('values', [])
+    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C16').execute().get('values', [])
+    sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D16').execute().get('values', [])
+    sat_e = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:E16').execute().get('values', [])
 
     # normalize to lists of strings (may be nested lists from API)
     def cell_str(cell_list, idx):
