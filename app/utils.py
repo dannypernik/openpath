@@ -619,6 +619,9 @@ def add_test_dates_from_ss():
             if existing.reg_date != reg_deadline:
                 changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
                 existing.reg_date = reg_deadline
+                existing.status = 'confirmed'
+            else:
+                existing.status = 'unconfirmed'
             if existing.late_date != late_deadline:
                 changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
                 existing.late_date = late_deadline
