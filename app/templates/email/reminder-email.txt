@@ -3,7 +3,3 @@ This is an automated reminder that a {{ event_type }} is scheduled with {{ tutor
 Location: {{ location }}
 
 You are welcome to reply to this email with any questions. Please provide at least 24 hours notice when cancelling or rescheduling in order to avoid being charged for the session. Note that you will not receive a reminder email for sessions scheduled less than 2 days in advance. Thank you!
-
-{{ quote_header }}
-"{{ message }}"
-- {{ author }}
