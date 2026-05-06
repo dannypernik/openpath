@@ -612,6 +612,10 @@ def add_test_dates_from_ss():
                     pass
                 score_release = e_date
 
+        is_confirmed = True
+        if reg_deadline is None:
+            is_confirmed = False
+
         # Upsert into DB with structured logging
         existing = TestDate.query.filter_by(test='sat', date=test_date).first()
         if existing:
@@ -619,9 +623,7 @@ def add_test_dates_from_ss():
             if existing.reg_date != reg_deadline:
                 changes['reg_date'] = {'old': existing.reg_date, 'new': reg_deadline}
                 existing.reg_date = reg_deadline
-                existing.status = 'confirmed'
-            else:
-                existing.status = 'unconfirmed'
+                existing.status = is_confirmed
             if existing.late_date != late_deadline:
                 changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
                 existing.late_date = late_deadline
@@ -639,7 +641,7 @@ def add_test_dates_from_ss():
                 reg_date=reg_deadline,
                 late_date=late_deadline,
                 score_date=score_release,
-                status='confirmed'
+                status=is_confirmed
             )
             db.session.add(new_td)
             logger.info('Created SAT TestDate date=%s reg=%s late=%s score=%s', test_date, reg_deadline, late_deadline, score_release)
@@ -649,7 +651,7 @@ def add_test_dates_from_ss():
     # Fetch ACT dates
     act_result = sheet.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range='Test dates!A12:E28'
+        range='Test dates!A19:E33'
     ).execute()
     act_values = act_result.get('values', [])
 
