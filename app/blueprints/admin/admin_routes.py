@@ -235,8 +235,11 @@ def edit_date(id):
             date.status = form.status.data
 
             registered_ids = set(map(int, request.form.getlist('registered_students')))
-            for s in students:
-                s.is_registered = (s.user_id in registered_ids)
+            # `students` is an association proxy returning `User` objects used by the template.
+            # Update the underlying association objects (`UserTestDate`) which live on
+            # `date.interested_users` so we can set the `is_registered` flag correctly.
+            for ut in date.interested_users:
+                ut.is_registered = (ut.user_id in registered_ids)
             try:
                 db.session.add(date)
                 db.session.commit()
