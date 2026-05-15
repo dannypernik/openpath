@@ -392,7 +392,7 @@ def main():
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
 
-                            if e.date >= bimonth_start_tz_aware.isoformat() and e.date < tomorrow_start.isoformat():
+                            if e['date'] >= bimonth_start_tz_aware.isoformat() and e['date'] < tomorrow_start.isoformat():
                                 # store the event along with the matched student name for later reporting
                                 my_tutoring_events_today.append({'event': e, 'student': name})
                                 logging.info(f"Adding {e['name']} on {e['date']} to my tutoring events")
