@@ -921,7 +921,7 @@ def handle_sat_report(form, template_name, organization=None):
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
             elif 'missing too many questions' in str(ve):
-                flash(Markup('Error reading Score Details PDF. Make sure you click "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
+                flash(Markup('Error reading Score Details PDF. Make sure to click "Show Correct Answers" and "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
             elif 'insufficient questions answered' in str(ve):
