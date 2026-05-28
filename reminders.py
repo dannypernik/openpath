@@ -488,57 +488,62 @@ def main():
         # Write today's tutoring events (for the current tutor) to the Summary sheet in one batch
         try:
             if my_tutoring_events_today:
+                # Read existing rows first to find the next free row and deduplicate
+                try:
+                    resp = sheet.values().get(
+                        spreadsheetId=SPREADSHEET_ID,
+                        range='Summary!B6:C',
+                        valueRenderOption='UNFORMATTED_VALUE'
+                    ).execute()
+                    existing = resp.get('values', [])
+                    next_row = 6 + len(existing)
+                    existing_pairs = {(str(row[0]), str(row[1])) for row in existing if len(row) >= 2}
+                except Exception:
+                    next_row = None
+                    existing_pairs = set()
+
                 append_rows = []
                 for item in my_tutoring_events_today:
                     ev = item['event']
                     student_name = item['student']
-                    # ev['date'] is ISO datetime string; format to MM/DD/YYYY for spreadsheet
                     try:
                         ev_dt = isoparse(ev['date'])
                         date_str = ev_dt.strftime('%m/%d/%Y')
                     except Exception:
                         date_str = ev.get('date')
+                    if (date_str, student_name) in existing_pairs:
+                        logging.info(f'Skipping duplicate row: {student_name} on {date_str}')
+                        continue
                     duration = round(ev.get('hours', 0), 2)
                     student_name_formula = '="' + student_name + '"'
                     append_rows.append([date_str, student_name_formula, duration])
 
-                # Determine the next free row based on column B (ignores formulas in column A)
-                try:
-                    resp = sheet.values().get(
-                        spreadsheetId=SPREADSHEET_ID,
-                        range='Summary!B6:B',
-                        valueRenderOption='UNFORMATTED_VALUE'
-                    ).execute()
-                    existing = resp.get('values', [])
-                    next_row = 6 + len(existing)
-                except Exception:
-                    # fallback to appending if we can't read the sheet
-                    next_row = None
-
-                if next_row is None:
-                    # fallback to append if we couldn't compute next_row
-                    body = {'values': append_rows}
-                    sheet.values().append(
-                        spreadsheetId=SPREADSHEET_ID,
-                        range='Summary!B:D',
-                        valueInputOption='USER_ENTERED',
-                        insertDataOption='INSERT_ROWS',
-                        body=body
-                    ).execute()
-                    logging.info(f'Appended {len(append_rows)} tutoring event rows to Summary sheet (fallback)')
+                if append_rows:
+                    if next_row is None:
+                        body = {'values': append_rows}
+                        sheet.values().append(
+                            spreadsheetId=SPREADSHEET_ID,
+                            range='Sessions!B:D',
+                            valueInputOption='USER_ENTERED',
+                            insertDataOption='INSERT_ROWS',
+                            body=body
+                        ).execute()
+                        logging.info(f'Appended {len(append_rows)} tutoring event rows to Sessions sheet (fallback)')
+                    else:
+                        end_row = next_row + len(append_rows) - 1
+                        range_to_write = f'Sessions!B{next_row}:D{end_row}'
+                        body = {'values': append_rows}
+                        sheet.values().update(
+                            spreadsheetId=SPREADSHEET_ID,
+                            range=range_to_write,
+                            valueInputOption='USER_ENTERED',
+                            body=body
+                        ).execute()
+                        logging.info(f'Wrote {len(append_rows)} tutoring event rows to {range_to_write} on Sessions sheet')
                 else:
-                    end_row = next_row + len(append_rows) - 1
-                    range_to_write = f'Summary!B{next_row}:D{end_row}'
-                    body = {'values': append_rows}
-                    sheet.values().update(
-                        spreadsheetId=SPREADSHEET_ID,
-                        range=range_to_write,
-                        valueInputOption='USER_ENTERED',
-                        body=body
-                    ).execute()
-                    logging.info(f'Wrote {len(append_rows)} tutoring event rows to {range_to_write} on Summary sheet')
+                    logging.info('No new tutoring event rows to write (all duplicates)')
         except Exception as e:
-            logging.error(f'Failed to write tutoring events to Summary sheet: {e}', exc_info=True)
+            logging.error(f'Failed to write tutoring events to Sessions sheet: {e}', exc_info=True)
 
 
 
