@@ -585,8 +585,6 @@ def add_test_dates_from_ss():
         d_raw = cell_str(sat_d, i)
         e_raw = cell_str(sat_e, i)
 
-
-
         a_clean = sanitize_cell(a_raw)
         d_clean = sanitize_cell(d_raw)
 
