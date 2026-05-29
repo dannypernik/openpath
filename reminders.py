@@ -35,15 +35,16 @@ load_dotenv(os.path.join(basedir, '.env'))
 configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
 
 now = datetime.datetime.now(datetime.timezone.utc)
+prev_month_start = now - datetime.timedelta(days=30, hours=now.hour-8, minutes=now.minute, seconds=now.second)
+prev_month_start_str = prev_month_start.isoformat().replace('+00:00', 'Z')
 bimonth_start = now - datetime.timedelta(hours=now.hour-8, minutes=now.minute, seconds=now.second)
 bimonth_start_str = bimonth_start.isoformat().replace('+00:00', 'Z')
-bimonth_start_tz_aware = bimonth_start
-upcoming_start = bimonth_start_tz_aware + datetime.timedelta(hours=48)
+upcoming_start = bimonth_start + datetime.timedelta(hours=48)
 upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A, %b %-d')
 upcoming_end = upcoming_start + datetime.timedelta(hours=24)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
-tomorrow_start = bimonth_start_tz_aware + datetime.timedelta(hours=24)
+tomorrow_start = bimonth_start + datetime.timedelta(hours=24)
 tomorrow_end = upcoming_start
 
 # If modifying these scopes, delete the file token.json.
@@ -99,20 +100,6 @@ workbook = None
 sheet = None
 
 
-def init_gspread():
-    """Initialize gspread credentials and workbook lazily."""
-    global service_creds, file, workbook, sheet
-    if service_creds is None:
-        service_account_path = os.path.join(basedir, 'service_account_key.json')
-        if os.path.exists(service_account_path):
-            service_creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scopes=SCOPES)
-            file = gspread.authorize(service_creds)
-            workbook = file.open_by_key(SPREADSHEET_ID)
-            sheet = workbook.sheet1
-        else:
-            logging.warning("service_account_key.json not found, gspread functionality disabled")
-
-
 # @profile
 def get_events_and_data():
     '''
@@ -130,6 +117,8 @@ def get_events_and_data():
         bimonth_end = now + datetime.timedelta(days=70)
         bimonth_end_str = bimonth_end.isoformat().replace('+00:00', 'Z')
         bimonth_events = []
+        upcoming_events = []
+        prev_month_events = []
         payments_due = []
 
         # Collect next 2 months of events for all calendars
@@ -137,7 +126,7 @@ def get_events_and_data():
             for tutor in tutor_data:
                 bimonth_cal_events = service_cal.events().list(
                     calendarId=tutor['cal_id'],
-                    timeMin=bimonth_start_str,
+                    timeMin=prev_month_start_str,
                     timeMax=bimonth_end_str,
                     singleEvents=True,
                     orderBy='startTime',
@@ -147,15 +136,48 @@ def get_events_and_data():
 
                 for e in bimonth_events_result:
                     if e['start'].get('dateTime'):
-                        bimonth_events.append({
-                            'event': e,
-                            'tutor': tutor['name']
-                        })
+                        e_start = isoparse(e['start'].get('dateTime'))
+                        e_end = isoparse(e['end'].get('dateTime'))
+                        duration = str(e_end - e_start)
+                        (h, m, s) = duration.split(':')
+                        hours = int(h) + int(m) / 60 + int(s) / 3600
+
+                        if isoparse(e['start'].get('dateTime')) >= bimonth_start:
+                            if 'projected' in e.get('summary').lower():
+                                time_group = 'projected_hours'
+                            elif e_end.hour + (e_end.minute / 60) <= 16.25:
+                                time_group = 'day_hours'
+                            else:
+                                time_group = 'evening_hours'
+
+                            start_of_week_0 = bimonth_start - datetime.timedelta(days=bimonth_start.weekday())
+                            week_num = max(1, math.ceil(((e_start - start_of_week_0).days + 1) / 7)) - 1
+
+                            event_data = {
+                                'name': e.get('summary'),
+                                'date': e['start'].get('dateTime'),
+                                'hours': hours,
+                                'tutor': tutor['name'],
+                                'time_group': time_group,
+                                'week_num': week_num
+                            }
+
+                            bimonth_events.append(event_data)
+                            if tomorrow_end < e_start <= upcoming_end:
+                                upcoming_events.append(event_data)
+
+                        else:
+                            prev_month_events.append({
+                                'name': e.get('summary'),
+                                'date': e['start'].get('dateTime'),
+                                'hours': hours,
+                                'tutor': tutor['name']
+                            })
                 logging.info(f"Events fetched for {tutor['name']}")
 
                 if (today - datetime.date(2025, 3, 7)).days % 14 == 0:
-                    # Fetch finance spreadsheet data for tutors other than Danny
-                    if tutor['name'] != 'Danny Pernik':
+                    # Fetch finance spreadsheet data for other tutors
+                    if tutor['finance_ss_id']:
                         service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
                         sheet = service_sheets.spreadsheets()
                         result = sheet.values().get(spreadsheetId=tutor['finance_ss_id'],
@@ -170,7 +192,8 @@ def get_events_and_data():
                             })
                             logging.info(f"Payment due for {tutor['name']}")
 
-            bimonth_events = sorted(bimonth_events, key=lambda e: e['event']['start'].get('dateTime'))
+            bimonth_events = sorted(bimonth_events, key=lambda e: e['start'].get('dateTime'))
+            prev_month_events = sorted(prev_month_events, key=lambda e: e['start'].get('dateTime'))
         except Exception as e:
             logging.error(f"Error fetching events for {tutor['name']}: {e}", exc_info=True)
             raise
@@ -204,57 +227,14 @@ def get_events_and_data():
                     time.sleep(delay)
                 else:
                     raise
-
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
-        return bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due
+
+        return bimonth_events, prev_month_events, upcoming_events, summary_data, sheet, payments_due
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
         raise
 
-# @profile
-def get_upcoming_events():
-    logging.info('Getting upcoming events')
-    bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
-
-    events_by_week = []
-    upcoming_events = []
-
-    try:
-        # Collect necessary event information
-        for e in bimonth_events:
-            e_start = isoparse(e['event']['start'].get('dateTime'))
-            e_end = isoparse(e['event']['end'].get('dateTime'))
-            duration = str(e_end - e_start)
-            (h, m, s) = duration.split(':')
-            hours = int(h) + int(m) / 60 + int(s) / 3600
-
-            if 'projected' in e['event'].get('summary').lower():
-                time_group = 'projected_hours'
-            elif e_end.hour + (e_end.minute / 60) <= 16.25:
-                time_group = 'day_hours'
-            else:
-                time_group = 'evening_hours'
-
-            start_of_week_0 = bimonth_start_tz_aware - datetime.timedelta(days=bimonth_start_tz_aware.weekday())
-            week_num = max(1, math.ceil(((e_start - start_of_week_0).days + 1) / 7)) - 1
-
-            events_by_week.append({
-                'name': e['event'].get('summary'),
-                'date': e['event']['start'].get('dateTime'),
-                'hours': hours,
-                'tutor': e['tutor'],
-                'time_group': time_group,
-                'week_num': week_num
-            })
-
-            if tomorrow_end < e_start <= upcoming_end:
-                upcoming_events.append(e)
-
-        return bimonth_events, events_by_week, upcoming_events, summary_data, sheet, payments_due
-    except Exception as e:
-        logging.error(f"Error getting upcoming events: {e}", traceback.format_exc())
-        raise
 
 # @profile
 def main():
@@ -295,8 +275,7 @@ def main():
         cc_sessions = []
         add_students_to_data = []
 
-        bimonth_events, events_by_week, upcoming_events, \
-            summary_data, sheet, payments_due = get_upcoming_events()
+        bimonth_events, prev_month_events, upcoming_events, summary_data, sheet, payments_due = get_events_and_data()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -346,7 +325,7 @@ def main():
                         s.status = row[1].lower()
 
                     # check for students who should be listed as active
-                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in events_by_week):
+                    if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in bimonth_events):
                         s.status = 'active'
                         update_ss_status = True
                         msg = name + ' is scheduled soon. Status changed to Active.'
@@ -383,7 +362,7 @@ def main():
 
             if s.status in {'active', 'prospective'}:
                 hours_this_week = 0
-                for e in events_by_week:
+                for e in bimonth_events:
                     if name in e['name']:
                         if e['week_num'] == 0 and ss_pay_type == 'Credit card':
                             hours_this_week += e['hours']
@@ -392,7 +371,7 @@ def main():
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
 
-                            if e['date'] >= bimonth_start_tz_aware.isoformat() and e['date'] < tomorrow_start.isoformat():
+                            if e['date'] >= bimonth_start.isoformat() and e['date'] < tomorrow_start.isoformat():
                                 # store the event along with the matched student name for later reporting
                                 my_tutoring_events_today.append({'event': e, 'student': name})
                                 logging.info(f"Adding {e['name']} on {e['date']} to my tutoring events")
@@ -645,17 +624,6 @@ def main():
 
     finally:
         session.close()
-
-
-def get_student_events(full_name):
-    student_events = []
-    bimonth_events, summary_data, bimonth_start_tz_aware, sheet, payments_due = get_events_and_data()
-
-    for event in bimonth_events:
-        if full_name in event.get('summary'):
-            student_events.append(event)
-
-    return student_events
 
 
 def get_tutor_from_name(tutors, name):
