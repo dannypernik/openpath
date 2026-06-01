@@ -122,8 +122,8 @@ def send_reminder_email(event, student, tutor):
 
     dt = datetime.datetime
 
-    start_time_utc = event['event']['start'].get('dateTime')
-    end_time_utc = event['event']['end'].get('dateTime')
+    start_time_utc = event['start']
+    end_time_utc = event['end']
 
     student_tz = ZoneInfo(student.timezone)
     start_obj_tz = parse(start_time_utc).astimezone(student_tz)
@@ -134,11 +134,11 @@ def send_reminder_email(event, student, tutor):
     end_time = dt.strftime(end_obj_tz, format='%-I:%M%p').lower()
     timezone = dt.strftime(end_obj_tz, format=' %Z')
 
-    if 'practice sat' in event['event'].get('summary').lower():
+    if 'practice sat' in event['name'].lower():
         event_type = 'practice SAT'
-    elif 'practice act' in event['event'].get('summary').lower():
+    elif 'practice act' in event['name'].lower():
         event_type = 'practice ACT'
-    elif 'test prep class' in event['event'].get('summary').lower():
+    elif 'test prep class' in event['name'].lower():
         event_type = 'test prep class'
     else:
         event_type = 'session'
@@ -146,7 +146,7 @@ def send_reminder_email(event, student, tutor):
     warnings = []
     warnings_str = ''
 
-    location = event['event'].get('location')
+    location = event.get('location')
     if location != student.location:
         warnings.append('Event location != DB location')
         warnings.append('Event location missing')
@@ -896,11 +896,11 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
     unregistered_students, undecided_students, now):
 
-    dt = datetime.datetime
-    start = (now + datetime.timedelta(hours=40)).isoformat() + 'Z'
-    start_date = dt.strftime(parse(start), format='%b %-d')
-    end = (now + datetime.timedelta(days=6, hours=40)).isoformat() + 'Z'
-    end_date = dt.strftime(parse(end), format='%b %-d')
+    # Compute human-readable start/end dates directly from the passed `now` datetime
+    start_dt = now + datetime.timedelta(hours=40)
+    start_date = start_dt.strftime('%b %-d')
+    end_dt = now + datetime.timedelta(days=6, hours=40)
+    end_date = end_dt.strftime('%b %-d')
 
     paused = []
     for s in paused_students:

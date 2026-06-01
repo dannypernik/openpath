@@ -5,7 +5,9 @@
     <p>
       <strong>Biweekly payments due</strong><br>
       {% for p in payments_due %}
-        {{ p['tutor'] }}: ${{ p['amount'] }}<br>
+        <a href="https://docs.google.com/spreadsheets/d/{{ p['tutor']['finance_ss_id'] }}">
+          {{ p['tutor']['name'] }}
+        </a>: ${{ p['amount'] }}<br>
       {% endfor %}
     </p>
   {% endif %}

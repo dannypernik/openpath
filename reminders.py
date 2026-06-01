@@ -155,7 +155,9 @@ def get_events_and_data():
 
                             event_data = {
                                 'name': e.get('summary'),
-                                'date': e['start'].get('dateTime'),
+                                'start': e['start'].get('dateTime'),
+                                'end': e['end'].get('dateTime'),
+                                'location': e.get('location', ''),
                                 'hours': hours,
                                 'tutor': tutor['name'],
                                 'time_group': time_group,
@@ -169,7 +171,9 @@ def get_events_and_data():
                         else:
                             prev_month_events.append({
                                 'name': e.get('summary'),
-                                'date': e['start'].get('dateTime'),
+                                'start': e['start'].get('dateTime'),
+                                'end': e['end'].get('dateTime'),
+                                'location': e.get('location', ''),
                                 'hours': hours,
                                 'tutor': tutor['name']
                             })
@@ -187,17 +191,19 @@ def get_events_and_data():
                         biweekly_due = biweekly_due_cell[0][0]
                         if biweekly_due:
                             payments_due.append({
-                                'tutor': tutor['name'],
+                                'tutor': tutor,
                                 'amount': biweekly_due
                             })
                             logging.info(f"Payment due for {tutor['name']}")
 
-            bimonth_events = sorted(bimonth_events, key=lambda e: e['start'].get('dateTime'))
-            prev_month_events = sorted(prev_month_events, key=lambda e: e['start'].get('dateTime'))
+            bimonth_events = sorted(bimonth_events, key=lambda e: e['start'])
+            prev_month_events = sorted(prev_month_events, key=lambda e: e['start'])
         except Exception as e:
             logging.error(f"Error fetching events for {tutor['name']}: {e}", exc_info=True)
             raise
 
+        # Ensure prev_month_sessions is always defined even if Sheets fetch is skipped
+        prev_month_sessions = []
         retries = 3
         for attempt in range(retries):
             try:
@@ -207,18 +213,40 @@ def get_events_and_data():
                 logging.info('Sheets API called')
                 sheet = service_sheets.spreadsheets()
                 logging.info('Sheet service created')
-                result = sheet.values().get(
+                summary_result = sheet.values().get(
                     spreadsheetId=SPREADSHEET_ID,
                     range=SUMMARY_RANGE,
                     valueRenderOption='UNFORMATTED_VALUE'
                 ).execute()
-                summary_data = result.get('values', [])
+                summary_data = summary_result.get('values', [])
 
                 if not summary_data:
                     logging.info('summary_data failed')
                 else:
                     logging.info('summary_data fetched')
                     break
+
+                all_sessions_result = sheet.values().get(
+                    spreadsheetId=SPREADSHEET_ID,
+                    range='All!A:D',
+                    valueRenderOption='UNFORMATTED_VALUE'
+                ).execute()
+                all_sessions_data = all_sessions_result.get('values', [])
+                prev_month_start_date = prev_month_start.date()
+                for row in all_sessions_data:
+                    if len(row) > 1:
+                        try:
+                            row_date = datetime.datetime.strptime(str(row[1]), '%m/%d/%Y').date()
+                            if row_date >= prev_month_start_date:
+                                prev_month_sessions.append({
+                                    'tutor': row[0],
+                                    'start': row[1],
+                                    'student': row[2],
+                                    'duration': row[3]
+                                })
+                        except (ValueError, TypeError):
+                            pass
+
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
                 if attempt < retries - 1:
@@ -229,7 +257,7 @@ def get_events_and_data():
                     raise
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
 
-        return bimonth_events, prev_month_events, upcoming_events, summary_data, sheet, payments_due
+        return bimonth_events, prev_month_events, upcoming_events, summary_data, prev_month_sessions, sheet, payments_due
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
@@ -274,8 +302,9 @@ def main():
         my_tutoring_events_today = []
         cc_sessions = []
         add_students_to_data = []
+        session_discrepancies = []
 
-        bimonth_events, prev_month_events, upcoming_events, summary_data, sheet, payments_due = get_events_and_data()
+        bimonth_events, prev_month_events, upcoming_events, summary_data, prev_month_sessions, sheet, payments_due = get_events_and_data()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -287,7 +316,7 @@ def main():
         for e in upcoming_events:
             for student in upcoming_students:
                 name = full_name(student)
-                if name in e['event'].get('summary') and 'projected' not in e['event'].get('summary').lower():
+                if name in e['name'] and 'projected' not in e['name'].lower():
                     reminder_count += 1
                     msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
                     logging.info(msg)
@@ -299,30 +328,38 @@ def main():
             messages.append(msg)
 
         for row in summary_data:
-            if row[0] not in [full_name(s) for s in students] and row[1] != 'Inactive':
-                add_students_to_data.append({'name': row[0], 'add_to': 'database'})
+            # Guard against short/malformed rows
+            name_cell = row[0].strip() if len(row) > 0 and row[0] else ''
+            status_cell = row[1].strip() if len(row) > 1 and row[1] else ''
+            if name_cell and name_cell not in [full_name(s) for s in students] and status_cell != 'Inactive':
+                add_students_to_data.append({'name': name_cell, 'add_to': 'database'})
 
         for s in students:
             ss_hours = None
             ss_rate = None
             ss_tutors = []
             ss_pay_type = None
+            ss_last_session = None
+            ss_last_session_epoch = None
             next_session = ''
             hours_this_week = 0
             bimonth_hours = 0
             next_tutor = None
             rep_date = now
             repurchase_deadline = ''
+            update_ss_status = None
 
             name = full_name(s)
 
             for i, row in enumerate(summary_data):
-                if row[0] == name:
+                row0 = row[0] if len(row) > 0 else ''
+                if row0 == name:
                     initial_status = s.status
                     update_ss_status = False
-                    # update DB status based on spreadsheet status
-                    if row[1] != s.status.title():
-                        s.status = row[1].lower()
+                    # update DB status based on spreadsheet status (safe access)
+                    row1 = row[1] if len(row) > 1 else ''
+                    if row1 and row1 != s.status.title():
+                        s.status = row1.lower()
 
                     # check for students who should be listed as active
                     if s.status not in {'active', 'prospective'} and any(name in event['name'] and event['week_num'] <= 1 for event in bimonth_events):
@@ -341,17 +378,26 @@ def main():
                             logging.error(err_msg)
                             messages.append(err_msg)
 
-                    ss_hours = row[3]
-                    ss_rate = row[4]
-                    ss_tutors = row[8].split(', ')
-                    ss_pay_type = row[7]
+                    # Safe extraction of spreadsheet columns
+                    ss_hours = None
+                    if len(row) > 3 and row[3] != '':
+                        try:
+                            ss_hours = float(row[3])
+                        except Exception:
+                            ss_hours = row[3]
+                    ss_rate = row[4] if len(row) > 4 else None
+                    ss_tutors = row[8].split(', ') if len(row) > 8 and row[8] else []
+                    ss_pay_type = row[7] if len(row) > 7 else None
                     if ss_pay_type != 'Package':
                         repurchase_deadline = ''
-                    elif ss_hours < 0:
+                    elif ss_hours is not None and isinstance(ss_hours, (int, float)) and ss_hours < 0:
                         repurchase_deadline = 'ASAP'
-                    if row[16] != '':
-                        ss_last_session_epoch = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=row[16])
-                        ss_last_session = ss_last_session_epoch.strftime('%m/%d/%Y')
+                    if len(row) > 16 and row[16] != '':
+                        try:
+                            ss_last_session_epoch = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=float(row[16]))
+                            ss_last_session = ss_last_session_epoch.strftime('%m/%d/%Y')
+                        except Exception:
+                            ss_last_session = None
                     else:
                         ss_last_session = None
                     break
@@ -371,10 +417,50 @@ def main():
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
 
-                            if e['date'] >= bimonth_start.isoformat() and e['date'] < tomorrow_start.isoformat():
+                            if e['start'] >= bimonth_start.isoformat() and e['start'] < tomorrow_start.isoformat():
                                 # store the event along with the matched student name for later reporting
                                 my_tutoring_events_today.append({'event': e, 'student': name})
-                                logging.info(f"Adding {e['name']} on {e['date']} to my tutoring events")
+                                logging.info(f"Adding {e['name']} on {e['start']} to my tutoring events")
+
+                for p in prev_month_events:
+                    if name not in p['name']:
+                        continue
+                    try:
+                        p_date_str = isoparse(p['start']).strftime('%m/%d/%Y')
+                    except Exception:
+                        continue
+                    sheet_match = next((
+                        s for s in prev_month_sessions
+                        if s['student'] == name and s['start'] == p_date_str and s['tutor'] == p['tutor']
+                    ), None)
+                    if sheet_match is None:
+                        session_discrepancies.append({
+                            'type': 'missing_from_sheet',
+                            'tutor': p['tutor'], 'start': p_date_str,
+                            'student': name, 'duration': round(p['hours'], 2)
+                        })
+                    elif abs(float(sheet_match['duration']) - p['hours']) >= 0.01:
+                        session_discrepancies.append({
+                            'type': 'duration_mismatch',
+                            'tutor': p['tutor'], 'start': p_date_str, 'student': name,
+                            'calendar_duration': round(p['hours'], 2), 'sheet_duration': sheet_match['duration']
+                        })
+
+                for sess in prev_month_sessions:
+                    if sess['student'] != name:
+                        continue
+                    cal_match = next((
+                        p for p in prev_month_events
+                        if name in p['name']
+                        and isoparse(p['start']).strftime('%m/%d/%Y') == sess['start']
+                        and p['tutor'] == sess['tutor']
+                    ), None)
+                    if cal_match is None:
+                        session_discrepancies.append({
+                            'type': 'missing_from_calendar',
+                            'tutor': sess['tutor'], 'start': sess['start'],
+                            'student': name, 'duration': sess['duration']
+                        })
 
                 if ss_pay_type == 'Credit card':
                     hours_due = hours_this_week - ss_hours
@@ -389,7 +475,7 @@ def main():
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
-                        e_date = isoparse(e['date'])
+                        e_date = isoparse(e['start'])
                         if name in e['name']:
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
@@ -486,10 +572,10 @@ def main():
                     ev = item['event']
                     student_name = item['student']
                     try:
-                        ev_dt = isoparse(ev['date'])
+                        ev_dt = isoparse(ev['start'])
                         date_str = ev_dt.strftime('%m/%d/%Y')
                     except Exception:
-                        date_str = ev.get('date')
+                        date_str = ev.get('start')
                     if (date_str, student_name) in existing_pairs:
                         logging.info(f'Skipping duplicate row: {student_name} on {date_str}')
                         continue
@@ -605,7 +691,12 @@ def main():
 
 
         if day_of_week == 'Monday':
-            weekly_data['score_reports'] = utils.batch_update_weekly_usage()
+            try:
+                weekly_data['score_reports'] = utils.batch_update_weekly_usage()
+            except FileNotFoundError as fe:
+                logging.warning(f"Weekly usage log not found (dev environment); skipping: {fe}")
+            except Exception as e:
+                logging.error(f"Failed to batch update weekly usage: {e}", exc_info=True)
             send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
                 other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
                 weekly_data, add_students_to_data, cc_sessions, unregistered_active_students, undecided_active_students, now)
