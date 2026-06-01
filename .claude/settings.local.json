@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "mcp__codebase-memory-mcp__search_graph",
-      "mcp__codebase-memory-mcp__get_code_snippet"
+      "mcp__codebase-memory-mcp__get_code_snippet",
+      "Bash(sed -n '299,302p' /Users/danny/code/openpath/reminders.py)",
+      "Bash(sed -n '400,455p' /Users/danny/code/openpath/reminders.py)",
+      "Bash(python3 -)"
     ]
   }
 }
