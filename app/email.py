@@ -893,7 +893,7 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 
 def send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours,
     other_session_count, other_tutoring_hours, low_scheduled_students, unscheduled_students,
-    paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
+    paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions, session_discrepancies,
     unregistered_students, undecided_students, now):
 
     # Compute human-readable start/end dates directly from the passed `now` datetime
@@ -927,8 +927,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
                     my_session_count=my_session_count, other_tutoring_hours=other_tutoring_hours,
                     other_session_count=other_session_count, unscheduled_students=unscheduled_students,
                     paused_str=paused_str, tutors_attention=tutors_attention, cc_sessions=cc_sessions,
-                    message=message, author=author, weekly_data=weekly_data,
-                    add_students_to_data=add_students_to_data, full_name=full_name)
+                    session_discrepancies=session_discrepancies, message=message, author=author,
+                    weekly_data=weekly_data, add_students_to_data=add_students_to_data, full_name=full_name)
             }
         ]
     }
@@ -942,8 +942,8 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
 
 
 def send_script_status_email(name, messages, status_updates, low_scheduled_students, unscheduled_students,
-    other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, unregistered_students,
-    undecided_students, payments_due, result, exception=''):
+    other_scheduled_students, tutors_attention, add_students_to_data, cc_sessions, session_discrepancies,
+    unregistered_students, undecided_students, payments_due, result, exception=''):
 
     unregistered = []
     for s in unregistered_students:
@@ -971,7 +971,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
                 ],
                 'Subject': name + ' ' + result,
                 'HTMLPart': render_template('email/script-status-email.html',
-                    messages=messages, status_updates=status_updates,
+                    messages=messages, status_updates=status_updates, session_discrepancies=session_discrepancies,
                     low_scheduled_students=low_scheduled_students, unscheduled_students=unscheduled_students,
                     tutors_attention=tutors_attention, add_students_to_data=add_students_to_data,
                     cc_sessions=cc_sessions, unregistered_str=unregistered_str, undecided_str=undecided_str,

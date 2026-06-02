@@ -19,6 +19,28 @@
       {% endfor %}
     </p>
   {% endif %}
+
+  {% if session_discrepancies %}
+    <p>
+      <strong>Session discrepancies</strong><br>
+      {% for tutor in session_discrepancies | map(attribute='tutor') | unique %}
+        <strong>{{ tutor }}</strong>
+        <ul>
+        {% for d in session_discrepancies | selectattr('tutor', 'equalto', tutor) %}
+          <li>
+            {% if d.type == 'missing_from_sheet' %}
+              {{ d.student }} - {{ d.start }} ({{ d.duration }}h) in calendar but not in sheet<br>
+            {% elif d.type == 'missing_from_calendar' %}
+              {{ d.student }} - {{ d.start }} ({{ d.duration }}h) in sheet but not in calendar<br>
+            {% elif d.type == 'duration_mismatch' %}
+              {{ d.student }} - {{ d.start }}: calendar {{ d.calendar_duration }}h vs sheet {{ d.sheet_duration }}h<br>
+            {% endif %}
+          </li>
+        {% endfor %}
+        </ul>
+      {% endfor %}
+    </p>
+  {% endif %}
   <p>
     {% for m in messages %}
       {{ m }}<br>

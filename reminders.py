@@ -210,9 +210,7 @@ def get_events_and_data():
                 logging.info('Calling Sheets API #' + str(attempt + 1))
                 # Call the Sheets API
                 service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
-                logging.info('Sheets API called')
                 sheet = service_sheets.spreadsheets()
-                logging.info('Sheet service created')
                 summary_result = sheet.values().get(
                     spreadsheetId=SPREADSHEET_ID,
                     range=SUMMARY_RANGE,
@@ -220,11 +218,11 @@ def get_events_and_data():
                 ).execute()
                 summary_data = summary_result.get('values', [])
 
-                if not summary_data:
-                    logging.info('summary_data failed')
-                else:
+                if summary_data:
                     logging.info('summary_data fetched')
                     break
+                else:
+                    logging.info('summary_data failed')
 
                 all_sessions_result = sheet.values().get(
                     spreadsheetId=SPREADSHEET_ID,
@@ -303,6 +301,8 @@ def main():
         cc_sessions = []
         add_students_to_data = []
         session_discrepancies = []
+        script_status = 'failed'
+        exception = None
 
         bimonth_events, prev_month_events, upcoming_events, summary_data, prev_month_sessions, sheet, payments_due = get_events_and_data()
         logging.info('Fetched upcoming events successfully')
@@ -550,18 +550,18 @@ def main():
                 body=body
             ).execute()
             logging.info('Successfully updated student schedule data')
-        # Write today's tutoring events (for the current tutor) to the Summary sheet in one batch
+        # Write today's tutoring events (for the current tutor) to the Sessions sheet in one batch
         try:
             if my_tutoring_events_today:
                 # Read existing rows first to find the next free row and deduplicate
                 try:
                     resp = sheet.values().get(
                         spreadsheetId=SPREADSHEET_ID,
-                        range='Summary!B6:C',
+                        range='Sessions!B3:C',
                         valueRenderOption='UNFORMATTED_VALUE'
                     ).execute()
                     existing = resp.get('values', [])
-                    next_row = 6 + len(existing)
+                    next_row = 3 + len(existing)
                     existing_pairs = {(str(row[0]), str(row[1])) for row in existing if len(row) >= 2}
                 except Exception:
                     next_row = None
@@ -604,7 +604,7 @@ def main():
                             valueInputOption='USER_ENTERED',
                             body=body
                         ).execute()
-                        logging.info(f'Wrote {len(append_rows)} tutoring event rows to {range_to_write} on Sessions sheet')
+                        logging.info(f'Wrote {len(append_rows)} tutoring event rows to {range_to_write}')
                 else:
                     logging.info('No new tutoring event rows to write (all duplicates)')
         except Exception as e:
@@ -689,7 +689,14 @@ def main():
         #             logging.info(msg)
         #             messages.append(msg)
 
+        script_status = 'succeeded'
+        logging.info('reminders.py succeeded')
 
+    except Exception as e:
+        logging.error('reminders.py failed: %s', traceback.format_exc())
+        exception = traceback.format_exc()
+
+    finally:
         if day_of_week == 'Monday':
             try:
                 weekly_data['score_reports'] = utils.batch_update_weekly_usage()
@@ -697,23 +704,16 @@ def main():
                 logging.warning(f"Weekly usage log not found (dev environment); skipping: {fe}")
             except Exception as e:
                 logging.error(f"Failed to batch update weekly usage: {e}", exc_info=True)
-            send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours, other_session_count,
-                other_tutoring_hours, low_scheduled_students, unscheduled_students, paused_students, tutors_attention,
-                weekly_data, add_students_to_data, cc_sessions, unregistered_active_students, undecided_active_students, now)
+            send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours,
+                other_session_count, other_tutoring_hours, low_scheduled_students, unscheduled_students,
+                paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions,
+                session_discrepancies, unregistered_active_students, undecided_active_students, now)
         else:
             send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students,
                 unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data,
-                cc_sessions, unregistered_active_students, undecided_active_students, payments_due, 'succeeded')
-        logging.info('reminders.py succeeded')
+                cc_sessions, session_discrepancies, unregistered_active_students, undecided_active_students,
+                payments_due, script_status, exception)
 
-    except Exception as e:
-        logging.error('reminders.py failed: %s', traceback.format_exc())
-        send_script_status_email('reminders.py', messages, status_updates, low_scheduled_students,
-            unscheduled_students, other_scheduled_students, tutors_attention, add_students_to_data,
-            cc_sessions, unregistered_active_students, undecided_active_students, payments_due, 'failed',
-            traceback.format_exc())
-
-    finally:
         session.close()
 
 
