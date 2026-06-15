@@ -75,20 +75,35 @@
               <ol class="mb-3 ms-0">
                 <li>Log into <a href="https://mypractice.collegeboard.org" target="_blank">mypractice.collegeboard.org</a></li>
                 <li>Click on "Score Details" from the test you want to analyze, then "Download Score Report".<br>
-                  <video src="{{ url_for('static', filename='media/sat-instructions-1.webm') }}" controls muted autoplay></video>
+                  <video controls muted playsinline autoplay>
+                    <source src="{{ url_for('static', filename='media/sat-instructions-1.mp4') }}" type="video/mp4">
+                    <source src="{{ url_for('static', filename='media/sat-instructions-1.webm') }}" type="video/webm">
+                  </video>
                 </li>
                 <li>Scroll down to answers table, then click "Show Correct Answers" and "All" to show all answers.<br>
-                  <video src="{{ url_for('static', filename='media/sat-instructions-2.webm') }}" controls muted></video>
+                  <video controls muted playsinline>
+                    <source src="{{ url_for('static', filename='media/sat-instructions-2.mp4') }}" type="video/mp4">
+                    <source src="{{ url_for('static', filename='media/sat-instructions-2.webm') }}" type="video/webm">
+                  </video>
                 </li>
 
                 <li id="score-details-instructions">Click File > Print... > Save as PDF > Save<br>
-                  <video src="{{ url_for('static', filename='media/sat-instructions-3.webm') }}" controls muted></video>
+                  <video controls muted playsinline>
+                    <source src="{{ url_for('static', filename='media/sat-instructions-3.mp4') }}" type="video/mp4">
+                    <source src="{{ url_for('static', filename='media/sat-instructions-3.webm') }}" type="video/webm">
+                  </video>
                 </li>
                 <li id="score-details-safari" class="d-none">Click File > Export as PDF > Save<br>
-                  <video src="{{ url_for('static', filename='media/sat-instructions-3-safari.webm') }}" controls muted></video>
+                  <video controls muted playsinline>
+                    <source src="{{ url_for('static', filename='media/sat-instructions-3-safari.mp4') }}" type="video/mp4">
+                    <source src="{{ url_for('static', filename='media/sat-instructions-3-safari.webm') }}" type="video/webm">
+                  </video>
                 </li>
                 <li>Add both PDFs to the form.<br>
-                  <video src="{{ url_for('static', filename='media/sat-instructions-4.webm') }}" controls muted></video>
+                  <video controls muted playsinline>
+                    <source src="{{ url_for('static', filename='media/sat-instructions-4.mp4') }}" type="video/mp4">
+                    <source src="{{ url_for('static', filename='media/sat-instructions-4.webm') }}" type="video/webm">
+                  </video>
                 </li>
               </ol>
             </div>
@@ -158,11 +173,12 @@
 </div>
 
 <script>
-  function isSafari() {
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  function isDesktopSafari() {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    return !isIOS && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   }
 
-  if (isSafari()) {
+  if (isDesktopSafari()) {
     const scoreDetailsLi = document.getElementById('score-details-instructions');
     const scoreDetailsSafariLi = document.getElementById('score-details-safari');
     scoreDetailsLi.classList.add('d-none');
