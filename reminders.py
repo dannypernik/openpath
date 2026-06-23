@@ -202,7 +202,29 @@ def get_events_and_data():
             logging.error(f"Error fetching events for {tutor['name']}: {e}", exc_info=True)
             raise
 
+        def parse_sheet_session_date(value):
+            """Parse Sheets date values that may be serial numbers or formatted strings."""
+            if value in (None, ''):
+                return None
+
+            if isinstance(value, (int, float)):
+                # Google Sheets serial date origin
+                return (datetime.datetime(1899, 12, 30) + datetime.timedelta(days=float(value))).date()
+
+            text = str(value).strip()
+            for fmt in ('%m/%d/%Y', '%Y-%m-%d'):
+                try:
+                    return datetime.datetime.strptime(text, fmt).date()
+                except (ValueError, TypeError):
+                    continue
+
+            try:
+                return parse(text).date()
+            except Exception:
+                return None
+
         # Ensure prev_month_sessions is always defined even if Sheets fetch is skipped
+        summary_data = []
         prev_month_sessions = []
         retries = 3
         for attempt in range(retries):
@@ -218,32 +240,35 @@ def get_events_and_data():
                 ).execute()
                 summary_data = summary_result.get('values', [])
 
-                if summary_data:
-                    logging.info('summary_data fetched')
-                    break
-                else:
-                    logging.info('summary_data failed')
-
                 all_sessions_result = sheet.values().get(
                     spreadsheetId=SPREADSHEET_ID,
                     range='All!A:D',
                     valueRenderOption='UNFORMATTED_VALUE'
                 ).execute()
                 all_sessions_data = all_sessions_result.get('values', [])
+                prev_month_sessions_attempt = []
                 prev_month_start_date = prev_month_start.date()
                 for row in all_sessions_data:
-                    if len(row) > 1:
-                        try:
-                            row_date = datetime.datetime.strptime(str(row[1]), '%m/%d/%Y').date()
-                            if row_date >= prev_month_start_date:
-                                prev_month_sessions.append({
-                                    'tutor': row[0],
-                                    'start': row[1],
-                                    'student': row[2],
-                                    'duration': row[3]
-                                })
-                        except (ValueError, TypeError):
-                            pass
+                    if len(row) < 4:
+                        continue
+
+                    row_date = parse_sheet_session_date(row[1])
+                    if row_date and row_date >= prev_month_start_date:
+                        prev_month_sessions_attempt.append({
+                            'tutor': str(row[0]).strip(),
+                            'start': row_date.strftime('%m/%d/%Y'),
+                            'student': str(row[2]).strip(),
+                            'duration': row[3]
+                        })
+
+                prev_month_sessions = prev_month_sessions_attempt
+
+                if summary_data:
+                    logging.info('summary_data fetched')
+                    logging.info(f'Loaded {len(prev_month_sessions)} recent session rows from All sheet')
+                    break
+                else:
+                    logging.info('summary_data failed')
 
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1} failed: {e}", exc_info=True)
