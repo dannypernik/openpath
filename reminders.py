@@ -46,6 +46,50 @@ today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
 tomorrow_start = bimonth_start + datetime.timedelta(hours=24)
 tomorrow_end = upcoming_start
+CENTRAL_TZ = pytz.timezone('US/Central')
+
+
+def parse_sheet_date(value):
+    """Parse Sheets date values that may be serial numbers or formatted strings."""
+    if value in (None, ''):
+        return None
+
+    if isinstance(value, (int, float)):
+        # Google Sheets serial date origin
+        return (datetime.datetime(1899, 12, 30) + datetime.timedelta(days=float(value))).date()
+
+    text = str(value).strip()
+    for fmt in ('%m/%d/%Y', '%Y-%m-%d'):
+        try:
+            return datetime.datetime.strptime(text, fmt).date()
+        except (ValueError, TypeError):
+            continue
+
+    try:
+        return parse(text).date()
+    except Exception:
+        return None
+
+
+def calendar_date_us_central(value):
+    """Convert a calendar datetime value to a US Central calendar date."""
+    if value in (None, ''):
+        return None
+
+    try:
+        dt = value if isinstance(value, datetime.datetime) else isoparse(str(value))
+    except Exception:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+
+    return dt.astimezone(CENTRAL_TZ).date()
+
+
+def calendar_date_us_central_str(value):
+    date_value = calendar_date_us_central(value)
+    return date_value.strftime('%m/%d/%Y') if date_value else None
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
@@ -202,27 +246,6 @@ def get_events_and_data():
             logging.error(f"Error fetching events for {tutor['name']}: {e}", exc_info=True)
             raise
 
-        def parse_sheet_session_date(value):
-            """Parse Sheets date values that may be serial numbers or formatted strings."""
-            if value in (None, ''):
-                return None
-
-            if isinstance(value, (int, float)):
-                # Google Sheets serial date origin
-                return (datetime.datetime(1899, 12, 30) + datetime.timedelta(days=float(value))).date()
-
-            text = str(value).strip()
-            for fmt in ('%m/%d/%Y', '%Y-%m-%d'):
-                try:
-                    return datetime.datetime.strptime(text, fmt).date()
-                except (ValueError, TypeError):
-                    continue
-
-            try:
-                return parse(text).date()
-            except Exception:
-                return None
-
         # Ensure prev_month_sessions is always defined even if Sheets fetch is skipped
         summary_data = []
         prev_month_sessions = []
@@ -252,7 +275,7 @@ def get_events_and_data():
                     if len(row) < 4:
                         continue
 
-                    row_date = parse_sheet_session_date(row[1])
+                    row_date = parse_sheet_date(row[1])
                     if row_date and row_date >= prev_month_start_date:
                         prev_month_sessions_attempt.append({
                             'tutor': str(row[0]).strip(),
@@ -442,7 +465,8 @@ def main():
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
 
-                            if e['start'] >= bimonth_start.isoformat() and e['start'] < tomorrow_start.isoformat():
+                            e_start_dt = isoparse(e['start'])
+                            if bimonth_start <= e_start_dt < tomorrow_start:
                                 # store the event along with the matched student name for later reporting
                                 my_tutoring_events_today.append({'event': e, 'student': name})
                                 logging.info(f"Adding {e['name']} on {e['start']} to my tutoring events")
@@ -450,9 +474,8 @@ def main():
                 for p in prev_month_events:
                     if name not in p['name']:
                         continue
-                    try:
-                        p_date_str = isoparse(p['start']).strftime('%m/%d/%Y')
-                    except Exception:
+                    p_date_str = calendar_date_us_central_str(p['start'])
+                    if not p_date_str:
                         continue
                     sheet_match = next((
                         s for s in prev_month_sessions
@@ -477,7 +500,7 @@ def main():
                     cal_match = next((
                         p for p in prev_month_events
                         if name in p['name']
-                        and isoparse(p['start']).strftime('%m/%d/%Y') == sess['start']
+                        and calendar_date_us_central_str(p['start']) == sess['start']
                         and p['tutor'] == sess['tutor']
                     ), None)
                     if cal_match is None:
@@ -587,7 +610,13 @@ def main():
                     ).execute()
                     existing = resp.get('values', [])
                     next_row = 3 + len(existing)
-                    existing_pairs = {(str(row[0]), str(row[1])) for row in existing if len(row) >= 2}
+                    existing_pairs = {
+                        (
+                            parse_sheet_date(row[0]).strftime('%m/%d/%Y') if parse_sheet_date(row[0]) else str(row[0]).strip(),
+                            str(row[1]).strip()
+                        )
+                        for row in existing if len(row) >= 2
+                    }
                 except Exception:
                     next_row = None
                     existing_pairs = set()
@@ -596,11 +625,9 @@ def main():
                 for item in my_tutoring_events_today:
                     ev = item['event']
                     student_name = item['student']
-                    try:
-                        ev_dt = isoparse(ev['start'])
-                        date_str = ev_dt.strftime('%m/%d/%Y')
-                    except Exception:
-                        date_str = ev.get('start')
+                    date_str = calendar_date_us_central_str(ev.get('start'))
+                    if not date_str:
+                        date_str = str(ev.get('start')).strip()
                     if (date_str, student_name) in existing_pairs:
                         logging.info(f'Skipping duplicate row: {student_name} on {date_str}')
                         continue
