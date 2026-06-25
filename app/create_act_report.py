@@ -23,6 +23,8 @@ SERVICE_ACCOUNT_JSON = 'service_account_key2.json'  # Path to your service accou
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
 ACT_REPORT_SS_ID = os.environ.get('ACT_REPORT_SS_ID')
 ACT_DATA_SS_ID = os.environ.get('ACT_DATA_SS_ID')
+ACT_GRADER_URL = os.environ.get('ACT_GRADER_URL')
+ACT_GRADER_KEY = os.environ.get('ACT_GRADER_KEY')
 
 all_subjects = ['english', 'math', 'reading', 'science']
 completed_subjects = []
@@ -65,8 +67,8 @@ def get_act_test_codes():
 
 
 def process_act_answer_img(score_data):
-  url = "http://50.28.85.57"
-  oauth = "h5Kafh-egN3HyfEjpbKfg2VU"
+  url = ACT_GRADER_URL
+  oauth = ACT_GRADER_KEY
   gc = GraderClient(url, oauth)
 
   upload_response, uri = gc.upload_image(score_data['answer_img_path'])

@@ -39,6 +39,8 @@ class Config(object):
     ORG_FOLDER_ID = os.environ.get('ORG_FOLDER_ID')
     TEMPLATES_AUTO_RELOAD = True
     PW_STRING = os.environ.get('PW_STRING')
+    ACT_GRADER_URL = os.environ.get('ACT_GRADER_URL')
+    ACT_GRADER_KEY = os.environ.get('ACT_GRADER_KEY')
 
 
 class DevelopmentConfig(Config):
