@@ -10,6 +10,40 @@ import logging
 pp = pprint.PrettyPrinter(indent=2, width=100)
 
 def get_student_answers(score_details_file_path):
+  """
+  Extract student answers from a SAT practice test score details PDF.
+
+  Parses a pdfplumber-opened PDF file containing test score details and extracts:
+  - Test metadata (code, display name, date)
+  - Reading/Writing and Math answers for both modules
+  - Student responses, correct answers, and correctness status
+  - Question attempt counts and completion status
+
+  Args:
+    score_details_file_path (str): File path to the score details PDF.
+
+  Returns:
+    dict: Score details containing:
+      - test_code (str): Test identifier (e.g., 'psat1')
+      - test_display_name (str): Human-readable test name (e.g., 'PSAT 1')
+      - date (str): Test date in 'YYYY.MM.DD' format
+      - is_rw_found (bool): Whether Reading/Writing data was found
+      - is_math_found (bool): Whether Math data was found
+      - rw_score (int): Reading/Writing score
+      - math_score (int): Math score
+      - is_rw_hard (bool): Whether RW was hard/adaptive module
+      - is_math_hard (bool): Whether Math was hard/adaptive module
+      - has_omits (bool): Whether any questions were omitted
+      - rw_questions_answered (int): Count of RW questions answered
+      - math_questions_answered (int): Count of Math questions answered
+      - answer_key_mismatches (list): Discrepancies found
+      - missing_data (list): Missing data issues
+      - answers (dict): Nested structure with answers by subject/module/question number
+    str: "invalid" if date cannot be extracted
+
+  Raises:
+    ValueError: If test number > 11, insufficient questions found, or too few questions answered.
+  """
   total_questions = {
     'rw': {'questions': 27},
     'math': {'questions': 22}
@@ -117,7 +151,7 @@ def get_student_answers(score_details_file_path):
           response = s.rstrip(';')
         # If response is found before correct_answer, correct_answer is in previous line
         elif not correct_answer and not response and s not in sub_splits:
-            correct_answer = s.rstrip(',')
+            correct_answer = s.split(',')[0]
 
     if number and not result:
       for x in range(line_num, line_num + 3):
