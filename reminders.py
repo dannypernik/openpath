@@ -345,7 +345,7 @@ def main():
         tutors_attention = set()
         tutoring_events = []
         my_tutoring_events = []
-        my_tutoring_events_today = []
+        my_tutoring_events_yesterday = []
         cc_sessions = []
         add_students_to_data = []
         session_discrepancies = []
@@ -466,9 +466,9 @@ def main():
                             my_tutoring_events.append(e)
 
                             e_start_dt = isoparse(e['start'])
-                            if bimonth_start <= e_start_dt < tomorrow_start:
+                            if bimonth_start - datetime.timedelta(days=1) <= e_start_dt < bimonth_start:
                                 # store the event along with the matched student name for later reporting
-                                my_tutoring_events_today.append({'event': e, 'student': name})
+                                my_tutoring_events_yesterday.append({'event': e, 'student': name})
                                 logging.info(f"Adding {e['name']} on {e['start']} to my tutoring events")
 
                 for p in prev_month_events:
@@ -600,7 +600,7 @@ def main():
             logging.info('Successfully updated student schedule data')
         # Write today's tutoring events (for the current tutor) to the Sessions sheet in one batch
         try:
-            if my_tutoring_events_today:
+            if my_tutoring_events_yesterday:
                 # Read existing rows first to find the next free row and deduplicate
                 try:
                     resp = sheet.values().get(
@@ -622,7 +622,7 @@ def main():
                     existing_pairs = set()
 
                 append_rows = []
-                for item in my_tutoring_events_today:
+                for item in my_tutoring_events_yesterday:
                     ev = item['event']
                     student_name = item['student']
                     date_str = calendar_date_us_central_str(ev.get('start'))
