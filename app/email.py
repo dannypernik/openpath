@@ -29,7 +29,7 @@ def send_contact_email(user, message, subject):
                     'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
-                'Subject': 'Open Path Tutoring: ' + subject + ' from ' + user.first_name,
+                'Subject': subject + ' from ' + user.first_name,
                 'ReplyTo': { 'Email': user.email },
                 'TextPart': render_template('email/inquiry-form.txt',
                                          user=user, message=message),
