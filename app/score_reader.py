@@ -1,5 +1,6 @@
 import datetime
 from bs4 import BeautifulSoup
+from collections import Counter
 import pdfplumber
 import re
 import pprint
@@ -18,6 +19,13 @@ def get_student_answers(score_details_file_path):
   - Reading/Writing and Math answers for both modules
   - Student responses, correct answers, and correctness status
   - Question attempt counts and completion status
+
+  Rows are reconstructed from word bounding boxes rather than pdfplumber's
+  line-clustered text. Wrapped Domain cells (e.g. "Problem-Solving and Data
+  Analysis") and multi-line grid-in answer keys (e.g. accepted answers stacked
+  across lines) otherwise land on the same y-coordinate as neighboring rows,
+  which scrambles pdfplumber's text-line output and silently drops or
+  corrupts data — including across a PDF page break.
 
   Args:
     score_details_file_path (str): File path to the score details PDF.
@@ -76,42 +84,22 @@ def get_student_answers(score_details_file_path):
     },
   }
 
+  # Test date/code come from the "My Tests / <Type> <N> - <Date>" breadcrumb,
+  # which is plain unwrapped text on the first page.
   date = None
-  subject_totals = {
-    'rw': 0,
-    'math': 0
-  }
-
-  subject = 'rw'
-  rw_mod_num = '1'
-  m_mod_num = '1'
-
-  sub_splits = ['Reading', 'and', 'Writing', 'Math']
-  prev_line_split = None
-
-  full_text = ''
-  for i, p in enumerate(pages):
-    text = p.extract_text()
-    full_text += text.rstrip() + "\n"
-  full_text_lines = full_text.split('\n')
-
-  # Remove lines starting with 'http' or 'MyPractice'
-  full_text_lines = [line for line in full_text_lines if not (line.startswith('http') or line.startswith('MyPractice'))]
-
-  for line_num, line in enumerate(full_text_lines, 1):
-    # print(line)
-    # print(list(line))
-    if date is None and line.find('My Tests') != -1:
-      trimmed_line = line.rstrip() # ensures no trailing whitespace
+  test_number = None
+  first_page_text = pages[0].extract_text() or ''
+  for line in first_page_text.split('\n'):
+    if line.find('My Tests') != -1:
+      trimmed_line = line.rstrip()
       date_start = trimmed_line.find(' - ') + 3
       date_str = trimmed_line[date_start:]
       date = datetime.datetime.strptime(date_str, '%B %d, %Y').strftime('%Y.%m.%d')
       score_details_data['date'] = date
 
       test_type_start = line.find('My Tests') + 11
-      sep = {'/',' '}
-      test_type_end = next((i for i, ch  in enumerate(line[test_type_start:]) if ch in sep),None) + test_type_start
-      # test_type_end = line.find(' ', test_type_start)
+      sep = {'/', ' '}
+      test_type_end = next((i for i, ch in enumerate(line[test_type_start:]) if ch in sep), None) + test_type_start
       test_type = line[test_type_start:test_type_end]
       test_number_end = date_start - 3
       test_number_start = line.rfind(" ", 0, test_number_end) + 1
@@ -119,67 +107,116 @@ def get_student_answers(score_details_file_path):
       test_number = line[test_number_start:test_number_end]
       score_details_data['test_code'] = test_type.lower() + test_number
       score_details_data['test_display_name'] = f'{test_type.upper()} {test_number}'
+      break
 
-    number = None
-    correct_answer = None
-    response = None
-    result = None
+  # Gather every word on every page, offsetting vertical position by each
+  # page's actual height so coordinates stay continuous across a page break
+  # (a row split across pages must bucket next to its neighbors, not across
+  # an arbitrary gap).
+  noise_re = re.compile(r'^(https?://|MyPractice)')
+  all_words = []
+  cum_offset = 0
+  for p in pages:
+    words = p.extract_words()
+    # The running header/timestamp and footer/page-number are each one text
+    # line; drop every word on that line, not just the one matching noise_re,
+    # since sibling words on the same line don't themselves start with
+    # 'http'/'MyPractice' and would otherwise leak into a row's answer cell.
+    noise_tops = {round(w['top'], 1) for w in words if noise_re.match(w['text'])}
+    for w in words:
+      if round(w['top'], 1) in noise_tops:
+        continue
+      all_words.append({
+        'text': w['text'],
+        'x0': w['x0'],
+        'top': w['top'] + cum_offset,
+      })
+    cum_offset += p.height
 
-    line_split = line.split()
-    for i, s in enumerate(line_split):
+  # Locate the Question-number column: it's the x0 where 1-99 digit words
+  # cluster far more densely than anywhere else (grid-in answers scatter
+  # digits elsewhere on the row, but never at this consistent left edge).
+  digit_x_counts = Counter()
+  for w in all_words:
+    if w['text'].isdigit() and 1 <= int(w['text']) <= 99:
+      digit_x_counts[round(w['x0'] / 3) * 3] += 1
+  question_x = max(digit_x_counts, key=digit_x_counts.get) if digit_x_counts else None
 
-      if len(line_split) >= 2:
-        if i == 0:
-          if s.isdigit():
-            number = s
-            # print(line_split)
-          else:
-            break
-        elif s == 'Math':
-          subject = 'math'
-        elif s == 'Review':
-          break
+  anchors = sorted(
+    (w for w in all_words
+     if w['text'].isdigit() and 1 <= int(w['text']) <= 99 and question_x is not None
+     and abs(w['x0'] - question_x) <= 6),
+    key=lambda w: w['top']
+  )
 
-        elif s in ['Correct', 'Incorrect', 'Omitted']:
-          result = s
-          if s == 'Omitted':
-            response = '-'
-            score_details_data['has_omits'] = True
-            break
+  # "Review" is an exact, unambiguous marker for the Actions column; anything
+  # at or past its x0 is the (score-irrelevant) Domain column.
+  review_xs = [w['x0'] for w in all_words if w['text'] == 'Review']
+  review_x = sum(review_xs) / len(review_xs) if review_xs else float('inf')
 
-        elif s[-1] == ';':
-          response = s.rstrip(';')
-        # If response is found before correct_answer, correct_answer is in previous line
-        elif not correct_answer and not response and s not in sub_splits:
-            correct_answer = s.split(',')[0]
+  section_words = {'Reading', 'and', 'Writing', 'Math'}
 
-    if number and not result:
-      for x in range(line_num, line_num + 3):
-        if not result and x < len(full_text_lines):
-          next_line = full_text_lines[x]
-          # print(f'line {x}: {next_line}')
-          next_line_split = next_line.split()
-          for word in next_line_split:
-            if word in ['Correct', 'Incorrect', 'Omitted']:
-              result = word
-              break
+  # A row's own cells (response value, result word) don't reliably render on
+  # the same sub-line as its question-number anchor — a wrapped Section or
+  # Domain cell can push them a line above or below it. But every row
+  # contributes exactly one result word (Correct/Incorrect/Omitted) and, for
+  # non-omitted rows, exactly one response value, and rows are never
+  # reordered — so matching these word-streams to anchors by document order
+  # is robust where nearest-anchor-by-position is not.
+  first_top = anchors[0]['top'] if anchors else 0
+  results_stream = sorted(
+    (w for w in all_words
+     if w['text'] in ('Correct', 'Incorrect', 'Omitted')
+     and w['x0'] < review_x - 5 and w['top'] >= first_top - 10),
+    key=lambda w: w['top']
+  )
+  responses_stream = sorted(
+    (w for w in all_words
+     if w['text'].endswith(';') and w['x0'] < review_x - 5 and w['top'] >= first_top - 10),
+    key=lambda w: w['top']
+  )
 
-    if result == 'Correct':
-      is_correct = True
-    elif result in ['Incorrect', 'Omitted']:
-      is_correct = False
+  subject = 'rw'
+  rw_mod_num = '1'
+  m_mod_num = '1'
+  subject_totals = {'rw': 0, 'math': 0}
+  response_idx = 0
 
-    # Find response or correct answer from previous line if not already found
-    if number and prev_line_split and not (response and correct_answer):
-      # print(f'prev_line_split: {prev_line_split}')
-      for s in range(len(prev_line_split)):
-        split = prev_line_split[s]
-        if not response and split[-1] == ';':
-          response = split.rstrip(';')
+  for i, anchor in enumerate(anchors):
+    number = anchor['text']
+    prev_top = anchors[i - 1]['top'] if i > 0 else anchor['top'] - 40
+    next_top = anchors[i + 1]['top'] if i + 1 < len(anchors) else anchor['top'] + 40
+    row_top = (prev_top + anchor['top']) / 2
+    row_bottom = (anchor['top'] + next_top) / 2
+    row_words = [w for w in all_words if row_top <= w['top'] < row_bottom]
 
-        if not correct_answer and split[-1] == ',':
-          correct_answer = split.rstrip(',')
+    if any(w['text'] == 'Math' for w in row_words):
+      subject = 'math'
 
+    result = results_stream[i]['text'] if i < len(results_stream) else None
+
+    answer_parts = [
+      w for w in row_words
+      if w is not anchor and w['x0'] < review_x - 5
+      and w['text'] not in section_words
+      and w['text'] not in ('Correct', 'Incorrect', 'Omitted')
+      and not w['text'].endswith(';')
+    ]
+    answer_parts.sort(key=lambda w: w['top'])
+    correct_answer = ''.join(w['text'] for w in answer_parts).rstrip(',') or None
+
+    if result == 'Omitted':
+      response = '-'
+      score_details_data['has_omits'] = True
+    elif result is not None:
+      response = responses_stream[response_idx]['text'].rstrip(';') if response_idx < len(responses_stream) else None
+      response_idx += 1
+    else:
+      # No result word means this row's data wasn't captured (e.g. the PDF
+      # export was truncated mid-row) — don't guess at correctness.
+      response = None
+
+    is_correct = result == 'Correct'
 
     if score_details_data['answers']['math']['1'].get(number):
       m_mod_num = '2'
@@ -187,7 +224,7 @@ def get_student_answers(score_details_file_path):
     if score_details_data['answers']['rw']['1'].get(number):
       rw_mod_num = '2'
 
-    if subject and number and correct_answer and response:
+    if subject and number and correct_answer and response and result:
       subject_totals[subject] += 1
 
       if subject == 'rw':
@@ -204,8 +241,6 @@ def get_student_answers(score_details_file_path):
         'student_answer': response,
         'is_correct': is_correct
       }
-
-    prev_line_split = line_split
 
   rw_questions_answered = 0
   math_questions_answered = 0
