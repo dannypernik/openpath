@@ -36,7 +36,7 @@ from app.email import (
     send_confirmation_email, send_unexpected_data_email, send_ntpa_email, send_fail_mail,
     send_free_resources_email, send_nomination_email, send_new_student_email
 )
-from app.score_reader import get_all_data
+from sat_score_reader import get_all_data
 from app.create_sat_report import (
     check_service_account_access, create_custom_sat_spreadsheet,
     update_sat_org_logo, update_sat_partner_logo
