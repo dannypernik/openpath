@@ -1,4 +1,4 @@
-actgrader_client_0.0.0==0.0.4
+actgrader_client_0.0.0==0.0.0
 alembic==1.17.2
 altcha==0.1.9
 amqp==5.2.0
