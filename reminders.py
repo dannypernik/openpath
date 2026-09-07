@@ -44,6 +44,7 @@ upcoming_start_formatted = datetime.datetime.strftime(upcoming_start, format='%A
 upcoming_end = upcoming_start + datetime.timedelta(hours=24)
 today = datetime.date.today()
 day_of_week = datetime.datetime.strftime(now, format='%A')
+yesterday_start = bimonth_start - datetime.timedelta(hours=24)
 tomorrow_start = bimonth_start + datetime.timedelta(hours=24)
 tomorrow_end = upcoming_start
 CENTRAL_TZ = pytz.timezone('US/Central')
@@ -162,6 +163,7 @@ def get_events_and_data():
         bimonth_end_str = bimonth_end.isoformat().replace('+00:00', 'Z')
         bimonth_events = []
         upcoming_events = []
+        events_yesterday = []
         prev_month_events = []
         payments_due = []
 
@@ -186,7 +188,7 @@ def get_events_and_data():
                         (h, m, s) = duration.split(':')
                         hours = int(h) + int(m) / 60 + int(s) / 3600
 
-                        if isoparse(e['start'].get('dateTime')) >= bimonth_start:
+                        if e_start >= bimonth_start:
                             if 'projected' in e.get('summary').lower():
                                 time_group = 'projected_hours'
                             elif e_end.hour + (e_end.minute / 60) <= 16.25:
@@ -199,8 +201,8 @@ def get_events_and_data():
 
                             event_data = {
                                 'name': e.get('summary'),
-                                'start': e['start'].get('dateTime'),
-                                'end': e['end'].get('dateTime'),
+                                'start': e_start,
+                                'end': e_end,
                                 'location': e.get('location', ''),
                                 'hours': hours,
                                 'tutor': tutor['name'],
@@ -211,7 +213,15 @@ def get_events_and_data():
                             bimonth_events.append(event_data)
                             if tomorrow_end < e_start <= upcoming_end:
                                 upcoming_events.append(event_data)
-
+                        elif e_start >= yesterday_start:
+                            events_yesterday.append({
+                                'name': e.get('summary'),
+                                'start': e_start,
+                                'end': e_end,
+                                'location': e.get('location', ''),
+                                'hours': hours,
+                                'tutor': tutor['name']
+                            })
                         else:
                             prev_month_events.append({
                                 'name': e.get('summary'),
@@ -303,7 +313,7 @@ def get_events_and_data():
                     raise
         logging.info(f'Fetched {len(summary_data)} rows of summary data from Google Sheets')
 
-        return bimonth_events, prev_month_events, upcoming_events, summary_data, prev_month_sessions, sheet, payments_due
+        return bimonth_events, prev_month_events, upcoming_events, events_yesterday, summary_data, prev_month_sessions, sheet, payments_due
 
     except Exception as e:
         logging.error(f"Error in get_events_and_data: {e}", traceback.format_exc())
@@ -352,7 +362,7 @@ def main():
         script_status = 'failed'
         exception = None
 
-        bimonth_events, prev_month_events, upcoming_events, summary_data, prev_month_sessions, sheet, payments_due = get_events_and_data()
+        bimonth_events, prev_month_events, upcoming_events, events_yesterday, summary_data, prev_month_sessions, sheet, payments_due = get_events_and_data()
         logging.info('Fetched upcoming events successfully')
 
         msg = '\nSession reminders for ' + upcoming_start_formatted + ':'
@@ -454,6 +464,13 @@ def main():
                     add_students_to_data.append({'name': name, 'add_to': 'spreadsheet'})
                     break
 
+            for e in events_yesterday:
+                e_start_dt = isoparse(e['start'])
+                if yesterday_start <= e_start_dt < bimonth_start:
+                    # store the event along with the matched student name for later reporting
+                    my_tutoring_events_yesterday.append({'event': e, 'student': name})
+                    logging.info(f"Adding {e['name']} to my tutoring events")
+
             if s.status in {'active', 'prospective'}:
                 hours_this_week = 0
                 for e in bimonth_events:
@@ -464,12 +481,6 @@ def main():
                         tutoring_events.append(e)
                         if s.tutor_id == 1:
                             my_tutoring_events.append(e)
-
-                            e_start_dt = isoparse(e['start'])
-                            if bimonth_start - datetime.timedelta(days=1) <= e_start_dt < bimonth_start:
-                                # store the event along with the matched student name for later reporting
-                                my_tutoring_events_yesterday.append({'event': e, 'student': name})
-                                logging.info(f"Adding {e['name']} on {e['start']} to my tutoring events")
 
                 for p in prev_month_events:
                     if name not in p['name']:
@@ -523,18 +534,17 @@ def main():
 
                 if any(name in e['name'] for e in tutoring_events):
                     for e in tutoring_events:
-                        e_date = isoparse(e['start'])
                         if name in e['name']:
                             bimonth_hours += e['hours']
                             if e['week_num'] == 0:
                                 hours_this_week += e['hours']
                             if next_session == '':
-                                next_date = e_date
+                                next_date = e['start']
                                 if ss_last_session and next_date.date() != ss_last_session_epoch.date():
                                     next_session = datetime.datetime.strftime(next_date, '%a %b %d')
                                     next_tutor = e['tutor']
                             if ss_hours and bimonth_hours > ss_hours and not repurchase_deadline:
-                                rep_date = e_date
+                                rep_date = e['start']
                                 repurchase_deadline = datetime.datetime.strftime(rep_date, '%a %b %d')
                                 break
 
