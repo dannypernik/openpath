@@ -22,7 +22,7 @@ from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
 from app.blueprints.main import main_bp
-from app.extensions import db, hcaptcha
+from app.extensions import db, turnstile
 from app.helpers import full_name, dir_last_updated, hello_email, private_login_check
 from app.forms import (
     InquiryForm, EmailListForm, TestStrategiesForm, TestDateForm,
@@ -44,8 +44,8 @@ from app.create_sat_report import (
 from app.create_act_report import create_custom_act_spreadsheet, update_act_org_logo
 from app.tasks import sat_report_workflow_task, act_report_workflow_task, new_student_task
 from app.utils import (
-    is_dark_color, format_timezone, get_org_details_dict, show_hcaptcha,
-    check_hcaptcha_or_session
+    is_dark_color, format_timezone, get_org_details_dict, show_turnstile,
+    check_turnstile_or_session
 )
 
 logger = logging.getLogger(__name__)
@@ -149,9 +149,9 @@ def before_request():
 @main_bp.app_context_processor
 def inject_values():
     if has_request_context():
-        hcaptcha_widget = show_hcaptcha(hcaptcha)
+        turnstile_widget = show_turnstile(turnstile)
     else:
-        hcaptcha_widget = None
+        turnstile_widget = None
     try:
         if current_user.is_authenticated:
             current_first_name = current_user.first_name
@@ -168,7 +168,7 @@ def inject_values():
         phone=current_app.config['PHONE'],
         current_first_name=current_first_name,
         current_last_name=current_last_name,
-        hcaptcha=hcaptcha_widget
+        turnstile=turnstile_widget
     )
 
 
@@ -181,7 +181,7 @@ def index():
     # altcha_site_key = current_app.config['ALTCHA_SITE_KEY']
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.index', _anchor='home'))
@@ -249,7 +249,7 @@ def team():
 def mission():
     form = FreeResourcesForm()
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template('mission.html', title='Our mission', form=form)
@@ -285,7 +285,7 @@ def nominate():
     form = NominationForm()
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return render_template('nominate.html', form=form)
@@ -401,7 +401,7 @@ def test_reminders():
             if d in selected_dates:
                 selected_date_ids.append(d.id)
     if request.method == 'POST':
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.test_reminders'))
@@ -448,7 +448,7 @@ def ati_austin():
     test = 'SAT'
     submit_text = 'Submit'
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('ati_austin'))
@@ -475,7 +475,7 @@ def sat_act_data():
 def test_strategies():
     form = TestStrategiesForm()
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.test_strategies'))
@@ -531,7 +531,7 @@ def new_student():
                 form.timezone.data = user.timezone
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('admin.students'))
@@ -795,8 +795,6 @@ def custom_sat_report(org):
 
 
 def handle_sat_report(form, template_name, organization=None):
-    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-
     if request.method == 'GET':
         ss_id = request.args.get('ssId')
         if ss_id:
@@ -811,10 +809,10 @@ def handle_sat_report(form, template_name, organization=None):
             form.email.data = current_user.email
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
 
         uploads_folder_path = 'app/private/sat/uploads'
         json_folder_path = 'app/private/sat/json'
@@ -837,7 +835,7 @@ def handle_sat_report(form, template_name, organization=None):
                     student_ss_id = student_ss_base_url
             except:
                 flash('Invalid Google Sheet URL', 'error')
-                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+                return render_template(template_name, form=form, organization=organization)
         else:
             student_ss_id = None
 
@@ -846,7 +844,7 @@ def handle_sat_report(form, template_name, organization=None):
 
         if not (is_valid_pdf(report_file) and is_valid_pdf(details_file)):
             flash('Only PDF files are allowed', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
 
         report_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB report.pdf')
         details_file_path = os.path.join(uploads_folder_path, form.email.data + ' CB details.pdf')
@@ -885,7 +883,7 @@ def handle_sat_report(form, template_name, organization=None):
                 if not has_access:
                     flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + student_ss_id + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'))
                     logging.error('Service account does not have access to student spreadsheet')
-                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+                    return render_template(template_name, form=form, organization=organization)
 
             # if form.create_student_folder.data:
             #     score_data['create_student_folder'] = True
@@ -927,13 +925,13 @@ def handle_sat_report(form, template_name, organization=None):
             elif 'insufficient questions answered' in str(ve):
                 flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
         except FileNotFoundError as fe:
             if 'Score Report PDF does not match expected format' in str(fe):
                 flash(Markup('Score Report PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#report-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             elif 'Score Details PDF does not match expected format' in str(fe):
                 flash(Markup('Score Details PDF does not match expected format. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
         except Exception as e:
             logger.error(f"Unexpected error generating score report: {e}", exc_info=True)
             email = send_fail_mail('Cannot generate score report', traceback.format_exc(), form.email.data.lower())
@@ -941,8 +939,8 @@ def handle_sat_report(form, template_name, organization=None):
                 flash('Unexpected error. Our team has been notified and will be in touch.', 'error')
             else:
                 flash(Markup('Unexpected error. If the problem persists, <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> for assistance.'), 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
-    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
+    return render_template(template_name, form=form, organization=organization)
 
 
 @main_bp.route('/<org>/act', methods=['GET', 'POST'])
@@ -957,8 +955,6 @@ def custom_act_report(org):
 
 
 def handle_act_report(form, template_name, organization=None):
-    hcaptcha_key = os.environ.get('HCAPTCHA_SITE_KEY')
-
     if current_user.is_authenticated and current_user.access_level >= 1:
         form.test_code.choices = load_act_test_codes()
     else:
@@ -982,10 +978,10 @@ def handle_act_report(form, template_name, organization=None):
 
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
-            return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+            return render_template(template_name, form=form, organization=organization)
 
         try:
             act_uploads_path = 'app/private/act/uploads'
@@ -1012,7 +1008,7 @@ def handle_act_report(form, template_name, organization=None):
 
             if not is_valid_image(answer_img):
                 flash('Please upload an image (jpg, png, webp, or heic)', 'error')
-                return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+                return render_template(template_name, form=form, organization=organization)
 
             score_data = {}
             score_data['answer_img_path'] = answer_img_path
@@ -1049,13 +1045,13 @@ def handle_act_report(form, template_name, organization=None):
                         score_data['student_ss_id'] = student_ss_base_url
                 except:
                     flash('Invalid Google Sheet URL', 'error')
-                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+                    return render_template(template_name, form=form, organization=organization)
 
                 has_access = check_service_account_access(score_data['student_ss_id'])
                 if not has_access:
                     flash(Markup('Please share <a href="https://docs.google.com/spreadsheets/d/' + score_data['student_ss_id'] + '/edit?usp=sharing" target="_blank">your spreadsheet</a> with score-reports@sat-score-reports.iam.gserviceaccount.com for answers to be added there.'), 'error')
                     logging.error('Service account does not have access to student spreadsheet')
-                    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+                    return render_template(template_name, form=form, organization=organization)
 
             act_report_workflow_task.delay(score_data, organization_dict=organization)
 
@@ -1084,7 +1080,7 @@ def handle_act_report(form, template_name, organization=None):
         except Exception as e:
             logger.error(f"Error sending ACT report email: {e}", exc_info=True)
             flash(f'Failed to send answer sheet. Please contact {g.hello}.', 'error')
-    return render_template(template_name, form=form, hcaptcha_key=hcaptcha_key, organization=organization)
+    return render_template(template_name, form=form, organization=organization)
 
 
 @main_bp.route('/score-report-sent', methods=['GET', 'POST'])
@@ -1110,7 +1106,7 @@ def score_report_sent():
             form.act_ss_id.data = act_ss_id
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('main.score_report_sent',

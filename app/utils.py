@@ -30,9 +30,9 @@ ALL_SCOPES = [
 ]
 
 
-def show_hcaptcha(hcaptcha_widget, minutes_valid=15):
+def show_turnstile(turnstile_widget, minutes_valid=15):
     """
-    Returns the hcaptcha widget if the user is not session-verified, else returns an empty string.
+    Returns the turnstile widget if the user is not session-verified, else returns an empty string.
     """
     if has_request_context():
         verified_until = session.get('human_verified_until')
@@ -46,17 +46,17 @@ def show_hcaptcha(hcaptcha_widget, minutes_valid=15):
         now = datetime.now(timezone.utc)
         from markupsafe import Markup
         if not (verified_until_dt and verified_until_dt > now):
-            return Markup(hcaptcha_widget.get_code())
+            return Markup(turnstile_widget.get_code())
         else:
             return ""
     else:
         return ""
 
 
-def check_hcaptcha_or_session(hcaptcha, minutes_valid=15):
+def check_turnstile_or_session(turnstile, minutes_valid=15):
     """
     Checks if the user has a valid human_verified_until session flag.
-    If not, calls hcaptcha.verify() (should return True/False).
+    If not, calls turnstile.verify() (should return True/False).
     If successful, sets session['human_verified_until'] for minutes_valid minutes.
     Returns True if captcha is (or was recently) valid, else False.
     """
@@ -73,7 +73,7 @@ def check_hcaptcha_or_session(hcaptcha, minutes_valid=15):
     if verified_until_dt and verified_until_dt > now:
         return True
     else:
-        captcha_ok = hcaptcha.verify()
+        captcha_ok = turnstile.verify()
         if captcha_ok:
             session['human_verified_until'] = (now + timedelta(minutes=minutes_valid)).isoformat()
         return captcha_ok

@@ -4,20 +4,20 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from flask_login import current_user, login_user, logout_user, login_required
 
 from app.blueprints.auth import auth_bp
-from app.extensions import db, hcaptcha
+from app.extensions import db, turnstile
 from app.helpers import full_name, get_next_page
 from app.forms import SignupForm, LoginForm, RequestPasswordResetForm, ResetPasswordForm
 from app.models import User
 from app.email import send_verification_email, send_password_reset_email, send_signup_request_email
-from app.utils import check_hcaptcha_or_session, show_hcaptcha
+from app.utils import check_turnstile_or_session, show_turnstile
 
 
 @auth_bp.app_context_processor
 def inject_values():
     if has_request_context():
-        hcaptcha_widget = show_hcaptcha(hcaptcha)
+        turnstile_widget = show_turnstile(turnstile)
     else:
-        hcaptcha_widget = None
+        turnstile_widget = None
     try:
         if current_user.is_authenticated:
             current_first_name = current_user.first_name
@@ -32,7 +32,7 @@ def inject_values():
         phone=current_app.config['PHONE'],
         current_first_name=current_first_name,
         current_last_name=current_last_name,
-        hcaptcha=hcaptcha_widget
+        turnstile=turnstile_widget
     )
 
 
@@ -54,7 +54,7 @@ def signup():
     next = get_next_page()
     hello = current_app.config['HELLO_EMAIL']
     if signup_form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
@@ -89,7 +89,7 @@ def login():
     hello = current_app.config['HELLO_EMAIL']
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.signin', next=next))
@@ -190,7 +190,7 @@ def request_password_reset():
             form.email.data = email
 
     if form.validate_on_submit():
-        captcha_ok = check_hcaptcha_or_session(hcaptcha)
+        captcha_ok = check_turnstile_or_session(turnstile)
         if not captcha_ok:
             flash('Captcha was unsuccessful. Please try again.', 'error')
             return redirect(url_for('auth.request_password_reset'))
