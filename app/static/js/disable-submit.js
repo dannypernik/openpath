@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function requiresCaptcha(form, callbackName) {
-  let captcha = form.querySelector('.h-captcha[data-callback="' + callbackName + '"]');
+  let captcha = form.querySelector('.cf-turnstile[data-callback="' + callbackName + '"]');
   return !!captcha;
 }
 

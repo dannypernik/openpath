@@ -17,8 +17,8 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     ALTCHA_SITE_KEY = os.environ.get('ALTCHA_SITE_KEY')
     ALTCHA_SECRET_KEY = os.environ.get('ALTCHA_SECRET_KEY')
-    HCAPTCHA_SITE_KEY = os.environ.get('HCAPTCHA_SITE_KEY')
-    HCAPTCHA_SECRET_KEY = os.environ.get('HCAPTCHA_SECRET_KEY')
+    TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY')
+    TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY')
     MAILJET_KEY = os.environ.get('MAILJET_KEY')
     MAILJET_SECRET = os.environ.get('MAILJET_SECRET')
     ADMINS = [os.environ.get('ADMINS')]
@@ -55,8 +55,10 @@ class TestingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
-    HCAPTCHA_SITE_KEY = 'test-site-key'
-    HCAPTCHA_SECRET_KEY = 'test-secret-key'
+    # Cloudflare's documented dummy keys that always pass verification,
+    # so tests don't need to mock the network call.
+    TURNSTILE_SITE_KEY = '1x00000000000000000000AA'
+    TURNSTILE_SECRET_KEY = '1x0000000000000000000000000000000AA'
 
 
 class ProductionConfig(Config):
