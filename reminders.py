@@ -465,8 +465,7 @@ def main():
                     break
 
             for e in events_yesterday:
-                e_start_dt = isoparse(e['start'])
-                if yesterday_start <= e_start_dt < bimonth_start:
+                if yesterday_start <= e['start'] < bimonth_start:
                     # store the event along with the matched student name for later reporting
                     my_tutoring_events_yesterday.append({'event': e, 'student': name})
                     logging.info(f"Adding {e['name']} to my tutoring events")

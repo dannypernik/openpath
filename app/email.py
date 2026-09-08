@@ -126,8 +126,8 @@ def send_reminder_email(event, student, tutor):
     end_time_utc = event['end']
 
     student_tz = ZoneInfo(student.timezone)
-    start_obj_tz = parse(start_time_utc).astimezone(student_tz)
-    end_obj_tz = parse(end_time_utc).astimezone(student_tz)
+    start_obj_tz = start_time_utc.astimezone(student_tz)
+    end_obj_tz = end_time_utc.astimezone(student_tz)
 
     start_date = dt.strftime(start_obj_tz, format='%A, %b %-d')
     start_time = dt.strftime(start_obj_tz, format='%-I:%M%p').lower()
