@@ -180,6 +180,8 @@ def get_events_and_data():
                 ).execute()
                 bimonth_events_result = bimonth_cal_events.get('items', [])
 
+                print(f'yesterday_start: {yesterday_start}, bimonth_start: {bimonth_start}')
+
                 for e in bimonth_events_result:
                     if e['start'].get('dateTime'):
                         e_start = isoparse(e['start'].get('dateTime'))
@@ -214,6 +216,7 @@ def get_events_and_data():
                             if tomorrow_end < e_start <= upcoming_end:
                                 upcoming_events.append(event_data)
                         elif e_start >= yesterday_start:
+                            print(f'Adding to events_yesterday: e_start={e_start}, e_end={e_end}')
                             events_yesterday.append({
                                 'name': e.get('summary'),
                                 'start': e_start,
@@ -465,7 +468,11 @@ def main():
                     break
 
             for e in events_yesterday:
-                if yesterday_start <= e['start'] < bimonth_start:
+                if (
+                    yesterday_start <= e['start'] < bimonth_start
+                    and name in e['name']
+                    and s.tutor_id == 1
+                ):
                     # store the event along with the matched student name for later reporting
                     my_tutoring_events_yesterday.append({'event': e, 'student': name})
                     logging.info(f"Adding {e['name']} to my tutoring events")
@@ -646,15 +653,7 @@ def main():
 
                 if append_rows:
                     if next_row is None:
-                        body = {'values': append_rows}
-                        sheet.values().append(
-                            spreadsheetId=SPREADSHEET_ID,
-                            range='Sessions!B:D',
-                            valueInputOption='USER_ENTERED',
-                            insertDataOption='INSERT_ROWS',
-                            body=body
-                        ).execute()
-                        logging.info(f'Appended {len(append_rows)} tutoring event rows to Sessions sheet (fallback)')
+                        logging.info(f'Failed to find next row for appending tutoring event rows')
                     else:
                         end_row = next_row + len(append_rows) - 1
                         range_to_write = f'Sessions!B{next_row}:D{end_row}'
