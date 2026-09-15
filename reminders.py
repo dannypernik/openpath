@@ -477,8 +477,10 @@ def main():
                     my_tutoring_events_yesterday.append({'event': e, 'student': name})
                     logging.info(f"Adding {e['name']} to my tutoring events")
 
+                    if ss_pay_type == 'Credit card':
+                        hours_this_week += e['hours']
+
             if s.status in {'active', 'prospective'}:
-                hours_this_week = 0
                 for e in bimonth_events:
                     if name in e['name']:
                         if e['week_num'] == 0 and ss_pay_type == 'Credit card':
