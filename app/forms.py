@@ -125,7 +125,9 @@ class NewStudentForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
     school = StringField('School', render_kw={'placeholder': 'School'})
-    grad_year = StringField('HS Graduation year', render_kw={'placeholder': 'Grad year'})
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2027', '2027 (Senior)'), \
+        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
+        ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
     parent_select = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
