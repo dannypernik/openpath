@@ -88,8 +88,8 @@ class UserForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2026', '2026 (Senior)'), \
-        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
+    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2027', '2027 (Senior)'), \
+        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
         ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
@@ -216,8 +216,8 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
-    grad_year = SelectField('Graduation year', choices=[(None, 'Graduation year'), ('2026', '2026 (Senior)'), \
-        ('2027', '2027 (Junior)'), ('2028', '2028 (Sophomore)'), ('2029', '2029 (Freshman)'), \
+    grad_year = SelectField('Graduation year', choices=[(None, 'Graduation year'), ('2027', '2027 (Senior)'), \
+        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
         ('graduated', 'Graduated'), ('school', 'Grade school')])
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'}, \
         validators=[InputRequired()])
