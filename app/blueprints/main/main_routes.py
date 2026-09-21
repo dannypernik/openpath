@@ -539,8 +539,8 @@ def new_student():
         try:
             parent = User.query.filter_by(email=form.parent_email.data.lower()).first()
             if parent:
-                parent.first_name = form.parent_first_name.data
-                parent.last_name = form.parent_last_name.data
+                parent.first_name = form.parent_first_name.data.strip().title()
+                parent.last_name = form.parent_last_name.data.strip().title()
                 parent.email = form.parent_email.data.lower()
                 parent.secondary_email = form.parent2_email.data.lower()
                 parent.phone = form.parent_phone.data
@@ -548,8 +548,8 @@ def new_student():
                 parent.role = 'parent'
             else:
                 parent = User(
-                    first_name=form.parent_first_name.data,
-                    last_name=form.parent_last_name.data,
+                    first_name=form.parent_first_name.data.strip().title(),
+                    last_name=form.parent_last_name.data.strip().title(),
                     email=form.parent_email.data.lower(),
                     secondary_email=form.parent2_email.data.lower(),
                     phone=form.parent_phone.data,
@@ -563,8 +563,8 @@ def new_student():
             tutor = User.query.filter_by(id=form.tutor_select.data).first()
             student = User.query.filter_by(email=form.student_email.data.lower()).first()
             if student:
-                student.first_name = form.student_first_name.data
-                student.last_name = form.student_last_name.data
+                student.first_name = form.student_first_name.data.strip().title()
+                student.last_name = form.student_last_name.data.strip().title()
                 student.pronouns = form.pronouns.data
                 student.email = form.student_email.data.lower()
                 student.phone = form.student_phone.data
@@ -577,8 +577,8 @@ def new_student():
                 student.tutor_id = form.tutor_select.data
             else:
                 student = User(
-                    first_name=form.student_first_name.data,
-                    last_name=form.student_last_name.data,
+                    first_name=form.student_first_name.data.strip().title(),
+                    last_name=form.student_last_name.data.strip().title(),
                     pronouns=form.pronouns.data,
                     email=form.student_email.data.lower(),
                     phone=form.student_phone.data,
@@ -600,16 +600,16 @@ def new_student():
             if form.parent2_email.data:
                 parent2 = User.query.filter_by(email=form.parent2_email.data.lower()).first()
                 if parent2:
-                    parent2.first_name = form.parent2_first_name.data
-                    parent2.last_name = form.parent2_last_name.data
+                    parent2.first_name = form.parent2_first_name.data.strip().title()
+                    parent2.last_name = form.parent2_last_name.data.strip().title()
                     parent2.email = form.parent2_email.data.lower()
                     parent2.phone = form.parent2_phone.data
                     parent2.timezone = form.timezone.data
                     parent2.role = 'parent'
                 else:
                     parent2 = User(
-                        first_name=form.parent2_first_name.data,
-                        last_name=form.parent2_last_name.data,
+                        first_name=form.parent2_first_name.data.strip().title(),
+                        last_name=form.parent2_last_name.data.strip().title(),
                         email=form.parent2_email.data.lower(),
                         phone=form.parent2_phone.data,
                         timezone=form.timezone.data,
