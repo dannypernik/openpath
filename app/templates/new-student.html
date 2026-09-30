@@ -96,6 +96,7 @@
       class="row align-items-end {% if not current_user.is_admin %}d-none{% endif %}"
     >
       <div class="col-12 col-md-4 col-lg-3 mb-3">
+        {{ form.tutor_select.label }}<br />
         <select id="tutor_select" name="tutor_select">
           {% for tutor in tutors %}
           <option value="{{ tutor.id }}" data-location="{{ tutor.location }}">
