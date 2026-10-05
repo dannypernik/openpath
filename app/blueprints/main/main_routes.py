@@ -918,12 +918,14 @@ def handle_sat_report(form, template_name, organization=None):
         except ValueError as ve:
             if 'Test unavailable' in str(ve):
                 flash('Practice ' + score_data['test_display_name'] + ' is not yet available. We are working to add them soon.', 'error')
-            elif 'missing too many questions' in str(ve):
+            elif any(msg in str(ve) for msg in ('missing RW questions', 'missing Math questions', 'no questions found')):
                 flash(Markup('Error reading Score Details PDF. Make sure to click "Show Correct Answers" and "All" above the answer table before saving the page. See the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> for more details.'), 'error')
             elif 'date or test code mismatch' in str(ve):
                 flash(Markup('Please confirm that the test date and practice test number match on both PDFs.'), 'error')
             elif 'insufficient questions answered' in str(ve):
                 flash(Markup('Test not attempted. At least 5 questions must be answered on Reading & Writing or Math to generate a score report.'), 'error')
+            else:
+                flash(Markup('Error reading your PDFs. Please follow the <a href="#" data-bs-toggle="modal" data-bs-target="#details-modal">instructions</a> carefully and <a href="https://www.openpathtutoring.com#contact" target="_blank">contact us</a> if you need assistance.'), 'error')
             logger.error(f"Error generating score report: {ve}", exc_info=True)
             return render_template(template_name, form=form, organization=organization)
         except FileNotFoundError as fe:
