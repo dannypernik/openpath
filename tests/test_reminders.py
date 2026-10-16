@@ -120,3 +120,18 @@ def test_weekly_email_says_when_the_run_failed():
     with app.app_context(), patch.object(email_mod, 'mailjet', mailjet), patch.object(email_mod, 'get_quote', return_value=('q', 'a', 'h')):
         email_mod.send_weekly_report_email(*args)
     assert sent['Subject'] == 'reminders.py succeeded - Admin tutoring report' and 'reminders.py failed' not in sent['HTMLPart']
+
+
+@pytest.mark.parametrize('last_session, expected', [
+    (None, 'Wed Oct 14'),                       # no previous session: the first one is still "next"
+    (datetime.date(2026, 10, 7), 'Wed Oct 14'),
+    (datetime.date(2026, 10, 14), 'Fri Oct 16'),  # a session on the same day as the last logged one is skipped
+])
+def test_next_session_does_not_require_a_previous_session(last_session, expected):
+    run = reminders.Run()
+    events = [sc.ev('Ann Lee', sc.dt(14, 17), 1, 'Sean Palermo', 0), sc.ev('Ann Lee', sc.dt(16, 17), 1, 'Sean Palermo', 0)]
+    row = ['Ann Lee', 'Active', '', 5, 100, '', '', 'Package', ''] + [''] * 8
+    row[16] = sc.serial(last_session) if last_session else ''
+    reminders.build_student_data(run, MagicMock(), sc.student('Ann', 'Lee', 'active', 2), {'Ann Lee': (0, row)},
+                                 events, [], [], [], reminders.windows_for(sc.NOW, sc.TODAY))
+    assert run.student_data[0]['next_session'] == expected

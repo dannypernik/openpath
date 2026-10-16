@@ -536,7 +536,8 @@ def build_student_data(run, session, s, summary_rows, bimonth_events, prev_month
         bimonth_hours += e['hours']
         if e['week_num'] == 0:
             hours_this_week += e['hours']
-        if next_session == '' and info.last_session and e['start'].date() != info.last_session_epoch.date():
+        # Skip a session on the same day as the last one logged; a student with no last session has nothing to skip.
+        if next_session == '' and (not info.last_session or e['start'].date() != info.last_session_epoch.date()):
             next_session = e['start'].strftime('%a %b %d')
             next_tutor = e['tutor']
         if (isinstance(info.hours, (int, float)) and info.hours and bimonth_hours > info.hours
