@@ -32,7 +32,6 @@ session = None
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
-configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
 
 now = datetime.datetime.now(datetime.timezone.utc)
 prev_month_start = now - datetime.timedelta(days=30, hours=now.hour-8, minutes=now.minute, seconds=now.second)
@@ -797,5 +796,7 @@ if __name__ == '__main__':
     parser.add_argument('--report', choices=['weekly', 'status'], help='force which admin email is sent')
     args = parser.parse_args()
     app = create_app()
+    # create_app() points the root logger at logs/openpath.log; take it back for this script.
+    configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
     with app.app_context():
         main(send_reminders=not args.no_reminders, report=args.report)
