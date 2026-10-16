@@ -174,12 +174,18 @@ def register_template_routes(app):
     """Register dynamic template routes for HTML templates without explicit routes."""
     def TemplateRenderer(application):
         def register_template_endpoint(name, endpoint):
-            from flask import render_template
+            from flask import abort, render_template
+            from jinja2 import UndefinedError
 
             @application.route('/' + name, endpoint=endpoint)
             def route_handler():
                 title = name.replace('-', ' ').capitalize()
-                return render_template(name + '.html', title=title)
+                try:
+                    return render_template(name + '.html', title=title)
+                except UndefinedError as e:
+                    # Needs data only its real view supplies (e.g. partner-page.html -> /<org>); not a page in itself.
+                    application.logger.warning(f'/{name} is not servable without view context: {e}')
+                    abort(404)
         return register_template_endpoint
 
     # Get existing endpoints
