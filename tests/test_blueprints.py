@@ -119,3 +119,11 @@ def test_404_error_handler(client):
     """Test 404 error handler."""
     response = client.get('/nonexistent-page-12345')
     assert response.status_code == 404
+
+
+def test_template_that_needs_view_context_is_404_not_500():
+    # partner-page.html needs `organization` from the /<org> view; hit directly it used to raise a 500.
+    from app import create_app
+    client = create_app().test_client()
+    assert client.get('/partner-page').status_code == 404
+    assert client.get('/about').status_code == 200
