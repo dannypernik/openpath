@@ -118,10 +118,10 @@ def build():
 
 def make_session(data):
     """session.query(User|TestDate) stand-in backed by `data`."""
-    from app.models import TestDate, User
     session = MagicMock()
     users = FakeQuery(data.students + data.tutors, data.remind_users)
-    session.query.side_effect = lambda model: users if model is User else FakeQuery(data.test_dates)
+    # By name: other test modules may reload app.models, so `is User` can't be trusted.
+    session.query.side_effect = lambda model: FakeQuery(data.test_dates) if model.__name__ == 'TestDate' else users
     return session
 
 
