@@ -894,7 +894,7 @@ def send_tutor_email(tutor, low_scheduled_students, unscheduled_students, other_
 def send_weekly_report_email(messages, status_updates, my_session_count, my_tutoring_hours,
     other_session_count, other_tutoring_hours, low_scheduled_students, unscheduled_students,
     paused_students, tutors_attention, weekly_data, add_students_to_data, cc_sessions, session_discrepancies,
-    unregistered_students, undecided_students, now):
+    unregistered_students, undecided_students, now, script_status='succeeded', exception=''):
 
     # Compute human-readable start/end dates directly from the passed `now` datetime
     start_dt = now + datetime.timedelta(hours=40)
@@ -921,14 +921,15 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
                         'Email': os.environ.get('MAIL_USERNAME')
                     },
                 ],
-                'Subject': 'reminders.py succeeded - Admin tutoring report',
+                'Subject': f'reminders.py {script_status} - Admin tutoring report',
                 'HTMLPart': render_template('email/weekly-report-email.html',
                     messages=messages, status_updates=status_updates, my_tutoring_hours=my_tutoring_hours,
                     my_session_count=my_session_count, other_tutoring_hours=other_tutoring_hours,
                     other_session_count=other_session_count, unscheduled_students=unscheduled_students,
                     paused_str=paused_str, tutors_attention=tutors_attention, cc_sessions=cc_sessions,
                     session_discrepancies=session_discrepancies, message=message, author=author,
-                    weekly_data=weekly_data, add_students_to_data=add_students_to_data, full_name=full_name)
+                    weekly_data=weekly_data, add_students_to_data=add_students_to_data, full_name=full_name,
+                    exception=exception)
             }
         ]
     }
@@ -937,7 +938,7 @@ def send_weekly_report_email(messages, status_updates, my_session_count, my_tuto
     if result.status_code == 200:
         logging.info('\nWeekly report email sent.')
     else:
-        logging.info('\nWeekly report email error:', str(result.status_code), result.reason, '\n')
+        logging.error(f'Weekly report email error: {result.status_code} {result.reason}')
     return result.status_code
 
 
@@ -984,7 +985,7 @@ def send_script_status_email(name, messages, status_updates, low_scheduled_stude
     if result.status_code == 200:
         logging.info('\nScript status email sent.')
     else:
-        logging.info('Script status email error:', str(result.status_code), result.reason, '\n')
+        logging.error(f'Script status email error: {result.status_code} {result.reason}')
     return result.status_code
 
 

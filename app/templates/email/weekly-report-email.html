@@ -103,6 +103,10 @@
     </p>
   {% endif %}
 
+  {% if exception %}
+    <p><strong>reminders.py failed</strong><br>{{ exception }}</p>
+  {% endif %}
+
   <p>
     <strong>Random inspirational quote of the day</strong><br/>
     {{ message }}<br/>
