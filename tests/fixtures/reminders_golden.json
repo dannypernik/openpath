@@ -1,0 +1,814 @@
+{
+ "status": {
+  "emails": {
+   "send_late_registration_reminder_email": [],
+   "send_registration_reminder_email": [
+    [
+     "Ann Lee",
+     {
+      "date": "2026-10-10",
+      "late_date": null,
+      "reg_date": "2026-10-17",
+      "status": "upcoming",
+      "test": "sat"
+     }
+    ]
+   ],
+   "send_reminder_email": [
+    [
+     {
+      "end": "2026-10-14T18:00:00+00:00",
+      "hours": 1,
+      "location": "",
+      "name": "Ann Lee",
+      "start": "2026-10-14T17:00:00+00:00",
+      "time_group": "evening_hours",
+      "tutor": "Danny Pernik",
+      "week_num": 0
+     },
+     "Ann Lee",
+     null
+    ]
+   ],
+   "send_script_status_email": [
+    [
+     "reminders.py",
+     [
+      "\nSession reminders for Wednesday, Oct 14:",
+      "sent",
+      "Test date 2026-10-11 marked as past",
+      "sent"
+     ],
+     [
+      "Ed Gil DB status = active"
+     ],
+     [
+      {
+       "deadline": "Fri Oct 16",
+       "hours": 1.5,
+       "hours_this_week": 2,
+       "name": "Ann Lee",
+       "next_session": "Wed Oct 14",
+       "next_tutor": "Danny Pernik",
+       "pay_type": "Package",
+       "rate": 100,
+       "rep_date": "2026-10-16T17:00:00+00:00",
+       "row": 6,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo",
+        "Danny Pernik"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      {
+       "deadline": "",
+       "hours": 0.0,
+       "hours_this_week": 2,
+       "name": "Bob Ray",
+       "next_session": "",
+       "next_tutor": null,
+       "pay_type": "Credit card",
+       "rate": 80,
+       "rep_date": "2026-10-12T16:00:00+00:00",
+       "row": 7,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      {
+       "deadline": "",
+       "hours": 3.0,
+       "hours_this_week": 0,
+       "name": "Ed Gil",
+       "next_session": "Thu Oct 22",
+       "next_tutor": "Sean Palermo",
+       "pay_type": "Package",
+       "rate": 90,
+       "rep_date": "2026-10-12T16:00:00+00:00",
+       "row": 9,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo"
+       ],
+       "update_ss_status": true
+      }
+     ],
+     [
+      "Danny Pernik",
+      "Sean Palermo"
+     ],
+     [
+      {
+       "add_to": "database",
+       "name": "Gus Ito"
+      }
+     ],
+     [
+      {
+       "name": "Bob Ray",
+       "payment": 82.7
+      }
+     ],
+     [
+      {
+       "calendar_duration": 1,
+       "sheet_duration": 1.5,
+       "start": "10/01/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "duration_mismatch"
+      },
+      {
+       "duration": 1,
+       "start": "10/03/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_sheet"
+      },
+      {
+       "duration": 1,
+       "start": "10/02/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_calendar"
+      }
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     [
+      {
+       "amount": 120,
+       "tutor": {
+        "cal_id": "x",
+        "finance_ss_id": "abc",
+        "name": "Sean Palermo"
+       }
+      }
+     ],
+     "succeeded",
+     null
+    ]
+   ],
+   "send_test_reminder_email": [],
+   "send_weekly_report_email": []
+  },
+  "sheet": [
+   [
+    "batchUpdate",
+    {
+     "body": {
+      "data": [
+       {
+        "range": "J6",
+        "values": [
+         [
+          "Wed Oct 14"
+         ]
+        ]
+       },
+       {
+        "range": "K6",
+        "values": [
+         [
+          "Fri Oct 16"
+         ]
+        ]
+       },
+       {
+        "range": "J7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "K7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "B9",
+        "values": [
+         [
+          "Active"
+         ]
+        ]
+       },
+       {
+        "range": "J9",
+        "values": [
+         [
+          "Thu Oct 22"
+         ]
+        ]
+       },
+       {
+        "range": "K9",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       }
+      ],
+      "valueInputOption": "USER_ENTERED"
+     },
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0"
+    }
+   ],
+   [
+    "update",
+    {
+     "body": {
+      "values": [
+       [
+        "10/11/2026",
+        "=\"Ann Lee\"",
+        1
+       ]
+      ]
+     },
+     "range": "Sessions!B3:D3",
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0",
+     "valueInputOption": "USER_ENTERED"
+    }
+   ]
+  ],
+  "statuses": {
+   "Ann Lee": "active",
+   "Bob Ray": "active",
+   "Cy Dee": "paused",
+   "Ed Gil": "active"
+  },
+  "test_date_status": "past"
+ },
+ "status_no_reminders": {
+  "emails": {
+   "send_late_registration_reminder_email": [],
+   "send_registration_reminder_email": [],
+   "send_reminder_email": [],
+   "send_script_status_email": [
+    [
+     "reminders.py",
+     [
+      "\nSession reminders for Wednesday, Oct 14:",
+      "Not sent (send_reminders=False): send_reminder_email",
+      "Test date 2026-10-11 marked as past",
+      "Not sent (send_reminders=False): send_registration_reminder_email"
+     ],
+     [
+      "Ed Gil DB status = active"
+     ],
+     [
+      {
+       "deadline": "Fri Oct 16",
+       "hours": 1.5,
+       "hours_this_week": 2,
+       "name": "Ann Lee",
+       "next_session": "Wed Oct 14",
+       "next_tutor": "Danny Pernik",
+       "pay_type": "Package",
+       "rate": 100,
+       "rep_date": "2026-10-16T17:00:00+00:00",
+       "row": 6,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo",
+        "Danny Pernik"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      {
+       "deadline": "",
+       "hours": 0.0,
+       "hours_this_week": 2,
+       "name": "Bob Ray",
+       "next_session": "",
+       "next_tutor": null,
+       "pay_type": "Credit card",
+       "rate": 80,
+       "rep_date": "2026-10-12T16:00:00+00:00",
+       "row": 7,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      {
+       "deadline": "",
+       "hours": 3.0,
+       "hours_this_week": 0,
+       "name": "Ed Gil",
+       "next_session": "Thu Oct 22",
+       "next_tutor": "Sean Palermo",
+       "pay_type": "Package",
+       "rate": 90,
+       "rep_date": "2026-10-12T16:00:00+00:00",
+       "row": 9,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo"
+       ],
+       "update_ss_status": true
+      }
+     ],
+     [
+      "Danny Pernik",
+      "Sean Palermo"
+     ],
+     [
+      {
+       "add_to": "database",
+       "name": "Gus Ito"
+      }
+     ],
+     [
+      {
+       "name": "Bob Ray",
+       "payment": 82.7
+      }
+     ],
+     [
+      {
+       "calendar_duration": 1,
+       "sheet_duration": 1.5,
+       "start": "10/01/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "duration_mismatch"
+      },
+      {
+       "duration": 1,
+       "start": "10/03/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_sheet"
+      },
+      {
+       "duration": 1,
+       "start": "10/02/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_calendar"
+      }
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     [
+      {
+       "amount": 120,
+       "tutor": {
+        "cal_id": "x",
+        "finance_ss_id": "abc",
+        "name": "Sean Palermo"
+       }
+      }
+     ],
+     "succeeded",
+     null
+    ]
+   ],
+   "send_test_reminder_email": [],
+   "send_weekly_report_email": []
+  },
+  "sheet": [
+   [
+    "batchUpdate",
+    {
+     "body": {
+      "data": [
+       {
+        "range": "J6",
+        "values": [
+         [
+          "Wed Oct 14"
+         ]
+        ]
+       },
+       {
+        "range": "K6",
+        "values": [
+         [
+          "Fri Oct 16"
+         ]
+        ]
+       },
+       {
+        "range": "J7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "K7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "B9",
+        "values": [
+         [
+          "Active"
+         ]
+        ]
+       },
+       {
+        "range": "J9",
+        "values": [
+         [
+          "Thu Oct 22"
+         ]
+        ]
+       },
+       {
+        "range": "K9",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       }
+      ],
+      "valueInputOption": "USER_ENTERED"
+     },
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0"
+    }
+   ],
+   [
+    "update",
+    {
+     "body": {
+      "values": [
+       [
+        "10/11/2026",
+        "=\"Ann Lee\"",
+        1
+       ]
+      ]
+     },
+     "range": "Sessions!B3:D3",
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0",
+     "valueInputOption": "USER_ENTERED"
+    }
+   ]
+  ],
+  "statuses": {
+   "Ann Lee": "active",
+   "Bob Ray": "active",
+   "Cy Dee": "paused",
+   "Ed Gil": "active"
+  },
+  "test_date_status": "past"
+ },
+ "weekly": {
+  "emails": {
+   "send_late_registration_reminder_email": [],
+   "send_registration_reminder_email": [
+    [
+     "Ann Lee",
+     {
+      "date": "2026-10-10",
+      "late_date": null,
+      "reg_date": "2026-10-17",
+      "status": "upcoming",
+      "test": "sat"
+     }
+    ]
+   ],
+   "send_reminder_email": [
+    [
+     {
+      "end": "2026-10-14T18:00:00+00:00",
+      "hours": 1,
+      "location": "",
+      "name": "Ann Lee",
+      "start": "2026-10-14T17:00:00+00:00",
+      "time_group": "evening_hours",
+      "tutor": "Danny Pernik",
+      "week_num": 0
+     },
+     "Ann Lee",
+     null
+    ]
+   ],
+   "send_script_status_email": [],
+   "send_test_reminder_email": [],
+   "send_weekly_report_email": [
+    [
+     [
+      "\nSession reminders for Wednesday, Oct 14:",
+      "sent",
+      "Test date 2026-10-11 marked as past",
+      "sent"
+     ],
+     [
+      "Ed Gil DB status = active"
+     ],
+     2,
+     2,
+     1,
+     1,
+     [
+      {
+       "deadline": "Fri Oct 16",
+       "hours": 1.5,
+       "hours_this_week": 2,
+       "name": "Ann Lee",
+       "next_session": "Wed Oct 14",
+       "next_tutor": "Danny Pernik",
+       "pay_type": "Package",
+       "rate": 100,
+       "rep_date": "2026-10-16T17:00:00+00:00",
+       "row": 6,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo",
+        "Danny Pernik"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      {
+       "deadline": "",
+       "hours": 0.0,
+       "hours_this_week": 2,
+       "name": "Bob Ray",
+       "next_session": "",
+       "next_tutor": null,
+       "pay_type": "Credit card",
+       "rate": 80,
+       "rep_date": "2026-10-12T16:00:00+00:00",
+       "row": 7,
+       "status": "Active",
+       "tutors": [
+        "Sean Palermo"
+       ],
+       "update_ss_status": false
+      }
+     ],
+     [
+      "Cy Dee"
+     ],
+     [
+      "Danny Pernik",
+      "Sean Palermo"
+     ],
+     {
+      "dates": [
+       "Oct 18",
+       "Oct 25",
+       "Nov 1",
+       "Nov 8",
+       "Nov 15",
+       "Nov 22",
+       "Nov 29",
+       "Dec 6",
+       "Dec 13",
+       "Dec 20",
+       0
+      ],
+      "day_hours": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "evening_hours": [
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "projected_hours": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "score_reports": {
+       "sat": 3
+      },
+      "sessions": [
+       2,
+       1,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     [
+      {
+       "add_to": "database",
+       "name": "Gus Ito"
+      }
+     ],
+     [
+      {
+       "name": "Bob Ray",
+       "payment": 82.7
+      }
+     ],
+     [
+      {
+       "calendar_duration": 1,
+       "sheet_duration": 1.5,
+       "start": "10/01/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "duration_mismatch"
+      },
+      {
+       "duration": 1,
+       "start": "10/03/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_sheet"
+      },
+      {
+       "duration": 1,
+       "start": "10/02/2026",
+       "student": "Ann Lee",
+       "tutor": "Danny Pernik",
+       "type": "missing_from_calendar"
+      }
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     [
+      "Ann Lee",
+      "Bob Ray",
+      "Cy Dee",
+      "Ed Gil"
+     ],
+     "2026-10-12T16:00:00+00:00"
+    ]
+   ]
+  },
+  "sheet": [
+   [
+    "batchUpdate",
+    {
+     "body": {
+      "data": [
+       {
+        "range": "J6",
+        "values": [
+         [
+          "Wed Oct 14"
+         ]
+        ]
+       },
+       {
+        "range": "K6",
+        "values": [
+         [
+          "Fri Oct 16"
+         ]
+        ]
+       },
+       {
+        "range": "J7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "K7",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       },
+       {
+        "range": "B9",
+        "values": [
+         [
+          "Active"
+         ]
+        ]
+       },
+       {
+        "range": "J9",
+        "values": [
+         [
+          "Thu Oct 22"
+         ]
+        ]
+       },
+       {
+        "range": "K9",
+        "values": [
+         [
+          ""
+         ]
+        ]
+       }
+      ],
+      "valueInputOption": "USER_ENTERED"
+     },
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0"
+    }
+   ],
+   [
+    "update",
+    {
+     "body": {
+      "values": [
+       [
+        "10/11/2026",
+        "=\"Ann Lee\"",
+        1
+       ]
+      ]
+     },
+     "range": "Sessions!B3:D3",
+     "spreadsheetId": "1b-GuXspKDsMPMK3tTpuDAjFtfuHvtkMQz1hBgkasgg0",
+     "valueInputOption": "USER_ENTERED"
+    }
+   ]
+  ],
+  "statuses": {
+   "Ann Lee": "active",
+   "Bob Ray": "active",
+   "Cy Dee": "paused",
+   "Ed Gil": "active"
+  },
+  "test_date_status": "past"
+ }
+}
