@@ -238,7 +238,7 @@ def get_events_and_data():
 
                 if (today - datetime.date(2025, 3, 7)).days % 14 == 0:
                     # Fetch finance spreadsheet data for other tutors
-                    if tutor['finance_ss_id']:
+                    if tutor.get('finance_ss_id'):
                         service_sheets = build('sheets', 'v4', credentials=creds, cache_discovery=False)
                         sheet = service_sheets.spreadsheets()
                         result = sheet.values().get(spreadsheetId=tutor['finance_ss_id'],
