@@ -324,7 +324,12 @@ def get_events_and_data():
 
 
 # @profile
-def main():
+def main(send_reminders=True, report=None):
+    """send_reminders=False logs what would be sent but emails no students/parents/tutors.
+    report: 'weekly' or 'status' forces which admin email goes out (default: weekly on Mondays)."""
+    def send(fn, *args):
+        return fn(*args) if send_reminders else f'Not sent (send_reminders=False): {fn.__name__}'
+
     try:
         logging.info('reminders.py started')
         messages = []
@@ -379,7 +384,7 @@ def main():
                 name = full_name(student)
                 if name in e['name'] and 'projected' not in e['name'].lower():
                     reminder_count += 1
-                    msg = send_reminder_email(e, student, get_tutor_from_name(tutors, e['tutor']))
+                    msg = send(send_reminder_email, e, student, get_tutor_from_name(tutors, e['tutor']))
                     logging.info(msg)
                     messages.append(msg)
 
@@ -694,15 +699,15 @@ def main():
                     logging.info(msg)
                     messages.append(msg)
                 elif d.reg_date == today + datetime.timedelta(days=5) and not u.is_registered(d):
-                    msg = send_registration_reminder_email(u, d)
+                    msg = send(send_registration_reminder_email, u, d)
                     logging.info(msg)
                     messages.append(msg)
                 elif d.late_date == today + datetime.timedelta(days=5) and not u.is_registered(d):
-                    msg = send_late_registration_reminder_email(u, d)
+                    msg = send(send_late_registration_reminder_email, u, d)
                     logging.info(msg)
                     messages.append(msg)
                 elif d.date == today + datetime.timedelta(days=6) and u.is_registered(d):
-                    msg = send_test_reminder_email(u, d)
+                    msg = send(send_test_reminder_email, u, d)
                     logging.info(msg)
                     messages.append(msg)
 
@@ -759,7 +764,7 @@ def main():
         exception = traceback.format_exc()
 
     finally:
-        if day_of_week == 'Monday':
+        if (report or ('weekly' if day_of_week == 'Monday' else 'status')) == 'weekly':
             try:
                 weekly_data['score_reports'] = utils.batch_update_weekly_usage()
             except FileNotFoundError as fe:
@@ -786,6 +791,11 @@ def get_tutor_from_name(tutors, name):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no-reminders', action='store_true', help='skip all student/parent/tutor reminder emails')
+    parser.add_argument('--report', choices=['weekly', 'status'], help='force which admin email is sent')
+    args = parser.parse_args()
     app = create_app()
     with app.app_context():
-        main()
+        main(send_reminders=not args.no_reminders, report=args.report)
