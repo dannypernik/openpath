@@ -777,7 +777,17 @@ def main(send_reminders=True, report=None, session=None, now=None, today=None):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Email session/test reminders, sync student status with the tutoring sheets, and email the admin report.',
+        epilog="""examples:
+  reminders.py                              normal daily run (weekly report on Mondays, status email otherwise)
+  reminders.py --no-reminders --report weekly   send the weekly report now, without emailing students
+  reminders.py --no-reminders --report status   send the script status email now, without emailing students
+
+--no-reminders is not a dry run: the database and Google Sheets are still updated
+(student statuses, past test dates, schedule columns, Sessions rows, weekly usage).
+Logs go to logs/reminders.log.""",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--no-reminders', action='store_true', help='skip all student/parent/tutor reminder emails')
     parser.add_argument('--report', choices=['weekly', 'status'], help='force which admin email is sent')
     args = parser.parse_args()
