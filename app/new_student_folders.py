@@ -27,6 +27,7 @@ TOKEN = 'token_tpa.json'
 CLIENT_SECRETS = 'credentials_tpa.json'
 SAT_DATA_SS_ID = os.environ.get('SAT_DATA_SS_ID')
 OPT_SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
+EMAIL_LIST_SPREADSHEET_ID = '1LiWg_53O_4oSuRF1TBIuTS1nyY_hi8GIIRzs_t-WKA8'
 
 
 creds = None
@@ -769,6 +770,30 @@ def add_student_to_ss_list(student_name, grad_year):
             valueInputOption='RAW',
             body={'values': [[grad_year]]}
         ).execute())
+
+
+# If email not present in 'Email list'!A of EMAIL_LIST_SPREADSHEET_ID, append it
+def add_email_to_unsubscribe_list(email):
+    if sheets_service is None:
+        logger.warning('Cannot add email to unsubscribe list: Google Sheets service not initialized')
+        return
+
+    result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
+        spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
+        range="'Email list'!A:A"
+    ).execute())
+
+    existing = {row[0].strip().lower() for row in result.get('values', []) if row and row[0]}
+    if email.strip().lower() in existing:
+        return
+
+    execute_with_retries(lambda: sheets_service.spreadsheets().values().append(
+        spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
+        range="'Email list'!A:A",
+        valueInputOption='RAW',
+        insertDataOption='INSERT_ROWS',
+        body={'values': [[email]]}
+    ).execute())
 
 
 # Recursively get all files in folder_id and nested subfolders

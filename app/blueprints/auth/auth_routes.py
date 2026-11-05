@@ -166,6 +166,11 @@ def unsubscribe():
     if form.validate_on_submit():
         email = form.email.data.lower()
         try:
+            from app.new_student_folders import add_email_to_unsubscribe_list
+            add_email_to_unsubscribe_list(email)
+        except Exception as e:
+            logger.error(f"Failed to add {email} to unsubscribe list: {e}", exc_info=True)
+        try:
             email_status = send_unsubscribe_email(email)
             if email_status == 200:
                 flash('Your request has been received. We will remove you from the SAT resources folder so you don\'t receive update emails.', 'success')
