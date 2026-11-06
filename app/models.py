@@ -207,3 +207,10 @@ class Organization(db.Model):
 @login.user_loader
 def load_user(id):
     return User.query.get(id)
+
+class EmailListRequest(db.Model):
+    """Unconfirmed email-list change; row is deleted once the sheet write is confirmed."""
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    action = db.Column(db.String(16), nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

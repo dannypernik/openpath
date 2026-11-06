@@ -76,7 +76,16 @@ def send_confirmation_email(user_email, message):
     return result.status_code
 
 
-def send_unsubscribe_email(email):
+EMAIL_LIST_OUTCOMES = {
+    'unsubscribe': {'added': 'successfully unsubscribed', 'already': 'already unsubscribed',
+                    'failed': 'failed to be automatically unsubscribed'},
+    'resubscribe': {'removed': 'successfully resubscribed', 'already': 'already subscribed',
+                    'failed': 'failed to be automatically resubscribed'}
+}
+
+
+def send_email_list_change_email(email, action, status):
+    outcome = EMAIL_LIST_OUTCOMES[action][status]
     data = {
         'Messages': [
             {
@@ -89,17 +98,17 @@ def send_unsubscribe_email(email):
                     'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
-                'Subject': 'Unsubscribe request from ' + email,
-                'HTMLPart': render_template('email/unsubscribe-email.html', email=email)
+                'Subject': f'{action.capitalize()} request from {email}: {outcome}',
+                'HTMLPart': render_template('email/unsubscribe-email.html', email=email, action=action, status=status)
             }
         ]
     }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info('Confirmation email sent to ' + email)
+        logging.info(f'{action} notification sent for ' + email)
     else:
-        logging.info('Confirmation email to ' + email + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info(f'{action} notification for ' + email + ' failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 

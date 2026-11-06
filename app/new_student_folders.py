@@ -772,28 +772,59 @@ def add_student_to_ss_list(student_name, grad_year):
         ).execute())
 
 
-# If email not present in 'Email list'!A of EMAIL_LIST_SPREADSHEET_ID, append it
-def add_email_to_unsubscribe_list(email):
-    if sheets_service is None:
-        logger.warning('Cannot add email to unsubscribe list: Google Sheets service not initialized')
-        return
+EMAIL_LIST_RANGE = "'Email list'!A:A"
 
+
+def _get_email_list():
+    if sheets_service is None:
+        raise RuntimeError('Google Sheets service not initialized')
     result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
         spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
-        range="'Email list'!A:A"
+        range=EMAIL_LIST_RANGE
     ).execute())
+    return result.get('values', [])
 
-    existing = {row[0].strip().lower() for row in result.get('values', []) if row and row[0]}
-    if email.strip().lower() in existing:
-        return
+
+# Append email to 'Email list'!A unless present. Returns 'added' or 'already'; raises on failure.
+def add_email_to_unsubscribe_list(email):
+    target = email.strip().lower()
+    if any(row and row[0].strip().lower() == target for row in _get_email_list()):
+        return 'already'
 
     execute_with_retries(lambda: sheets_service.spreadsheets().values().append(
         spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
-        range="'Email list'!A:A",
+        range=EMAIL_LIST_RANGE,
         valueInputOption='RAW',
         insertDataOption='INSERT_ROWS',
         body={'values': [[email]]}
     ).execute())
+    return 'added'
+
+
+# Remove email from 'Email list'!A, shifting later addresses up. Returns 'removed' or 'already'; raises on failure.
+def remove_email_from_unsubscribe_list(email):
+    target = email.strip().lower()
+    row_indexes = [i for i, row in enumerate(_get_email_list()) if row and row[0].strip().lower() == target]
+    if not row_indexes:
+        return 'already'
+
+    meta = execute_with_retries(lambda: sheets_service.spreadsheets().get(
+        spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
+        fields='sheets.properties(sheetId,title)'
+    ).execute())
+    sheet_id = next(s['properties']['sheetId'] for s in meta['sheets'] if s['properties']['title'] == 'Email list')
+
+    # Bottom-up so earlier deletions don't shift the remaining indexes
+    requests = [{'deleteRange': {
+        'range': {'sheetId': sheet_id, 'startRowIndex': i, 'endRowIndex': i + 1,
+                  'startColumnIndex': 0, 'endColumnIndex': 1},
+        'shiftDimension': 'ROWS'
+    }} for i in reversed(row_indexes)]
+    execute_with_retries(lambda: sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
+        body={'requests': requests}
+    ).execute())
+    return 'removed'
 
 
 # Recursively get all files in folder_id and nested subfolders

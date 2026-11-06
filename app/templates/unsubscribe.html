@@ -7,6 +7,16 @@ Unsubscribe
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-11 col-lg-10">
+    {% if state == 'unsubscribed' %}
+    <h1 class="text-center">You have been unsubscribed</h1>
+    <form class="text-center" method="POST" action="{{ url_for('auth.resubscribe') }}">
+      {{ form.hidden_tag() }}
+      {{ form.email(type='hidden') }}
+      <button type="submit" class="btn btn-link">Resubscribe</button>
+    </form>
+    {% elif state == 'resubscribed' %}
+    <h1 class="text-center">You have been resubscribed</h1>
+    {% else %}
     <h1 class="text-center">Unsubscribe from SAT Resources</h1>
     <p class="text-center">
       You will still have access to the resources but will no longer receive email updates.
@@ -20,6 +30,7 @@ Unsubscribe
         <button type="submit" class="btn btn-danger">Unsubscribe</button>
       </div>
     </form>
+    {% endif %}
   </div>
 </div>
 {% endblock content %}

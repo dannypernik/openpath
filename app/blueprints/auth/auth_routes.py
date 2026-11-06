@@ -151,12 +151,28 @@ def verify_email(token):
         return redirect(url_for('auth.signin'))
 
 
+def _request_email_list_change(email, action):
+    """Save the request, then let a celery task update the sheet and notify admin."""
+    import logging
+    from datetime import datetime, timezone
+    from app.models import EmailListRequest
+    from app.tasks import email_list_task
+
+    req = EmailListRequest.query.filter_by(email=email).first()
+    if req:
+        req.action = action
+        req.timestamp = datetime.now(timezone.utc)
+    else:
+        db.session.add(EmailListRequest(email=email, action=action))
+    db.session.commit()
+    try:
+        email_list_task.delay(email, action)
+    except Exception:
+        logging.getLogger(__name__).error(f'Could not queue {action} task for {email}', exc_info=True)
+
+
 @auth_bp.route('/unsubscribe', methods=['GET', 'POST'])
 def unsubscribe():
-    from app.email import send_unsubscribe_email
-    import logging
-    logger = logging.getLogger(__name__)
-
     form = RequestPasswordResetForm()
 
     email = request.args.get('email')
@@ -164,23 +180,18 @@ def unsubscribe():
         form.email.data = email
 
     if form.validate_on_submit():
-        email = form.email.data.lower()
-        try:
-            from app.new_student_folders import add_email_to_unsubscribe_list
-            add_email_to_unsubscribe_list(email)
-        except Exception as e:
-            logger.error(f"Failed to add {email} to unsubscribe list: {e}", exc_info=True)
-        try:
-            email_status = send_unsubscribe_email(email)
-            if email_status == 200:
-                flash('Your request has been received. We will remove you from the SAT resources folder so you don\'t receive update emails.', 'success')
-            else:
-                flash('Failed to process your request. Please contact us directly.', 'error')
-        except Exception as e:
-            flash('An error occurred while processing your request. Please try again later.', 'error')
-            logger.error(f"Error processing unsubscribe request: {e}", exc_info=True)
-        return redirect(url_for('main.index'))
-    return render_template('unsubscribe.html', title='Unsubscribe', form=form)
+        _request_email_list_change(form.email.data.lower(), 'unsubscribe')
+        return render_template('unsubscribe.html', title='Unsubscribe', form=form, state='unsubscribed')
+    return render_template('unsubscribe.html', title='Unsubscribe', form=form, state='form')
+
+
+@auth_bp.route('/resubscribe', methods=['POST'])
+def resubscribe():
+    form = RequestPasswordResetForm()
+    if form.validate_on_submit():
+        _request_email_list_change(form.email.data.lower(), 'resubscribe')
+        return render_template('unsubscribe.html', title='Resubscribe', form=form, state='resubscribed')
+    return redirect(url_for('auth.unsubscribe'))
 
 
 @auth_bp.route('/request-password-reset', methods=['GET', 'POST'])
