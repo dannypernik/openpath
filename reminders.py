@@ -25,6 +25,7 @@ from app import create_app
 from app.email import send_reminder_email, send_test_reminder_email, \
     send_registration_reminder_email, send_late_registration_reminder_email, \
     send_weekly_report_email, send_script_status_email
+from app.email_list import send_unsubscribe_digest
 from app.extensions import db
 from app.helpers import full_name
 from app.logging_config import configure_logging
@@ -796,3 +797,7 @@ Logs go to logs/reminders.log.""",
     configure_logging(log_file=os.path.join(basedir, 'logs', 'reminders.log'))
     with app.app_context():
         main(send_reminders=not args.no_reminders, report=args.report)
+        try:
+            send_unsubscribe_digest()
+        except Exception:
+            logging.error('Unsubscribe digest failed', exc_info=True)

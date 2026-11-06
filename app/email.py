@@ -76,16 +76,7 @@ def send_confirmation_email(user_email, message):
     return result.status_code
 
 
-EMAIL_LIST_OUTCOMES = {
-    'unsubscribe': {'added': 'successfully unsubscribed', 'already': 'already unsubscribed',
-                    'failed': 'failed to be automatically unsubscribed'},
-    'resubscribe': {'removed': 'successfully resubscribed', 'already': 'already subscribed',
-                    'failed': 'failed to be automatically resubscribed'}
-}
-
-
-def send_email_list_change_email(email, action, status):
-    outcome = EMAIL_LIST_OUTCOMES[action][status]
+def send_email_list_failure_email(email, action):
     data = {
         'Messages': [
             {
@@ -98,17 +89,50 @@ def send_email_list_change_email(email, action, status):
                     'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
-                'Subject': f'{action.capitalize()} request from {email}: {outcome}',
-                'HTMLPart': render_template('email/unsubscribe-email.html', email=email, action=action, status=status)
+                'Subject': f'{action.capitalize()} request from {email}: failed to be automatically {action}d',
+                'HTMLPart': render_template('email/unsubscribe-email.html', email=email, action=action)
             }
         ]
     }
 
     result = mailjet.send.create(data=data)
     if result.status_code == 200:
-        logging.info(f'{action} notification sent for ' + email)
+        logging.info(f'{action} failure notification sent for ' + email)
     else:
-        logging.info(f'{action} notification for ' + email + ' failed to send with code ' + str(result.status_code), result.reason)
+        logging.info(f'{action} failure notification for ' + email + ' failed to send with code ' + str(result.status_code), result.reason)
+    return result.status_code
+
+
+def send_unsubscribe_digest_email(unsubscribed, resubscribed, pending):
+    today = datetime.date.today()
+    if pending:
+        subject = 'Unsubscribe list requires attention'
+    else:
+        subject = f'Unsubscribe digest for {today.strftime("%b")} {today.day}'
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': os.environ.get('MAIL_USERNAME'),
+                    'Name': 'Open Path Tutoring'
+                },
+                'To': [
+                    {
+                    'Email': os.environ.get('MAIL_USERNAME')
+                    }
+                ],
+                'Subject': subject,
+                'HTMLPart': render_template('email/unsubscribe-digest-email.html', unsubscribed=unsubscribed,
+                                            resubscribed=resubscribed, pending=pending)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    if result.status_code == 200:
+        logging.info('Unsubscribe digest sent: ' + subject)
+    else:
+        logging.info('Unsubscribe digest failed to send with code ' + str(result.status_code), result.reason)
     return result.status_code
 
 

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import app.tasks as tasks
+import app.email_list as email_list
 import app.new_student_folders as nsf
 import app.email as email_mod
 from app.extensions import db
@@ -18,14 +19,19 @@ def queued(monkeypatch):
 
 
 @pytest.fixture
-def notify(monkeypatch):
+def fail_mail(monkeypatch):
     mock = MagicMock()
-    monkeypatch.setattr(tasks, 'send_email_list_change_email', mock)
+    monkeypatch.setattr(tasks, 'send_email_list_failure_email', mock)
     return mock
 
 
 def run_task(email, action):
     tasks.email_list_task.run(email, action)
+
+
+def set_sheet(monkeypatch, add=None, remove=None):
+    monkeypatch.setattr(email_list, 'add_email_to_unsubscribe_list', add or MagicMock(return_value='added'))
+    monkeypatch.setattr(email_list, 'remove_email_from_unsubscribe_list', remove or MagicMock(return_value='removed'))
 
 
 def test_unsubscribe_post_confirms_immediately_and_queues(client, queued):
@@ -46,79 +52,158 @@ def test_resubscribe_post(client, queued):
     queued.assert_called_once_with('kid@example.com', 'resubscribe')
 
 
-def test_task_success_deletes_row_and_reports(client, queued, notify, monkeypatch):
+def test_task_success_confirms_without_sending_email(client, queued, fail_mail, monkeypatch):
     client.post('/unsubscribe', data={'email': 'a@x.com'})
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', lambda e: 'added')
+    set_sheet(monkeypatch)
     run_task('a@x.com', 'unsubscribe')
-    assert EmailListRequest.query.count() == 0
-    notify.assert_called_once_with('a@x.com', 'unsubscribe', 'added')
+    assert EmailListRequest.query.one().confirmed_at is not None
+    fail_mail.assert_not_called()
 
 
-def test_task_already_present_deletes_row(client, queued, notify, monkeypatch):
+def test_task_already_present_counts_as_success(client, queued, fail_mail, monkeypatch):
     client.post('/unsubscribe', data={'email': 'a@x.com'})
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', lambda e: 'already')
+    set_sheet(monkeypatch, add=MagicMock(return_value='already'))
     run_task('a@x.com', 'unsubscribe')
-    assert EmailListRequest.query.count() == 0
-    notify.assert_called_once_with('a@x.com', 'unsubscribe', 'already')
+    assert EmailListRequest.query.one().confirmed_at is not None
+    fail_mail.assert_not_called()
 
 
-def test_task_failure_keeps_row_and_reports_failed(client, queued, notify, monkeypatch):
+def test_task_failure_stays_pending_and_sends_failure_email(client, queued, fail_mail, monkeypatch):
     client.post('/unsubscribe', data={'email': 'a@x.com'})
-
-    def boom(e):
-        raise RuntimeError('sheets down')
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', boom)
+    set_sheet(monkeypatch, add=MagicMock(side_effect=RuntimeError('sheets down')))
     run_task('a@x.com', 'unsubscribe')
-    assert EmailListRequest.query.count() == 1
-    notify.assert_called_once_with('a@x.com', 'unsubscribe', 'failed')
+    assert EmailListRequest.query.one().confirmed_at is None
+    fail_mail.assert_called_once_with('a@x.com', 'unsubscribe')
 
 
-def test_next_unsubscribe_retries_failed_write(client, queued, notify, monkeypatch):
+def test_next_unsubscribe_retries_failed_write(client, queued, fail_mail, monkeypatch):
     client.post('/unsubscribe', data={'email': 'a@x.com'})
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', MagicMock(side_effect=RuntimeError))
+    set_sheet(monkeypatch, add=MagicMock(side_effect=RuntimeError))
     run_task('a@x.com', 'unsubscribe')
-    assert EmailListRequest.query.count() == 1
 
     client.post('/unsubscribe', data={'email': 'a@x.com'})
     assert EmailListRequest.query.count() == 1
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', lambda e: 'added')
+    set_sheet(monkeypatch)
     run_task('a@x.com', 'unsubscribe')
-    assert EmailListRequest.query.count() == 0
+    assert EmailListRequest.query.one().confirmed_at is not None
 
 
-def test_resubscribe_supersedes_pending_unsubscribe(client, queued, notify, monkeypatch):
+def test_new_request_resets_confirmed_row(client, queued, monkeypatch):
+    client.post('/unsubscribe', data={'email': 'a@x.com'})
+    set_sheet(monkeypatch)
+    run_task('a@x.com', 'unsubscribe')
+    client.post('/resubscribe', data={'email': 'a@x.com'})
+    req = EmailListRequest.query.one()
+    assert (req.action, req.confirmed_at) == ('resubscribe', None)
+
+
+def test_resubscribe_supersedes_pending_unsubscribe(client, queued, fail_mail, monkeypatch):
     client.post('/unsubscribe', data={'email': 'a@x.com'})
     client.post('/resubscribe', data={'email': 'a@x.com'})
     assert EmailListRequest.query.one().action == 'resubscribe'
 
     add = MagicMock()
-    monkeypatch.setattr(tasks, 'add_email_to_unsubscribe_list', add)
+    set_sheet(monkeypatch, add=add, remove=MagicMock(return_value='already'))
     run_task('a@x.com', 'unsubscribe')  # stale task from the first request
     add.assert_not_called()
-    notify.assert_not_called()
 
-    monkeypatch.setattr(tasks, 'remove_email_from_unsubscribe_list', lambda e: 'already')
     run_task('a@x.com', 'resubscribe')
+    assert EmailListRequest.query.one().confirmed_at is not None
+
+
+@pytest.fixture
+def digest(monkeypatch):
+    mock = MagicMock(return_value=200)
+    monkeypatch.setattr(email_list, 'send_unsubscribe_digest_email', mock)
+    return mock
+
+
+def test_digest_no_requests_sends_nothing(app, digest):
+    email_list.send_unsubscribe_digest()
+    digest.assert_not_called()
+
+
+def test_digest_all_succeeded_lists_emails_and_clears_rows(client, queued, digest, monkeypatch):
+    client.post('/unsubscribe', data={'email': 'a@x.com'})
+    client.post('/unsubscribe', data={'email': 'b@x.com'})
+    client.post('/resubscribe', data={'email': 'c@x.com'})
+    set_sheet(monkeypatch)
+    email_list.send_unsubscribe_digest()
+    digest.assert_called_once_with(unsubscribed=['a@x.com', 'b@x.com'], resubscribed=['c@x.com'], pending=[])
     assert EmailListRequest.query.count() == 0
-    notify.assert_called_once_with('a@x.com', 'resubscribe', 'already')
 
 
-@pytest.mark.parametrize('action,status,phrase', [
-    ('unsubscribe', 'added', 'successfully unsubscribed'),
-    ('unsubscribe', 'already', 'already unsubscribed'),
-    ('unsubscribe', 'failed', 'failed to be automatically unsubscribed'),
-    ('resubscribe', 'removed', 'successfully resubscribed'),
-    ('resubscribe', 'already', 'already subscribed'),
-    ('resubscribe', 'failed', 'failed to be automatically resubscribed'),
-])
-def test_email_subject(app, monkeypatch, action, status, phrase):
+def test_digest_picks_up_manually_added_email(client, queued, digest, monkeypatch):
+    client.post('/unsubscribe', data={'email': 'a@x.com'})
+    set_sheet(monkeypatch, add=MagicMock(side_effect=RuntimeError))
+    run_task('a@x.com', 'unsubscribe')
+    set_sheet(monkeypatch, add=MagicMock(return_value='already'))  # manually added; the recheck finds it
+    email_list.send_unsubscribe_digest()
+    assert digest.call_args.kwargs['pending'] == []
+    assert digest.call_args.kwargs['unsubscribed'] == ['a@x.com']
+    assert EmailListRequest.query.count() == 0
+
+
+def test_digest_reports_pending_and_keeps_those_rows(client, queued, digest, monkeypatch):
+    client.post('/unsubscribe', data={'email': 'a@x.com'})
+    client.post('/unsubscribe', data={'email': 'b@x.com'})
+    add = MagicMock(side_effect=lambda e: 'added' if e == 'a@x.com' else (_ for _ in ()).throw(RuntimeError()))
+    set_sheet(monkeypatch, add=add)
+    email_list.send_unsubscribe_digest()
+    kwargs = digest.call_args.kwargs
+    assert kwargs['unsubscribed'] == ['a@x.com']
+    assert [(p['email'], p['action']) for p in kwargs['pending']] == [('b@x.com', 'unsubscribe')]
+    assert [r.email for r in EmailListRequest.query.all()] == ['b@x.com']
+
+
+def test_digest_keeps_rows_when_email_fails_to_send(client, queued, digest, monkeypatch):
+    client.post('/unsubscribe', data={'email': 'a@x.com'})
+    set_sheet(monkeypatch)
+    digest.return_value = 500
+    email_list.send_unsubscribe_digest()
+    assert EmailListRequest.query.count() == 1
+
+
+def send_digest_mail(app, monkeypatch, **kwargs):
     mj = MagicMock()
     mj.send.create.return_value = MagicMock(status_code=200)
     monkeypatch.setattr(email_mod, 'mailjet', mj)
     with app.test_request_context():
-        email_mod.send_email_list_change_email('a@x.com', action, status)
-    subject = mj.send.create.call_args.kwargs['data']['Messages'][0]['Subject']
-    assert subject == f'{action.capitalize()} request from a@x.com: {phrase}'
+        email_mod.send_unsubscribe_digest_email(**kwargs)
+    message = mj.send.create.call_args.kwargs['data']['Messages'][0]
+    return message['Subject'], message['HTMLPart']
+
+
+def test_digest_email_all_succeeded(app, monkeypatch):
+    subject, html = send_digest_mail(app, monkeypatch, unsubscribed=['a@x.com'], resubscribed=['c@x.com'], pending=[])
+    assert subject.startswith('Unsubscribe digest for ')
+    assert 'All unsubscribe updates succeeded' in html
+    assert 'a@x.com' in html and 'c@x.com' in html
+    assert 'Drive' not in html and 'folder' not in html
+
+
+def test_digest_email_requires_attention(app, monkeypatch):
+    from datetime import datetime
+    pending = [{'email': 'b@x.com', 'action': 'unsubscribe', 'date': datetime(2026, 11, 6)}]
+    subject, html = send_digest_mail(app, monkeypatch, unsubscribed=['a@x.com'], resubscribed=[], pending=pending)
+    assert subject == 'Unsubscribe list requires attention'
+    assert 'All unsubscribe updates succeeded' not in html
+    assert 'b@x.com' in html and 'Nov 6' in html
+
+
+@pytest.mark.parametrize('action,phrase', [
+    ('unsubscribe', 'failed to be automatically unsubscribed'),
+    ('resubscribe', 'failed to be automatically resubscribed'),
+])
+def test_failure_email_subject(app, monkeypatch, action, phrase):
+    mj = MagicMock()
+    mj.send.create.return_value = MagicMock(status_code=200)
+    monkeypatch.setattr(email_mod, 'mailjet', mj)
+    with app.test_request_context():
+        email_mod.send_email_list_failure_email('a@x.com', action)
+    message = mj.send.create.call_args.kwargs['data']['Messages'][0]
+    assert message['Subject'] == f'{action.capitalize()} request from a@x.com: {phrase}'
+    assert 'folder' not in message['HTMLPart']
 
 
 @pytest.fixture

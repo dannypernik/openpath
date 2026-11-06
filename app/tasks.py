@@ -10,13 +10,12 @@ from app.create_sat_report import create_sat_score_report, create_sat_pdf_report
 from app.create_act_report import create_act_score_report, create_act_pdf_report, \
     act_answers_to_student_ss, process_act_answer_img, style_custom_act_spreadsheet, \
     update_act_org_logo, update_act_partner_logo
-from app.new_student_folders import create_folder, create_test_prep_folder, create_academic_folder, \
-    add_email_to_unsubscribe_list, remove_email_from_unsubscribe_list
-from app.extensions import db
+from app.new_student_folders import create_folder, create_test_prep_folder, create_academic_folder
 from app.models import User, EmailListRequest
 from app.helpers import full_name
 from app.email import send_task_fail_mail, send_new_student_email, send_act_fail_mail, send_score_report_email, \
-    send_email_list_change_email
+    send_email_list_failure_email
+from app.email_list import sync_request
 from app.utils import create_crm_action, color_svg_white_to_input
 
 
@@ -279,21 +278,9 @@ def new_student_task(self, contact_data):
 @celery.task(name='app.tasks.email_list_task', bind=True)
 def email_list_task(self, email, action):
   req = EmailListRequest.query.filter_by(email=email).first()
-  if not req or req.action != action:
+  if not req or req.action != action or req.confirmed_at:
     logging.info(f'Skipping {action} for {email}: request already handled or superseded')
     return
 
-  try:
-    if action == 'unsubscribe':
-      status = add_email_to_unsubscribe_list(email)
-    else:
-      status = remove_email_from_unsubscribe_list(email)
-  except Exception as e:
-    logging.error(f'Email list {action} failed for {email}: {e}', exc_info=True)
-    status = 'failed'
-
-  if status != 'failed':
-    db.session.delete(req)
-    db.session.commit()
-
-  send_email_list_change_email(email, action, status)
+  if not sync_request(req):
+    send_email_list_failure_email(email, action)

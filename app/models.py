@@ -209,8 +209,9 @@ def load_user(id):
     return User.query.get(id)
 
 class EmailListRequest(db.Model):
-    """Unconfirmed email-list change; row is deleted once the sheet write is confirmed."""
+    """Email-list change. confirmed_at is set once the sheet has it; the row is deleted after the digest lists it."""
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     action = db.Column(db.String(16), nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    confirmed_at = db.Column(db.DateTime)

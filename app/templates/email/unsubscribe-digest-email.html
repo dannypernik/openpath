@@ -1,0 +1,29 @@
+{% extends "email/_email-base.html" %}
+
+{% block content %}
+  {% if not pending %}
+    <p><strong>All unsubscribe updates succeeded.</strong></p>
+  {% else %}
+    <p><strong>These updates have not reached the Email list spreadsheet.</strong>
+    Please add or remove them manually; the next daily digest will find any you have changed.</p>
+    <ul>
+      {% for p in pending %}
+        <li>{{ p.email }}: {{ 'add to' if p.action == 'unsubscribe' else 'remove from' }} the list (requested {{ p.date.strftime('%b') }} {{ p.date.day }})</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if unsubscribed %}
+    <p>Unsubscribed:</p>
+    <ul>
+      {% for e in unsubscribed %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if resubscribed %}
+    <p>Resubscribed:</p>
+    <ul>
+      {% for e in resubscribed %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+{% endblock content %}

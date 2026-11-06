@@ -162,6 +162,7 @@ def _request_email_list_change(email, action):
     if req:
         req.action = action
         req.timestamp = datetime.now(timezone.utc)
+        req.confirmed_at = None
     else:
         db.session.add(EmailListRequest(email=email, action=action))
     db.session.commit()

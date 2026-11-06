@@ -1,13 +1,7 @@
 {% extends "email/_email-base.html" %}
 
 {% block content %}
-  {% if action == 'unsubscribe' %}
-    Please remove {{ email }} from the <a href="https://drive.google.com/drive/folders/1A2POcp4ZdQJroOiZT1pCLaVhgjo8Wm6I">SAT resources folder</a>.
-  {% else %}
-    {{ email }} has resubscribed. Please add them back to the <a href="https://drive.google.com/drive/folders/1A2POcp4ZdQJroOiZT1pCLaVhgjo8Wm6I">SAT resources folder</a>.
-  {% endif %}
-  {% if status == 'failed' %}
-    <br><br>
-    The automatic update of the Email list spreadsheet failed. The request is saved and will be retried the next time this address submits the form, or you can {{ 'add' if action == 'unsubscribe' else 'remove' }} it manually.
-  {% endif %}
+  The automatic update of the Email list spreadsheet failed for {{ email }} ({{ action }}).
+  Please {{ 'add' if action == 'unsubscribe' else 'remove' }} it manually, or it will be retried the next time this address submits the form.
+  The request is saved and is rechecked by the daily digest, so a manual change will be picked up.
 {% endblock content %}
