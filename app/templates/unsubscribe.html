@@ -8,7 +8,7 @@ Unsubscribe
 <div class="row justify-content-center">
   <div class="col-11 col-lg-10">
     {% if state == 'unsubscribed' %}
-    <h1 class="text-center">You have been unsubscribed</h1>
+    <h1 class="text-center">You have been unsubscribed.</h1>
     <form class="text-center" method="POST" action="{{ url_for('auth.resubscribe') }}">
       {{ form.hidden_tag() }}
       {{ form.email(type='hidden') }}
