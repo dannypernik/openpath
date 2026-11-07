@@ -27,7 +27,7 @@ TOKEN = 'token_tpa.json'
 CLIENT_SECRETS = 'credentials_tpa.json'
 SAT_DATA_SS_ID = os.environ.get('SAT_DATA_SS_ID')
 OPT_SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
-EMAIL_LIST_SPREADSHEET_ID = '1LiWg_53O_4oSuRF1TBIuTS1nyY_hi8GIIRzs_t-WKA8'
+EMAIL_LIST_SPREADSHEET_ID = os.environ.get('EMAIL_LIST_SS_ID')
 
 
 creds = None
@@ -778,6 +778,8 @@ EMAIL_LIST_RANGE = "'Email list'!A:A"
 def _get_email_list():
     if sheets_service is None:
         raise RuntimeError('Google Sheets service not initialized')
+    if not EMAIL_LIST_SPREADSHEET_ID:
+        raise RuntimeError('EMAIL_LIST_SS_ID is not set')
     result = execute_with_retries(lambda: sheets_service.spreadsheets().values().get(
         spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
         range=EMAIL_LIST_RANGE

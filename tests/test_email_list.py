@@ -210,7 +210,14 @@ def test_failure_email_subject(app, monkeypatch, action, phrase):
 def sheet(monkeypatch):
     svc = MagicMock()
     monkeypatch.setattr(nsf, 'sheets_service', svc)
+    monkeypatch.setattr(nsf, 'EMAIL_LIST_SPREADSHEET_ID', 'test-ss-id')
     return svc
+
+
+def test_missing_ss_id_raises(sheet, monkeypatch):
+    monkeypatch.setattr(nsf, 'EMAIL_LIST_SPREADSHEET_ID', None)
+    with pytest.raises(RuntimeError, match='EMAIL_LIST_SS_ID'):
+        nsf.add_email_to_unsubscribe_list('a@x.com')
 
 
 def test_add_writes_to_first_free_row_only_when_absent(sheet):
