@@ -213,13 +213,15 @@ def sheet(monkeypatch):
     return svc
 
 
-def test_add_appends_only_when_absent(sheet):
+def test_add_writes_to_first_free_row_only_when_absent(sheet):
     sheet.spreadsheets().values().get().execute.return_value = {'values': [['a@x.com'], ['b@x.com']]}
     assert nsf.add_email_to_unsubscribe_list('c@x.com') == 'added'
-    assert sheet.spreadsheets().values().append.call_args.kwargs['body'] == {'values': [['c@x.com']]}
-    sheet.spreadsheets().values().append.reset_mock()
+    kwargs = sheet.spreadsheets().values().update.call_args.kwargs
+    assert kwargs['range'] == "'Email list'!A3"
+    assert kwargs['body'] == {'values': [['c@x.com']]}
+    sheet.spreadsheets().values().update.reset_mock()
     assert nsf.add_email_to_unsubscribe_list('B@x.com') == 'already'
-    sheet.spreadsheets().values().append.assert_not_called()
+    sheet.spreadsheets().values().update.assert_not_called()
 
 
 def test_remove_deletes_matching_rows_bottom_up(sheet):

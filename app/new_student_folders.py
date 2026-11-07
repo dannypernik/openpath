@@ -785,17 +785,18 @@ def _get_email_list():
     return result.get('values', [])
 
 
-# Append email to 'Email list'!A unless present. Returns 'added' or 'already'; raises on failure.
+# Write email to the first free row of 'Email list'!A unless present. Returns 'added' or 'already'; raises on failure.
+# Uses an explicit row, not values.append: append detects the table from the whole sheet, so data in other columns pushes it down.
 def add_email_to_unsubscribe_list(email):
     target = email.strip().lower()
-    if any(row and row[0].strip().lower() == target for row in _get_email_list()):
+    values = _get_email_list()
+    if any(row and row[0].strip().lower() == target for row in values):
         return 'already'
 
-    execute_with_retries(lambda: sheets_service.spreadsheets().values().append(
+    execute_with_retries(lambda: sheets_service.spreadsheets().values().update(
         spreadsheetId=EMAIL_LIST_SPREADSHEET_ID,
-        range=EMAIL_LIST_RANGE,
+        range=f"'Email list'!A{len(values) + 1}",
         valueInputOption='RAW',
-        insertDataOption='INSERT_ROWS',
         body={'values': [[email]]}
     ).execute())
     return 'added'
