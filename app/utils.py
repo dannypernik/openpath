@@ -539,7 +539,7 @@ def add_test_dates_from_ss():
         ('Test dates!A1:F1', 'B1', 1, ('registration deadline',)),
         ('Test dates!A1:F1', 'C1', 2, ('late registration',)),
         ('Test dates!A1:F1', 'F1', 5, ('student score release',)),
-        ('Test dates!A14:E14', 'B14', 1, ('registration deadline', 'reg deadline')),
+        ('Test dates!A14:E14', 'B14', 1, ('registration deadline',)),
         ('Test dates!A14:E14', 'C14', 2, ('late deadline',)),
         ('Test dates!A14:E14', 'E14', 4, ('score release',)),
     ]

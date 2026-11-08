@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 HEADERS = ['Test date', 'SAT Registration deadline', 'Late registration deadline', '', '', 'Student score release date']
-ACT_HEADERS = ['ACT test date', 'Reg deadline', 'Late deadline', '', 'Score release']
+ACT_HEADERS = ['ACT test date', 'Registration deadline', 'Late deadline', '', 'Score release']
 
 
 def _sheet(ranges):
@@ -86,13 +86,13 @@ def test_header_mismatch_raises_and_updates_nothing(app, monkeypatch, table, bad
         assert TestDate.query.count() == 0
 
 
-def test_act_registration_deadline_header_accepts_full_wording(app, monkeypatch):
+def test_act_reg_deadline_abbreviation_is_rejected(app, monkeypatch):
     import app.utils as utils
     act_headers = list(ACT_HEADERS)
-    act_headers[1] = 'Standard Registration Deadline'
+    act_headers[1] = 'Reg deadline'
     _setup(monkeypatch, utils, act_headers=act_headers)
 
-    with app.app_context():
+    with app.app_context(), pytest.raises(ValueError, match='B14'):
         utils.add_test_dates_from_ss()
 
 
