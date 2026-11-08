@@ -533,14 +533,26 @@ def add_test_dates_from_ss():
         print('Spreadsheet ID not found, skipping sheet import')
         return
 
-    # Refuse to import if the sheet layout has changed: B1/C1/F1 must contain these (case-insensitive) texts
-    header_row = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A1:F1').execute().get('values', [[]])[0]
-    expected_headers = {'B1': (1, 'registration deadline'), 'C1': (2, 'late registration'), 'F1': (5, 'student score release')}
+    # Refuse to import (SAT and ACT) if the sheet layout has changed: each header cell must contain one of these
+    # (case-insensitive) texts. Checked before any DB writes.
+    expected_headers = [
+        ('Test dates!A1:F1', 'B1', 1, ('registration deadline',)),
+        ('Test dates!A1:F1', 'C1', 2, ('late registration',)),
+        ('Test dates!A1:F1', 'F1', 5, ('student score release',)),
+        ('Test dates!A14:E14', 'B14', 1, ('registration deadline', 'reg deadline')),
+        ('Test dates!A14:E14', 'C14', 2, ('late deadline',)),
+        ('Test dates!A14:E14', 'E14', 4, ('score release',)),
+    ]
+    header_rows = {}
     bad_headers = []
-    for cell, (idx, text) in expected_headers.items():
-        actual = header_row[idx] if idx < len(header_row) else ''
-        if text not in actual.lower():
-            bad_headers.append(f"{cell} should contain '{text}' but is '{actual}'")
+    for header_range, cell, idx, texts in expected_headers:
+        if header_range not in header_rows:
+            values = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=header_range).execute().get('values', [[]])
+            header_rows[header_range] = values[0] if values else []
+        row = header_rows[header_range]
+        actual = row[idx] if idx < len(row) else ''
+        if not any(text in actual.lower() for text in texts):
+            bad_headers.append(f"{cell} should contain '{' or '.join(texts)}' but is '{actual}'")
     if bad_headers:
         raise ValueError('Test dates not updated, spreadsheet headers do not match: ' + '; '.join(bad_headers))
 

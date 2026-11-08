@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 HEADERS = ['Test date', 'SAT Registration deadline', 'Late registration deadline', '', '', 'Student score release date']
+ACT_HEADERS = ['ACT test date', 'Reg deadline', 'Late deadline', '', 'Score release']
 
 
 def _sheet(ranges):
@@ -17,9 +18,10 @@ def _sheet(ranges):
     return svc
 
 
-def _setup(monkeypatch, utils, headers=HEADERS):
+def _setup(monkeypatch, utils, headers=HEADERS, act_headers=ACT_HEADERS):
     ranges = {
         'Test dates!A1:F1': [headers],
+        'Test dates!A14:E14': [act_headers],
         'Test dates!A2:A16': [['Aug 22, 2026'], ['Sept. 12, 2026'], ['Oct 3, 2026'], ['Nov 7, 2026']],
         'Test dates!B2:B16': [['Aug 8, 2026'], ['Aug 28, 2026'], ['Sep 18, 2026'], ['Oct 23, 2026']],
         # release table lists dates in different rows and formats, and omits Oct 3
@@ -66,18 +68,32 @@ def test_date_without_score_match_is_still_added(app, monkeypatch):
         assert oct3.score_date is None
 
 
-@pytest.mark.parametrize('bad_index, bad_cell', [(1, 'B1'), (2, 'C1'), (5, 'F1')])
-def test_header_mismatch_raises_and_updates_nothing(app, monkeypatch, bad_index, bad_cell):
+@pytest.mark.parametrize('table, bad_index, bad_cell', [
+    ('sat', 1, 'B1'), ('sat', 2, 'C1'), ('sat', 5, 'F1'),
+    ('act', 1, 'B14'), ('act', 2, 'C14'), ('act', 4, 'E14'),
+])
+def test_header_mismatch_raises_and_updates_nothing(app, monkeypatch, table, bad_index, bad_cell):
     import app.utils as utils
     from app.models import TestDate
-    headers = list(HEADERS)
-    headers[bad_index] = 'something else'
-    _setup(monkeypatch, utils, headers)
+    headers, act_headers = list(HEADERS), list(ACT_HEADERS)
+    (headers if table == 'sat' else act_headers)[bad_index] = 'something else'
+    _setup(monkeypatch, utils, headers, act_headers)
 
     with app.app_context(), pytest.raises(ValueError, match=bad_cell):
         utils.add_test_dates_from_ss()
+    # a bad ACT header must also stop the SAT rows from being written
     with app.app_context():
         assert TestDate.query.count() == 0
+
+
+def test_act_registration_deadline_header_accepts_full_wording(app, monkeypatch):
+    import app.utils as utils
+    act_headers = list(ACT_HEADERS)
+    act_headers[1] = 'Standard Registration Deadline'
+    _setup(monkeypatch, utils, act_headers=act_headers)
+
+    with app.app_context():
+        utils.add_test_dates_from_ss()
 
 
 def test_route_flashes_header_error(app, client, monkeypatch):
