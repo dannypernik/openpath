@@ -96,7 +96,7 @@ def edit_user(id):
             user.location = form.location.data
             user.status = form.status.data
             user.role = form.role.data
-            user.grad_year = form.grad_year.data
+            user.grad_year = form.grad_year.data or None
             user.is_admin = form.is_admin.data
             user.session_reminders = form.session_reminders.data
             user.test_reminders = form.test_reminders.data
@@ -108,10 +108,6 @@ def edit_user(id):
                 user.parent_id = None
             else:
                 user.parent_id = form.parent_id.data
-            if form.grad_year.data == 0:
-                user.grad_year = None
-            else:
-                user.grad_year = form.grad_year.data
 
             test_selections = request.form.getlist('test_dates')
             for d in upcoming_dates:
@@ -140,11 +136,6 @@ def edit_user(id):
         else:
             return redirect(url_for('admin.users'))
     elif request.method == 'GET':
-        grad_choices = form.grad_year.choices
-        user_grad_year = user.grad_year
-        if user_grad_year and user_grad_year not in [c[0] for c in grad_choices]:
-            form.grad_year.choices = [(user_grad_year, user_grad_year)] + grad_choices
-
         form.first_name.data = user.first_name
         form.last_name.data = user.last_name
         form.email.data = user.email
@@ -154,7 +145,7 @@ def edit_user(id):
         form.location.data = user.location
         form.status.data = user.status
         form.role.data = user.role
-        form.grad_year.data = user.grad_year
+        form.grad_year.data = '' if user.grad_year in (None, 'None') else user.grad_year
         form.tutor_id.data = user.tutor_id
         form.parent_id.data = user.parent_id
         form.is_admin.data = user.is_admin

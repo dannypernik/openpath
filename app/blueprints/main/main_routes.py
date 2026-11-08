@@ -455,7 +455,7 @@ def ati_austin():
         student = User(
             first_name=form.student_first_name.data,
             last_name=form.student_last_name.data,
-            grad_year=form.grad_year.data
+            grad_year=form.grad_year.data or None
         )
         parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
         email_status = send_score_analysis_email(student, parent, school)
@@ -572,7 +572,7 @@ def new_student():
                 student.status = form.status.data
                 student.role = 'student'
                 student.school = form.school.data
-                student.grad_year = form.grad_year.data
+                student.grad_year = form.grad_year.data or None
                 student.subject = form.subject.data
                 student.tutor_id = form.tutor_select.data
             else:
@@ -586,7 +586,7 @@ def new_student():
                     status=form.status.data,
                     role='student',
                     school=form.school.data,
-                    grad_year=form.grad_year.data,
+                    grad_year=form.grad_year.data or None,
                     subject=form.subject.data,
                     tutor_id=form.tutor_select.data,
                     session_reminders=True,
@@ -1146,7 +1146,7 @@ def request_score_report(org):
         student = User(
             first_name = form.student_first_name.data,
             last_name = form.student_last_name.data,
-            grad_year = form.grad_year.data
+            grad_year = form.grad_year.data or None
         )
 
         parent = User.query.filter_by(email=form.parent_email.data).first()

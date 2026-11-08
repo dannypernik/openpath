@@ -6,6 +6,7 @@ from flask_wtf.file import FileRequired, FileAllowed
 from wtforms.validators import ValidationError, InputRequired, DataRequired, \
     Email, EqualTo, Length, Optional
 from app.models import User, TestDate, UserTestDate, TestScore
+from app.grad_years import grad_year_choices
 from datetime import datetime
 import json
 
@@ -88,9 +89,7 @@ class UserForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, \
         validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2027', '2027 (Senior)'), \
-        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
-        ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
+    grad_year = SelectField('Grad year')  # choices set per instance in __init__ so they roll over on June 1
     status = SelectField('Status', choices=[('none','None'),('active', 'Active'), \
         ('prospective','Prospective'),('paused','Paused'),('inactive','Inactive')])
     role = SelectField('Role', choices=[('student', 'Student'),('parent', 'Parent'), \
@@ -106,6 +105,9 @@ class UserForm(FlaskForm):
     def __init__(self, original_email, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
         self.original_email = original_email
+        # include the stored value (on POST too) so a graduated/legacy year still validates and shows as itself
+        stored = getattr(kwargs.get('obj'), 'grad_year', None)
+        self.grad_year.choices = grad_year_choices(stored, 'Grad year')
 
     def validate_email(self, email):
         if email.data != self.original_email:
@@ -125,9 +127,7 @@ class NewStudentForm(FlaskForm):
     timezone = StringField('Timezone', render_kw={'placeholder': 'Timezone'}, validators=[InputRequired()])
     location = StringField('Location', render_kw={'placeholder': 'Location'})
     school = StringField('School', render_kw={'placeholder': 'School'})
-    grad_year = SelectField('Grad year', choices=[(None, 'Grad year'), ('2027', '2027 (Senior)'), \
-        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
-        ('school', 'Grade school'), ('college', 'College'), ('adult', 'Adult')])
+    grad_year = SelectField('Grad year')  # choices set per instance in __init__ so they roll over on June 1
     parent_select = SelectField('Parent', coerce=int)
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'First name'})
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Last name'})
@@ -144,6 +144,10 @@ class NewStudentForm(FlaskForm):
     create_student_folder = BooleanField('Create folder', default=True)
     notes = TextAreaField('Additional notes (optional)', render_kw={'placeholder': 'Personality, learning style, strengths/opportunities, etc', 'rows': '4'})
     submit = SubmitField()
+
+    def __init__(self, *args, **kwargs):
+        super(NewStudentForm, self).__init__(*args, **kwargs)
+        self.grad_year.choices = grad_year_choices(None, 'Grad year')
 
 
 class TutorForm(FlaskForm):
@@ -216,9 +220,7 @@ class ScoreAnalysisForm(FlaskForm):
         validators=[InputRequired()])
     student_last_name = StringField('Student last name', render_kw={'placeholder': 'Student last name'}, \
         validators=[InputRequired()])
-    grad_year = SelectField('Graduation year', choices=[(None, 'Graduation year'), ('2027', '2027 (Senior)'), \
-        ('2028', '2028 (Junior)'), ('2029', '2029 (Sophomore)'), ('2030', '2030 (Freshman)'), \
-        ('graduated', 'Graduated'), ('school', 'Grade school')])
+    grad_year = SelectField('Graduation year')  # choices set per instance in __init__ so they roll over on June 1
     parent_first_name = StringField('Parent first name', render_kw={'placeholder': 'Parent first name'}, \
         validators=[InputRequired()])
     parent_last_name = StringField('Parent last name', render_kw={'placeholder': 'Parent last name'}, \
@@ -226,6 +228,10 @@ class ScoreAnalysisForm(FlaskForm):
     parent_email = EmailField('Parent email address', render_kw={'placeholder': 'Parent email'}, \
         validators=[InputRequired(), Email(message='Please enter a valid email address')])
     submit = SubmitField()
+
+    def __init__(self, *args, **kwargs):
+        super(ScoreAnalysisForm, self).__init__(*args, **kwargs)
+        self.grad_year.choices = grad_year_choices(None, 'Graduation year')
 
 
 class ReportSubmittedSignupForm(FlaskForm):
