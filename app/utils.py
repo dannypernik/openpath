@@ -533,6 +533,17 @@ def add_test_dates_from_ss():
         print('Spreadsheet ID not found, skipping sheet import')
         return
 
+    # Refuse to import if the sheet layout has changed: B1/C1/F1 must contain these (case-insensitive) texts
+    header_row = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A1:F1').execute().get('values', [[]])[0]
+    expected_headers = {'B1': (1, 'registration deadline'), 'C1': (2, 'late registration'), 'F1': (5, 'student score release')}
+    bad_headers = []
+    for cell, (idx, text) in expected_headers.items():
+        actual = header_row[idx] if idx < len(header_row) else ''
+        if text not in actual.lower():
+            bad_headers.append(f"{cell} should contain '{text}' but is '{actual}'")
+    if bad_headers:
+        raise ValueError('Test dates not updated, spreadsheet headers do not match: ' + '; '.join(bad_headers))
+
     # --- SAT table (new layout) ---
     # Read columns: A (test date), B (reg), C (late reg)
     # Score release dates come from a separate table at E2:F13 (E = test date, F = score release), matched by test date
@@ -617,7 +628,8 @@ def add_test_dates_from_ss():
             if existing.late_date != late_deadline:
                 changes['late_date'] = {'old': existing.late_date, 'new': late_deadline}
                 existing.late_date = late_deadline
-            if existing.score_date != score_release:
+            # keep the stored score date when the table has no match for this test date
+            if score_release and existing.score_date != score_release:
                 changes['score_date'] = {'old': existing.score_date, 'new': score_release}
                 existing.score_date = score_release
             if changes:

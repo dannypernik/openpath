@@ -270,7 +270,11 @@ def edit_date(id):
 @admin_bp.route('/add-test-dates', methods=['GET', 'POST'])
 @admin_required
 def add_test_dates():
-    add_test_dates_from_ss()
+    try:
+        add_test_dates_from_ss()
+    except ValueError as e:
+        flash(str(e), 'error')
+        return redirect(url_for('main.test_dates'))
     flash('Test dates added/updated from spreadsheet')
     return redirect(url_for('main.test_dates'))
 
