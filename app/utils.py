@@ -534,12 +534,13 @@ def add_test_dates_from_ss():
         return
 
     # --- SAT table (new layout) ---
-    # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date), E (score release)
+    # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date)
+    # Score release dates come from a separate table at E2:F13 (E = test date, F = score release), matched by test date
     sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A16').execute().get('values', [])
     sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B16').execute().get('values', [])
     sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C16').execute().get('values', [])
     sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D16').execute().get('values', [])
-    sat_e = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:E16').execute().get('values', [])
+    sat_release_rows = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:F13').execute().get('values', [])
 
     # normalize to lists of strings (may be nested lists from API)
     def cell_str(cell_list, idx):
@@ -577,13 +578,20 @@ def add_test_dates_from_ss():
                 return None
         return None
 
-    max_rows = max(len(sat_a), len(sat_b), len(sat_c), len(sat_d), len(sat_e))
+    score_releases = {}
+    for row in sat_release_rows:
+        if len(row) >= 2:
+            release_test_date = extract_date(row[0])
+            release_date = extract_date(row[1])
+            if release_test_date and release_date:
+                score_releases[release_test_date] = release_date
+
+    max_rows = max(len(sat_a), len(sat_b), len(sat_c), len(sat_d))
     for i in range(max_rows):
         a_raw = cell_str(sat_a, i)
         b_raw = cell_str(sat_b, i)
         c_raw = cell_str(sat_c, i)
         d_raw = cell_str(sat_d, i)
-        e_raw = cell_str(sat_e, i)
 
         a_clean = sanitize_cell(a_raw)
         d_clean = sanitize_cell(d_raw)
@@ -596,19 +604,7 @@ def add_test_dates_from_ss():
         reg_deadline = extract_date(b_raw)
         late_deadline = extract_date(c_raw)
 
-        # score release: only add if E present and A and D match (both parse and equal)
-        score_release = None
-        if e_raw:
-            e_date = extract_date(e_raw)
-            a_dt = extract_date(a_clean)
-            d_dt = extract_date(d_clean)
-            cond = bool(e_date and a_dt and d_dt and a_dt == d_dt)
-            if cond:
-                # ensure year alignment: if e_date earlier than test_date, maybe belongs to next year
-                if e_date < test_date:
-                    # try bump year (dateutil handled fuzzy; here we skip complex year logic)
-                    pass
-                score_release = e_date
+        score_release = score_releases.get(test_date)
 
         status = 'confirmed'
         if reg_deadline is None:
