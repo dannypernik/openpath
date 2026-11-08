@@ -1,3 +1,4 @@
+from flask import request
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField, TextAreaField, \
     SubmitField, IntegerField, RadioField, SelectField, validators, FileField
@@ -177,6 +178,24 @@ class TestDateForm(FlaskForm):
     status = SelectField('Status', choices=[('confirmed','Confirmed'),('unconfirmed','Unconfirmed'), \
         ('school','School day'),('past','Past')])
     submit = SubmitField('Save')
+
+    def validate_reg_date(self, field):
+        if 'delete' in request.form:  # don't block deleting a date that already has bad values
+            return
+        if field.data and self.date.data and field.data >= self.date.data:
+            raise ValidationError('Registration deadline must be before the test date.')
+
+    def validate_late_date(self, field):
+        if 'delete' in request.form:  # don't block deleting a date that already has bad values
+            return
+        if field.data and self.date.data and field.data >= self.date.data:
+            raise ValidationError('Late deadline must be before the test date.')
+
+    def validate_score_date(self, field):
+        if 'delete' in request.form:  # don't block deleting a date that already has bad values
+            return
+        if field.data and self.date.data and field.data <= self.date.data:
+            raise ValidationError('Score release date must be after the test date.')
 
 
 class RecapForm(FlaskForm):

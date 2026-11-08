@@ -515,6 +515,29 @@ def get_org_details_dict(organization):
         organization_dict['color3_contrast'] = organization.font_color
     return organization_dict
 
+def align_to_test_date(value, has_year, test_date, before):
+    """Keep a deadline before the test date (before=True) or a score release after it (before=False).
+
+    A date written without a year is moved a year if that puts it on the right side; anything else on the
+    wrong side is dropped (None) with a warning rather than stored.
+    """
+    if value is None:
+        return None
+    is_ok = (lambda d: d < test_date) if before else (lambda d: d > test_date)
+    if is_ok(value):
+        return value
+    if not has_year and value != test_date:  # a year-less date equal to the test date is ambiguous, so drop it
+        try:
+            shifted = value.replace(year=value.year + (-1 if before else 1))
+            if is_ok(shifted):
+                return shifted
+        except ValueError:  # Feb 29 in a non-leap year
+            pass
+    logger.warning('Ignoring %s date %s for test date %s: must be %s the test date',
+                   'deadline' if before else 'score release', value, test_date, 'before' if before else 'after')
+    return None
+
+
 def add_test_dates_from_ss():
     """Import test dates from the configured spreadsheet into the TestDate table."""
     # Initialize Sheets API client
@@ -606,9 +629,8 @@ def add_test_dates_from_ss():
         if len(row) >= 2:
             release_test_date = extract_date(row[0])
             release_date = extract_date(row[1], default_year=release_test_date.year) if release_test_date else None
-            # no year in the cell (e.g. 'October 16'): use the test date's year, or the next if that lands before the test
-            if release_date and release_date < release_test_date and not re.search(r'\b\d{4}\b', row[1]):
-                release_date = release_date.replace(year=release_date.year + 1)
+            if release_test_date and release_date:
+                release_date = align_to_test_date(release_date, bool(re.search(r'\b\d{4}\b', row[1])), release_test_date, before=False)
             if release_test_date and release_date:
                 score_releases[release_test_date] = release_date
 
@@ -624,8 +646,9 @@ def add_test_dates_from_ss():
         if not test_date:
             continue
 
-        reg_deadline = extract_date(b_raw)
-        late_deadline = extract_date(c_raw)
+        has_year = lambda raw: bool(re.search(r'\b\d{4}\b', raw))
+        reg_deadline = align_to_test_date(extract_date(b_raw, default_year=test_date.year), has_year(b_raw), test_date, before=True)
+        late_deadline = align_to_test_date(extract_date(c_raw, default_year=test_date.year), has_year(c_raw), test_date, before=True)
 
         score_release = score_releases.get(test_date)
 
@@ -688,25 +711,22 @@ def add_test_dates_from_ss():
 
             if len(row) >= 2 and row[1]:
                 try:
-                    reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year}", '%B %d, %Y').date()
-                    if reg_deadline > test_date:
-                        reg_deadline = datetime.strptime(f"{row[1]}, {test_date.year - 1}", '%B %d, %Y').date()
+                    reg_deadline = align_to_test_date(
+                        datetime.strptime(f"{row[1]}, {test_date.year}", '%B %d, %Y').date(), False, test_date, before=True)
                 except ValueError:
                     pass
 
             if len(row) >= 3 and row[2]:
                 try:
-                    late_deadline = datetime.strptime(f"{row[2]}, {test_date.year}", '%B %d, %Y').date()
-                    if late_deadline > test_date:
-                        late_deadline = datetime.strptime(f"{row[2]}, {test_date.year - 1}", '%B %d, %Y').date()
+                    late_deadline = align_to_test_date(
+                        datetime.strptime(f"{row[2]}, {test_date.year}", '%B %d, %Y').date(), False, test_date, before=True)
                 except ValueError:
                     pass
 
             if len(row) >= 5 and row[4]:
                 try:
-                    score_release = datetime.strptime(f"{row[4]}, {test_date.year}", '%B %d, %Y').date()
-                    if score_release < test_date:
-                        score_release = datetime.strptime(f"{row[4]}, {test_date.year + 1}", '%B %d, %Y').date()
+                    score_release = align_to_test_date(
+                        datetime.strptime(f"{row[4]}, {test_date.year}", '%B %d, %Y').date(), False, test_date, before=False)
                 except ValueError:
                     pass
 

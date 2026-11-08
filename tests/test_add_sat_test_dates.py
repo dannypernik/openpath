@@ -131,3 +131,72 @@ def test_route_flashes_header_error(app, client, monkeypatch):
         from flask import get_flashed_messages
         assert resp.status_code == 302
         assert get_flashed_messages(with_categories=True)[0][0] == 'error'
+
+
+def test_align_to_test_date():
+    import app.utils as utils
+    test = date(2026, 10, 3)
+    align = utils.align_to_test_date
+    # deadlines: before the test date; a year-less one shifts back a year, an explicit-year one is dropped
+    assert align(date(2026, 9, 18), True, test, before=True) == date(2026, 9, 18)
+    assert align(date(2026, 12, 20), False, test, before=True) == date(2025, 12, 20)
+    assert align(date(2026, 12, 20), True, test, before=True) is None
+    assert align(test, True, test, before=True) is None
+    # score release: after the test date; a year-less one shifts forward a year
+    assert align(date(2026, 10, 16), True, test, before=False) == date(2026, 10, 16)
+    assert align(date(2026, 1, 2), False, test, before=False) == date(2027, 1, 2)
+    assert align(date(2026, 9, 1), True, test, before=False) is None
+    assert align(test, False, test, before=False) is None
+    assert align(None, True, test, before=True) is None
+
+
+def test_import_drops_dates_on_the_wrong_side_of_the_test_date(app, monkeypatch):
+    import app.utils as utils
+    from app.models import TestDate
+    _setup(monkeypatch, utils)
+    ranges = {
+        'Test dates!A1:F1': [HEADERS],
+        'Test dates!A14:E14': [ACT_HEADERS],
+        'Test dates!A2:A13': [['Oct 3, 2026'], ['Nov 7, 2026']],
+        # Oct 3: reg after the test (explicit year) -> dropped; late 'Dec 20' (no year) -> previous year.
+        # Nov 7: fine
+        'Test dates!B2:B13': [['Oct 20, 2026'], ['Oct 23, 2026']],
+        'Test dates!C2:C13': [['Dec 20'], ['Oct 27, 2026']],
+        'Test dates!E2:F13': [['Oct 3, 2026', 'Sep 1, 2026'], ['Nov 7, 2026', 'Nov 20, 2026']],
+        # ACT: reg equals test date -> dropped; late 'December 5' after test -> previous year; release 'January 3' -> next year
+        'Test dates!A15:E33': [['*October 17, 2026*', 'October 17', 'December 5', 'x', 'January 3']],
+    }
+    monkeypatch.setattr(utils, 'build', lambda *a, **k: _sheet(ranges))
+
+    with app.app_context():
+        utils.add_test_dates_from_ss()
+        sat = {t.date: t for t in TestDate.query.filter_by(test='sat')}
+        act = TestDate.query.filter_by(test='act').one()
+
+    oct3 = sat[date(2026, 10, 3)]
+    assert (oct3.reg_date, oct3.late_date, oct3.score_date) == (None, date(2025, 12, 20), None)
+    nov7 = sat[date(2026, 11, 7)]
+    assert (nov7.reg_date, nov7.late_date, nov7.score_date) == (date(2026, 10, 23), date(2026, 10, 27), date(2026, 11, 20))
+    assert (act.reg_date, act.late_date, act.score_date) == (None, date(2025, 12, 5), date(2027, 1, 3))
+
+
+def test_test_date_form_enforces_order(app):
+    from app.forms import TestDateForm
+    base = {'test': 'sat', 'date': '2026-10-03', 'status': 'confirmed'}
+
+    def errors(**extra):
+        with app.test_request_context(method='POST', data={**base, **extra}):
+            form = TestDateForm()
+            form.validate()
+            return form.errors
+
+    assert errors(reg_date='2026-09-18', late_date='2026-09-22', score_date='2026-10-16') == {}
+    assert 'reg_date' in errors(reg_date='2026-10-03')
+    assert 'late_date' in errors(late_date='2026-10-04')
+    assert 'score_date' in errors(score_date='2026-10-03')
+    assert 'score_date' in errors(score_date='2026-09-01')
+    # deleting a date that already has bad values must not be blocked
+    with app.test_request_context(method='POST', data={**base, 'reg_date': '2026-12-01', 'delete': ''}):
+        form = TestDateForm()
+        form.validate()
+        assert 'reg_date' not in form.errors
