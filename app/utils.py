@@ -559,9 +559,9 @@ def add_test_dates_from_ss():
     # --- SAT table (new layout) ---
     # Read columns: A (test date), B (reg), C (late reg)
     # Score release dates come from a separate table at E2:F13 (E = test date, F = score release), matched by test date
-    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A16').execute().get('values', [])
-    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B16').execute().get('values', [])
-    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C16').execute().get('values', [])
+    sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A13').execute().get('values', [])
+    sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B13').execute().get('values', [])
+    sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C13').execute().get('values', [])
     sat_release_rows = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:F13').execute().get('values', [])
 
     # normalize to lists of strings (may be nested lists from API)
@@ -580,7 +580,7 @@ def add_test_dates_from_ss():
         return s
 
     # helper to extract date substring and parse flexibly
-    def extract_date(s):
+    def extract_date(s, default_year=None):
         if not s:
             return None
         s = sanitize_cell(s)
@@ -595,7 +595,8 @@ def add_test_dates_from_ss():
         month_regex = r'\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b'
         if re.search(month_regex, s, re.IGNORECASE):
             try:
-                return dateparse(s, fuzzy=True).date()
+                default = datetime(default_year, 1, 1) if default_year else None
+                return dateparse(s, fuzzy=True, default=default).date()
             except Exception:
                 return None
         return None
@@ -604,7 +605,10 @@ def add_test_dates_from_ss():
     for row in sat_release_rows:
         if len(row) >= 2:
             release_test_date = extract_date(row[0])
-            release_date = extract_date(row[1])
+            release_date = extract_date(row[1], default_year=release_test_date.year) if release_test_date else None
+            # no year in the cell (e.g. 'October 16'): use the test date's year, or the next if that lands before the test
+            if release_date and release_date < release_test_date and not re.search(r'\b\d{4}\b', row[1]):
+                release_date = release_date.replace(year=release_date.year + 1)
             if release_test_date and release_date:
                 score_releases[release_test_date] = release_date
 
@@ -665,7 +669,7 @@ def add_test_dates_from_ss():
     # Fetch ACT dates
     act_result = sheet.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range='Test dates!A19:E33'
+        range='Test dates!A15:E33'
     ).execute()
     act_values = act_result.get('values', [])
 

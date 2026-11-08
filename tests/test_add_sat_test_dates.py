@@ -22,10 +22,14 @@ def _setup(monkeypatch, utils, headers=HEADERS, act_headers=ACT_HEADERS):
     ranges = {
         'Test dates!A1:F1': [headers],
         'Test dates!A14:E14': [act_headers],
-        'Test dates!A2:A16': [['Aug 22, 2026'], ['Sept. 12, 2026'], ['Oct 3, 2026'], ['Nov 7, 2026']],
-        'Test dates!B2:B16': [['Aug 8, 2026'], ['Aug 28, 2026'], ['Sep 18, 2026'], ['Oct 23, 2026']],
-        # release table lists dates in different rows and formats, and omits Oct 3
-        'Test dates!E2:F13': [['Nov 7, 2026', 'Nov 20, 2026'], ['Sept. 12, 2026', 'Sept. 25, 2026'], ['Aug 22, 2026', 'Sep 4, 2026']],
+        'Test dates!A2:A13': [['Aug 22, 2026'], ['Sept. 12, 2026'], ['Oct 3, 2026'], ['Nov 7, 2026'], ['Dec 5, 2026'], ['Mar 6, 2027']],
+        'Test dates!B2:B13': [['Aug 8, 2026'], ['Aug 28, 2026'], ['Sep 18, 2026'], ['Oct 23, 2026'], ['Nov 20, 2026'], ['Feb 19, 2027']],
+        # release table lists dates in different rows and formats, some without a year, and omits Oct 3
+        'Test dates!E2:F13': [['Nov 7, 2026', 'November 20'], ['Sept. 12, 2026', 'Sept. 25, 2026'], ['Aug 22, 2026', 'Sep 4, 2026'],
+                              ['Dec 5, 2026', 'January 2'], ['Mar 6, 2027', 'March 19']],
+        # ACT table: data starts right under the header (row 15)
+        'Test dates!A15:E33': [['*September 19, 2026*', 'August 14', 'September 1', 'September 14', 'October 6'],
+                               ['*February 27, 2027*', 'January 22', 'February 9', 'February 22', 'March 16']],
     }
     monkeypatch.setenv('SPREADSHEET_ID', 'ss')
     monkeypatch.setattr(utils.os.path, 'exists', lambda p: True)
@@ -52,9 +56,25 @@ def test_sat_score_release_matched_by_test_date_and_existing_rows_updated(app, m
     assert got == {
         date(2026, 8, 22): date(2026, 9, 4),
         date(2026, 9, 12): date(2026, 9, 25),
-        date(2026, 10, 3): date(2026, 10, 16),
-        date(2026, 11, 7): date(2026, 11, 20),
+        date(2026, 10, 3): date(2026, 10, 16),   # kept: table has no row for it
+        date(2026, 11, 7): date(2026, 11, 20),   # 'November 20' -> test date's year
+        date(2026, 12, 5): date(2027, 1, 2),     # 'January 2' before test date -> next year
+        date(2027, 3, 6): date(2027, 3, 19),
     }
+
+
+def test_act_rows_start_at_row_15_and_do_not_appear_as_sat(app, monkeypatch):
+    import app.utils as utils
+    from app.models import TestDate
+    _setup(monkeypatch, utils)
+
+    with app.app_context():
+        utils.add_test_dates_from_ss()
+        act = {t.date: t.score_date for t in TestDate.query.filter_by(test='act')}
+        sat_dates = {t.date for t in TestDate.query.filter_by(test='sat')}
+
+    assert act == {date(2026, 9, 19): date(2026, 10, 6), date(2027, 2, 27): date(2027, 3, 16)}
+    assert date(2026, 9, 19) not in sat_dates and date(2027, 2, 27) not in sat_dates
 
 
 def test_date_without_score_match_is_still_added(app, monkeypatch):
