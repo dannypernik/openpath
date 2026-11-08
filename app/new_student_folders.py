@@ -111,7 +111,7 @@ def create_test_prep_folder(contact_data: dict, test_type='sat/act', new_folder_
     update_homework_ss(file_ids, contact_data)
     logger.info(f"Homework spreadsheet updated for {student_name}.")
 
-    add_student_to_ss_list(student_name, contact_data.get('grad_year'))
+    add_student_to_ss_list(student_name, contact_data.get('student', {}).get('grad_year'))
     logger.info(f"{student_name} added to spreadsheet list.")
 
     execute_with_retries(lambda: drive_service.files().update(
@@ -178,7 +178,7 @@ def create_academic_folder(contact_data: dict, subject, new_folder_id=None):
 
     replace_text_in_doc(docs_service, copied_notes_id, text_pairs)
 
-    add_student_to_ss_list(student_name, contact_data.get(grad_year))
+    add_student_to_ss_list(student_name, contact_data.get('student', {}).get('grad_year'))
     logger.info(f"{student_name} added to spreadsheet list.")
 
     execute_with_retries(lambda: drive_service.files().update(

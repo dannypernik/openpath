@@ -252,3 +252,19 @@ def test_sheet_helpers_raise_without_service(monkeypatch):
     monkeypatch.setattr(nsf, 'sheets_service', None)
     with pytest.raises(RuntimeError):
         nsf.add_email_to_unsubscribe_list('a@x.com')
+
+
+@pytest.mark.parametrize('folder_fn, args', [('create_test_prep_folder', ('sat/act',)), ('create_academic_folder', ('math',))])
+def test_folder_creation_adds_students_grad_year_to_list(monkeypatch, folder_fn, args):
+    """Regression: grad_year used to be an undefined name / read from the wrong dict level."""
+    added = []
+    monkeypatch.setattr(nsf, 'add_student_to_ss_list', lambda student_name, grad_year: added.append((student_name, grad_year)))
+    monkeypatch.setattr(nsf, 'create_folder', lambda *a, **k: 'folder-id')
+    monkeypatch.setattr(nsf, 'execute_with_retries', lambda fn, *a, **k: {'id': 'copied'})
+    for helper in ('replace_text_in_doc', 'link_sheets', 'update_homework_ss', 'copy_files_from_template'):
+        monkeypatch.setattr(nsf, helper, lambda *a, **k: {}, raising=False)
+    for service in ('drive_service', 'docs_service', 'sheets_service'):
+        monkeypatch.setattr(nsf, service, MagicMock())
+    contact_data = {'student': {'first_name': 'Sam', 'last_name': 'Lee', 'grad_year': '2028'}, 'parent': {}, 'tutor': {}}
+    getattr(nsf, folder_fn)(contact_data, *args)
+    assert added == [('Sam Lee', '2028')]
