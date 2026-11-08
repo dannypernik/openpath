@@ -441,31 +441,6 @@ def test_reminders():
                            imminent_deadlines=imminent_deadlines, selected_date_ids=selected_date_ids)
 
 
-@main_bp.route('/ati-austin', methods=['GET', 'POST'])
-def ati_austin():
-    form = ScoreAnalysisForm()
-    school = 'ATI Austin'
-    test = 'SAT'
-    submit_text = 'Submit'
-    if form.validate_on_submit():
-        captcha_ok = check_turnstile_or_session(turnstile)
-        if not captcha_ok:
-            flash('Captcha was unsuccessful. Please try again.', 'error')
-            return redirect(url_for('ati_austin'))
-        student = User(
-            first_name=form.student_first_name.data,
-            last_name=form.student_last_name.data,
-            grad_year=form.grad_year.data or None
-        )
-        parent = User(first_name=form.parent_first_name.data, email=form.parent_email.data)
-        email_status = send_score_analysis_email(student, parent, school)
-        if email_status == 200:
-            return render_template('score-analysis-submitted.html', email=form.parent_email.data)
-        else:
-            flash(f'Email failed to send, please contact {g.hello}', 'error')
-    return render_template('ati.html', form=form, school=school, test=test, submit_text=submit_text)
-
-
 @main_bp.route('/sat-act-data')
 def sat_act_data():
     return render_template('sat-act-data.html', title='SAT & ACT data')
