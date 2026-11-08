@@ -534,12 +534,11 @@ def add_test_dates_from_ss():
         return
 
     # --- SAT table (new layout) ---
-    # Read columns: A (test date), B (reg), C (late reg), D (duplicate test date)
+    # Read columns: A (test date), B (reg), C (late reg)
     # Score release dates come from a separate table at E2:F13 (E = test date, F = score release), matched by test date
     sat_a = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!A2:A16').execute().get('values', [])
     sat_b = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!B2:B16').execute().get('values', [])
     sat_c = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!C2:C16').execute().get('values', [])
-    sat_d = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!D2:D16').execute().get('values', [])
     sat_release_rows = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range='Test dates!E2:F13').execute().get('values', [])
 
     # normalize to lists of strings (may be nested lists from API)
@@ -586,18 +585,15 @@ def add_test_dates_from_ss():
             if release_test_date and release_date:
                 score_releases[release_test_date] = release_date
 
-    max_rows = max(len(sat_a), len(sat_b), len(sat_c), len(sat_d))
+    max_rows = max(len(sat_a), len(sat_b), len(sat_c))
     for i in range(max_rows):
         a_raw = cell_str(sat_a, i)
         b_raw = cell_str(sat_b, i)
         c_raw = cell_str(sat_c, i)
-        d_raw = cell_str(sat_d, i)
 
         a_clean = sanitize_cell(a_raw)
-        d_clean = sanitize_cell(d_raw)
 
-        # prefer A for test date, fallback to D if A empty
-        test_date = extract_date(a_clean) or extract_date(d_clean)
+        test_date = extract_date(a_clean)
         if not test_date:
             continue
 
