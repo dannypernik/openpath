@@ -29,7 +29,7 @@ def send_contact_email(user, message, subject):
                     'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
-                'Subject': subject + ' from ' + user.first_name,
+                'Subject': subject + ' from ' + full_name(user),
                 'ReplyTo': { 'Email': user.email },
                 'TextPart': render_template('email/inquiry-form.txt',
                                          user=user, message=message),
@@ -222,7 +222,7 @@ def send_reminder_email(event, student, tutor):
     if result.status_code == 200:
         msg = full_name(student) + ' ' + start_time + timezone + ' ' + warnings_str
     else:
-        msg = 'Error for ' + student.first_name + '\'s reminder email with code ' + str(result.status_code) + ' ' + result.reason
+        msg = 'Error for ' + full_name(student) + '\'s reminder email with code ' + str(result.status_code) + ' ' + result.reason
     return msg
 
 
@@ -327,9 +327,9 @@ def send_session_recap_email(student, events):
     result = mailjet.send.create(data=data)
 
     if result.status_code == 200:
-        logging.info(student.first_name, student.last_name, start_display, timezone, warnings_str)
+        logging.info(full_name(student), start_display, timezone, warnings_str)
     else:
-        logging.info('Error for ' + student.first_name + '\'s session update email with code', result.status_code, result.reason)
+        logging.info('Error for ' + full_name(student) + '\'s session update email with code', result.status_code, result.reason)
     return result.status_code
 
 
@@ -407,7 +407,7 @@ def send_registration_reminder_email(user, test_date):
     if result.status_code == 200:
         msg = 'Registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
     else:
-        msg = 'Error for ' + user.first_name + '\'s registration reminder with code ' + str(result.status_code) + ' ' + result.reason
+        msg = 'Error for ' + full_name(user) + '\'s registration reminder with code ' + str(result.status_code) + ' ' + result.reason
     return msg
 
 
@@ -452,7 +452,7 @@ def send_late_registration_reminder_email(user, test_date):
     if result.status_code == 200:
         msg = 'Late registration reminder for ' + td + ' ' + test_date.test.upper() + ' sent to ' + full_name(user)
     else:
-        msg = 'Error for ' + user.first_name + '\'s late registration reminder with code ' + str(result.status_code) + ' ' + result.reason
+        msg = 'Error for ' + full_name(user) + '\'s late registration reminder with code ' + str(result.status_code) + ' ' + result.reason
     return msg
 
 
@@ -496,7 +496,7 @@ def send_test_reminder_email(user, test_date):
     if result.status_code == 200:
         msg = td + ' ' + test_date.test.upper() + ' reminder sent to ' + full_name(user)
     else:
-        msg = 'Error for ' + user.first_name + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
+        msg = 'Error for ' + full_name(user) + '\'s test reminder with code ' + str(result.status_code) + ' ' + result.reason
     return msg
 
 
@@ -515,7 +515,7 @@ def send_signup_notification_email(user, dates):
                     'Email': os.environ.get('MAIL_USERNAME')
                     }
                 ],
-                'Subject': user.first_name + ' signed up for test reminders',
+                'Subject': full_name(user) + ' signed up for test reminders',
                 'TextPart': render_template('email/signup-notification.txt', user=user,
                     date_series=date_series)
             }
